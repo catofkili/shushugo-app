@@ -28,3 +28,4 @@ for lv in sys.argv[1:]:
             q['answer'] = lo; moved += 1
     open(path, 'w', encoding='utf8').write(json.dumps(b, ensure_ascii=False, indent=2) + '\n')
     print(f'N{lv}: 交换 {moved} 题')
+    if moved and lv in ('4', '5'): print(f'  N{lv} 交换过选项：到 frontend/ 跑 npm run build:jlpt-furigana 重算注音')

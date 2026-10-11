@@ -27,8 +27,32 @@ const SET_COUNTS = {
 };
 const QUESTION_KEYS = new Set([
   "id", "level", "kind", "setId", "stem", "options", "answer", "explanation",
-  "distractors", "order", "passageId", "target"
+  "distractors", "order", "passageId", "target", "furigana"
 ]);
+// N5/N4 考点以外的汉字全注音（照官方 N5/N4 的做法，N3 起不注），由 build-jlpt-furigana.mjs 生成。
+const FURIGANA_LEVELS = new Set(["N5", "N4"]);
+const KANJI = /[\u3400-\u9fff々〇]/u;
+
+/** 注音下标要对得上原文、不重叠，且原文里每个汉字（除 skip 范围）都有注音；题目改了没重跑脚本就会在这里露馅。 */
+const furiganaProblem = (text, annotations, skip = null) => {
+  if (!Array.isArray(annotations)) return "注音必须是数组";
+  const covered = new Set();
+  let cursor = 0;
+  for (const item of annotations) {
+    const base = isRecord(item) ? text.slice(item.start, item.start + item.length) : "";
+    if (!isRecord(item) || !Number.isInteger(item.start) || !Number.isInteger(item.length) || item.start < cursor
+      || item.length <= 0 || item.start + item.length > text.length || typeof item.reading !== "string"
+      || !/^[ぁ-ゖー]+$/u.test(item.reading) || ![...base].every((char) => KANJI.test(char))) {
+      return `注音和原文对不上（${JSON.stringify(item)}）`;
+    }
+    for (let at = item.start; at < item.start + item.length; at += 1) covered.add(at);
+    cursor = item.start + item.length;
+  }
+  for (let at = 0; at < text.length; at += 1) {
+    if (KANJI.test(text[at]) && !covered.has(at) && !(skip && at >= skip[0] && at < skip[1])) return `「${text[at]}」没注音`;
+  }
+  return null;
+};
 const databaseCache = new WeakMap();
 
 const isRecord = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
@@ -74,7 +98,7 @@ export function verifyJlptBank(bank, db, expectedLevel = bank?.level, { complete
 
   const requiredRoot = ["version", "level", "sets", "passages", "questions"];
   for (const key of requiredRoot) if (!has(bank, key)) error("题库", `缺少字段 ${key}`);
-  for (const key of Object.keys(bank)) if (!requiredRoot.includes(key)) error("题库", `未知字段 ${key}`);
+  for (const key of Object.keys(bank)) if (!requiredRoot.includes(key) && key !== "passageFurigana") error("题库", `未知字段 ${key}`);
   if (typeof bank.version !== "string") error("题库.version", "必须是字符串");
   if (!LEVELS.includes(bank.level)) error("题库.level", "必须是 N1–N5 之一");
   if (expectedLevel && bank.level !== expectedLevel) {
@@ -262,6 +286,30 @@ export function verifyJlptBank(bank, db, expectedLevel = bank?.level, { complete
     }
   }
 
+  // 注音：N5/N4 必须齐全且对得上原文（改了题要重跑 node scripts/build-jlpt-furigana.mjs），N3 起不许有
+  const rerun = "，改完题要跑 node scripts/build-jlpt-furigana.mjs";
+  if (!FURIGANA_LEVELS.has(level)) {
+    if (has(bank, "passageFurigana") || questionRows.some((question) => has(question, "furigana"))) error("题库", `${String(level)} 不注音（只有 N5/N4 注音）`);
+  } else {
+    for (const question of questionRows) {
+      if (typeof question.stem !== "string" || !Array.isArray(question.options)) continue;
+      const furigana = isRecord(question.furigana) ? question.furigana : {};
+      const target = question.kind === "kanji-reading" ? /\[\[([^]*?)\]\]/u.exec(question.stem) : null;
+      const skip = target ? [target.index + 2, target.index + 2 + target[1].length] : null;
+      const stemProblem = furiganaProblem(question.stem, furigana.stem ?? [], skip);
+      if (stemProblem) error(question.id, `题干${stemProblem}${rerun}`);
+      if (question.kind === "orthography") continue;  // 表记题的选项就是被考的汉字，不注
+      question.options.forEach((option, index) => {
+        const problem = typeof option === "string" ? furiganaProblem(option, furigana.options?.[index] ?? []) : null;
+        if (problem) error(question.id, `选项 ${index + 1} ${problem}${rerun}`);
+      });
+    }
+    if (isRecord(bank.passages)) for (const [passageId, passage] of Object.entries(bank.passages)) {
+      const problem = typeof passage === "string" ? furiganaProblem(passage, bank.passageFurigana?.[passageId] ?? []) : null;
+      if (problem) error(`passages.${passageId}`, `${problem}${rerun}`);
+    }
+  }
+
   if (isRecord(bank.passages)) for (const [passageId, passage] of Object.entries(bank.passages)) {
     if (typeof passage !== "string") continue;
     const markers = [...passage.matchAll(/\[(\d+)\]/g)];
@@ -333,6 +381,8 @@ function runSelfTest() {
   assert(malformed.errors.some((message) => message.includes("必须是对象"))); count += 1;
   bad("root type", (b) => { b.version = 4; }, "version: 必须是字符串");
   bad("root missing field", (b) => { delete b.version; }, "缺少字段 version");
+  bad("furigana above N4", (b) => { q(b).furigana = { stem: [] }; }, "N3 不注音");
+  bad("missing furigana", (b) => { b.level = "N5"; for (const question of b.questions) question.level = "N5"; }, "没注音", "N5");
   bad("root unknown field", (b) => { b.extra = true; }, "未知字段 extra");
   bad("filename level", () => {}, "文件要求 N2", "N2");
   bad("sets type", (b) => { b.sets = {}; }, "sets: 必须是数组");

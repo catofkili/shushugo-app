@@ -1,5 +1,5 @@
 /* Generated from frontend/src/design.css. Run node wechat-miniprogram/scripts/sync-design-tokens.mjs. */
-/* source sha256: 1e7e474f97bdfa7ca13b68ecd6cfbfdae63e049f4308a09cdd3a0733578da35b */
+/* source sha256: f528458d73b0bd0fb198abb7ab891ee3d4c143991819046d91780ade1bd24e28 */
 /* WXSS does not support color-mix(); those values stay on the existing native fallback. */
 page {
   --ds-surface: #fff;

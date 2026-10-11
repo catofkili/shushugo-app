@@ -69,6 +69,25 @@
         "type": "word",
         "id": 23,
         "surface": "工場"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "おお"
+          },
+          {
+            "start": 10,
+            "length": 1,
+            "reading": "くるま"
+          },
+          {
+            "start": 12,
+            "length": 1,
+            "reading": "つく"
+          }
+        ]
       }
     },
     {
@@ -94,6 +113,15 @@
         "type": "word",
         "id": 16,
         "surface": "経験"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 2,
+            "reading": "りょうり"
+          }
+        ]
       }
     },
     {
@@ -111,14 +139,33 @@
       "answer": 3,
       "explanation": "「腕」读作「うで」，指胳膊。",
       "distractors": {
+        "1": "「くび」是「首」的读音，指脖子。",
         "2": "「かた」是「肩」的读音，指肩膀。",
-        "4": "「ゆび」是「指」的读音，指手指。",
-        "1": "「くび」是「首」的读音，指脖子。"
+        "4": "「ゆび」是「指」的读音，指手指。"
       },
       "target": {
         "type": "word",
         "id": 1384,
         "surface": "腕"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "おも"
+          },
+          {
+            "start": 3,
+            "length": 2,
+            "reading": "にもつ"
+          },
+          {
+            "start": 7,
+            "length": 1,
+            "reading": "も"
+          }
+        ]
       }
     },
     {
@@ -144,6 +191,20 @@
         "type": "word",
         "id": 76,
         "surface": "連絡"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "おく"
+          },
+          {
+            "start": 7,
+            "length": 2,
+            "reading": "かいしゃ"
+          }
+        ]
       }
     },
     {
@@ -169,6 +230,20 @@
         "type": "word",
         "id": 1044,
         "surface": "病気"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 7,
+            "length": 2,
+            "reading": "がっこう"
+          },
+          {
+            "start": 10,
+            "length": 1,
+            "reading": "やす"
+          }
+        ]
       }
     },
     {
@@ -187,13 +262,27 @@
       "explanation": "「枝」读作「えだ」，指树枝。",
       "distractors": {
         "1": "「はな」是「花」的读音，指花。",
-        "3": "「たね」是「種」的读音，指种子。",
-        "2": "「くさ」是「草」的读音，指草。"
+        "2": "「くさ」是「草」的读音，指草。",
+        "3": "「たね」是「種」的读音，指种子。"
       },
       "target": {
         "type": "word",
         "id": 1216,
         "surface": "枝"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "とり"
+          },
+          {
+            "start": 3,
+            "length": 1,
+            "reading": "き"
+          }
+        ]
       }
     },
     {
@@ -219,6 +308,30 @@
         "type": "word",
         "id": 173,
         "surface": "会議"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "まち"
+          },
+          {
+            "start": 2,
+            "length": 1,
+            "reading": "ひと"
+          },
+          {
+            "start": 5,
+            "length": 2,
+            "reading": "こうえん"
+          },
+          {
+            "start": 19,
+            "length": 1,
+            "reading": "はな"
+          }
+        ]
       }
     },
     {
@@ -244,6 +357,25 @@
         "type": "word",
         "id": 1008,
         "surface": "週末"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 2,
+            "reading": "こんしゅう"
+          },
+          {
+            "start": 14,
+            "length": 2,
+            "reading": "かぞく"
+          },
+          {
+            "start": 17,
+            "length": 1,
+            "reading": "で"
+          }
+        ]
       }
     },
     {
@@ -269,6 +401,25 @@
         "type": "word",
         "id": 131,
         "surface": "見学"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 2,
+            "reading": "がくせい"
+          },
+          {
+            "start": 5,
+            "length": 1,
+            "reading": "あたら"
+          },
+          {
+            "start": 8,
+            "length": 3,
+            "reading": "としょかん"
+          }
+        ]
       }
     },
     {
@@ -287,13 +438,37 @@
       "explanation": "「しんかんせん」写作「新幹線」，是交通工具的名称。",
       "distractors": {
         "2": "「新」与「親」左侧相近，但这里应写「新」。",
-        "4": "「新」与「幹」都被换成了形近字，「親韓線」不是这个词。",
-        "3": "「幹」与「韓」左侧相同，右侧不同；这里应写「幹」。"
+        "3": "「幹」与「韓」左侧相同，右侧不同；这里应写「幹」。",
+        "4": "「新」与「幹」都被换成了形近字，「親韓線」不是这个词。"
       },
       "target": {
         "type": "word",
         "id": 1468,
         "surface": "新幹線"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 2,
+            "reading": "とうきょう"
+          },
+          {
+            "start": 4,
+            "length": 2,
+            "reading": "そふ"
+          },
+          {
+            "start": 7,
+            "length": 1,
+            "reading": "まち"
+          },
+          {
+            "start": 21,
+            "length": 1,
+            "reading": "い"
+          }
+        ]
       }
     },
     {
@@ -319,6 +494,20 @@
         "type": "word",
         "id": 1550,
         "surface": "電子レンジ"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 1,
+            "length": 1,
+            "reading": "はん"
+          },
+          {
+            "start": 14,
+            "length": 1,
+            "reading": "あたた"
+          }
+        ]
       }
     },
     {
@@ -344,6 +533,60 @@
         "type": "word",
         "id": 128,
         "surface": "遅刻"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 2,
+            "reading": "じゅぎょう"
+          },
+          {
+            "start": 3,
+            "length": 1,
+            "reading": "はじ"
+          },
+          {
+            "start": 9,
+            "length": 1,
+            "reading": "き"
+          },
+          {
+            "start": 19,
+            "length": 1,
+            "reading": "あやま"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "べんきょう"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "しっぱい"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "ちこく"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "やくそく"
+            }
+          ]
+        ]
       }
     },
     {
@@ -369,6 +612,55 @@
         "type": "word",
         "id": 1486,
         "surface": "貯金"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "あね"
+          },
+          {
+            "start": 2,
+            "length": 2,
+            "reading": "まいつき"
+          },
+          {
+            "start": 10,
+            "length": 1,
+            "reading": "かね"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "だいきん"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "ちょきん"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "ぜいきん"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "りょうきん"
+            }
+          ]
+        ]
       }
     },
     {
@@ -394,6 +686,50 @@
         "type": "word",
         "id": 63,
         "surface": "必要"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "ほん"
+          },
+          {
+            "start": 2,
+            "length": 1,
+            "reading": "か"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "ひつよう"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "ざんねん"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "あんぜん"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "じゆう"
+            }
+          ]
+        ]
       }
     },
     {
@@ -419,6 +755,75 @@
         "type": "word",
         "id": 136,
         "surface": "予約"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "さん"
+          },
+          {
+            "start": 1,
+            "length": 1,
+            "reading": "にん"
+          },
+          {
+            "start": 2,
+            "length": 1,
+            "reading": "ぶん"
+          },
+          {
+            "start": 4,
+            "length": 1,
+            "reading": "せき"
+          },
+          {
+            "start": 6,
+            "length": 1,
+            "reading": "と"
+          },
+          {
+            "start": 11,
+            "length": 1,
+            "reading": "みせ"
+          },
+          {
+            "start": 13,
+            "length": 2,
+            "reading": "でんわ"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "よやく"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "せつめい"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "そうだん"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "ちゅうもん"
+            }
+          ]
+        ]
       }
     },
     {
@@ -444,6 +849,70 @@
         "type": "word",
         "id": 41,
         "surface": "住所"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 2,
+            "reading": "てがみ"
+          },
+          {
+            "start": 3,
+            "length": 1,
+            "reading": "だ"
+          },
+          {
+            "start": 8,
+            "length": 2,
+            "reading": "ともだち"
+          },
+          {
+            "start": 11,
+            "length": 1,
+            "reading": "あたら"
+          },
+          {
+            "start": 14,
+            "length": 1,
+            "reading": "いえ"
+          },
+          {
+            "start": 21,
+            "length": 1,
+            "reading": "き"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "じゅうしょ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "ばんごう"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "でんわ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "なまえ"
+            }
+          ]
+        ]
       }
     },
     {
@@ -469,6 +938,60 @@
         "type": "word",
         "id": 1292,
         "surface": "注意"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 2,
+            "reading": "やまみち"
+          },
+          {
+            "start": 3,
+            "length": 1,
+            "reading": "いし"
+          },
+          {
+            "start": 5,
+            "length": 1,
+            "reading": "お"
+          },
+          {
+            "start": 8,
+            "length": 2,
+            "reading": "ばしょ"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "れんらく"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "よてい"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "せつめい"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "ちゅうい"
+            }
+          ]
+        ]
       }
     },
     {
@@ -494,6 +1017,60 @@
         "type": "word",
         "id": 52,
         "surface": "説明"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 2,
+            "reading": "てんいん"
+          },
+          {
+            "start": 5,
+            "length": 1,
+            "reading": "つか"
+          },
+          {
+            "start": 7,
+            "length": 1,
+            "reading": "かた"
+          },
+          {
+            "start": 14,
+            "length": 1,
+            "reading": "き"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "いけん"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "しつもん"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "せつめい"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "へんじ"
+            }
+          ]
+        ]
       }
     },
     {
@@ -519,6 +1096,55 @@
         "type": "word",
         "id": 1465,
         "surface": "食料"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 3,
+            "length": 1,
+            "reading": "こめ"
+          },
+          {
+            "start": 12,
+            "length": 1,
+            "reading": "か"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "の"
+            },
+            {
+              "start": 2,
+              "length": 1,
+              "reading": "もの"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "どうぐ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "りょうり"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "しょくりょう"
+            }
+          ]
+        ]
       }
     },
     {
@@ -544,6 +1170,85 @@
         "type": "word",
         "id": 2086,
         "surface": "片づける"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "よ"
+          },
+          {
+            "start": 2,
+            "length": 1,
+            "reading": "お"
+          },
+          {
+            "start": 5,
+            "length": 1,
+            "reading": "ほん"
+          },
+          {
+            "start": 9,
+            "length": 1,
+            "reading": "かた"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "べつ"
+            },
+            {
+              "start": 2,
+              "length": 1,
+              "reading": "ほん"
+            },
+            {
+              "start": 4,
+              "length": 1,
+              "reading": "と"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "ともだち"
+            },
+            {
+              "start": 3,
+              "length": 1,
+              "reading": "み"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "たな"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "つくえ"
+            },
+            {
+              "start": 2,
+              "length": 1,
+              "reading": "うえ"
+            },
+            {
+              "start": 4,
+              "length": 1,
+              "reading": "ひろ"
+            }
+          ]
+        ]
       }
     },
     {
@@ -569,6 +1274,69 @@
         "type": "word",
         "id": 1489,
         "surface": "珍しい"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 2,
+            "length": 1,
+            "reading": "まち"
+          },
+          {
+            "start": 6,
+            "length": 1,
+            "reading": "み"
+          },
+          {
+            "start": 11,
+            "length": 1,
+            "reading": "とり"
+          },
+          {
+            "start": 15,
+            "length": 1,
+            "reading": "めずら"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "からだ"
+            },
+            {
+              "start": 2,
+              "length": 1,
+              "reading": "おお"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "うみ"
+            },
+            {
+              "start": 2,
+              "length": 1,
+              "reading": "ちか"
+            }
+          ],
+          [],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "かず"
+            },
+            {
+              "start": 2,
+              "length": 1,
+              "reading": "すく"
+            }
+          ]
+        ]
       }
     },
     {
@@ -594,6 +1362,85 @@
         "type": "word",
         "id": 1593,
         "surface": "気に入る"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "わたし"
+          },
+          {
+            "start": 4,
+            "length": 1,
+            "reading": "あお"
+          },
+          {
+            "start": 6,
+            "length": 1,
+            "reading": "さら"
+          },
+          {
+            "start": 8,
+            "length": 1,
+            "reading": "とく"
+          },
+          {
+            "start": 12,
+            "length": 1,
+            "reading": "き"
+          },
+          {
+            "start": 14,
+            "length": 1,
+            "reading": "い"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "す"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "たか"
+            },
+            {
+              "start": 3,
+              "length": 1,
+              "reading": "おも"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "やす"
+            },
+            {
+              "start": 3,
+              "length": 1,
+              "reading": "おも"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "つか"
+            },
+            {
+              "start": 6,
+              "length": 1,
+              "reading": "かん"
+            }
+          ]
+        ]
       }
     },
     {
@@ -619,6 +1466,63 @@
         "type": "word",
         "id": 1,
         "surface": "安心"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "ちち"
+          },
+          {
+            "start": 2,
+            "length": 1,
+            "reading": "いえ"
+          },
+          {
+            "start": 4,
+            "length": 1,
+            "reading": "つ"
+          },
+          {
+            "start": 8,
+            "length": 1,
+            "reading": "き"
+          },
+          {
+            "start": 12,
+            "length": 1,
+            "reading": "はは"
+          },
+          {
+            "start": 16,
+            "length": 2,
+            "reading": "あんしん"
+          }
+        ],
+        "options": [
+          [],
+          [],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "はら"
+            },
+            {
+              "start": 2,
+              "length": 1,
+              "reading": "た"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "しんぱい"
+            }
+          ]
+        ]
       }
     },
     {
@@ -644,6 +1548,130 @@
         "type": "word",
         "id": 160,
         "surface": "履く"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 3,
+            "length": 1,
+            "reading": "は"
+          },
+          {
+            "start": 9,
+            "length": 1,
+            "reading": "つか"
+          },
+          {
+            "start": 11,
+            "length": 1,
+            "reading": "かた"
+          },
+          {
+            "start": 13,
+            "length": 1,
+            "reading": "ただ"
+          },
+          {
+            "start": 16,
+            "length": 1,
+            "reading": "ぶん"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "なつ"
+            },
+            {
+              "start": 2,
+              "length": 2,
+              "reading": "ぼうし"
+            },
+            {
+              "start": 5,
+              "length": 1,
+              "reading": "は"
+            },
+            {
+              "start": 8,
+              "length": 1,
+              "reading": "で"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "さむ"
+            },
+            {
+              "start": 2,
+              "length": 1,
+              "reading": "あさ"
+            },
+            {
+              "start": 4,
+              "length": 1,
+              "reading": "あつ"
+            },
+            {
+              "start": 6,
+              "length": 2,
+              "reading": "くつした"
+            },
+            {
+              "start": 9,
+              "length": 1,
+              "reading": "は"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "ゆうがた"
+            },
+            {
+              "start": 3,
+              "length": 2,
+              "reading": "うわぎ"
+            },
+            {
+              "start": 6,
+              "length": 1,
+              "reading": "は"
+            },
+            {
+              "start": 9,
+              "length": 1,
+              "reading": "いえ"
+            },
+            {
+              "start": 11,
+              "length": 1,
+              "reading": "で"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "くび"
+            },
+            {
+              "start": 7,
+              "length": 1,
+              "reading": "は"
+            },
+            {
+              "start": 10,
+              "length": 1,
+              "reading": "で"
+            }
+          ]
+        ]
       }
     },
     {
@@ -669,6 +1697,115 @@
         "type": "word",
         "id": 1125,
         "surface": "あいさつ"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 12,
+            "length": 1,
+            "reading": "つか"
+          },
+          {
+            "start": 14,
+            "length": 1,
+            "reading": "かた"
+          },
+          {
+            "start": 17,
+            "length": 1,
+            "reading": "ただ"
+          },
+          {
+            "start": 20,
+            "length": 1,
+            "reading": "ぶん"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "かんじ"
+            },
+            {
+              "start": 3,
+              "length": 1,
+              "reading": "よ"
+            },
+            {
+              "start": 6,
+              "length": 1,
+              "reading": "わ"
+            },
+            {
+              "start": 11,
+              "length": 2,
+              "reading": "せんせい"
+            },
+            {
+              "start": 15,
+              "length": 1,
+              "reading": "なん"
+            },
+            {
+              "start": 17,
+              "length": 1,
+              "reading": "よ"
+            }
+          ],
+          [
+            {
+              "start": 2,
+              "length": 2,
+              "reading": "こうこう"
+            },
+            {
+              "start": 5,
+              "length": 1,
+              "reading": "い"
+            },
+            {
+              "start": 12,
+              "length": 2,
+              "reading": "せんせい"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "あさ"
+            },
+            {
+              "start": 2,
+              "length": 2,
+              "reading": "きんじょ"
+            },
+            {
+              "start": 5,
+              "length": 1,
+              "reading": "ひと"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "あたら"
+            },
+            {
+              "start": 3,
+              "length": 1,
+              "reading": "とも"
+            },
+            {
+              "start": 8,
+              "length": 2,
+              "reading": "りょうしん"
+            }
+          ]
+        ]
       }
     },
     {
@@ -687,13 +1824,147 @@
       "explanation": "「寝坊」表示早晨睡过了该起床的时间；早上因此迟到，使用正确。",
       "distractors": {
         "2": "午休短睡后在预定时间起床，应说「昼寝して」；「寝坊」表示睡过该起床的时间，与按时起床不合。",
-        "4": "上课时打瞌睡，应说「居眠りして」；「寝坊」不是在清醒活动中打瞌睡。",
-        "3": "晚上不睡、熬夜看电影，应说「夜更かしして」；「寝坊」不是熬夜。"
+        "3": "晚上不睡、熬夜看电影，应说「夜更かしして」；「寝坊」不是熬夜。",
+        "4": "上课时打瞌睡，应说「居眠りして」；「寝坊」不是在清醒活动中打瞌睡。"
       },
       "target": {
         "type": "word",
         "id": 1250,
         "surface": "寝坊"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 3,
+            "length": 2,
+            "reading": "ねぼう"
+          },
+          {
+            "start": 10,
+            "length": 1,
+            "reading": "つか"
+          },
+          {
+            "start": 12,
+            "length": 1,
+            "reading": "かた"
+          },
+          {
+            "start": 15,
+            "length": 1,
+            "reading": "ただ"
+          },
+          {
+            "start": 18,
+            "length": 1,
+            "reading": "ぶん"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 3,
+              "length": 2,
+              "reading": "ねぼう"
+            },
+            {
+              "start": 8,
+              "length": 2,
+              "reading": "かいしゃ"
+            },
+            {
+              "start": 11,
+              "length": 1,
+              "reading": "おく"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "ひるやす"
+            },
+            {
+              "start": 4,
+              "length": 2,
+              "reading": "じゅっぷん"
+            },
+            {
+              "start": 8,
+              "length": 2,
+              "reading": "ねぼう"
+            },
+            {
+              "start": 13,
+              "length": 1,
+              "reading": "き"
+            },
+            {
+              "start": 16,
+              "length": 2,
+              "reading": "じかん"
+            },
+            {
+              "start": 19,
+              "length": 1,
+              "reading": "お"
+            }
+          ],
+          [
+            {
+              "start": 4,
+              "length": 1,
+              "reading": "やす"
+            },
+            {
+              "start": 10,
+              "length": 2,
+              "reading": "こんや"
+            },
+            {
+              "start": 13,
+              "length": 2,
+              "reading": "ねぼう"
+            },
+            {
+              "start": 17,
+              "length": 2,
+              "reading": "えいが"
+            },
+            {
+              "start": 20,
+              "length": 1,
+              "reading": "み"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "じゅぎょう"
+            },
+            {
+              "start": 2,
+              "length": 1,
+              "reading": "ちゅう"
+            },
+            {
+              "start": 4,
+              "length": 2,
+              "reading": "ねぼう"
+            },
+            {
+              "start": 9,
+              "length": 2,
+              "reading": "せんせい"
+            },
+            {
+              "start": 12,
+              "length": 2,
+              "reading": "ちゅうい"
+            }
+          ]
+        ]
       }
     },
     {
@@ -712,13 +1983,117 @@
       "explanation": "「留守」表示本人或家人不在家；旅行期间离家，用「家を留守にします」正确。",
       "distractors": {
         "1": "商店星期一不营业，应说「休みです」；「留守」不表示店铺的休息日。",
-        "3": "没有人坐的座位应说「空席です」；「留守」不表示空座位。",
-        "2": "因为生病没有去上课，应说「授業を欠席しました」；「留守」不表示缺课。"
+        "2": "因为生病没有去上课，应说「授業を欠席しました」；「留守」不表示缺课。",
+        "3": "没有人坐的座位应说「空席です」；「留守」不表示空座位。"
       },
       "target": {
         "type": "word",
         "id": 1375,
         "surface": "留守"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 3,
+            "length": 2,
+            "reading": "るす"
+          },
+          {
+            "start": 10,
+            "length": 1,
+            "reading": "つか"
+          },
+          {
+            "start": 12,
+            "length": 1,
+            "reading": "かた"
+          },
+          {
+            "start": 15,
+            "length": 1,
+            "reading": "ただ"
+          },
+          {
+            "start": 18,
+            "length": 1,
+            "reading": "ぶん"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 3,
+              "reading": "げつようび"
+            },
+            {
+              "start": 7,
+              "length": 1,
+              "reading": "みせ"
+            },
+            {
+              "start": 9,
+              "length": 2,
+              "reading": "るす"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "びょうき"
+            },
+            {
+              "start": 12,
+              "length": 2,
+              "reading": "じゅぎょう"
+            },
+            {
+              "start": 15,
+              "length": 2,
+              "reading": "るす"
+            }
+          ],
+          [
+            {
+              "start": 2,
+              "length": 1,
+              "reading": "せき"
+            },
+            {
+              "start": 4,
+              "length": 2,
+              "reading": "るす"
+            },
+            {
+              "start": 14,
+              "length": 1,
+              "reading": "すわ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "りょこう"
+            },
+            {
+              "start": 3,
+              "length": 1,
+              "reading": "あいだ"
+            },
+            {
+              "start": 5,
+              "length": 1,
+              "reading": "いえ"
+            },
+            {
+              "start": 7,
+              "length": 2,
+              "reading": "るす"
+            }
+          ]
+        ]
       }
     },
     {
@@ -744,6 +2119,70 @@
         "type": "grammar",
         "id": 154,
         "surface": "～なければならない"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 2,
+            "reading": "りょこう"
+          },
+          {
+            "start": 3,
+            "length": 1,
+            "reading": "い"
+          },
+          {
+            "start": 8,
+            "length": 2,
+            "reading": "きょう"
+          },
+          {
+            "start": 10,
+            "length": 1,
+            "reading": "じゅう"
+          },
+          {
+            "start": 12,
+            "length": 2,
+            "reading": "もうしこみ"
+          },
+          {
+            "start": 14,
+            "length": 1,
+            "reading": "しょ"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "だ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "だ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "だ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "だ"
+            }
+          ]
+        ]
       }
     },
     {
@@ -769,6 +2208,70 @@
         "type": "grammar",
         "id": 155,
         "surface": "～なくてもいい"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 2,
+            "length": 1,
+            "reading": "かみ"
+          },
+          {
+            "start": 4,
+            "length": 2,
+            "reading": "いちど"
+          },
+          {
+            "start": 6,
+            "length": 1,
+            "reading": "よ"
+          },
+          {
+            "start": 9,
+            "length": 2,
+            "reading": "じゅうぶん"
+          },
+          {
+            "start": 17,
+            "length": 2,
+            "reading": "いちど"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "よ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "よ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "よ"
+            },
+            {
+              "start": 2,
+              "length": 2,
+              "reading": "ひつよう"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "よ"
+            }
+          ]
+        ]
       }
     },
     {
@@ -786,14 +2289,63 @@
       "answer": 3,
       "explanation": "接待人员礼貌地请对方等待，要说「お待ちください」；「お～ください」中间使用动词的连用形。",
       "distractors": {
+        "1": "「待った」是过去形，不能构成「お待ちください」。",
         "2": "「待つ」是辞书形，不能直接接在「お」与「ください」之间。",
-        "4": "直接请求可以说「待ってください」，但题干已有「お」，应使用「お待ちください」。",
-        "1": "「待った」是过去形，不能构成「お待ちください」。"
+        "4": "直接请求可以说「待ってください」，但题干已有「お」，应使用「お待ちください」。"
       },
       "target": {
         "type": "grammar",
         "id": 243,
         "surface": "お／ご～ください"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 1,
+            "length": 2,
+            "reading": "びょういん"
+          },
+          {
+            "start": 5,
+            "length": 2,
+            "reading": "うけつけ"
+          },
+          {
+            "start": 15,
+            "length": 2,
+            "reading": "じかん"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "ま"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "ま"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "ま"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "ま"
+            }
+          ]
+        ]
       }
     },
     {
@@ -819,6 +2371,30 @@
         "type": "grammar",
         "id": 144,
         "surface": "～てしまう／ちゃう"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 2,
+            "reading": "とけい"
+          },
+          {
+            "start": 3,
+            "length": 1,
+            "reading": "お"
+          },
+          {
+            "start": 7,
+            "length": 1,
+            "reading": "こわ"
+          },
+          {
+            "start": 14,
+            "length": 1,
+            "reading": "こま"
+          }
+        ]
       }
     },
     {
@@ -844,6 +2420,60 @@
         "type": "grammar",
         "id": 128,
         "surface": "～ず（に）"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 2,
+            "reading": "じかん"
+          },
+          {
+            "start": 10,
+            "length": 1,
+            "reading": "あさ"
+          },
+          {
+            "start": 18,
+            "length": 1,
+            "reading": "いえ"
+          },
+          {
+            "start": 20,
+            "length": 1,
+            "reading": "で"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "た"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "た"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "た"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "た"
+            }
+          ]
+        ]
       }
     },
     {
@@ -869,6 +2499,40 @@
         "type": "grammar",
         "id": 145,
         "surface": "～てみる"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "はじ"
+          },
+          {
+            "start": 3,
+            "length": 1,
+            "reading": "み"
+          },
+          {
+            "start": 5,
+            "length": 2,
+            "reading": "やさい"
+          },
+          {
+            "start": 14,
+            "length": 1,
+            "reading": "あじ"
+          },
+          {
+            "start": 16,
+            "length": 1,
+            "reading": "すこ"
+          },
+          {
+            "start": 18,
+            "length": 1,
+            "reading": "た"
+          }
+        ]
       }
     },
     {
@@ -894,6 +2558,35 @@
         "type": "grammar",
         "id": 157,
         "surface": "～すぎる"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 2,
+            "length": 2,
+            "reading": "じゅうぶん"
+          },
+          {
+            "start": 4,
+            "length": 1,
+            "reading": "た"
+          },
+          {
+            "start": 11,
+            "length": 2,
+            "reading": "かし"
+          },
+          {
+            "start": 15,
+            "length": 1,
+            "reading": "た"
+          },
+          {
+            "start": 25,
+            "length": 1,
+            "reading": "いた"
+          }
+        ]
       }
     },
     {
@@ -911,14 +2604,83 @@
       "answer": 2,
       "explanation": "「～やすい」接动词的连用形；「書く」变为「書き」，组成「書きやすい」，表示容易书写。",
       "distractors": {
+        "1": "「書いた」是过去形，不能直接接「やすい」。",
         "3": "「書く」是辞书形；接「やすい」要变为「書き」。",
-        "4": "「書いて」是「て」形，不能直接接「やすい」。",
-        "1": "「書いた」是过去形，不能直接接「やすい」。"
+        "4": "「書いて」是「て」形，不能直接接「やすい」。"
       },
       "target": {
         "type": "grammar",
         "id": 160,
         "surface": "～やすい"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 5,
+            "length": 1,
+            "reading": "う"
+          },
+          {
+            "start": 7,
+            "length": 1,
+            "reading": "ば"
+          },
+          {
+            "start": 11,
+            "length": 1,
+            "reading": "きゃく"
+          },
+          {
+            "start": 28,
+            "length": 2,
+            "reading": "てんいん"
+          },
+          {
+            "start": 31,
+            "length": 1,
+            "reading": "かる"
+          },
+          {
+            "start": 36,
+            "length": 1,
+            "reading": "なが"
+          },
+          {
+            "start": 39,
+            "length": 2,
+            "reading": "じかん"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "か"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "か"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "か"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "か"
+            }
+          ]
+        ]
       }
     },
     {
@@ -944,6 +2706,70 @@
         "type": "grammar",
         "id": 184,
         "surface": "～かもしれない"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "は"
+          },
+          {
+            "start": 4,
+            "length": 1,
+            "reading": "き"
+          },
+          {
+            "start": 10,
+            "length": 1,
+            "reading": "そら"
+          },
+          {
+            "start": 12,
+            "length": 1,
+            "reading": "くら"
+          },
+          {
+            "start": 16,
+            "length": 2,
+            "reading": "ゆうがた"
+          },
+          {
+            "start": 19,
+            "length": 1,
+            "reading": "あめ"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "ふ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "ふ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "ふ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "ふ"
+            }
+          ]
+        ]
       }
     },
     {
@@ -962,13 +2788,72 @@
       "explanation": "说话者打算明天休息；表达将来要做的事，用辞书形接「つもり」，即「休むつもり」。",
       "distractors": {
         "2": "「休み」是连用形，不能直接接表示打算的「つもり」。",
-        "4": "「休んだつもり」表示以为已经休息过，与「あした」的将来打算不合。",
-        "3": "「休んで」是「て」形，不能直接接「つもり」。"
+        "3": "「休んで」是「て」形，不能直接接「つもり」。",
+        "4": "「休んだつもり」表示以为已经休息过，与「あした」的将来打算不合。"
       },
       "target": {
         "type": "grammar",
         "id": 185,
         "surface": "～つもりだ"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 1,
+            "length": 1,
+            "reading": "とも"
+          },
+          {
+            "start": 7,
+            "length": 2,
+            "reading": "でんわ"
+          },
+          {
+            "start": 19,
+            "length": 2,
+            "reading": "しごと"
+          },
+          {
+            "start": 23,
+            "length": 1,
+            "reading": "い"
+          },
+          {
+            "start": 35,
+            "length": 1,
+            "reading": "ねつ"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "やす"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "やす"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "やす"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "やす"
+            }
+          ]
+        ]
       }
     },
     {
@@ -994,6 +2879,40 @@
         "type": "grammar",
         "id": 178,
         "surface": "～し／～し～し"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 2,
+            "reading": "てんいん"
+          },
+          {
+            "start": 3,
+            "length": 2,
+            "reading": "しんせつ"
+          },
+          {
+            "start": 9,
+            "length": 1,
+            "reading": "えき"
+          },
+          {
+            "start": 12,
+            "length": 1,
+            "reading": "ちか"
+          },
+          {
+            "start": 16,
+            "length": 1,
+            "reading": "きゃく"
+          },
+          {
+            "start": 18,
+            "length": 1,
+            "reading": "おお"
+          }
+        ]
       }
     },
     {
@@ -1019,6 +2938,40 @@
         "type": "grammar",
         "id": 211,
         "surface": "～ことがある"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "こ"
+          },
+          {
+            "start": 7,
+            "length": 2,
+            "reading": "そふ"
+          },
+          {
+            "start": 10,
+            "length": 1,
+            "reading": "ふね"
+          },
+          {
+            "start": 12,
+            "length": 1,
+            "reading": "いち"
+          },
+          {
+            "start": 13,
+            "length": 1,
+            "reading": "ど"
+          },
+          {
+            "start": 16,
+            "length": 1,
+            "reading": "の"
+          }
+        ]
       }
     },
     {
@@ -1036,14 +2989,50 @@
       "answer": 4,
       "explanation": "对必须参加的提问回答「はい」，表示一定要出席，应使用「必ず」。",
       "distractors": {
+        "1": "「やっと」表示经过很长时间终于实现，不能用于要求对方一定做某事。",
         "2": "「たぶん」表示大概、可能，不表示必须，也不适合这里的明确要求。",
-        "3": "「ときどき」表示有时；这里讨论明天的一次会议，并要求必须参加。",
-        "1": "「やっと」表示经过很长时间终于实现，不能用于要求对方一定做某事。"
+        "3": "「ときどき」表示有时；这里讨论明天的一次会议，并要求必须参加。"
       },
       "target": {
         "type": "grammar",
         "id": 183,
         "surface": "必ず"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 1,
+            "length": 2,
+            "reading": "かいしゃ"
+          },
+          {
+            "start": 13,
+            "length": 2,
+            "reading": "かいぎ"
+          },
+          {
+            "start": 21,
+            "length": 1,
+            "reading": "で"
+          },
+          {
+            "start": 44,
+            "length": 1,
+            "reading": "で"
+          }
+        ],
+        "options": [
+          [],
+          [],
+          [],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "かなら"
+            }
+          ]
+        ]
       }
     },
     {
@@ -1075,7 +3064,75 @@
         1,
         4,
         2
-      ]
+      ],
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "とも"
+          },
+          {
+            "start": 4,
+            "length": 1,
+            "reading": "みせ"
+          },
+          {
+            "start": 8,
+            "length": 1,
+            "reading": "い"
+          },
+          {
+            "start": 24,
+            "length": 1,
+            "reading": "つぎ"
+          },
+          {
+            "start": 26,
+            "length": 1,
+            "reading": "みせ"
+          },
+          {
+            "start": 28,
+            "length": 1,
+            "reading": "ひと"
+          },
+          {
+            "start": 30,
+            "length": 1,
+            "reading": "き"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 2,
+              "length": 1,
+              "reading": "か"
+            }
+          ],
+          [],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "みせ"
+            },
+            {
+              "start": 2,
+              "length": 2,
+              "reading": "なまえ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "し"
+            }
+          ]
+        ]
+      }
     },
     {
       "id": "n4-g-trial1-15",
@@ -1106,7 +3163,55 @@
         1,
         2,
         4
-      ]
+      ],
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "えき"
+          },
+          {
+            "start": 2,
+            "length": 1,
+            "reading": "ちか"
+          },
+          {
+            "start": 16,
+            "length": 2,
+            "reading": "こんど"
+          },
+          {
+            "start": 19,
+            "length": 1,
+            "reading": "い"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 3,
+              "length": 1,
+              "reading": "みせ"
+            }
+          ],
+          [],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "あたら"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "なまえ"
+            }
+          ]
+        ]
+      }
     },
     {
       "id": "n4-g-trial1-16",
@@ -1137,7 +3242,110 @@
         4,
         1,
         2
-      ]
+      ],
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "あね"
+          },
+          {
+            "start": 2,
+            "length": 1,
+            "reading": "わたし"
+          },
+          {
+            "start": 5,
+            "length": 2,
+            "reading": "しょくじ"
+          },
+          {
+            "start": 8,
+            "length": 1,
+            "reading": "まえ"
+          },
+          {
+            "start": 10,
+            "length": 1,
+            "reading": "あと"
+          },
+          {
+            "start": 13,
+            "length": 1,
+            "reading": "べつ"
+          },
+          {
+            "start": 15,
+            "length": 2,
+            "reading": "しごと"
+          },
+          {
+            "start": 33,
+            "length": 1,
+            "reading": "つぎ"
+          },
+          {
+            "start": 35,
+            "length": 1,
+            "reading": "ひ"
+          },
+          {
+            "start": 37,
+            "length": 1,
+            "reading": "わたし"
+          },
+          {
+            "start": 39,
+            "length": 2,
+            "reading": "ゆうしょく"
+          },
+          {
+            "start": 42,
+            "length": 1,
+            "reading": "つく"
+          }
+        ],
+        "options": [
+          [],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "わたし"
+            },
+            {
+              "start": 2,
+              "length": 1,
+              "reading": "さら"
+            },
+            {
+              "start": 4,
+              "length": 1,
+              "reading": "あら"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "あね"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "ゆうしょく"
+            },
+            {
+              "start": 3,
+              "length": 1,
+              "reading": "つく"
+            }
+          ]
+        ]
+      }
     },
     {
       "id": "n4-g-trial1-17",
@@ -1168,7 +3376,71 @@
         4,
         2,
         1
-      ]
+      ],
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 2,
+            "reading": "しゅくだい"
+          },
+          {
+            "start": 24,
+            "length": 2,
+            "reading": "せんせい"
+          },
+          {
+            "start": 28,
+            "length": 2,
+            "reading": "いみ"
+          },
+          {
+            "start": 31,
+            "length": 1,
+            "reading": "おし"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "せんせい"
+            },
+            {
+              "start": 3,
+              "length": 1,
+              "reading": "き"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "わ"
+            }
+          ],
+          [
+            {
+              "start": 2,
+              "length": 2,
+              "reading": "かんじ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "よ"
+            },
+            {
+              "start": 2,
+              "length": 1,
+              "reading": "かた"
+            }
+          ]
+        ]
+      }
     },
     {
       "id": "n4-g-trial1-18",
@@ -1211,9 +3483,9 @@
       "answer": 1,
       "explanation": "要看前一句店长让作者在开始工作前记住面包名称；作者因此从昨晚开始学习，用「それで」连接要求及由此产生的行动。",
       "distractors": {
+        "2": "「それとも」提出另一个选择；这里没有选择问句，而是在叙述随后采取的行动。",
         "3": "「たとえば」引出例子；前句是店长的具体要求，不是需要举例的概括。",
-        "4": "「しかし」表示转折；作者开始学习是遵从要求，前后没有转折。",
-        "2": "「それとも」提出另一个选择；这里没有选择问句，而是在叙述随后采取的行动。"
+        "4": "「しかし」表示转折；作者开始学习是遵从要求，前后没有转折。"
       },
       "target": {
         "type": "word",
@@ -1263,9 +3535,9 @@
       "answer": 3,
       "explanation": "店长比较工作速度与避免出错，认为避免出错更重要；「AよりBが大切」表示比起「A」，「B」更重要。",
       "distractors": {
+        "1": "「ほど」不能构成这里表达两件事重要性高低的「AよりBが大切」结构。",
         "2": "「まで」表示范围、终点或连某事也如此，不表示这里的比较。",
-        "4": "「しか」需要与否定搭配；这里是肯定的「大切です」，也不是限定唯一事项。",
-        "1": "「ほど」不能构成这里表达两件事重要性高低的「AよりBが大切」结构。"
+        "4": "「しか」需要与否定搭配；这里是肯定的「大切です」，也不是限定唯一事项。"
       },
       "target": {
         "type": "grammar",
@@ -1297,6 +3569,20 @@
         "type": "word",
         "id": 1243,
         "surface": "焼いて"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "はは"
+          },
+          {
+            "start": 3,
+            "length": 1,
+            "reading": "さかな"
+          }
+        ]
       }
     },
     {
@@ -1322,6 +3608,25 @@
         "type": "word",
         "id": 44,
         "surface": "小説"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "いもうと"
+          },
+          {
+            "start": 2,
+            "length": 1,
+            "reading": "よる"
+          },
+          {
+            "start": 14,
+            "length": 1,
+            "reading": "よ"
+          }
+        ]
       }
     },
     {
@@ -1347,6 +3652,15 @@
         "type": "word",
         "id": 1304,
         "surface": "投げて"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "こ"
+          }
+        ]
       }
     },
     {
@@ -1372,6 +3686,25 @@
         "type": "word",
         "id": 1265,
         "surface": "正月"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 10,
+            "length": 1,
+            "reading": "おお"
+          },
+          {
+            "start": 13,
+            "length": 1,
+            "reading": "みせ"
+          },
+          {
+            "start": 15,
+            "length": 1,
+            "reading": "やす"
+          }
+        ]
       }
     },
     {
@@ -1397,6 +3730,20 @@
         "type": "word",
         "id": 154,
         "surface": "運んで"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "おお"
+          },
+          {
+            "start": 4,
+            "length": 1,
+            "reading": "はこ"
+          }
+        ]
       }
     },
     {
@@ -1422,6 +3769,20 @@
         "type": "word",
         "id": 139,
         "surface": "紹介"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "あたら"
+          },
+          {
+            "start": 3,
+            "length": 2,
+            "reading": "せんせい"
+          }
+        ]
       }
     },
     {
@@ -1447,6 +3808,15 @@
         "type": "word",
         "id": 51,
         "surface": "世界"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 15,
+            "length": 1,
+            "reading": "くに"
+          }
+        ]
       }
     },
     {
@@ -1465,13 +3835,32 @@
       "explanation": "整理汉字读法的材料写作「資料」。",
       "distractors": {
         "1": "「料」与「科」右侧相同，左侧不同；这里应写「料」。",
-        "4": "「資」与「料」都被换成了形近字，「姿科」不是这个词。",
-        "2": "「資」与「姿」上部相同，下部不同；这里应写「資」。"
+        "2": "「資」与「姿」上部相同，下部不同；这里应写「資」。",
+        "4": "「資」与「料」都被换成了形近字，「姿科」不是这个词。"
       },
       "target": {
         "type": "word",
         "id": 47,
         "surface": "資料"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 2,
+            "reading": "かんじ"
+          },
+          {
+            "start": 3,
+            "length": 1,
+            "reading": "よ"
+          },
+          {
+            "start": 19,
+            "length": 1,
+            "reading": "つく"
+          }
+        ]
       }
     },
     {
@@ -1490,13 +3879,27 @@
       "explanation": "「つごう」写作「都合」；「都合がいい」表示时间方便、合适。",
       "distractors": {
         "1": "「郡」与「都」都带右耳旁，但「郡合」不是这个词。",
-        "3": "「都」与「合」都被换成了形近字，「郡台」不是这个词。",
-        "2": "「台」与「合」下部都有「口」，这里应使用「合」。"
+        "2": "「台」与「合」下部都有「口」，这里应使用「合」。",
+        "3": "「都」与「合」都被换成了形近字，「郡台」不是这个词。"
       },
       "target": {
         "type": "word",
         "id": 1299,
         "surface": "都合"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 2,
+            "reading": "きんよう"
+          },
+          {
+            "start": 3,
+            "length": 2,
+            "reading": "ごご"
+          }
+        ]
       }
     },
     {
@@ -1522,6 +3925,25 @@
         "type": "word",
         "id": 195,
         "surface": "息子"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 2,
+            "reading": "やまだ"
+          },
+          {
+            "start": 14,
+            "length": 2,
+            "reading": "やきゅう"
+          },
+          {
+            "start": 17,
+            "length": 1,
+            "reading": "す"
+          }
+        ]
       }
     },
     {
@@ -1539,14 +3961,28 @@
       "answer": 1,
       "explanation": "「せいかつ」写作「生活」，指日常生活。",
       "distractors": {
+        "2": "「話」与「活」右侧都是「舌」，这里应使用三点水的「活」。",
         "3": "「王」与「生」笔画相近，但表示生活时应使用「生」。",
-        "4": "「生」与「活」都被换成了形近字，「王話」不是这个词。",
-        "2": "「話」与「活」右侧都是「舌」，这里应使用三点水的「活」。"
+        "4": "「生」与「活」都被换成了形近字，「王話」不是这个词。"
       },
       "target": {
         "type": "word",
         "id": 49,
         "surface": "生活"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 2,
+            "reading": "ひとり"
+          },
+          {
+            "start": 18,
+            "length": 1,
+            "reading": "な"
+          }
+        ]
       }
     },
     {
@@ -1572,6 +4008,30 @@
         "type": "word",
         "id": 1354,
         "surface": "方法"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 2,
+            "reading": "もんだい"
+          },
+          {
+            "start": 3,
+            "length": 1,
+            "reading": "と"
+          },
+          {
+            "start": 14,
+            "length": 2,
+            "reading": "せんせい"
+          },
+          {
+            "start": 17,
+            "length": 1,
+            "reading": "き"
+          }
+        ]
       }
     },
     {
@@ -1597,6 +4057,55 @@
         "type": "word",
         "id": 1142,
         "surface": "壊れる"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "ゆか"
+          },
+          {
+            "start": 2,
+            "length": 1,
+            "reading": "お"
+          },
+          {
+            "start": 6,
+            "length": 2,
+            "reading": "とけい"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "こわ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "き"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "なお"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "あつ"
+            }
+          ]
+        ]
       }
     },
     {
@@ -1622,6 +4131,64 @@
         "type": "word",
         "id": 1284,
         "surface": "値段"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "おな"
+          },
+          {
+            "start": 2,
+            "length": 2,
+            "reading": "しなもの"
+          },
+          {
+            "start": 7,
+            "length": 1,
+            "reading": "みせ"
+          },
+          {
+            "start": 17,
+            "length": 1,
+            "reading": "ひゃく"
+          },
+          {
+            "start": 18,
+            "length": 1,
+            "reading": "えん"
+          },
+          {
+            "start": 19,
+            "length": 1,
+            "reading": "ちが"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "きゅうりょう"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "ねだん"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "ちょきん"
+            }
+          ],
+          []
+        ]
       }
     },
     {
@@ -1647,6 +4214,65 @@
         "type": "word",
         "id": 102,
         "surface": "受ける"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "わたし"
+          },
+          {
+            "start": 2,
+            "length": 2,
+            "reading": "らいしゅう"
+          },
+          {
+            "start": 5,
+            "length": 2,
+            "reading": "だいがく"
+          },
+          {
+            "start": 8,
+            "length": 2,
+            "reading": "えいご"
+          },
+          {
+            "start": 11,
+            "length": 2,
+            "reading": "しけん"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "う"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "き"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "おく"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "あつ"
+            }
+          ]
+        ]
       }
     },
     {
@@ -1672,6 +4298,60 @@
         "type": "word",
         "id": 1235,
         "surface": "拾う"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 2,
+            "reading": "きょうしつ"
+          },
+          {
+            "start": 4,
+            "length": 1,
+            "reading": "ゆか"
+          },
+          {
+            "start": 6,
+            "length": 1,
+            "reading": "お"
+          },
+          {
+            "start": 9,
+            "length": 1,
+            "reading": "け"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "くら"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "ひろ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "かぞ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "か"
+            }
+          ]
+        ]
       }
     },
     {
@@ -1697,6 +4377,65 @@
         "type": "word",
         "id": 1305,
         "surface": "盗む"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "おとこ"
+          },
+          {
+            "start": 3,
+            "length": 1,
+            "reading": "かね"
+          },
+          {
+            "start": 5,
+            "length": 1,
+            "reading": "はら"
+          },
+          {
+            "start": 9,
+            "length": 1,
+            "reading": "みせ"
+          },
+          {
+            "start": 11,
+            "length": 1,
+            "reading": "もの"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "ぬす"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "かえ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "か"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "か"
+            }
+          ]
+        ]
       }
     },
     {
@@ -1722,6 +4461,70 @@
         "type": "word",
         "id": 1162,
         "surface": "起こす"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "はは"
+          },
+          {
+            "start": 3,
+            "length": 2,
+            "reading": "まいあさ"
+          },
+          {
+            "start": 5,
+            "length": 1,
+            "reading": "ろく"
+          },
+          {
+            "start": 6,
+            "length": 1,
+            "reading": "じ"
+          },
+          {
+            "start": 12,
+            "length": 1,
+            "reading": "ね"
+          },
+          {
+            "start": 16,
+            "length": 1,
+            "reading": "おとうと"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "むか"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "さが"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "かえ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "お"
+            }
+          ]
+        ]
       }
     },
     {
@@ -1747,6 +4550,65 @@
         "type": "word",
         "id": 1047,
         "surface": "返す"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "いもうと"
+          },
+          {
+            "start": 3,
+            "length": 2,
+            "reading": "とけい"
+          },
+          {
+            "start": 6,
+            "length": 1,
+            "reading": "か"
+          },
+          {
+            "start": 15,
+            "length": 2,
+            "reading": "きょう"
+          },
+          {
+            "start": 18,
+            "length": 1,
+            "reading": "いもうと"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "か"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "う"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "す"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "かえ"
+            }
+          ]
+        ]
       }
     },
     {
@@ -1772,6 +4634,65 @@
         "type": "word",
         "id": 1180,
         "surface": "迎える"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 2,
+            "reading": "にほん"
+          },
+          {
+            "start": 3,
+            "length": 1,
+            "reading": "く"
+          },
+          {
+            "start": 5,
+            "length": 1,
+            "reading": "とも"
+          },
+          {
+            "start": 10,
+            "length": 2,
+            "reading": "くうこう"
+          },
+          {
+            "start": 18,
+            "length": 1,
+            "reading": "い"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "むか"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "みま"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "おく"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "さが"
+            }
+          ]
+        ]
       }
     },
     {
@@ -1797,6 +4718,75 @@
         "type": "word",
         "id": 1254,
         "surface": "親切な人"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 2,
+            "length": 2,
+            "reading": "しんせつ"
+          },
+          {
+            "start": 5,
+            "length": 1,
+            "reading": "ひと"
+          },
+          {
+            "start": 10,
+            "length": 2,
+            "reading": "にもつ"
+          },
+          {
+            "start": 13,
+            "length": 1,
+            "reading": "いえ"
+          },
+          {
+            "start": 16,
+            "length": 1,
+            "reading": "はこ"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 4,
+              "length": 1,
+              "reading": "ひと"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "げんき"
+            },
+            {
+              "start": 3,
+              "length": 1,
+              "reading": "ひと"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "ゆうめい"
+            },
+            {
+              "start": 3,
+              "length": 1,
+              "reading": "ひと"
+            }
+          ],
+          [
+            {
+              "start": 4,
+              "length": 1,
+              "reading": "ひと"
+            }
+          ]
+        ]
       }
     },
     {
@@ -1822,6 +4812,49 @@
         "type": "word",
         "id": 1228,
         "surface": "失敗した"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "はじ"
+          },
+          {
+            "start": 8,
+            "length": 1,
+            "reading": "づく"
+          },
+          {
+            "start": 14,
+            "length": 2,
+            "reading": "しっぱい"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "じかん"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "せいこう"
+            }
+          ],
+          [],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "お"
+            }
+          ]
+        ]
       }
     },
     {
@@ -1847,6 +4880,80 @@
         "type": "word",
         "id": 129,
         "surface": "出発した"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "わたし"
+          },
+          {
+            "start": 4,
+            "length": 1,
+            "reading": "の"
+          },
+          {
+            "start": 6,
+            "length": 1,
+            "reading": "ふね"
+          },
+          {
+            "start": 9,
+            "length": 1,
+            "reading": "ひる"
+          },
+          {
+            "start": 15,
+            "length": 2,
+            "reading": "しゅっぱつ"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "みなと"
+            },
+            {
+              "start": 2,
+              "length": 1,
+              "reading": "で"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "みなと"
+            },
+            {
+              "start": 2,
+              "length": 1,
+              "reading": "もど"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "みなと"
+            },
+            {
+              "start": 2,
+              "length": 1,
+              "reading": "と"
+            }
+          ],
+          [
+            {
+              "start": 4,
+              "length": 1,
+              "reading": "ま"
+            }
+          ]
+        ]
       }
     },
     {
@@ -1872,6 +4979,64 @@
         "type": "word",
         "id": 1456,
         "surface": "自由に"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "こ"
+          },
+          {
+            "start": 6,
+            "length": 1,
+            "reading": "やす"
+          },
+          {
+            "start": 8,
+            "length": 2,
+            "reading": "じかん"
+          },
+          {
+            "start": 13,
+            "length": 2,
+            "reading": "じゆう"
+          },
+          {
+            "start": 18,
+            "length": 1,
+            "reading": "あそ"
+          }
+        ],
+        "options": [
+          [],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "いち"
+            },
+            {
+              "start": 1,
+              "length": 1,
+              "reading": "ど"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "かなら"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "す"
+            }
+          ]
+        ]
       }
     },
     {
@@ -1890,13 +5055,152 @@
       "explanation": "「入学」表示进入学校开始学习；进入高中学习，使用正确。",
       "distractors": {
         "1": "结束大学学习后工作，应说「大学を卒業して」；「入学」是开始入校学习。",
-        "4": "进入公司开始工作，应说「入社しました」；「入学」用于学校。",
-        "3": "因病住进医院，应说「入院しました」；「入学」不表示住院。"
+        "3": "因病住进医院，应说「入院しました」；「入学」不表示住院。",
+        "4": "进入公司开始工作，应说「入社しました」；「入学」用于学校。"
       },
       "target": {
         "type": "word",
         "id": 1319,
         "surface": "入学"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 3,
+            "length": 2,
+            "reading": "にゅうがく"
+          },
+          {
+            "start": 10,
+            "length": 1,
+            "reading": "つか"
+          },
+          {
+            "start": 12,
+            "length": 1,
+            "reading": "かた"
+          },
+          {
+            "start": 15,
+            "length": 1,
+            "reading": "ただ"
+          },
+          {
+            "start": 18,
+            "length": 1,
+            "reading": "ぶん"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "あに"
+            },
+            {
+              "start": 2,
+              "length": 2,
+              "reading": "だいがく"
+            },
+            {
+              "start": 5,
+              "length": 2,
+              "reading": "にゅうがく"
+            },
+            {
+              "start": 10,
+              "length": 2,
+              "reading": "しがつ"
+            },
+            {
+              "start": 14,
+              "length": 2,
+              "reading": "かいしゃ"
+            },
+            {
+              "start": 17,
+              "length": 1,
+              "reading": "はたら"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "いもうと"
+            },
+            {
+              "start": 2,
+              "length": 2,
+              "reading": "らいげつ"
+            },
+            {
+              "start": 7,
+              "length": 2,
+              "reading": "こうこう"
+            },
+            {
+              "start": 10,
+              "length": 2,
+              "reading": "にゅうがく"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "ちち"
+            },
+            {
+              "start": 2,
+              "length": 2,
+              "reading": "びょうき"
+            },
+            {
+              "start": 6,
+              "length": 1,
+              "reading": "いっ"
+            },
+            {
+              "start": 8,
+              "length": 1,
+              "reading": "げつ"
+            },
+            {
+              "start": 9,
+              "length": 2,
+              "reading": "にゅうがく"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "あね"
+            },
+            {
+              "start": 2,
+              "length": 2,
+              "reading": "しがつ"
+            },
+            {
+              "start": 6,
+              "length": 2,
+              "reading": "とうきょう"
+            },
+            {
+              "start": 9,
+              "length": 2,
+              "reading": "かいしゃ"
+            },
+            {
+              "start": 12,
+              "length": 2,
+              "reading": "にゅうがく"
+            }
+          ]
+        ]
       }
     },
     {
@@ -1922,6 +5226,120 @@
         "type": "word",
         "id": 1187,
         "surface": "見つかる"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 3,
+            "length": 1,
+            "reading": "み"
+          },
+          {
+            "start": 12,
+            "length": 1,
+            "reading": "つか"
+          },
+          {
+            "start": 14,
+            "length": 1,
+            "reading": "かた"
+          },
+          {
+            "start": 17,
+            "length": 1,
+            "reading": "ただ"
+          },
+          {
+            "start": 20,
+            "length": 1,
+            "reading": "ぶん"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "わたし"
+            },
+            {
+              "start": 2,
+              "length": 1,
+              "reading": "つくえ"
+            },
+            {
+              "start": 4,
+              "length": 1,
+              "reading": "した"
+            },
+            {
+              "start": 14,
+              "length": 1,
+              "reading": "み"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "おとうと"
+            },
+            {
+              "start": 12,
+              "length": 1,
+              "reading": "み"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "いえ"
+            },
+            {
+              "start": 2,
+              "length": 1,
+              "reading": "で"
+            },
+            {
+              "start": 7,
+              "length": 2,
+              "reading": "さいふ"
+            },
+            {
+              "start": 10,
+              "length": 1,
+              "reading": "わす"
+            },
+            {
+              "start": 16,
+              "length": 1,
+              "reading": "み"
+            }
+          ],
+          [
+            {
+              "start": 4,
+              "length": 2,
+              "reading": "さいふ"
+            },
+            {
+              "start": 8,
+              "length": 1,
+              "reading": "つくえ"
+            },
+            {
+              "start": 10,
+              "length": 1,
+              "reading": "した"
+            },
+            {
+              "start": 12,
+              "length": 1,
+              "reading": "み"
+            }
+          ]
+        ]
       }
     },
     {
@@ -1947,6 +5365,115 @@
         "type": "word",
         "id": 1369,
         "surface": "用事"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 3,
+            "length": 2,
+            "reading": "ようじ"
+          },
+          {
+            "start": 10,
+            "length": 1,
+            "reading": "つか"
+          },
+          {
+            "start": 12,
+            "length": 1,
+            "reading": "かた"
+          },
+          {
+            "start": 15,
+            "length": 1,
+            "reading": "ただ"
+          },
+          {
+            "start": 18,
+            "length": 1,
+            "reading": "ぶん"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "とも"
+            },
+            {
+              "start": 4,
+              "length": 2,
+              "reading": "えいが"
+            },
+            {
+              "start": 7,
+              "length": 1,
+              "reading": "み"
+            },
+            {
+              "start": 9,
+              "length": 1,
+              "reading": "い"
+            },
+            {
+              "start": 11,
+              "length": 2,
+              "reading": "ようじ"
+            }
+          ],
+          [
+            {
+              "start": 4,
+              "length": 2,
+              "reading": "ようじ"
+            },
+            {
+              "start": 12,
+              "length": 2,
+              "reading": "ごご"
+            },
+            {
+              "start": 16,
+              "length": 1,
+              "reading": "あ"
+            }
+          ],
+          [
+            {
+              "start": 4,
+              "length": 2,
+              "reading": "ようじ"
+            },
+            {
+              "start": 12,
+              "length": 1,
+              "reading": "あ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "らいしゅう"
+            },
+            {
+              "start": 3,
+              "length": 2,
+              "reading": "りょこう"
+            },
+            {
+              "start": 6,
+              "length": 1,
+              "reading": "い"
+            },
+            {
+              "start": 8,
+              "length": 2,
+              "reading": "ようじ"
+            }
+          ]
+        ]
       }
     },
     {
@@ -1972,6 +5499,145 @@
         "type": "word",
         "id": 1131,
         "surface": "運転"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 3,
+            "length": 2,
+            "reading": "うんてん"
+          },
+          {
+            "start": 10,
+            "length": 1,
+            "reading": "つか"
+          },
+          {
+            "start": 12,
+            "length": 1,
+            "reading": "かた"
+          },
+          {
+            "start": 15,
+            "length": 1,
+            "reading": "ただ"
+          },
+          {
+            "start": 18,
+            "length": 1,
+            "reading": "ぶん"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "からだ"
+            },
+            {
+              "start": 2,
+              "length": 1,
+              "reading": "うご"
+            },
+            {
+              "start": 8,
+              "length": 2,
+              "reading": "まいあさ"
+            },
+            {
+              "start": 10,
+              "length": 2,
+              "reading": "こうえん"
+            },
+            {
+              "start": 15,
+              "length": 2,
+              "reading": "うんてん"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "かいしゃ"
+            },
+            {
+              "start": 3,
+              "length": 2,
+              "reading": "にもつ"
+            },
+            {
+              "start": 6,
+              "length": 1,
+              "reading": "みせ"
+            },
+            {
+              "start": 10,
+              "length": 2,
+              "reading": "うんてん"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "ちち"
+            },
+            {
+              "start": 2,
+              "length": 2,
+              "reading": "しごと"
+            },
+            {
+              "start": 8,
+              "length": 1,
+              "reading": "くるま"
+            },
+            {
+              "start": 12,
+              "length": 2,
+              "reading": "うんてん"
+            },
+            {
+              "start": 18,
+              "length": 1,
+              "reading": "かえ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "おじ"
+            },
+            {
+              "start": 3,
+              "length": 1,
+              "reading": "えき"
+            },
+            {
+              "start": 5,
+              "length": 1,
+              "reading": "ちか"
+            },
+            {
+              "start": 8,
+              "length": 1,
+              "reading": "ちい"
+            },
+            {
+              "start": 11,
+              "length": 1,
+              "reading": "みせ"
+            },
+            {
+              "start": 15,
+              "length": 2,
+              "reading": "うんてん"
+            }
+          ]
+        ]
       }
     },
     {
@@ -1997,6 +5663,35 @@
         "type": "grammar",
         "id": 129,
         "surface": "～たがる"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "いもうと"
+          },
+          {
+            "start": 4,
+            "length": 1,
+            "reading": "くつ"
+          },
+          {
+            "start": 10,
+            "length": 1,
+            "reading": "い"
+          },
+          {
+            "start": 13,
+            "length": 1,
+            "reading": "いま"
+          },
+          {
+            "start": 15,
+            "length": 1,
+            "reading": "か"
+          }
+        ]
       }
     },
     {
@@ -2022,6 +5717,40 @@
         "type": "grammar",
         "id": 217,
         "surface": "～てあげる"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "みち"
+          },
+          {
+            "start": 2,
+            "length": 1,
+            "reading": "まよ"
+          },
+          {
+            "start": 5,
+            "length": 1,
+            "reading": "とも"
+          },
+          {
+            "start": 10,
+            "length": 1,
+            "reading": "わたし"
+          },
+          {
+            "start": 12,
+            "length": 1,
+            "reading": "えき"
+          },
+          {
+            "start": 15,
+            "length": 2,
+            "reading": "あんない"
+          }
+        ]
       }
     },
     {
@@ -2047,6 +5776,40 @@
         "type": "grammar",
         "id": 153,
         "surface": "～てはいけない"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "いま"
+          },
+          {
+            "start": 4,
+            "length": 2,
+            "reading": "びょういん"
+          },
+          {
+            "start": 9,
+            "length": 2,
+            "reading": "きょか"
+          },
+          {
+            "start": 12,
+            "length": 1,
+            "reading": "と"
+          },
+          {
+            "start": 16,
+            "length": 2,
+            "reading": "しゃしん"
+          },
+          {
+            "start": 19,
+            "length": 1,
+            "reading": "と"
+          }
+        ]
       }
     },
     {
@@ -2065,13 +5828,62 @@
       "explanation": "「～にくい」接动词的连用形；「走る」变为「走り」，组成「走りにくい」，表示难以跑动。",
       "distractors": {
         "1": "「走る」是辞书形，不能直接接「にくい」。",
-        "3": "「走った」是过去形，不能直接接「にくい」。",
-        "2": "「走って」是「て」形，不能直接接「にくい」。"
+        "2": "「走って」是「て」形，不能直接接「にくい」。",
+        "3": "「走った」是过去形，不能直接接「にくい」。"
       },
       "target": {
         "type": "grammar",
         "id": 161,
         "surface": "～にくい"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 1,
+            "length": 2,
+            "reading": "こうえん"
+          },
+          {
+            "start": 15,
+            "length": 1,
+            "reading": "はし"
+          },
+          {
+            "start": 27,
+            "length": 1,
+            "reading": "おも"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "はし"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "はし"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "はし"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "はし"
+            }
+          ]
+        ]
       }
     },
     {
@@ -2097,6 +5909,30 @@
         "type": "grammar",
         "id": 150,
         "surface": "～のに"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "かぎ"
+          },
+          {
+            "start": 2,
+            "length": 1,
+            "reading": "も"
+          },
+          {
+            "start": 11,
+            "length": 1,
+            "reading": "いえ"
+          },
+          {
+            "start": 13,
+            "length": 1,
+            "reading": "い"
+          }
+        ]
       }
     },
     {
@@ -2122,6 +5958,70 @@
         "type": "grammar",
         "id": 181,
         "surface": "～まま"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "みず"
+          },
+          {
+            "start": 5,
+            "length": 1,
+            "reading": "ひと"
+          },
+          {
+            "start": 6,
+            "length": 1,
+            "reading": "ばん"
+          },
+          {
+            "start": 7,
+            "length": 1,
+            "reading": "ね"
+          },
+          {
+            "start": 11,
+            "length": 1,
+            "reading": "あさ"
+          },
+          {
+            "start": 13,
+            "length": 1,
+            "reading": "なが"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "だ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "と"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "と"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "と"
+            }
+          ]
+        ]
       }
     },
     {
@@ -2147,6 +6047,70 @@
         "type": "grammar",
         "id": 164,
         "surface": "～うちに"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 2,
+            "reading": "えいが"
+          },
+          {
+            "start": 5,
+            "length": 2,
+            "reading": "とちゅう"
+          },
+          {
+            "start": 13,
+            "length": 1,
+            "reading": "そと"
+          },
+          {
+            "start": 15,
+            "length": 1,
+            "reading": "くら"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "み"
+            },
+            {
+              "start": 2,
+              "length": 1,
+              "reading": "まえ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "み"
+            },
+            {
+              "start": 1,
+              "length": 1,
+              "reading": "お"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "み"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "み"
+            }
+          ]
+        ]
       }
     },
     {
@@ -2172,6 +6136,65 @@
         "type": "grammar",
         "id": 188,
         "surface": "～たら"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 2,
+            "reading": "きのう"
+          },
+          {
+            "start": 3,
+            "length": 1,
+            "reading": "いえ"
+          },
+          {
+            "start": 9,
+            "length": 1,
+            "reading": "ちち"
+          },
+          {
+            "start": 11,
+            "length": 2,
+            "reading": "てがみ"
+          },
+          {
+            "start": 14,
+            "length": 1,
+            "reading": "み"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "かえ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "かえ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "かえ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "かえ"
+            }
+          ]
+        ]
       }
     },
     {
@@ -2190,13 +6213,89 @@
       "explanation": "学生尊敬地询问老师是否在学校，「いる」的尊敬语是「いらっしゃる」，礼貌形为「いらっしゃいます」。",
       "distractors": {
         "1": "「ございます」是「ある」的礼貌表达，不能用来表示老师在某处。",
-        "4": "「召し上がります」是吃、喝的尊敬语，不表示在某处。",
-        "3": "「いただきます」表示得到、吃喝的自谦表达，不表示老师在学校。"
+        "3": "「いただきます」表示得到、吃喝的自谦表达，不表示老师在学校。",
+        "4": "「召し上がります」是吃、喝的尊敬语，不表示在某处。"
       },
       "target": {
         "type": "grammar",
         "id": 231,
         "surface": "いらっしゃる"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 1,
+            "length": 2,
+            "reading": "がっこう"
+          },
+          {
+            "start": 6,
+            "length": 2,
+            "reading": "でんわ"
+          },
+          {
+            "start": 11,
+            "length": 2,
+            "reading": "がくせい"
+          },
+          {
+            "start": 14,
+            "length": 2,
+            "reading": "さとう"
+          },
+          {
+            "start": 16,
+            "length": 2,
+            "reading": "せんせい"
+          },
+          {
+            "start": 20,
+            "length": 1,
+            "reading": "いま"
+          },
+          {
+            "start": 22,
+            "length": 2,
+            "reading": "がっこう"
+          },
+          {
+            "start": 33,
+            "length": 2,
+            "reading": "がっこう"
+          },
+          {
+            "start": 36,
+            "length": 1,
+            "reading": "ひと"
+          },
+          {
+            "start": 41,
+            "length": 1,
+            "reading": "すこ"
+          },
+          {
+            "start": 45,
+            "length": 1,
+            "reading": "ま"
+          }
+        ],
+        "options": [
+          [],
+          [],
+          [],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "め"
+            },
+            {
+              "start": 2,
+              "length": 1,
+              "reading": "あ"
+            }
+          ]
+        ]
       }
     },
     {
@@ -2215,13 +6314,42 @@
       "explanation": "已经等了二十分钟，公交车仍没来；「なかなか～ない」表示期待的事迟迟没有发生。",
       "distractors": {
         "2": "「だんだん」表示程度逐渐变化；这里是等候的这辆车仍未到达，不是逐渐变化。",
-        "4": "「はっきり」表示清楚、明确，不能修饰这里车辆未到达的情况。",
-        "3": "「どんどん」表示接连不断或迅速推进，不表示迟迟没来。"
+        "3": "「どんどん」表示接连不断或迅速推进，不表示迟迟没来。",
+        "4": "「はっきり」表示清楚、明确，不能修饰这里车辆未到达的情况。"
       },
       "target": {
         "type": "word",
         "id": 1102,
         "surface": "なかなか"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 3,
+            "length": 1,
+            "reading": "てい"
+          },
+          {
+            "start": 12,
+            "length": 1,
+            "reading": "に"
+          },
+          {
+            "start": 13,
+            "length": 2,
+            "reading": "じゅっぷん"
+          },
+          {
+            "start": 17,
+            "length": 1,
+            "reading": "ま"
+          },
+          {
+            "start": 38,
+            "length": 1,
+            "reading": "こ"
+          }
+        ]
       }
     },
     {
@@ -2247,6 +6375,25 @@
         "type": "grammar",
         "id": 212,
         "surface": "～ことができる"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 2,
+            "reading": "よやく"
+          },
+          {
+            "start": 10,
+            "length": 2,
+            "reading": "こうじょう"
+          },
+          {
+            "start": 13,
+            "length": 2,
+            "reading": "けんがく"
+          }
+        ]
       }
     },
     {
@@ -2272,6 +6419,52 @@
         "type": "grammar",
         "id": 206,
         "surface": "～によると／によれば"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 2,
+            "reading": "しんぶん"
+          },
+          {
+            "start": 6,
+            "length": 2,
+            "reading": "らいげつ"
+          },
+          {
+            "start": 9,
+            "length": 1,
+            "reading": "えき"
+          },
+          {
+            "start": 11,
+            "length": 1,
+            "reading": "ちか"
+          },
+          {
+            "start": 14,
+            "length": 1,
+            "reading": "あたら"
+          },
+          {
+            "start": 17,
+            "length": 1,
+            "reading": "みせ"
+          }
+        ],
+        "options": [
+          [],
+          [],
+          [],
+          [
+            {
+              "start": 1,
+              "length": 1,
+              "reading": "たい"
+            }
+          ]
+        ]
       }
     },
     {
@@ -2297,6 +6490,60 @@
         "type": "grammar",
         "id": 195,
         "surface": "～ため（に）"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 1,
+            "length": 1,
+            "reading": "みせ"
+          },
+          {
+            "start": 5,
+            "length": 1,
+            "reading": "きゃく"
+          },
+          {
+            "start": 10,
+            "length": 1,
+            "reading": "ちい"
+          },
+          {
+            "start": 14,
+            "length": 1,
+            "reading": "はこ"
+          },
+          {
+            "start": 17,
+            "length": 1,
+            "reading": "なに"
+          },
+          {
+            "start": 20,
+            "length": 1,
+            "reading": "つか"
+          },
+          {
+            "start": 28,
+            "length": 2,
+            "reading": "てんいん"
+          },
+          {
+            "start": 36,
+            "length": 1,
+            "reading": "も"
+          },
+          {
+            "start": 39,
+            "length": 1,
+            "reading": "かえ"
+          },
+          {
+            "start": 45,
+            "length": 1,
+            "reading": "はこ"
+          }
+        ]
       }
     },
     {
@@ -2328,7 +6575,45 @@
         3,
         1,
         4
-      ]
+      ],
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "おとうと"
+          },
+          {
+            "start": 16,
+            "length": 1,
+            "reading": "おこ"
+          }
+        ],
+        "options": [
+          [],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "わたし"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "たいせつ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "た"
+            }
+          ]
+        ]
+      }
     },
     {
       "id": "n4-g-trial2-15",
@@ -2359,7 +6644,45 @@
         3,
         4,
         1
-      ]
+      ],
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "わたし"
+          },
+          {
+            "start": 15,
+            "length": 2,
+            "reading": "あんしん"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "あか"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "でんき"
+            }
+          ],
+          [],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "へや"
+            }
+          ]
+        ]
+      }
     },
     {
       "id": "n4-g-trial2-16",
@@ -2390,7 +6713,43 @@
         3,
         1,
         4
-      ]
+      ],
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 2,
+            "reading": "ゆうがた"
+          },
+          {
+            "start": 3,
+            "length": 1,
+            "reading": "そら"
+          },
+          {
+            "start": 17,
+            "length": 1,
+            "reading": "いえ"
+          },
+          {
+            "start": 19,
+            "length": 1,
+            "reading": "かえ"
+          }
+        ],
+        "options": [
+          [],
+          [],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "くら"
+            }
+          ],
+          []
+        ]
+      }
     },
     {
       "id": "n4-g-trial2-17",
@@ -2421,7 +6780,66 @@
         4,
         2,
         1
-      ]
+      ],
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 2,
+            "reading": "りょうり"
+          },
+          {
+            "start": 3,
+            "length": 1,
+            "reading": "はじ"
+          },
+          {
+            "start": 7,
+            "length": 1,
+            "reading": "ひと"
+          },
+          {
+            "start": 23,
+            "length": 2,
+            "reading": "あんしん"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "わ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "つく"
+            },
+            {
+              "start": 2,
+              "length": 1,
+              "reading": "かた"
+            }
+          ],
+          [
+            {
+              "start": 2,
+              "length": 1,
+              "reading": "ほん"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "りょうり"
+            }
+          ]
+        ]
+      }
     },
     {
       "id": "n4-g-trial2-18",
@@ -2490,9 +6908,9 @@
       "answer": 3,
       "explanation": "要看信的开头作者自己搬家，以及后面的「とても助かりました」；朋友替作者搬行李，作者是受益者，用「運んでくれた」。",
       "distractors": {
+        "1": "「運んでもらった」表示朋友接受了别人的搬运帮助；这里搬东西的是朋友，受益的是作者。",
         "2": "「運んであげた」从给别人帮助的视点叙述；作者正在叙述朋友为自己做的事，应使用「くれた」。",
-        "4": "「運んでいただいた」是接受他人帮助的自谦表达；题干主语是朋友，会把接受帮助的人写反。",
-        "1": "「運んでもらった」表示朋友接受了别人的搬运帮助；这里搬东西的是朋友，受益的是作者。"
+        "4": "「運んでいただいた」是接受他人帮助的自谦表达；题干主语是朋友，会把接受帮助的人写反。"
       },
       "target": {
         "type": "grammar",
@@ -2550,6 +6968,40 @@
         "type": "word",
         "id": 977,
         "surface": "家具"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "あたら"
+          },
+          {
+            "start": 3,
+            "length": 2,
+            "reading": "へや"
+          },
+          {
+            "start": 6,
+            "length": 1,
+            "reading": "お"
+          },
+          {
+            "start": 16,
+            "length": 1,
+            "reading": "ちち"
+          },
+          {
+            "start": 18,
+            "length": 2,
+            "reading": "いっしょ"
+          },
+          {
+            "start": 21,
+            "length": 1,
+            "reading": "えら"
+          }
+        ]
       }
     },
     {
@@ -2568,13 +7020,22 @@
       "explanation": "「深い」读作「ふかい」，表示深。",
       "distractors": {
         "2": "「ひくい」是「低い」的读音，表示低。",
-        "4": "「たかい」是「高い」的读音，表示高。",
-        "3": "「せまい」是「狭い」的读音，表示狭窄。"
+        "3": "「せまい」是「狭い」的读音，表示狭窄。",
+        "4": "「たかい」是「高い」的读音，表示高。"
       },
       "target": {
         "type": "word",
         "id": 1252,
         "surface": "深い"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 3,
+            "length": 1,
+            "reading": "かわ"
+          }
+        ]
       }
     },
     {
@@ -2600,6 +7061,30 @@
         "type": "word",
         "id": 1229,
         "surface": "失礼"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 2,
+            "reading": "せんせい"
+          },
+          {
+            "start": 3,
+            "length": 2,
+            "reading": "へや"
+          },
+          {
+            "start": 6,
+            "length": 1,
+            "reading": "はい"
+          },
+          {
+            "start": 23,
+            "length": 1,
+            "reading": "い"
+          }
+        ]
       }
     },
     {
@@ -2625,6 +7110,20 @@
         "type": "word",
         "id": 1327,
         "surface": "比べました"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "ふた"
+          },
+          {
+            "start": 9,
+            "length": 1,
+            "reading": "おお"
+          }
+        ]
       }
     },
     {
@@ -2650,6 +7149,35 @@
         "type": "word",
         "id": 15,
         "surface": "警察"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 2,
+            "reading": "こうばん"
+          },
+          {
+            "start": 9,
+            "length": 1,
+            "reading": "かん"
+          },
+          {
+            "start": 12,
+            "length": 1,
+            "reading": "えき"
+          },
+          {
+            "start": 16,
+            "length": 1,
+            "reading": "みち"
+          },
+          {
+            "start": 18,
+            "length": 1,
+            "reading": "き"
+          }
+        ]
       }
     },
     {
@@ -2668,13 +7196,27 @@
       "explanation": "「伝えて」读作「つたえて」，是「伝える」的变化形式，表示传达消息。",
       "distractors": {
         "1": "「おしえて」是「教える」的变化形式，表示教、告诉。",
-        "3": "「こたえて」是「答える」的变化形式，表示回答。",
-        "2": "「かんがえて」是「考える」的变化形式，表示思考。"
+        "2": "「かんがえて」是「考える」的变化形式，表示思考。",
+        "3": "「こたえて」是「答える」的变化形式，表示回答。"
       },
       "target": {
         "type": "word",
         "id": 1038,
         "surface": "伝えて"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 2,
+            "reading": "でんわ"
+          },
+          {
+            "start": 9,
+            "length": 2,
+            "reading": "よてい"
+          }
+        ]
       }
     },
     {
@@ -2700,6 +7242,30 @@
         "type": "word",
         "id": 1153,
         "surface": "関係"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "ふた"
+          },
+          {
+            "start": 3,
+            "length": 1,
+            "reading": "はなし"
+          },
+          {
+            "start": 6,
+            "length": 1,
+            "reading": "なに"
+          },
+          {
+            "start": 18,
+            "length": 1,
+            "reading": "おも"
+          }
+        ]
       }
     },
     {
@@ -2717,14 +7283,43 @@
       "answer": 4,
       "explanation": "「よてい」写作「予定」，表示事先定下的安排。",
       "distractors": {
+        "1": "「定」与「走」下部相近，但这里应写宝盖头的「定」。",
         "2": "「矛」比「予」多了一撇；这里应使用「予」。",
-        "3": "「予」与「定」都被换成了形近字，「矛走」不是这个词。",
-        "1": "「定」与「走」下部相近，但这里应写宝盖头的「定」。"
+        "3": "「予」与「定」都被换成了形近字，「矛走」不是这个词。"
       },
       "target": {
         "type": "word",
         "id": 1366,
         "surface": "予定"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 2,
+            "reading": "りょこう"
+          },
+          {
+            "start": 3,
+            "length": 1,
+            "reading": "ひ"
+          },
+          {
+            "start": 5,
+            "length": 1,
+            "reading": "き"
+          },
+          {
+            "start": 11,
+            "length": 2,
+            "reading": "かいしゃ"
+          },
+          {
+            "start": 23,
+            "length": 1,
+            "reading": "し"
+          }
+        ]
       }
     },
     {
@@ -2750,6 +7345,35 @@
         "type": "word",
         "id": 174,
         "surface": "会場"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "あき"
+          },
+          {
+            "start": 2,
+            "length": 2,
+            "reading": "おんがく"
+          },
+          {
+            "start": 4,
+            "length": 1,
+            "reading": "かい"
+          },
+          {
+            "start": 7,
+            "length": 1,
+            "reading": "まち"
+          },
+          {
+            "start": 25,
+            "length": 1,
+            "reading": "おこな"
+          }
+        ]
       }
     },
     {
@@ -2768,13 +7392,37 @@
       "explanation": "事情发生的缘由写作「原因」，读作「げんいん」。",
       "distractors": {
         "2": "「厚」与「原」都有厂字头，但这里应使用「原」。",
-        "4": "「原」与「因」都被换成了形近字，「厚困」不是这个词。",
-        "3": "「困」与「因」都有外框，内部应写「大」，不能写「木」。"
+        "3": "「困」与「因」都有外框，内部应写「大」，不能写「木」。",
+        "4": "「原」与「因」都被换成了形近字，「厚困」不是这个词。"
       },
       "target": {
         "type": "word",
         "id": 20,
         "surface": "原因"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 2,
+            "reading": "でんき"
+          },
+          {
+            "start": 3,
+            "length": 1,
+            "reading": "き"
+          },
+          {
+            "start": 16,
+            "length": 1,
+            "reading": "ちち"
+          },
+          {
+            "start": 23,
+            "length": 1,
+            "reading": "しら"
+          }
+        ]
       }
     },
     {
@@ -2792,14 +7440,28 @@
       "answer": 3,
       "explanation": "一年中的时节写作「季節」，读作「きせつ」。",
       "distractors": {
+        "1": "「即」与「節」下部相近，但这里应写带竹字头的「節」。",
         "2": "「李」与「季」下部都是「子」，这里上部应是「禾」。",
-        "4": "「季」与「節」都被换成了形近字，「李即」不是这个词。",
-        "1": "「即」与「節」下部相近，但这里应写带竹字头的「節」。"
+        "4": "「季」与「節」都被换成了形近字，「李即」不是这个词。"
       },
       "target": {
         "type": "word",
         "id": 985,
         "surface": "季節"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 2,
+            "reading": "にほん"
+          },
+          {
+            "start": 4,
+            "length": 1,
+            "reading": "よっ"
+          }
+        ]
       }
     },
     {
@@ -2825,6 +7487,30 @@
         "type": "word",
         "id": 1157,
         "surface": "希望"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "あたら"
+          },
+          {
+            "start": 3,
+            "length": 1,
+            "reading": "いえ"
+          },
+          {
+            "start": 9,
+            "length": 2,
+            "reading": "かぞく"
+          },
+          {
+            "start": 20,
+            "length": 1,
+            "reading": "き"
+          }
+        ]
       }
     },
     {
@@ -2850,6 +7536,75 @@
         "type": "word",
         "id": 1482,
         "surface": "大勢"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "まつ"
+          },
+          {
+            "start": 9,
+            "length": 1,
+            "reading": "ひと"
+          },
+          {
+            "start": 11,
+            "length": 1,
+            "reading": "き"
+          },
+          {
+            "start": 14,
+            "length": 1,
+            "reading": "なが"
+          },
+          {
+            "start": 16,
+            "length": 1,
+            "reading": "れつ"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "ひとり"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "すこ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "に"
+            },
+            {
+              "start": 2,
+              "length": 1,
+              "reading": "さん"
+            },
+            {
+              "start": 3,
+              "length": 1,
+              "reading": "にん"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "おおぜい"
+            }
+          ]
+        ]
       }
     },
     {
@@ -2875,6 +7630,70 @@
         "type": "word",
         "id": 1155,
         "surface": "危険"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "みず"
+          },
+          {
+            "start": 2,
+            "length": 1,
+            "reading": "みち"
+          },
+          {
+            "start": 5,
+            "length": 1,
+            "reading": "き"
+          },
+          {
+            "start": 12,
+            "length": 1,
+            "reading": "かわ"
+          },
+          {
+            "start": 14,
+            "length": 1,
+            "reading": "ある"
+          },
+          {
+            "start": 17,
+            "length": 1,
+            "reading": "わた"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "べんり"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "きけん"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "かんたん"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "あんぜん"
+            }
+          ]
+        ]
       }
     },
     {
@@ -2900,6 +7719,70 @@
         "type": "word",
         "id": 168,
         "surface": "足りる"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 2,
+            "reading": "えんぴつ"
+          },
+          {
+            "start": 2,
+            "length": 1,
+            "reading": "さん"
+          },
+          {
+            "start": 3,
+            "length": 1,
+            "reading": "ぼん"
+          },
+          {
+            "start": 7,
+            "length": 1,
+            "reading": "ご"
+          },
+          {
+            "start": 8,
+            "length": 1,
+            "reading": "にん"
+          },
+          {
+            "start": 10,
+            "length": 1,
+            "reading": "つか"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "か"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "た"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "ふ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "へ"
+            }
+          ]
+        ]
       }
     },
     {
@@ -2925,6 +7808,50 @@
         "type": "word",
         "id": 1533,
         "surface": "減る"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 2,
+            "reading": "まいにち"
+          },
+          {
+            "start": 2,
+            "length": 1,
+            "reading": "つか"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "ふ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "とど"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "へ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "あつ"
+            }
+          ]
+        ]
       }
     },
     {
@@ -2950,6 +7877,55 @@
         "type": "word",
         "id": 1457,
         "surface": "謝る"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "おとうと"
+          },
+          {
+            "start": 2,
+            "length": 1,
+            "reading": "ほん"
+          },
+          {
+            "start": 19,
+            "length": 1,
+            "reading": "おとうと"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "たの"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "おこ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "か"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "あやま"
+            }
+          ]
+        ]
       }
     },
     {
@@ -2975,6 +7951,70 @@
         "type": "word",
         "id": 1441,
         "surface": "景色"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "やま"
+          },
+          {
+            "start": 2,
+            "length": 1,
+            "reading": "うえ"
+          },
+          {
+            "start": 5,
+            "length": 1,
+            "reading": "み"
+          },
+          {
+            "start": 8,
+            "length": 1,
+            "reading": "まち"
+          },
+          {
+            "start": 15,
+            "length": 2,
+            "reading": "しゃしん"
+          },
+          {
+            "start": 18,
+            "length": 1,
+            "reading": "と"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "けしき"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "ほうほう"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "けっか"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "ほうこう"
+            }
+          ]
+        ]
       }
     },
     {
@@ -3000,6 +8040,70 @@
         "type": "word",
         "id": 1324,
         "surface": "泊まる"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "ふね"
+          },
+          {
+            "start": 2,
+            "length": 1,
+            "reading": "あさ"
+          },
+          {
+            "start": 4,
+            "length": 1,
+            "reading": "で"
+          },
+          {
+            "start": 9,
+            "length": 2,
+            "reading": "りょかん"
+          },
+          {
+            "start": 12,
+            "length": 1,
+            "reading": "ひと"
+          },
+          {
+            "start": 13,
+            "length": 1,
+            "reading": "ばん"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "あつ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "はたら"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "と"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "す"
+            }
+          ]
+        ]
       }
     },
     {
@@ -3025,6 +8129,65 @@
         "type": "word",
         "id": 1208,
         "surface": "参加"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "はる"
+          },
+          {
+            "start": 1,
+            "length": 1,
+            "reading": "まつ"
+          },
+          {
+            "start": 5,
+            "length": 2,
+            "reading": "かぞく"
+          },
+          {
+            "start": 8,
+            "length": 1,
+            "reading": "みせ"
+          },
+          {
+            "start": 10,
+            "length": 1,
+            "reading": "だ"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "けんがく"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "しゅつじょう"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "しゅっせき"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "さんか"
+            }
+          ]
+        ]
       }
     },
     {
@@ -3050,6 +8213,54 @@
         "type": "word",
         "id": 1171,
         "surface": "驚く"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "きゅう"
+          },
+          {
+            "start": 2,
+            "length": 2,
+            "reading": "なまえ"
+          },
+          {
+            "start": 5,
+            "length": 1,
+            "reading": "よ"
+          },
+          {
+            "start": 17,
+            "length": 1,
+            "reading": "おどろ"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "あんしん"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "こま"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "おこ"
+            }
+          ],
+          []
+        ]
       }
     },
     {
@@ -3075,6 +8286,75 @@
         "type": "word",
         "id": 993,
         "surface": "厳しい"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "ゆき"
+          },
+          {
+            "start": 2,
+            "length": 1,
+            "reading": "おお"
+          },
+          {
+            "start": 5,
+            "length": 1,
+            "reading": "くるま"
+          },
+          {
+            "start": 7,
+            "length": 1,
+            "reading": "とお"
+          },
+          {
+            "start": 16,
+            "length": 1,
+            "reading": "やま"
+          },
+          {
+            "start": 18,
+            "length": 1,
+            "reading": "ふゆ"
+          },
+          {
+            "start": 22,
+            "length": 1,
+            "reading": "きび"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 3,
+              "length": 1,
+              "reading": "しず"
+            }
+          ],
+          [
+            {
+              "start": 3,
+              "length": 1,
+              "reading": "らく"
+            }
+          ],
+          [
+            {
+              "start": 3,
+              "length": 2,
+              "reading": "たいへん"
+            }
+          ],
+          [
+            {
+              "start": 3,
+              "length": 2,
+              "reading": "べんり"
+            }
+          ]
+        ]
       }
     },
     {
@@ -3100,6 +8380,90 @@
         "type": "word",
         "id": 1364,
         "surface": "戻る"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "みせ"
+          },
+          {
+            "start": 2,
+            "length": 2,
+            "reading": "さいふ"
+          },
+          {
+            "start": 5,
+            "length": 1,
+            "reading": "わす"
+          },
+          {
+            "start": 15,
+            "length": 1,
+            "reading": "もど"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 2,
+              "length": 1,
+              "reading": "みせ"
+            },
+            {
+              "start": 4,
+              "length": 1,
+              "reading": "で"
+            }
+          ],
+          [
+            {
+              "start": 2,
+              "length": 1,
+              "reading": "みせ"
+            },
+            {
+              "start": 4,
+              "length": 1,
+              "reading": "とお"
+            }
+          ],
+          [
+            {
+              "start": 2,
+              "length": 2,
+              "reading": "いちど"
+            },
+            {
+              "start": 6,
+              "length": 1,
+              "reading": "みせ"
+            },
+            {
+              "start": 8,
+              "length": 1,
+              "reading": "い"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "はじ"
+            },
+            {
+              "start": 5,
+              "length": 1,
+              "reading": "みせ"
+            },
+            {
+              "start": 7,
+              "length": 1,
+              "reading": "い"
+            }
+          ]
+        ]
       }
     },
     {
@@ -3125,6 +8489,100 @@
         "type": "word",
         "id": 1377,
         "surface": "両方"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "あか"
+          },
+          {
+            "start": 2,
+            "length": 1,
+            "reading": "くつ"
+          },
+          {
+            "start": 4,
+            "length": 1,
+            "reading": "しろ"
+          },
+          {
+            "start": 6,
+            "length": 1,
+            "reading": "くつ"
+          },
+          {
+            "start": 8,
+            "length": 1,
+            "reading": "ため"
+          },
+          {
+            "start": 14,
+            "length": 2,
+            "reading": "りょうほう"
+          },
+          {
+            "start": 18,
+            "length": 1,
+            "reading": "か"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "あか"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "ふた"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "しろ"
+            },
+            {
+              "start": 2,
+              "length": 1,
+              "reading": "くつ"
+            },
+            {
+              "start": 4,
+              "length": 1,
+              "reading": "に"
+            },
+            {
+              "start": 5,
+              "length": 1,
+              "reading": "そく"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "あか"
+            },
+            {
+              "start": 2,
+              "length": 1,
+              "reading": "くつ"
+            },
+            {
+              "start": 4,
+              "length": 1,
+              "reading": "さき"
+            }
+          ]
+        ]
       }
     },
     {
@@ -3150,6 +8608,170 @@
         "type": "word",
         "id": 1150,
         "surface": "間に合う"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 3,
+            "length": 1,
+            "reading": "ま"
+          },
+          {
+            "start": 5,
+            "length": 1,
+            "reading": "あ"
+          },
+          {
+            "start": 11,
+            "length": 1,
+            "reading": "つか"
+          },
+          {
+            "start": 13,
+            "length": 1,
+            "reading": "かた"
+          },
+          {
+            "start": 15,
+            "length": 1,
+            "reading": "ただ"
+          },
+          {
+            "start": 18,
+            "length": 1,
+            "reading": "ぶん"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 2,
+              "length": 1,
+              "reading": "はこ"
+            },
+            {
+              "start": 6,
+              "length": 1,
+              "reading": "おお"
+            },
+            {
+              "start": 9,
+              "length": 1,
+              "reading": "ほん"
+            },
+            {
+              "start": 11,
+              "length": 1,
+              "reading": "さん"
+            },
+            {
+              "start": 12,
+              "length": 1,
+              "reading": "さつ"
+            },
+            {
+              "start": 13,
+              "length": 1,
+              "reading": "ま"
+            },
+            {
+              "start": 15,
+              "length": 1,
+              "reading": "あ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "いえ"
+            },
+            {
+              "start": 2,
+              "length": 1,
+              "reading": "はや"
+            },
+            {
+              "start": 4,
+              "length": 1,
+              "reading": "で"
+            },
+            {
+              "start": 9,
+              "length": 2,
+              "reading": "じゅぎょう"
+            },
+            {
+              "start": 12,
+              "length": 1,
+              "reading": "ま"
+            },
+            {
+              "start": 14,
+              "length": 1,
+              "reading": "あ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "あたら"
+            },
+            {
+              "start": 3,
+              "length": 2,
+              "reading": "ぼうし"
+            },
+            {
+              "start": 7,
+              "length": 1,
+              "reading": "わたし"
+            },
+            {
+              "start": 13,
+              "length": 1,
+              "reading": "ま"
+            },
+            {
+              "start": 15,
+              "length": 1,
+              "reading": "あ"
+            }
+          ],
+          [
+            {
+              "start": 2,
+              "length": 1,
+              "reading": "くつ"
+            },
+            {
+              "start": 4,
+              "length": 1,
+              "reading": "ちい"
+            },
+            {
+              "start": 10,
+              "length": 1,
+              "reading": "わたし"
+            },
+            {
+              "start": 12,
+              "length": 1,
+              "reading": "あし"
+            },
+            {
+              "start": 14,
+              "length": 1,
+              "reading": "ま"
+            },
+            {
+              "start": 16,
+              "length": 1,
+              "reading": "あ"
+            }
+          ]
+        ]
       }
     },
     {
@@ -3168,13 +8790,162 @@
       "explanation": "「乗り換える」表示从一种交通工具改乘另一种；从公交车换到电车，使用正确。",
       "distractors": {
         "1": "此前是步行，到站后上车应说「電車に乗りました」；没有从另一辆车换乘。",
-        "4": "错过应下车的站，应说「乗り過ごしてしまいました」；「乗り換える」不是坐过站。",
-        "2": "从车上到站台是下车，应说「降りました」；站台不是换乘的交通工具。"
+        "2": "从车上到站台是下车，应说「降りました」；站台不是换乘的交通工具。",
+        "4": "错过应下车的站，应说「乗り過ごしてしまいました」；「乗り換える」不是坐过站。"
       },
       "target": {
         "type": "word",
         "id": 171,
         "surface": "乗り換える"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 3,
+            "length": 1,
+            "reading": "の"
+          },
+          {
+            "start": 5,
+            "length": 1,
+            "reading": "か"
+          },
+          {
+            "start": 13,
+            "length": 1,
+            "reading": "つか"
+          },
+          {
+            "start": 15,
+            "length": 1,
+            "reading": "かた"
+          },
+          {
+            "start": 18,
+            "length": 1,
+            "reading": "ただ"
+          },
+          {
+            "start": 21,
+            "length": 1,
+            "reading": "ぶん"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "いえ"
+            },
+            {
+              "start": 3,
+              "length": 1,
+              "reading": "えき"
+            },
+            {
+              "start": 6,
+              "length": 1,
+              "reading": "ある"
+            },
+            {
+              "start": 9,
+              "length": 1,
+              "reading": "い"
+            },
+            {
+              "start": 16,
+              "length": 2,
+              "reading": "でんしゃ"
+            },
+            {
+              "start": 19,
+              "length": 1,
+              "reading": "の"
+            },
+            {
+              "start": 21,
+              "length": 1,
+              "reading": "か"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "えき"
+            },
+            {
+              "start": 2,
+              "length": 1,
+              "reading": "つ"
+            },
+            {
+              "start": 8,
+              "length": 2,
+              "reading": "でんしゃ"
+            },
+            {
+              "start": 16,
+              "length": 1,
+              "reading": "の"
+            },
+            {
+              "start": 18,
+              "length": 1,
+              "reading": "か"
+            }
+          ],
+          [
+            {
+              "start": 7,
+              "length": 2,
+              "reading": "でんしゃ"
+            },
+            {
+              "start": 10,
+              "length": 1,
+              "reading": "の"
+            },
+            {
+              "start": 12,
+              "length": 1,
+              "reading": "か"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "ほん"
+            },
+            {
+              "start": 2,
+              "length": 1,
+              "reading": "よ"
+            },
+            {
+              "start": 9,
+              "length": 1,
+              "reading": "お"
+            },
+            {
+              "start": 12,
+              "length": 1,
+              "reading": "えき"
+            },
+            {
+              "start": 14,
+              "length": 1,
+              "reading": "の"
+            },
+            {
+              "start": 16,
+              "length": 1,
+              "reading": "か"
+            }
+          ]
+        ]
       }
     },
     {
@@ -3193,13 +8964,142 @@
       "explanation": "「手伝う」表示帮别人一起做事；帮助忙碌的母亲准备晚饭，使用正确。",
       "distractors": {
         "1": "救落水的孩子应说「助けました」；「手伝う」是协助别人正在做的事情，不表示救助。",
-        "4": "为不认识路的朋友带路，应说「案内しました」；「手伝う」不表示把人带到某个地点。",
-        "3": "向弟弟解释单词的意思，应说「教えました」；「手伝う」不表示教授内容。"
+        "3": "向弟弟解释单词的意思，应说「教えました」；「手伝う」不表示教授内容。",
+        "4": "为不认识路的朋友带路，应说「案内しました」；「手伝う」不表示把人带到某个地点。"
       },
       "target": {
         "type": "word",
         "id": 91,
         "surface": "手伝う"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 3,
+            "length": 2,
+            "reading": "てつだ"
+          },
+          {
+            "start": 11,
+            "length": 1,
+            "reading": "つか"
+          },
+          {
+            "start": 13,
+            "length": 1,
+            "reading": "かた"
+          },
+          {
+            "start": 16,
+            "length": 1,
+            "reading": "ただ"
+          },
+          {
+            "start": 19,
+            "length": 1,
+            "reading": "ぶん"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "かわ"
+            },
+            {
+              "start": 2,
+              "length": 1,
+              "reading": "お"
+            },
+            {
+              "start": 5,
+              "length": 1,
+              "reading": "こ"
+            },
+            {
+              "start": 10,
+              "length": 2,
+              "reading": "てつだ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "はは"
+            },
+            {
+              "start": 10,
+              "length": 2,
+              "reading": "ゆうしょく"
+            },
+            {
+              "start": 13,
+              "length": 2,
+              "reading": "じゅんび"
+            },
+            {
+              "start": 16,
+              "length": 2,
+              "reading": "てつだ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "えいご"
+            },
+            {
+              "start": 3,
+              "length": 2,
+              "reading": "たんご"
+            },
+            {
+              "start": 6,
+              "length": 2,
+              "reading": "いみ"
+            },
+            {
+              "start": 10,
+              "length": 1,
+              "reading": "おとうと"
+            },
+            {
+              "start": 12,
+              "length": 2,
+              "reading": "てつだ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "みち"
+            },
+            {
+              "start": 2,
+              "length": 1,
+              "reading": "わ"
+            },
+            {
+              "start": 7,
+              "length": 1,
+              "reading": "とも"
+            },
+            {
+              "start": 12,
+              "length": 1,
+              "reading": "えき"
+            },
+            {
+              "start": 15,
+              "length": 2,
+              "reading": "てつだ"
+            }
+          ]
+        ]
       }
     },
     {
@@ -3225,6 +9125,140 @@
         "type": "word",
         "id": 143,
         "surface": "閉まる"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 3,
+            "length": 1,
+            "reading": "し"
+          },
+          {
+            "start": 10,
+            "length": 1,
+            "reading": "つか"
+          },
+          {
+            "start": 12,
+            "length": 1,
+            "reading": "かた"
+          },
+          {
+            "start": 14,
+            "length": 1,
+            "reading": "ただ"
+          },
+          {
+            "start": 17,
+            "length": 1,
+            "reading": "ぶん"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 2,
+              "length": 1,
+              "reading": "みせ"
+            },
+            {
+              "start": 5,
+              "length": 2,
+              "reading": "まいばん"
+            },
+            {
+              "start": 7,
+              "length": 1,
+              "reading": "く"
+            },
+            {
+              "start": 8,
+              "length": 1,
+              "reading": "じ"
+            },
+            {
+              "start": 10,
+              "length": 1,
+              "reading": "し"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "へや"
+            },
+            {
+              "start": 3,
+              "length": 2,
+              "reading": "でんき"
+            },
+            {
+              "start": 6,
+              "length": 1,
+              "reading": "し"
+            },
+            {
+              "start": 11,
+              "length": 1,
+              "reading": "きゅう"
+            },
+            {
+              "start": 13,
+              "length": 1,
+              "reading": "くら"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "なが"
+            },
+            {
+              "start": 2,
+              "length": 2,
+              "reading": "かいぎ"
+            },
+            {
+              "start": 8,
+              "length": 1,
+              "reading": "し"
+            }
+          ],
+          [
+            {
+              "start": 1,
+              "length": 1,
+              "reading": "きゃく"
+            },
+            {
+              "start": 5,
+              "length": 1,
+              "reading": "かえ"
+            },
+            {
+              "start": 11,
+              "length": 2,
+              "reading": "てんいん"
+            },
+            {
+              "start": 14,
+              "length": 1,
+              "reading": "みせ"
+            },
+            {
+              "start": 16,
+              "length": 1,
+              "reading": "し"
+            },
+            {
+              "start": 20,
+              "length": 1,
+              "reading": "かえ"
+            }
+          ]
+        ]
       }
     },
     {
@@ -3250,6 +9284,75 @@
         "type": "grammar",
         "id": 135,
         "surface": "可能助动词「れる／られる」"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 2,
+            "reading": "にほん"
+          },
+          {
+            "start": 3,
+            "length": 1,
+            "reading": "き"
+          },
+          {
+            "start": 5,
+            "length": 1,
+            "reading": "さん"
+          },
+          {
+            "start": 6,
+            "length": 1,
+            "reading": "ねん"
+          },
+          {
+            "start": 14,
+            "length": 1,
+            "reading": "いま"
+          },
+          {
+            "start": 16,
+            "length": 3,
+            "reading": "にほんご"
+          },
+          {
+            "start": 20,
+            "length": 2,
+            "reading": "しんぶん"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "よ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "よ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "よ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "よ"
+            }
+          ]
+        ]
       }
     },
     {
@@ -3275,6 +9378,60 @@
         "type": "grammar",
         "id": 136,
         "surface": "使役助动词「せる／させる」"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 2,
+            "reading": "せんせい"
+          },
+          {
+            "start": 3,
+            "length": 2,
+            "reading": "がくせい"
+          },
+          {
+            "start": 9,
+            "length": 2,
+            "reading": "きょう"
+          },
+          {
+            "start": 17,
+            "length": 1,
+            "reading": "かみ"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "か"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "か"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "か"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "か"
+            }
+          ]
+        ]
       }
     },
     {
@@ -3300,6 +9457,65 @@
         "type": "grammar",
         "id": 166,
         "surface": "～ているところだ"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "はは"
+          },
+          {
+            "start": 2,
+            "length": 1,
+            "reading": "いま"
+          },
+          {
+            "start": 4,
+            "length": 1,
+            "reading": "にく"
+          },
+          {
+            "start": 6,
+            "length": 1,
+            "reading": "や"
+          },
+          {
+            "start": 14,
+            "length": 2,
+            "reading": "ゆうしょく"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "つく"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "つく"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "つく"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "つく"
+            }
+          ]
+        ]
       }
     },
     {
@@ -3318,13 +9534,52 @@
       "explanation": "接着补充还会说中文，用表示追加信息的「それに」；「中国語も」与英语能力形成并列。",
       "distractors": {
         "1": "「それで」表示因而；会说英语不能作为会说中文的原因。",
-        "4": "「それとも」用于提出另一个选择，通常接疑问；这里肯定两种语言都会。",
-        "3": "「それなら」表示如果那样；这里补充已知能力，不是在英语能力这一条件下作判断。"
+        "3": "「それなら」表示如果那样；这里补充已知能力，不是在英语能力这一条件下作判断。",
+        "4": "「それとも」用于提出另一个选择，通常接疑问；这里肯定两种语言都会。"
       },
       "target": {
         "type": "word",
         "id": 1096,
         "surface": "それに"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 1,
+            "length": 1,
+            "reading": "あたら"
+          },
+          {
+            "start": 13,
+            "length": 2,
+            "reading": "たなか"
+          },
+          {
+            "start": 19,
+            "length": 2,
+            "reading": "えいご"
+          },
+          {
+            "start": 23,
+            "length": 1,
+            "reading": "はな"
+          },
+          {
+            "start": 45,
+            "length": 2,
+            "reading": "ちゅうごく"
+          },
+          {
+            "start": 47,
+            "length": 1,
+            "reading": "ご"
+          },
+          {
+            "start": 50,
+            "length": 1,
+            "reading": "はな"
+          }
+        ]
       }
     },
     {
@@ -3350,6 +9605,65 @@
         "type": "grammar",
         "id": 159,
         "surface": "～つづける"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 1,
+            "length": 2,
+            "reading": "かいしゃ"
+          },
+          {
+            "start": 11,
+            "length": 2,
+            "reading": "しごと"
+          },
+          {
+            "start": 26,
+            "length": 1,
+            "reading": "ひる"
+          },
+          {
+            "start": 30,
+            "length": 1,
+            "reading": "やす"
+          },
+          {
+            "start": 39,
+            "length": 1,
+            "reading": "つづ"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "はたら"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "はたら"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "はたら"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "はたら"
+            }
+          ]
+        ]
       }
     },
     {
@@ -3375,6 +9689,35 @@
         "type": "grammar",
         "id": 170,
         "surface": "～たばかり"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 2,
+            "reading": "せんげつ"
+          },
+          {
+            "start": 4,
+            "length": 1,
+            "reading": "はたら"
+          },
+          {
+            "start": 6,
+            "length": 1,
+            "reading": "はじ"
+          },
+          {
+            "start": 16,
+            "length": 2,
+            "reading": "しごと"
+          },
+          {
+            "start": 19,
+            "length": 1,
+            "reading": "な"
+          }
+        ]
       }
     },
     {
@@ -3400,6 +9743,45 @@
         "type": "grammar",
         "id": 171,
         "surface": "～までに"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "はち"
+          },
+          {
+            "start": 1,
+            "length": 1,
+            "reading": "じ"
+          },
+          {
+            "start": 3,
+            "length": 2,
+            "reading": "でんしゃ"
+          },
+          {
+            "start": 9,
+            "length": 1,
+            "reading": "しち"
+          },
+          {
+            "start": 10,
+            "length": 2,
+            "reading": "じはん"
+          },
+          {
+            "start": 15,
+            "length": 1,
+            "reading": "えき"
+          },
+          {
+            "start": 17,
+            "length": 1,
+            "reading": "き"
+          }
+        ]
       }
     },
     {
@@ -3425,6 +9807,15 @@
         "type": "grammar",
         "id": 176,
         "surface": "～または"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 11,
+            "length": 1,
+            "reading": "はら"
+          }
+        ]
       }
     },
     {
@@ -3442,14 +9833,83 @@
       "answer": 3,
       "explanation": "店员因为自己要去医院，请店长允许自己早退，应说「帰らせてください」，使用使役形加请求。",
       "distractors": {
+        "1": "「帰ってください」要求听话的店长回去，不能表达允许店员自己早退。",
         "2": "「帰らされて」是使役被动形，表示被迫回去，不能构成这里主动申请的请求。",
-        "4": "「帰れる」是可能形，不能直接接「ください」。",
-        "1": "「帰ってください」要求听话的店长回去，不能表达允许店员自己早退。"
+        "4": "「帰れる」是可能形，不能直接接「ください」。"
       },
       "target": {
         "type": "grammar",
         "id": 230,
         "surface": "～（さ）せてください／～（さ）せないでください"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 6,
+            "length": 1,
+            "reading": "さき"
+          },
+          {
+            "start": 10,
+            "length": 2,
+            "reading": "てんいん"
+          },
+          {
+            "start": 18,
+            "length": 2,
+            "reading": "びょういん"
+          },
+          {
+            "start": 22,
+            "length": 1,
+            "reading": "い"
+          },
+          {
+            "start": 33,
+            "length": 1,
+            "reading": "はや"
+          },
+          {
+            "start": 46,
+            "length": 2,
+            "reading": "てんちょう"
+          },
+          {
+            "start": 49,
+            "length": 1,
+            "reading": "わ"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "かえ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "かえ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "かえ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "かえ"
+            }
+          ]
+        ]
       }
     },
     {
@@ -3475,6 +9935,25 @@
         "type": "grammar",
         "id": 194,
         "surface": "～といい"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 4,
+            "length": 1,
+            "reading": "たの"
+          },
+          {
+            "start": 18,
+            "length": 2,
+            "reading": "てんき"
+          },
+          {
+            "start": 31,
+            "length": 1,
+            "reading": "は"
+          }
+        ]
       }
     },
     {
@@ -3500,6 +9979,85 @@
         "type": "grammar",
         "id": 199,
         "surface": "～（よ）うとする"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "ちち"
+          },
+          {
+            "start": 2,
+            "length": 1,
+            "reading": "おも"
+          },
+          {
+            "start": 4,
+            "length": 2,
+            "reading": "にもつ"
+          },
+          {
+            "start": 12,
+            "length": 1,
+            "reading": "なん"
+          },
+          {
+            "start": 13,
+            "length": 1,
+            "reading": "ど"
+          },
+          {
+            "start": 14,
+            "length": 1,
+            "reading": "ちから"
+          },
+          {
+            "start": 16,
+            "length": 1,
+            "reading": "い"
+          },
+          {
+            "start": 20,
+            "length": 1,
+            "reading": "うご"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "はこ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "はこ"
+            },
+            {
+              "start": 2,
+              "length": 1,
+              "reading": "お"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "はこ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "はこ"
+            }
+          ]
+        ]
       }
     },
     {
@@ -3525,6 +10083,55 @@
         "type": "grammar",
         "id": 202,
         "surface": "ちっとも～ない"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "あたら"
+          },
+          {
+            "start": 7,
+            "length": 1,
+            "reading": "い"
+          },
+          {
+            "start": 12,
+            "length": 2,
+            "reading": "とけい"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "うご"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "うご"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "うご"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "うご"
+            }
+          ]
+        ]
       }
     },
     {
@@ -3550,6 +10157,75 @@
         "type": "grammar",
         "id": 240,
         "surface": "召し上がる"
+      },
+      "furigana": {
+        "stem": [
+          {
+            "start": 9,
+            "length": 2,
+            "reading": "てんいん"
+          },
+          {
+            "start": 17,
+            "length": 1,
+            "reading": "あつ"
+          },
+          {
+            "start": 37,
+            "length": 1,
+            "reading": "きゃく"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "め"
+            },
+            {
+              "start": 2,
+              "length": 1,
+              "reading": "あ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "め"
+            },
+            {
+              "start": 2,
+              "length": 1,
+              "reading": "あ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "め"
+            },
+            {
+              "start": 2,
+              "length": 1,
+              "reading": "あ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "め"
+            },
+            {
+              "start": 2,
+              "length": 1,
+              "reading": "あ"
+            }
+          ]
+        ]
       }
     },
     {
@@ -3581,7 +10257,70 @@
         4,
         2,
         3
-      ]
+      ],
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 2,
+            "reading": "てんちょう"
+          },
+          {
+            "start": 15,
+            "length": 2,
+            "reading": "きょう"
+          },
+          {
+            "start": 17,
+            "length": 1,
+            "reading": "じゅう"
+          },
+          {
+            "start": 19,
+            "length": 2,
+            "reading": "へんじ"
+          },
+          {
+            "start": 28,
+            "length": 1,
+            "reading": "い"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "らいしゅう"
+            },
+            {
+              "start": 3,
+              "length": 3,
+              "reading": "どようび"
+            }
+          ],
+          [],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "こ"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "しごと"
+            },
+            {
+              "start": 3,
+              "length": 1,
+              "reading": "く"
+            }
+          ]
+        ]
+      }
     },
     {
       "id": "n4-g-trial3-15",
@@ -3612,7 +10351,75 @@
         1,
         2,
         3
-      ]
+      ],
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 1,
+            "reading": "ふた"
+          },
+          {
+            "start": 3,
+            "length": 2,
+            "reading": "へや"
+          },
+          {
+            "start": 6,
+            "length": 1,
+            "reading": "み"
+          },
+          {
+            "start": 11,
+            "length": 2,
+            "reading": "あんない"
+          },
+          {
+            "start": 14,
+            "length": 1,
+            "reading": "ひと"
+          },
+          {
+            "start": 29,
+            "length": 2,
+            "reading": "せつめい"
+          }
+        ],
+        "options": [
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "こうえん"
+            },
+            {
+              "start": 6,
+              "length": 2,
+              "reading": "へや"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "しず"
+            }
+          ],
+          [],
+          [
+            {
+              "start": 0,
+              "length": 2,
+              "reading": "えきまえ"
+            },
+            {
+              "start": 3,
+              "length": 2,
+              "reading": "へや"
+            }
+          ]
+        ]
+      }
     },
     {
       "id": "n4-g-trial3-16",
@@ -3643,7 +10450,80 @@
         4,
         2,
         1
-      ]
+      ],
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 2,
+            "reading": "かぞく"
+          },
+          {
+            "start": 3,
+            "length": 1,
+            "reading": "さん"
+          },
+          {
+            "start": 4,
+            "length": 1,
+            "reading": "にん"
+          },
+          {
+            "start": 7,
+            "length": 1,
+            "reading": "さら"
+          },
+          {
+            "start": 9,
+            "length": 1,
+            "reading": "いえ"
+          },
+          {
+            "start": 11,
+            "length": 1,
+            "reading": "さん"
+          },
+          {
+            "start": 12,
+            "length": 1,
+            "reading": "まい"
+          }
+        ],
+        "options": [
+          [],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "つか"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "あたら"
+            },
+            {
+              "start": 3,
+              "length": 1,
+              "reading": "さら"
+            }
+          ],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "いえ"
+            },
+            {
+              "start": 4,
+              "length": 1,
+              "reading": "さら"
+            }
+          ]
+        ]
+      }
     },
     {
       "id": "n4-g-trial3-17",
@@ -3674,7 +10554,59 @@
         3,
         1,
         2
-      ]
+      ],
+      "furigana": {
+        "stem": [
+          {
+            "start": 0,
+            "length": 2,
+            "reading": "きょう"
+          },
+          {
+            "start": 3,
+            "length": 3,
+            "reading": "げつようび"
+          },
+          {
+            "start": 8,
+            "length": 2,
+            "reading": "いりぐち"
+          },
+          {
+            "start": 12,
+            "length": 2,
+            "reading": "げつよう"
+          },
+          {
+            "start": 14,
+            "length": 1,
+            "reading": "やす"
+          },
+          {
+            "start": 18,
+            "length": 1,
+            "reading": "か"
+          }
+        ],
+        "options": [
+          [],
+          [],
+          [
+            {
+              "start": 0,
+              "length": 1,
+              "reading": "ひら"
+            }
+          ],
+          [
+            {
+              "start": 2,
+              "length": 1,
+              "reading": "みせ"
+            }
+          ]
+        ]
+      }
     },
     {
       "id": "n4-g-trial3-18",
@@ -3726,7 +10658,33 @@
         "id": 182,
         "surface": "～のうち"
       },
-      "passageId": "n4-trial3-p1"
+      "passageId": "n4-trial3-p1",
+      "furigana": {
+        "options": [
+          [
+            {
+              "start": 4,
+              "length": 1,
+              "reading": "べつ"
+            }
+          ],
+          [
+            {
+              "start": 4,
+              "length": 1,
+              "reading": "まえ"
+            }
+          ],
+          [
+            {
+              "start": 2,
+              "length": 1,
+              "reading": "か"
+            }
+          ],
+          []
+        ]
+      }
     },
     {
       "id": "n4-g-trial3-20",
@@ -3778,7 +10736,899 @@
         "id": 142,
         "surface": "～ていく"
       },
-      "passageId": "n4-trial3-p1"
+      "passageId": "n4-trial3-p1",
+      "furigana": {
+        "options": [
+          [],
+          [],
+          [
+            {
+              "start": 5,
+              "length": 1,
+              "reading": "おも"
+            }
+          ],
+          []
+        ]
+      }
     }
-  ]
+  ],
+  "passageFurigana": {
+    "n4-trial1-p1": [
+      {
+        "start": 0,
+        "length": 2,
+        "reading": "らいげつ"
+      },
+      {
+        "start": 5,
+        "length": 1,
+        "reading": "わたし"
+      },
+      {
+        "start": 7,
+        "length": 1,
+        "reading": "ちか"
+      },
+      {
+        "start": 12,
+        "length": 1,
+        "reading": "や"
+      },
+      {
+        "start": 24,
+        "length": 2,
+        "reading": "がっこう"
+      },
+      {
+        "start": 27,
+        "length": 1,
+        "reading": "とも"
+      },
+      {
+        "start": 32,
+        "length": 1,
+        "reading": "おな"
+      },
+      {
+        "start": 34,
+        "length": 1,
+        "reading": "みせ"
+      },
+      {
+        "start": 36,
+        "length": 1,
+        "reading": "はたら"
+      },
+      {
+        "start": 43,
+        "length": 1,
+        "reading": "とも"
+      },
+      {
+        "start": 47,
+        "length": 1,
+        "reading": "まえ"
+      },
+      {
+        "start": 51,
+        "length": 1,
+        "reading": "や"
+      },
+      {
+        "start": 53,
+        "length": 1,
+        "reading": "はたら"
+      },
+      {
+        "start": 65,
+        "length": 1,
+        "reading": "わたし"
+      },
+      {
+        "start": 67,
+        "length": 1,
+        "reading": "はじ"
+      },
+      {
+        "start": 80,
+        "length": 1,
+        "reading": "ふくろ"
+      },
+      {
+        "start": 82,
+        "length": 1,
+        "reading": "い"
+      },
+      {
+        "start": 85,
+        "length": 2,
+        "reading": "ほうほう"
+      },
+      {
+        "start": 88,
+        "length": 1,
+        "reading": "とも"
+      },
+      {
+        "start": 92,
+        "length": 1,
+        "reading": "おし"
+      },
+      {
+        "start": 100,
+        "length": 1,
+        "reading": "とも"
+      },
+      {
+        "start": 108,
+        "length": 1,
+        "reading": "み"
+      },
+      {
+        "start": 119,
+        "length": 1,
+        "reading": "わ"
+      },
+      {
+        "start": 126,
+        "length": 2,
+        "reading": "てんちょう"
+      },
+      {
+        "start": 132,
+        "length": 2,
+        "reading": "なまえ"
+      },
+      {
+        "start": 135,
+        "length": 1,
+        "reading": "か"
+      },
+      {
+        "start": 138,
+        "length": 1,
+        "reading": "かみ"
+      },
+      {
+        "start": 140,
+        "length": 1,
+        "reading": "わた"
+      },
+      {
+        "start": 144,
+        "length": 2,
+        "reading": "しごと"
+      },
+      {
+        "start": 147,
+        "length": 1,
+        "reading": "はじ"
+      },
+      {
+        "start": 150,
+        "length": 1,
+        "reading": "まえ"
+      },
+      {
+        "start": 152,
+        "length": 1,
+        "reading": "おぼ"
+      },
+      {
+        "start": 160,
+        "length": 1,
+        "reading": "い"
+      },
+      {
+        "start": 175,
+        "length": 1,
+        "reading": "よる"
+      },
+      {
+        "start": 181,
+        "length": 1,
+        "reading": "かみ"
+      },
+      {
+        "start": 183,
+        "length": 1,
+        "reading": "み"
+      },
+      {
+        "start": 185,
+        "length": 2,
+        "reading": "べんきょう"
+      },
+      {
+        "start": 193,
+        "length": 1,
+        "reading": "かみ"
+      },
+      {
+        "start": 196,
+        "length": 2,
+        "reading": "しゃしん"
+      },
+      {
+        "start": 209,
+        "length": 1,
+        "reading": "わ"
+      },
+      {
+        "start": 215,
+        "length": 1,
+        "reading": "はじ"
+      },
+      {
+        "start": 218,
+        "length": 1,
+        "reading": "し"
+      },
+      {
+        "start": 232,
+        "length": 1,
+        "reading": "いま"
+      },
+      {
+        "start": 234,
+        "length": 2,
+        "reading": "なまえ"
+      },
+      {
+        "start": 237,
+        "length": 1,
+        "reading": "き"
+      },
+      {
+        "start": 246,
+        "length": 1,
+        "reading": "わ"
+      },
+      {
+        "start": 254,
+        "length": 2,
+        "reading": "てんちょう"
+      },
+      {
+        "start": 258,
+        "length": 1,
+        "reading": "はや"
+      },
+      {
+        "start": 260,
+        "length": 2,
+        "reading": "しごと"
+      },
+      {
+        "start": 272,
+        "length": 2,
+        "reading": "まちが"
+      },
+      {
+        "start": 280,
+        "length": 2,
+        "reading": "たいせつ"
+      },
+      {
+        "start": 286,
+        "length": 1,
+        "reading": "い"
+      },
+      {
+        "start": 294,
+        "length": 1,
+        "reading": "はじ"
+      },
+      {
+        "start": 298,
+        "length": 2,
+        "reading": "しごと"
+      },
+      {
+        "start": 304,
+        "length": 1,
+        "reading": "とも"
+      }
+    ],
+    "n4-trial2-p1": [
+      {
+        "start": 6,
+        "length": 2,
+        "reading": "せんしゅう"
+      },
+      {
+        "start": 9,
+        "length": 3,
+        "reading": "どようび"
+      },
+      {
+        "start": 13,
+        "length": 1,
+        "reading": "あたら"
+      },
+      {
+        "start": 21,
+        "length": 1,
+        "reading": "ひ"
+      },
+      {
+        "start": 23,
+        "length": 1,
+        "reading": "こ"
+      },
+      {
+        "start": 29,
+        "length": 1,
+        "reading": "はじ"
+      },
+      {
+        "start": 32,
+        "length": 2,
+        "reading": "にもつ"
+      },
+      {
+        "start": 35,
+        "length": 1,
+        "reading": "すく"
+      },
+      {
+        "start": 39,
+        "length": 1,
+        "reading": "おも"
+      },
+      {
+        "start": 52,
+        "length": 1,
+        "reading": "はこ"
+      },
+      {
+        "start": 54,
+        "length": 1,
+        "reading": "い"
+      },
+      {
+        "start": 61,
+        "length": 1,
+        "reading": "おも"
+      },
+      {
+        "start": 67,
+        "length": 1,
+        "reading": "おお"
+      },
+      {
+        "start": 72,
+        "length": 1,
+        "reading": "わ"
+      },
+      {
+        "start": 79,
+        "length": 1,
+        "reading": "ひ"
+      },
+      {
+        "start": 81,
+        "length": 1,
+        "reading": "こ"
+      },
+      {
+        "start": 84,
+        "length": 1,
+        "reading": "ひ"
+      },
+      {
+        "start": 88,
+        "length": 1,
+        "reading": "はこ"
+      },
+      {
+        "start": 95,
+        "length": 1,
+        "reading": "まえ"
+      },
+      {
+        "start": 97,
+        "length": 1,
+        "reading": "ひ"
+      },
+      {
+        "start": 99,
+        "length": 2,
+        "reading": "じぶん"
+      },
+      {
+        "start": 102,
+        "length": 2,
+        "reading": "ぜんぶ"
+      },
+      {
+        "start": 104,
+        "length": 1,
+        "reading": "はこ"
+      },
+      {
+        "start": 106,
+        "length": 1,
+        "reading": "い"
+      },
+      {
+        "start": 114,
+        "length": 2,
+        "reading": "とうじつ"
+      },
+      {
+        "start": 118,
+        "length": 1,
+        "reading": "とも"
+      },
+      {
+        "start": 122,
+        "length": 2,
+        "reading": "にもつ"
+      },
+      {
+        "start": 125,
+        "length": 1,
+        "reading": "あたら"
+      },
+      {
+        "start": 128,
+        "length": 2,
+        "reading": "へや"
+      },
+      {
+        "start": 132,
+        "length": 1,
+        "reading": "はこ"
+      },
+      {
+        "start": 145,
+        "length": 1,
+        "reading": "たす"
+      },
+      {
+        "start": 152,
+        "length": 1,
+        "reading": "いま"
+      },
+      {
+        "start": 155,
+        "length": 1,
+        "reading": "はこ"
+      },
+      {
+        "start": 158,
+        "length": 1,
+        "reading": "だ"
+      },
+      {
+        "start": 161,
+        "length": 1,
+        "reading": "もの"
+      },
+      {
+        "start": 163,
+        "length": 2,
+        "reading": "へや"
+      },
+      {
+        "start": 166,
+        "length": 1,
+        "reading": "なら"
+      },
+      {
+        "start": 173,
+        "length": 1,
+        "reading": "まど"
+      },
+      {
+        "start": 178,
+        "length": 1,
+        "reading": "つくえ"
+      },
+      {
+        "start": 180,
+        "length": 1,
+        "reading": "お"
+      },
+      {
+        "start": 185,
+        "length": 1,
+        "reading": "まえ"
+      },
+      {
+        "start": 187,
+        "length": 2,
+        "reading": "へや"
+      },
+      {
+        "start": 191,
+        "length": 1,
+        "reading": "あか"
+      },
+      {
+        "start": 196,
+        "length": 2,
+        "reading": "べんきょう"
+      },
+      {
+        "start": 208,
+        "length": 2,
+        "reading": "がっこう"
+      },
+      {
+        "start": 213,
+        "length": 1,
+        "reading": "ある"
+      },
+      {
+        "start": 216,
+        "length": 2,
+        "reading": "じゅっぷん"
+      },
+      {
+        "start": 221,
+        "length": 1,
+        "reading": "まえ"
+      },
+      {
+        "start": 223,
+        "length": 1,
+        "reading": "いえ"
+      },
+      {
+        "start": 230,
+        "length": 1,
+        "reading": "さん"
+      },
+      {
+        "start": 231,
+        "length": 2,
+        "reading": "じゅっぷん"
+      },
+      {
+        "start": 248,
+        "length": 2,
+        "reading": "がっこう"
+      },
+      {
+        "start": 252,
+        "length": 1,
+        "reading": "ある"
+      },
+      {
+        "start": 259,
+        "length": 2,
+        "reading": "へや"
+      },
+      {
+        "start": 262,
+        "length": 1,
+        "reading": "かた"
+      },
+      {
+        "start": 270,
+        "length": 1,
+        "reading": "あそ"
+      },
+      {
+        "start": 273,
+        "length": 1,
+        "reading": "き"
+      }
+    ],
+    "n4-trial3-p1": [
+      {
+        "start": 0,
+        "length": 3,
+        "reading": "じてんしゃ"
+      },
+      {
+        "start": 4,
+        "length": 1,
+        "reading": "か"
+      },
+      {
+        "start": 7,
+        "length": 1,
+        "reading": "ひと"
+      },
+      {
+        "start": 10,
+        "length": 1,
+        "reading": "わたし"
+      },
+      {
+        "start": 13,
+        "length": 2,
+        "reading": "がくせい"
+      },
+      {
+        "start": 17,
+        "length": 2,
+        "reading": "せんせい"
+      },
+      {
+        "start": 26,
+        "length": 2,
+        "reading": "がっこう"
+      },
+      {
+        "start": 29,
+        "length": 3,
+        "reading": "じてんしゃ"
+      },
+      {
+        "start": 33,
+        "length": 1,
+        "reading": "か"
+      },
+      {
+        "start": 35,
+        "length": 2,
+        "reading": "しごと"
+      },
+      {
+        "start": 44,
+        "length": 1,
+        "reading": "つか"
+      },
+      {
+        "start": 48,
+        "length": 1,
+        "reading": "ひと"
+      },
+      {
+        "start": 51,
+        "length": 2,
+        "reading": "みっか"
+      },
+      {
+        "start": 53,
+        "length": 1,
+        "reading": "まえ"
+      },
+      {
+        "start": 57,
+        "length": 3,
+        "reading": "じむしょ"
+      },
+      {
+        "start": 61,
+        "length": 1,
+        "reading": "き"
+      },
+      {
+        "start": 64,
+        "length": 1,
+        "reading": "か"
+      },
+      {
+        "start": 73,
+        "length": 1,
+        "reading": "き"
+      },
+      {
+        "start": 81,
+        "length": 3,
+        "reading": "じてんしゃ"
+      },
+      {
+        "start": 85,
+        "length": 2,
+        "reading": "ぜんぶ"
+      },
+      {
+        "start": 88,
+        "length": 1,
+        "reading": "ご"
+      },
+      {
+        "start": 89,
+        "length": 1,
+        "reading": "だい"
+      },
+      {
+        "start": 99,
+        "length": 1,
+        "reading": "に"
+      },
+      {
+        "start": 100,
+        "length": 1,
+        "reading": "だい"
+      },
+      {
+        "start": 102,
+        "length": 1,
+        "reading": "ちい"
+      },
+      {
+        "start": 106,
+        "length": 1,
+        "reading": "のこ"
+      },
+      {
+        "start": 109,
+        "length": 1,
+        "reading": "さん"
+      },
+      {
+        "start": 110,
+        "length": 1,
+        "reading": "だい"
+      },
+      {
+        "start": 112,
+        "length": 1,
+        "reading": "おお"
+      },
+      {
+        "start": 115,
+        "length": 3,
+        "reading": "じてんしゃ"
+      },
+      {
+        "start": 121,
+        "length": 2,
+        "reading": "じぶん"
+      },
+      {
+        "start": 124,
+        "length": 1,
+        "reading": "からだ"
+      },
+      {
+        "start": 126,
+        "length": 1,
+        "reading": "あ"
+      },
+      {
+        "start": 131,
+        "length": 1,
+        "reading": "えら"
+      },
+      {
+        "start": 139,
+        "length": 1,
+        "reading": "か"
+      },
+      {
+        "start": 142,
+        "length": 1,
+        "reading": "とき"
+      },
+      {
+        "start": 146,
+        "length": 3,
+        "reading": "じむしょ"
+      },
+      {
+        "start": 150,
+        "length": 2,
+        "reading": "せんせい"
+      },
+      {
+        "start": 153,
+        "length": 3,
+        "reading": "じてんしゃ"
+      },
+      {
+        "start": 157,
+        "length": 2,
+        "reading": "ぐあい"
+      },
+      {
+        "start": 160,
+        "length": 1,
+        "reading": "み"
+      },
+      {
+        "start": 167,
+        "length": 2,
+        "reading": "せんせい"
+      },
+      {
+        "start": 170,
+        "length": 1,
+        "reading": "み"
+      },
+      {
+        "start": 179,
+        "length": 1,
+        "reading": "の"
+      },
+      {
+        "start": 187,
+        "length": 1,
+        "reading": "かえ"
+      },
+      {
+        "start": 189,
+        "length": 1,
+        "reading": "ひ"
+      },
+      {
+        "start": 192,
+        "length": 3,
+        "reading": "じてんしゃ"
+      },
+      {
+        "start": 204,
+        "length": 3,
+        "reading": "じむしょ"
+      },
+      {
+        "start": 208,
+        "length": 1,
+        "reading": "も"
+      },
+      {
+        "start": 218,
+        "length": 2,
+        "reading": "がっこう"
+      },
+      {
+        "start": 225,
+        "length": 1,
+        "reading": "くるま"
+      },
+      {
+        "start": 227,
+        "length": 1,
+        "reading": "とお"
+      },
+      {
+        "start": 232,
+        "length": 1,
+        "reading": "ちい"
+      },
+      {
+        "start": 235,
+        "length": 1,
+        "reading": "みち"
+      },
+      {
+        "start": 238,
+        "length": 1,
+        "reading": "き"
+      },
+      {
+        "start": 243,
+        "length": 1,
+        "reading": "はし"
+      },
+      {
+        "start": 251,
+        "length": 1,
+        "reading": "わたし"
+      },
+      {
+        "start": 254,
+        "length": 2,
+        "reading": "がくせい"
+      },
+      {
+        "start": 268,
+        "length": 2,
+        "reading": "いけん"
+      },
+      {
+        "start": 271,
+        "length": 1,
+        "reading": "き"
+      },
+      {
+        "start": 277,
+        "length": 3,
+        "reading": "じてんしゃ"
+      },
+      {
+        "start": 281,
+        "length": 1,
+        "reading": "か"
+      }
+    ]
+  }
 }

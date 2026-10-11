@@ -1,5 +1,6 @@
 // JLPT 刷题（实验功能，`__EXP_JLPT__`）：题库格式和对外接口的类型。
 // 这份是数据层、界面、题库导入三方共用的约定，改字段要三边一起改。规格见 docs/JLPT_PRACTICE_SPEC.md。
+import type { FuriganaAnnotation } from "../../types/furigana";
 
 export type JlptLevel = "N5" | "N4" | "N3" | "N2" | "N1";
 export type JlptSection = "vocab" | "grammar";
@@ -60,6 +61,8 @@ export interface JlptQuestion {
    */
   stem: string;
   options: [string, string, string, string];
+  /** N5/N4 才有：考点以外汉字的注音，下标对原文（scripts/build-jlpt-furigana.mjs 生成）。 */
+  furigana?: { stem?: FuriganaAnnotation[]; options?: FuriganaAnnotation[][] };
   answer: OptionNo;
   /** 为什么对（中文一句）。 */
   explanation: string;
@@ -86,6 +89,8 @@ export interface JlptBank {
   sets: JlptSet[];
   /** 文章题的全文，空写成 `[n]`。 */
   passages: Record<string, string>;
+  /** N5/N4 才有：文章全文的注音。 */
+  passageFurigana?: Record<string, FuriganaAnnotation[]>;
   questions: JlptQuestion[];
 }
 
@@ -118,8 +123,9 @@ export interface JlptMockPart {
 
 /** 题干解析结果，界面逐段渲染。 */
 export type StemPart =
-  | { type: "text"; text: string }
-  | { type: "underline"; text: string }
+  /** start：这段文字在原题干里的下标，用来对上注音。 */
+  | { type: "text"; text: string; start: number }
+  | { type: "underline"; text: string; start: number }
   | { type: "blank" }
   | { type: "slot"; star: boolean }
   | { type: "ref"; n: number };

@@ -895,6 +895,8 @@ button.fin-row:hover { background: var(--ds-inset-2); }
 /* 滚动由 ScrollArea 负责（网页 overflowY 内联、小程序原生 ScrollView），这里写 overflow 会被 check-inner-scroll 拦下 */
 .jq-passage { height: 240px; margin-top: 12px; border-radius: var(--ds-radius-inset); background: var(--ds-inset); color: var(--ds-ink); font-size: 16px; line-height: 2; white-space: pre-wrap; overflow-wrap: anywhere; }
 .jq-passage-content { padding: 14px; }
+/* N5/N4 注音：小程序的假名是绝对定位浮在字上方，不撑行高，行距不加大就会挤到上一行的字底下 */
+.jq-passage-ruby { line-height: 2.6; }
 .jq-choices-long { grid-template-columns: minmax(0, 1fr); }
 .jq-choice { min-width: 0; }
 .jq-option { flex: 1; min-width: 0; font-size: 16px; line-height: 1.6; overflow-wrap: anywhere; }

@@ -89,3 +89,9 @@ npm run verify:jlpt-bank
   一律先问「母语者在真考场上会不会也认为对」，会就不换。
 - **定义式题干**（「このように、出せる最後の日時を（　）という」）比情景式更能锁定唯一答案，「期限／日程」「待ち合わせ／相談」这类近义词题适合用。
 
+## N5/N4 注音（2026-10-11）
+
+N5/N4 题库里考点以外的汉字都带注音（规则和原因见 `docs/claude/experimental-features.md` 的 JLPT 一节）。
+返修流程里多一步：`apply.py --write` / `rebalance.py` 之后，在 `frontend/` 跑 `npm run build:jlpt-furigana`，再 `verify-jlpt-bank.mjs`。
+新题的注音要打出来通读（`scripts/build-jlpt-furigana.mjs` 头注释里有一行命令），读错的加进脚本的 `READING_FIXES`。
+

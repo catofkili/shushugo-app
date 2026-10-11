@@ -12,14 +12,14 @@ export const parseStem = (stem: string): StemPart[] => {
   const markers = /\[\[([^]*?)\]\]|（　+）|★＿＿|★|＿＿|\[(\d+)\]/gu;
   let offset = 0;
   for (const match of stem.matchAll(markers)) {
-    if (match.index > offset) parts.push({ type: "text", text: stem.slice(offset, match.index) });
-    if (match[1] !== undefined) parts.push({ type: "underline", text: match[1] });
+    if (match.index > offset) parts.push({ type: "text", text: stem.slice(offset, match.index), start: offset });
+    if (match[1] !== undefined) parts.push({ type: "underline", text: match[1], start: match.index + 2 });
     else if (match[2] !== undefined) parts.push({ type: "ref", n: Number(match[2]) });
     else if (match[0].startsWith("（")) parts.push({ type: "blank" });
     else parts.push({ type: "slot", star: match[0].startsWith("★") });
     offset = match.index + match[0].length;
   }
-  if (offset < stem.length) parts.push({ type: "text", text: stem.slice(offset) });
+  if (offset < stem.length) parts.push({ type: "text", text: stem.slice(offset), start: offset });
   return parts;
 };
 
