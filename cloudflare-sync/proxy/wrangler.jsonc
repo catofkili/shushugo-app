@@ -9,6 +9,8 @@
   "preview_urls": false,
   // ⚠️ 不要在这里加 api.shushugo.com 的 routes / custom_domain：它的 DNS 直接指向阿里云，
   // 加回来会被 Cloudflare 抢走（custom domain 会自己改 DNS 记录）。
+  // 旧 Worker 的每日清理已经由服务器上的 systemd 定时器接手，这里必须显式清空，不然两边各跑一遍。
+  "triggers": { "crons": [] },
   "vars": {
     "UPSTREAM": "https://origin.shushugo.com"
   }

@@ -1,5 +1,8 @@
 # ShuShuGo Worker 自托管
 
+> **2026-10-11：已正式切流。** 下面写「当前未启用 / 尚未切流」的部分是 9-27 的历史记录；现状和踩坑见 `docs/claude/release-and-deployment.md` 的「后端已从 Cloudflare 搬到阿里云」一节。
+
+
 W25 把 `cloudflare-sync/src/index.ts` 用 Wrangler 原样打包，再由 Node 22 调用同一个 `fetch` / `scheduled` 入口。路由和业务 SQL 没有重写。当前部署只监听 `127.0.0.1:8787`，供服务器本机和以后启用的反向代理访问；本轮不启用公网 HTTP/HTTPS、不改 DNS、不切换 Cloudflare 流量。
 
 ## 当前服务

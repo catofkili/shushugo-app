@@ -92,3 +92,32 @@ check / lint / test，应急才用 `SKIP_RELEASE_GATES=1`。
   **只为刷新闸门报告而构建时，把 `src/` 下的这类改动还原，别顺手提交。**
 - `webpack-stats.json` 本身仍带绝对路径（每次从不同 worktree 构建都是几千行 diff）；
   要消掉这份噪音得在 `config/index.js` 的 stats 插件里落盘前改写路径，还没做。
+
+## ⚠️ 后端已从 Cloudflare 搬到阿里云（2026-10-11）
+
+**现状**：Worker 本体（`cloudflare-sync/src/index.ts`，一行没改）跑在阿里云武汉轻量服务器 `8.148.68.155`，
+Node 22 + `node:sqlite` 模拟 D1/KV/R2/限速（`cloudflare-sync/selfhost/`，细节和运维命令见该目录 README）。
+`api.shushugo.com` 的 DNS **直接指向服务器**（灰云，不经 Cloudflare 代理），Caddy 自动签证书。
+Cloudflare 上只剩 `cloudflare-sync/proxy/` 那个**转发层**：把已发布的旧 iOS 版本写死的 `*.workers.dev` 转发给 `origin.shushugo.com`。
+DNS 仍托管在 Cloudflare（只是 DNS，不收费）。小程序云函数的 `WORKER_ORIGIN` 不用动，仍是 `api.shushugo.com`。
+
+**踩过的坑（删掉这段，下一个人会重踩）**
+
+- ⚠️ **不要 `wrangler deploy` 根目录的 `wrangler.jsonc`**。同名 `master-nihongo-sync` 会被换回旧后端，旧 iOS 的写入落回已停用的 D1（两套库同时接受写入）。
+  `npm run deploy` 已改成直接报错；根配置里的 `api.shushugo.com` custom_domain 路由也删了 —— 留着的话部署会让 Cloudflare 把该域名 DNS 抢回去。
+  只有 `cd cloudflare-sync/proxy && wrangler deploy` 是对的（`--var MAINTENANCE:1` 是维护模式，一律 503）。
+- ⚠️ **Turnstile 核对「验证域名 = 请求到达的域名」**（`index.ts` 的 `result.hostname !== expectedHostname`）。
+  Cloudflare 控制台 Turnstile 的 Hostnames 必须包含 `api.shushugo.com`、`origin.shushugo.com`、旧的 `workers.dev`。
+  旧客户端经转发层来时，服务器必须还原成 `workers.dev` 的 Host（转发层发 `X-Shushugo-Host`，Caddy 的 `header_up Host` 还原），否则旧 iOS 的注册/登录/找回密码全部 403。
+- ⚠️ **真实客户端 IP**：限速按 `CF-Connecting-IP`。直连请求由 Caddy 用 `{remote_host}` 覆盖（防伪造）；转发层的请求凭 `PROXY_KEY`
+  （`/etc/caddy/proxy.env` 与 CF 上的 secret 是同一个值）才被信任，否则所有旧客户端在服务器看来是同几个 CF 出口 IP，同步推送「每 IP 每分钟 2 次」会互相挤掉。
+- ⚠️ **导入 D1 导出时不许替它补记迁移**。演练实测：线上停在 0017、仓库有 0018，旧写法把 0018 记成「已应用」，duels 等表静默缺失。现在缺 `d1_migrations` 直接报错，没执行的迁移由 `openDatabase` 启动时真正跑。
+- 迁移脚本三个坑：D1 内部表 `_cf_KV` 要排除；行数核对不能用 22 段 `UNION ALL`（D1 报 too many terms），用标量子查询；macOS 的 `tar` 会塞 `._*` 文件，要 `COPYFILE_DISABLE=1`，安装器会拒收可疑条目。
+- **密钥回读不了**：Cloudflare 的 secret 读不出来，搬家时全部要重新取（Turnstile 在控制台看得到，Resend 只能新建，微信 AppSecret 只能重置）。
+  服务器上用 `sudo /opt/shushugo/cloudflare-sync/selfhost/set-secrets.sh` 逐项填；**输入法必须是英文**，中文输入法会把 `1` 变成全角「１」、多出制表符，`/api/health` 里的 `authHardening` 会是 false。
+  验收看 `curl https://api.shushugo.com/api/health` 的各项 Configured 和 `productionReady`。
+- 自动审查会拦 DNS、密钥库写入、取密钥这类操作；这次 DNS 记录和 Resend 密钥都是用户手动加的。
+
+**待办**：服务器 R2 对象没有异机备份（只有每天一次的 SQLite 备份，保留 14 天）—— 阿里云控制台开自动快照；
+官网 `shushugo.com` 仍在 Cloudflare Pages（`shushugo-website`），要搬的话 Caddyfile 末尾已有静态站点块的写法（`/srv/shushugo-website`），DNS 切过去再启用；
+CF 上旧 Worker 留下的 secret（RESEND 等）和 D1/KV/R2 数据还在，确认稳定一段时间后再清。
