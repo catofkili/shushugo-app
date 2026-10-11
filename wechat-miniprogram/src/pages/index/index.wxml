@@ -225,7 +225,7 @@
       <text wx:if="{{stats.completed > 0}}" class="share-hint">分享到朋友圈：点右上角「…」并选择「分享到朋友圈」</text>
     </view>
 
-    <button class="undo" loading="{{busy}}" disabled="{{busy || (mode === 'mixed' && !undoKinds.length)}}" bindtap="handleUndo">撤销上一张</button>
+    <button class="undo" loading="{{busy}}" disabled="{{busy || !undoEnabled}}" bindtap="handleUndo">撤销上一张</button>
     <view class="shortcut-row">
       <navigator class="shortcut" url="/pages/library/index">查词库</navigator>
       <navigator class="shortcut" url="/pages/modes/index">换模式</navigator>

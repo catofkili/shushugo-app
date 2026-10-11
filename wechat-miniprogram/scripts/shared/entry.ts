@@ -36,6 +36,7 @@ export * as kanjiUnitScheduler from "../../../frontend/src/lib/kanji-unit-schedu
 export * as kanjiReadingUsage from "../../../frontend/src/lib/kanji-reading-usage";
 export * as kanjiUnitIndex from "../../../frontend/src/lib/kanji-unit-index";
 export * as mixedCards from "../../../frontend/src/lib/mixed-cards";
+export * as mixedSession from "../../../frontend/src/lib/mixed-session";
 export * as grammarQuiz from "../../../frontend/src/lib/grammar-quiz";
 export * as grammarApi from "../../../frontend/src/lib/grammar-api";
 export * as grammarKeyPoints from "../../../frontend/src/lib/grammar-key-points";

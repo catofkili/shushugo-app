@@ -38,16 +38,13 @@ import { ScrollArea } from "../components/ScrollArea";
 import { useEntitlements } from "../hooks/useEntitlements";
 import { canUseFeature } from "../lib/entitlements";
 import { GrammarCard, QUIZ_ACCENT_AMBER } from "../features/grammar-quiz/GrammarCard";
-import { getGrammarQuizSession, submitGrammarQuizAnswer, undoLastGrammarQuizAnswer, type GrammarQuizCard } from "../lib/grammar-quiz";
 import { KanjiCharCardView, KANJI_ACCENT } from "../features/mixed-study/KanjiCharCardView";
 import { ConfusionCardView, MATCH_ACCENT } from "../features/mixed-study/ConfusionCardView";
+import { loadMixedCardData, mixedCardDataLoaded } from "../lib/mixed-cards";
 import {
-  getConfusionCardSession, getKanjiCardSession, loadMixedCardData, mixedCardDataLoaded,
-  submitConfusionCardAnswer, submitKanjiCardAnswer, undoConfusionCardAnswer, undoKanjiCardAnswer
-} from "../lib/mixed-cards";
-import type { KanjiCharCard } from "../lib/kanji-char-cards";
-import type { MatchingCard } from "../lib/confusion-cards";
-import { getDatabase } from "../lib/database";
+  answerMixedOther, canUndoMixed, mixedTurnDue, mixedUndoKind, pickMixedNext, recordMixedWordAnswer,
+  resetMixedSession, undoMixedOther, undoMixedWord, type MixedOtherItem
+} from "../lib/mixed-session";
 import { useFavoriteFolderPicker } from "../components/FavoriteFolderPicker";
 import { wordDistinctions } from "../lib/models/word-distinctions";
 import { warmConfusionGroups } from "../lib/confusion-groups";
@@ -138,16 +135,7 @@ const isEditableTarget = (target: EventTarget | null) => {
 
 const isInteractiveActivationKey = (key: string) => key === "Enter" || key === " ";
 
-/**
- * 混合模式里每答几个单词插一条语法。
- *
- * 语法一个等级只有一百来条、每天到期十几条，而单词一天几百张 —— 比例再密一点，
- * 语法当天就发完了，之后整场又退回纯单词；再稀一点它就成了偶尔冒一下的彩蛋。
- * 5 是「一屏之内一定见得到一条」和「不打断背词的节奏」之间的一档。
- */
-const MIXED_GRAMMAR_EVERY = 5;
-
-/** 经典和混合是同一份今日计划（同一条取词路径、同样的减负/压轴/回顾），只是混合会插播语法。 */
+/** 经典和混合是同一份今日计划（同一条取词路径、同样的减负/压轴/回顾），混合另外还有语法 / 汉字 / 辨析三种卡（lib/mixed-session）。 */
 const isPlanMode = (mode: StudyMode) => mode === "classic" || mode === "mixed";
 
 /**
@@ -241,10 +229,18 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
   const [distinctionPaywall, setDistinctionPaywall] = useState(false);
   const openDistinction = () => setDistinctionOpen(true);
   /**
-   * 混合模式插播的语法卡。它**盖在**单词卡上面：下一张单词卡照常排好摆在底下，
-   * 答完这条清掉就接着背词，所以插播不需要动单词那边的任何状态。
+   * 混合模式此刻摆着的那张非单词卡（语法 / 汉字 / 辨析）。出哪一种、什么时候出由 lib/mixed-session 判，
+   * 这里只管摆。它**盖在**单词卡上面：下一张单词卡照常排好摆在底下，答完这张清掉就接着背词。
    */
-  const [grammarCard, setGrammarCard] = useState<GrammarQuizCard | null>(null);
+  const [other, setOther] = useState<MixedOtherItem | null>(null);
+  const [otherRevealed, setOtherRevealed] = useState(false);
+  const grammarCard = other?.kind === "grammar" ? other.card : null;
+  const kanjiCard = other?.kind === "kanji" ? other.card : null;
+  const matchCard = other?.kind === "confusion" ? other.card : null;
+  const showOther = (item: MixedOtherItem | null) => {
+    setOther(item);
+    setOtherRevealed(false);
+  };
   const [inlineWordId, setInlineWordId] = useState<number | null>(null);
   const inlineApi = useRef<{
     getSpellingPrefs: typeof import("../lib/spelling").getSpellingPrefs;
@@ -264,36 +260,6 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     }).catch(() => undefined);
     return () => { active = false; cleanup(); inlineApi.current = null; };
   }, []);
-  const [grammarRevealed, setGrammarRevealed] = useState(false);
-  const wordsSinceGrammarRef = useRef(0);
-  /**
-   * 混合学习另外两种插播（docs/MIXED_STUDY_PLAN.md 第 2 节）：单独汉字卡、疑难辨析 Anki 卡。
-   * 和语法卡一样盖在单词卡上面；三种轮着来（interleaveIndexRef），哪种今天没了就跳过。
-   */
-  const [kanjiCard, setKanjiCard] = useState<KanjiCharCard | null>(null);
-  const [kanjiRevealed, setKanjiRevealed] = useState(false);
-  const [matchCard, setMatchCard] = useState<MatchingCard | null>(null);
-  const [matchRevealed, setMatchRevealed] = useState(false);
-  const interleaveIndexRef = useRef(0);
-  /** 语法那一侧还有没有今天的作答可撤（读 grammar-quiz 自己那份 quiz_undo 栈） */
-  const [canUndoGrammar, setCanUndoGrammar] = useState(false);
-  /**
-   * 混合模式下「上一个」该撤哪一边。
-   *
-   * ⚠️ 单词和语法各有一份独立的撤销栈（`last_answer` / `quiz_undo:<等级>`），
-   * 谁都不知道对方存在。不记这个的话，答完一条语法再点「上一个」会去撤**语法之前
-   * 那个单词** —— 一次误操作造两笔假数据：语法留下一次不该留的作答，单词丢掉一次
-   * 该留的。所以按作答顺序记一小段类型，撤销时按栈顶分派。
-   *
-   * 长度和 UNDO_LIMIT 对齐就够：两侧各自也只存这么多条，栈顶两条一定在各自的栈里。
-   * 用 state 不用 ref：它决定按钮亮不亮，是**参与渲染**的值。
-   */
-  type UndoKind = "word" | "grammar" | "kanji" | "confusion";
-  const [undoKinds, setUndoKinds] = useState<UndoKind[]>([]);
-  const pushUndoKind = (kind: UndoKind) => {
-    setUndoKinds((kinds) => [...kinds, kind].slice(-UNDO_LIMIT));
-  };
-  const popUndoKind = () => setUndoKinds((kinds) => kinds.slice(0, -1));
   // 辨析索引建好没。没建好就先不算 —— 详见 warmConfusionGroups
   const [distinctionsReady, setDistinctionsReady] = useState(false);
   const [activePopover, setActivePopover] = useState<"note" | "noteMemory" | "prompt" | null>(null);
@@ -392,9 +358,6 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     [initialMode]
   );
 
-  // 语法用哪一级：跟着备考目标走。混合模式**不再给一个等级选择器** ——
-  // 多一个旋钮就多一处口径，而「我在考哪一级」设置页里已经答过了。
-  const grammarLevel = preferences.jlptTarget;
 
   const markedKanji = useMemo(() => {
     return (card?.kanjiComponents ?? []).filter((component) => component.marked);
@@ -457,26 +420,12 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
           return;
         }
       }
-      // 混合模式：今天的词背完了，剩下的语法接着上 —— 两边都空了才算今天完成。
-      const grammarSession = mode === "mixed" && !data.card
-        ? getGrammarQuizSession(grammarLevel)
-        : null;
-      const grammarTail = grammarSession?.card ?? null;
-      if (grammarSession) setCanUndoGrammar(grammarSession.canUndo);
-      if (grammarTail) {
-        setGrammarCard(grammarTail);
-        setGrammarRevealed(false);
-      }
-      // 语法也空了就轮到汉字、再轮到辨析：四种都空了才算今天完成。
+      // 混合模式：四种卡一条队列，单词手上没有了就由队列给下一张别的卡 —— 四种都空了才算今天完成。
       let otherTail = false;
-      if (mode === "mixed" && !data.card && !grammarTail) {
+      if (mode === "mixed") {
         if (!mixedCardDataLoaded()) await loadMixedCardData();
-        const kanjiTail = getKanjiCardSession(getDatabase()).card;
-        if (kanjiTail) { setKanjiCard(kanjiTail); setKanjiRevealed(false); otherTail = true; }
-        else {
-          const matchTail = getConfusionCardSession(getDatabase()).card;
-          if (matchTail) { setMatchCard(matchTail); setMatchRevealed(false); otherTail = true; }
-        }
+        const pick = pickMixedNext({ word: Boolean(data.card) });
+        if (pick && pick !== "word") { showOther(pick); otherTail = true; }
       }
       setCard(data.card);
       setUnitKey(data.unitKey ?? null);
@@ -488,7 +437,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
       setTailActive(false);
       setCanUndo(Boolean(data.canUndo));
       setRevealed(false);
-      if (!data.card && !grammarTail && !otherTail && !completionReportedRef.current && isDailyModeComplete(mode, data.stats)) {
+      if (!data.card && !otherTail && !completionReportedRef.current && isDailyModeComplete(mode, data.stats)) {
         completionReportedRef.current = true;
         onDailyModeComplete?.(mode);
       }
@@ -497,88 +446,39 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     } finally {
       setLoading(false);
     }
-  }, [flushPendingAnswer, grammarLevel, initialMode, onDailyModeComplete, sessionOptions]);
+  }, [flushPendingAnswer, initialMode, onDailyModeComplete, sessionOptions]);
 
   /**
-   * 混合模式：每答 MIXED_GRAMMAR_EVERY 个单词插一条语法。
+   * 答完一个单词（已经记账之后）：记下作答顺序，混合模式再问队列这一下是不是轮到别的卡。
+   * 返回有没有摆上一张别的卡 —— 单词那边要是同时取空了，调用方据此决定还要不要再问一次队列。
    *
-   * 出的是**语法考题页那同一副牌** —— 同一份 grammar_progress、同一个当日计划和新条目
-   * 配额、同一套 FSRS。所以两处的进度天然是一份账，在哪边答的都算数。今天这一级的语法
-   * 过完了就不插，也不借明天的账（和考题页的续杯同理，想多学得自己去点）。
-   *
-   * ⚠️ 语法过完了也要把计数清零：不清的话之后每答一个单词都会去查一次当日计划，
-   * 而那是好几条 SQL。
+   * 别的卡出的都是各自那页的同一副牌（语法考题页、汉字卡、辨析卡的同一份进度、同一个当日计划、
+   * 同一套 FSRS），在哪边答的都算数。
    */
-  const maybeGrammarTurn = useCallback(() => {
-    if (initialMode !== "mixed") return;
-    wordsSinceGrammarRef.current += 1;
-    if (wordsSinceGrammarRef.current < MIXED_GRAMMAR_EVERY) return;
-    wordsSinceGrammarRef.current = 0;
-    // 三种插播轮着来：语法 → 汉字 → 辨析。今天没了的那种跳过，三种都没了就不插。
-    const kinds = ["grammar", "kanji", "confusion"] as const;
-    for (let step = 0; step < kinds.length; step += 1) {
-      const kind = kinds[(interleaveIndexRef.current + step) % kinds.length];
-      if (kind === "grammar") {
-        const next = getGrammarQuizSession(grammarLevel).card;
-        if (next) { setGrammarCard(next); setGrammarRevealed(false); interleaveIndexRef.current += step + 1; return; }
-      } else if (mixedCardDataLoaded()) {
-        if (kind === "kanji") {
-          const next = getKanjiCardSession(getDatabase()).card;
-          if (next) { setKanjiCard(next); setKanjiRevealed(false); interleaveIndexRef.current += step + 1; return; }
-        } else {
-          const next = getConfusionCardSession(getDatabase()).card;
-          if (next) { setMatchCard(next); setMatchRevealed(false); interleaveIndexRef.current += step + 1; return; }
-        }
-      }
-    }
-  }, [grammarLevel, initialMode]);
+  const afterWordAnswered = useCallback((): boolean => {
+    recordMixedWordAnswer();
+    if (initialMode !== "mixed") return false;
+    const pick = pickMixedNext({ word: true, afterWord: true });
+    if (!pick || pick === "word") return false;
+    showOther(pick);
+    return true;
+  }, [initialMode]);
 
-  /** 汉字卡评分。声音、触觉、连对台阶沿用单词那一套。 */
-  const answerKanjiCard = (value: WordAnswer) => {
-    if (!kanjiCard) return;
+  /**
+   * 别的卡（语法 / 汉字 / 辨析）评分。声音、触觉、连对台阶沿用单词那一套；记账按卡种分派在 mixed-session。
+   * 辨析卡由连错次数定档（ConfusionCardView 里），这里只收结果。
+   */
+  const answerOther = (value: WordAnswer) => {
+    if (!other) return;
     triggerMemoryHaptic(value);
     if (value === "know" || value === "known_forever") { playKnow(correctStreakRef.current); correctStreakRef.current += 1; }
     else { correctStreakRef.current = 0; playDontKnow(); }
-    submitKanjiCardAnswer(kanjiCard.char, value);
-    pushUndoKind("kanji");
-    setKanjiCard(null);
-    setKanjiRevealed(false);
+    answerMixedOther(other, value);
+    showOther(null);
+    // 单词那边已经空了：回去问队列 —— 要么下一张别的卡，要么进完成页。
     if (!card) void loadNext(initialMode);
   };
-
-  const revealMatchCard = () => { setMatchRevealed(true); playFlip(); };
-  /** 学习者看完手写辨析后自评，按 FSRS 评分；不以选择题正确率代替记忆。 */
-  const answerMatchCard = (value: WordAnswer) => {
-    if (!matchCard) return;
-    triggerMemoryHaptic(value);
-    if (value === "know") { playKnow(correctStreakRef.current); correctStreakRef.current += 1; }
-    else { correctStreakRef.current = 0; playDontKnow(); }
-    submitConfusionCardAnswer(matchCard.groupKey, value);
-    pushUndoKind("confusion");
-    setMatchCard(null);
-    setMatchRevealed(false);
-    if (!card) void loadNext(initialMode);
-  };
-
-  /** 语法卡的评分。声音、触觉沿用单词那一套（连对的音高台阶也接着爬）。 */
-  const answerGrammarCard = (value: WordAnswer) => {
-    if (!grammarCard) return;
-    triggerMemoryHaptic(value);
-    if (value === "know" || value === "known_forever") {
-      playKnow(correctStreakRef.current);
-      correctStreakRef.current += 1;
-    } else {
-      correctStreakRef.current = 0;
-      playDontKnow();
-    }
-    const next = submitGrammarQuizAnswer(grammarLevel, grammarCard.id, value);
-    pushUndoKind("grammar");
-    setCanUndoGrammar(next.canUndo);
-    setGrammarCard(null);
-    setGrammarRevealed(false);
-    // 单词那边已经空了（今天的词背完了）：回去重排一次 —— 要么再来一条语法，要么进完成页。
-    if (!card) void loadNext(initialMode);
-  };
+  const revealOther = () => { setOtherRevealed(true); if (other?.kind === "confusion") playFlip(); };
 
   useEffect(() => {
     // loadNext 还会随偏好设置和父回调更新；这些变化不能把正在看的单词重新发一遍。
@@ -587,11 +487,8 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     loadedModeRef.current = initialMode;
     // 切模式不换组件实例（key 只跟 wordStudyRevision 走），混合模式摆着的插播卡和作答顺序
     // 必须在这里清掉 —— 2026-10-09 真机：从混合切到经典，屏幕仍停在那张语法插播上。
-    setGrammarCard(null);
-    setKanjiCard(null);
-    setMatchCard(null);
-    setUndoKinds([]);
-    wordsSinceGrammarRef.current = 0;
+    showOther(null);
+    resetMixedSession();
     void loadNext(initialMode);
   }, [initialMode, loadNext]);
 
@@ -889,7 +786,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     }
     // 快路径：这一下的下一张已经算好了（见 word-api「预算下一张」）→ 先换卡，记账等这一帧画出来再做。
     // 插播语法的这一下、压轴 / 错题回顾 / 汉字单元，以及没算好、算完之后库又变了的，都走下面的同步路径。
-    const grammarTurnDue = initialMode === "mixed" && wordsSinceGrammarRef.current + 1 >= MIXED_GRAMMAR_EVERY;
+    const grammarTurnDue = initialMode === "mixed" && mixedTurnDue();
     // 毕业判断读入库后的正向状态；默认关闭时仍走原来的延后记账快路径。
     const inlineCandidate = __EXP_SPELLING__ && phase === "stage1" && !answeredUnitKey && !wasDailyReview && !wasTail
       && !!inlineApi.current?.getSpellingPrefs().inlineAfterGraduation;
@@ -899,8 +796,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     if (preview?.card) {
       const answeredPhase = phase;
       previewsRef.current = null;
-      pushUndoKind("word");
-      maybeGrammarTurn();
+      afterWordAnswered();
       setError("");
       showWordCard(preview.card, preview.phase);
       pendingAnswerRef.current = () => {
@@ -931,9 +827,23 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
         ? submitKanjiUnitAnswer(answeredUnitKey, answer)
         : submitWordAnswer(answeredCardId, answer, sessionOptions);
       answerFocusedWord(answeredCardId, answer);
-      pushUndoKind("word");
-      // 这一下算数了才谈得上插播；下面各条分支照常把下一张单词卡排好摆在语法卡底下。
-      maybeGrammarTurn();
+      // 这一下算数了才谈得上轮到别的卡；下面各条分支照常把下一张单词卡排好摆在别的卡底下。
+      const otherShown = afterWordAnswered();
+      /**
+       * 混合模式单词取空了不等于今天完成：剩下的语法 / 汉字 / 辨析由队列接着出，四种都空了它才报完成。
+       * 这一下已经轮到一张别的卡就先摆着它（答完 answerOther 会再问队列），否则交给 loadNext 去问。
+       * 2026-10-10 作者报：答完最后一个单词直接进了完成页，顶上停在 612/645、33 条语法被晾着 ——
+       * 当时普通作答、压轴、错题回顾三条出口都没问这一句。三条出口都走这里。
+       */
+      const handOffMixed = (latestStats: WordStats) => {
+        setCard(null);
+        setUnitKey(null);
+        setUnitTarget(null);
+        setTailActive(false);
+        setRevealed(false);
+        setStats(latestStats);
+        if (!otherShown) void loadNext(initialMode);
+      };
       let nextStats = data.stats;
       if (__EXP_SPELLING__ && inlineCandidate && inlineApi.current) {
         try {
@@ -996,11 +906,8 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
           playComplete();
           return;
         }
-        // 混合模式：单词取空了不等于今天完成 —— 剩下的语法 / 汉字 / 辨析由 loadNext 接着上
-        // （四种都空了它才报完成）。2026-10-10 作者报：答完最后一个单词（普通作答、压轴、错题回顾三条出口都是）直接进了完成页，
-        // 顶上停在 612/645，33 条语法要重新进页面才出来。
         if (initialMode === "mixed" && !data.card) {
-          void loadNext(initialMode);
+          handOffMixed(nextStats);
           return;
         }
         setCard(data.card);
@@ -1040,10 +947,8 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
           setRevealed(false);
           return;
         }
-        // 混合模式：压轴答完还有语法 / 汉字 / 辨析没出，同错题回顾出口那段注释。
         if (initialMode === "mixed") {
-          setTailActive(false);
-          void loadNext(initialMode);
+          handOffMixed(refreshedStats);
           return;
         }
         setTailActive(false);
@@ -1104,9 +1009,8 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
         return;
       }
 
-      // 混合模式：同错题回顾出口那段注释。
       if (initialMode === "mixed" && !data.card) {
-        void loadNext(initialMode);
+        handOffMixed(nextStats);
         return;
       }
       showWordCard(data.card, data.phase, data.unitKey ?? null, data.unitTarget ?? null);
@@ -1126,7 +1030,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
       // 落在同一个同步 tick 里(submitWordAnswer 是同步 SQLite,常见路径没有 await),
       // React 一批处理,中间态从来没渲染过。印章的收尾交给 RATE_BURST_MS 那个计时器。
     }
-  }, [answerFocusedWord, card, dailyReviewActive, dailyReviewIntro, flushActiveStudyTime, flushPendingAnswer, initialMode, inlineWordId, loadNext, maybeGrammarTurn, onDailyModeComplete, phase, reliefActive, sessionOptions, showWordCard, stats, submitting, tailActive, unitKey]);
+  }, [answerFocusedWord, card, dailyReviewActive, dailyReviewIntro, afterWordAnswered, flushActiveStudyTime, flushPendingAnswer, initialMode, inlineWordId, loadNext, onDailyModeComplete, phase, reliefActive, sessionOptions, showWordCard, stats, submitting, tailActive, unitKey]);
 
   useEffect(() => () => window.clearTimeout(rateBurstTimerRef.current), []);
 
@@ -1236,34 +1140,11 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
   const undo = async () => {
     if (__EXP_SPELLING__ && inlineWordId !== null) return;
     flushPendingAnswer();
-    // 混合模式：栈顶那一笔是语法的话走 grammar-quiz 自己那份回滚
-    // （FSRS + grammar_reviews + 重刷队列一起退）。两侧是各自独立的栈，
-    // 拿单词那条去撤语法只会撤错东西 —— 见 undoKinds 上的注释。
-    const topKind = undoKinds[undoKinds.length - 1];
-    if (topKind === "kanji" || topKind === "confusion") {
-      // 汉字 / 辨析：删最后一行流水再重放那张卡（card-log.undoLast），精确回到上一状态；
-      // 然后把那张卡重新摆出来。
-      popUndoKind();
+    // 混合模式：四种卡各有一份互不知道对方的撤销栈，按作答顺序的栈顶分派（lib/mixed-session）。
+    // 栈顶是别的卡：撤掉它并重新摆出来；是单词才走下面单词那份。
+    if (mixedUndoKind() && mixedUndoKind() !== "word") {
       correctStreakRef.current = 0;
-      if (topKind === "kanji") {
-        undoKanjiCardAnswer();
-        setKanjiCard(getKanjiCardSession(getDatabase()).card);
-        setKanjiRevealed(false);
-      } else {
-        undoConfusionCardAnswer();
-        setMatchCard(getConfusionCardSession(getDatabase()).card);
-        setMatchRevealed(false);
-      }
-      return;
-    }
-    if (topKind === "grammar") {
-      if (!canUndoGrammar) return;
-      const session = undoLastGrammarQuizAnswer(grammarLevel);
-      popUndoKind();
-      correctStreakRef.current = 0;
-      setCanUndoGrammar(session.canUndo);
-      setGrammarCard(session.card);
-      setGrammarRevealed(false);
+      showOther(undoMixedOther());
       return;
     }
     setSubmitting(true);
@@ -1271,19 +1152,11 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     try {
       const data = undoLastWordAnswer(sessionOptions);
       if (data.card) updateFocusSnapshot(undoStudyFocusAnswer(data.card.id));
-      popUndoKind();
-      // ⚠️ 语法插播是「刚才那个单词」带出来的（submitAnswer 里先压栈再 maybeGrammarTurn），
-      // 所以语法卡摆在屏幕上时，栈顶那一笔一定是单词。不把插播收回去的话，撤销撤的是
-      // 语法卡**底下**那张单词卡，屏幕纹丝不动 —— 看着就是「上一个不能用」。
-      // 计数退回一格：那次作答不算数了，插播也不该提前用掉。
-      if (grammarCard || kanjiCard || matchCard) {
-        setGrammarCard(null);
-        setGrammarRevealed(false);
-        setKanjiCard(null);
-        setMatchCard(null);
-        setMatchRevealed(false);
-        wordsSinceGrammarRef.current = MIXED_GRAMMAR_EVERY - 1;
-      }
+      // ⚠️ 别的卡是「刚才那个单词」带出来的（先记作答顺序再问队列），所以它摆在屏幕上时，
+      // 栈顶那一笔一定是单词。不把它收回去的话，撤销撤的是它**底下**那张单词卡，屏幕纹丝不动 ——
+      // 看着就是「上一个不能用」。计数和轮次一起退回：那次作答不算数了，它也不该提前用掉。
+      undoMixedWord({ otherShowing: Boolean(other) });
+      if (other) showOther(null);
       // 撤销了刚才那次作答,音高台阶也该跟着退回起点(不做精确回退:撤销很少用,
       // 而多爬一级和少爬一级都比「撤销了但还在高音上」说不通)
       correctStreakRef.current = 0;
@@ -1612,21 +1485,9 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
       updateFocusSnapshot(finishStudyFocusAtDailyCompletion());
     }
   }, [dailyPlanFinished, focusSnapshot.status, updateFocusSnapshot]);
-  // 「上一个」撤哪一边、亮不亮：按作答顺序的栈顶走。
-  const undoKind = undoKinds[undoKinds.length - 1] ?? "word";
-  /**
-   * ⚠️ 混合模式下**只撤这一次进页面之后答的**。
-   *
-   * 作答顺序只记在内存里（undoKinds），退出学习页就没了；而单词那份撤销栈是落库的。
-   * 不加这道闸的话：答一条语法 → 退出 → 再进来 → 点「上一个」，栈顶信息已经丢了，
-   * 会按「word」去撤**语法之前那个单词** —— 正是这次要修的那个 bug 换个入口复现。
-   * 经典模式没有语法插播，顺序永远是对的，照旧用落库的那份。
-   */
-  const undoEnabled = initialMode === "mixed" && undoKinds.length === 0
-    ? false
-    : undoKind === "grammar" ? canUndoGrammar
-      // 汉字 / 辨析：栈顶是它就一定能撤（流水就在库里）
-      : undoKind === "kanji" || undoKind === "confusion" ? true : canUndo;
+  // 「上一个」撤哪一边、亮不亮：按作答顺序的栈顶走（判据和那道「只撤这次进页面之后答的」闸都在 canUndoMixed）。
+  const undoKind = mixedUndoKind() ?? "word";
+  const undoEnabled = canUndoMixed(initialMode === "mixed", canUndo);
 
   const countdownActive = !loading
     && !dailyReviewActive
@@ -1713,9 +1574,9 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
           </button>
         </div>
         {kanjiCard ? (
-          <KanjiCharCardView card={kanjiCard} revealed={kanjiRevealed} onReveal={() => setKanjiRevealed(true)} onAnswer={answerKanjiCard} />
+          <KanjiCharCardView card={kanjiCard} revealed={otherRevealed} onReveal={revealOther} onAnswer={answerOther} />
         ) : (
-          <ConfusionCardView card={matchCard!} revealed={matchRevealed} onReveal={revealMatchCard} onAnswer={answerMatchCard} />
+          <ConfusionCardView card={matchCard!} revealed={otherRevealed} onReveal={revealOther} onAnswer={answerOther} />
         )}
       </div>
     );
@@ -1752,9 +1613,9 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
         </div>
         <GrammarCard
           card={grammarCard}
-          revealed={grammarRevealed}
-          onReveal={() => setGrammarRevealed(true)}
-          onAnswer={answerGrammarCard}
+          revealed={otherRevealed}
+          onReveal={revealOther}
+          onAnswer={answerOther}
           accent={QUIZ_ACCENT_AMBER}
         />
       </div>

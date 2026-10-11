@@ -7,8 +7,8 @@
  * 作答（FSRS 已推进、流水已写），单词丢掉一次该留的。一次误操作造两笔假数据。
  *
  * 这里钉的是学习页依赖的那条契约：**按作答顺序分派，两侧各自完整回滚、互不牵连。**
- * ⚠️ 分派本身写在 `WordStudy.tsx`（undoKindsRef），仓库里没有 testing-library，
- * 这个测试跑的是它调用的那两个函数，覆盖不到组件的接线。
+ * 这里钉的是两侧各自的回滚；按栈顶分派本身（2026-10-11 起收进 `lib/mixed-session.ts`，
+ * 网页和小程序共用）由 `mixed-session.test.ts` 盯着。
  */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";

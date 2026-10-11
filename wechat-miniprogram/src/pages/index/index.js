@@ -8,11 +8,12 @@ const {
   answerCard,
   answerInterleave,
   getStudyHome,
-  nextOfKind,
+  resetQueue,
   saveWordNote,
   undoAnswer,
   undoInterleave,
-  rewindInterleave
+  undoState,
+  undoWordInQueue
 } = require('../../runtime/learning');
 const { playWordAudio } = require('../../runtime/audio');
 const { bank: bankReminder } = require('../../runtime/reminder');
@@ -142,7 +143,7 @@ Page({
     kanjiConnections: [],
     kanjiMatchComplete: false,
     // 跟网页的 UNDO_LIMIT=2 对齐；只记本次进入页面后的作答顺序。
-    undoKinds: [],
+    undoEnabled: false,
     swipeStyle: '', swipeStamp: '',
     sharedDaily: null,
     undoFocusWordIds: [],
@@ -173,6 +174,7 @@ Page({
       direction,
       directionIndex
     });
+    resetQueue();
     wx.hideShareMenu();
   },
 
@@ -210,12 +212,18 @@ Page({
       delete getApp().globalData.pendingStudyMode;
       const direction = selected === 'reverse' || selected === 'kanji' ? selected : 'forward';
       const mode = direction === 'forward' ? selected : 'classic';
-      this.setData({ mode, modeLabel: web.studyMode.studyModeInfo(selected).title, direction, directionIndex: ['forward', 'reverse', 'kanji'].indexOf(direction), undoKinds: [], undoFocusWordIds: [] });
+      this.setData({ mode, modeLabel: web.studyMode.studyModeInfo(selected).title, direction, directionIndex: ['forward', 'reverse', 'kanji'].indexOf(direction), undoFocusWordIds: [] });
+      resetQueue();
+      this.syncUndo();
     }
     this.refreshStatus();
     if (getStatus().ready) {
       notifyTrialExpiry();
-      if (this.data.mode === 'mixed' && !cachedEntitlement().active) this.setData({ mode: 'classic', modeLabel: '经典模式', interleave: null });
+      if (this.data.mode === 'mixed' && !cachedEntitlement().active) {
+        this.setData({ mode: 'classic', modeLabel: '经典模式', interleave: null });
+        resetQueue();
+        this.syncUndo();
+      }
       this.refreshHome();
     }
     else if (!this.data.busy) this.autoRestore();
@@ -248,7 +256,8 @@ Page({
       const home = await getStudyHome({
         level: this.data.selectedLevel || undefined,
         direction: this.data.direction,
-        mode: this.data.mode === 'classic' ? undefined : this.data.mode
+        mode: this.data.mode === 'classic' ? undefined : this.data.mode,
+        otherShowing: Boolean(this.data.interleave)
       });
       this.setData({
         // 辨析是 Pro：没权益不算分组，卡上只留一行入口（点进去是付费墙）
@@ -464,10 +473,11 @@ Page({
         else web.sounds.playDontKnow();
       }
       this.correctStreak = answer === 'know' || answer === 'known_forever' ? (this.correctStreak || 0) + 1 : 0;
-      // 先刷新（把下一张单词卡摆好），再把插播卡盖上去。
-      await this.refreshHome();
+      // 先把这一下轮到的别的卡盖上去，再刷新单词卡：顺序反过来的话，单词恰好取空时 refreshHome
+      // 会再问一次队列、多推进一格轮次，问出来的那张又被这张盖掉。
       if (result && result.interleave) this.showInterleave(result.interleave);
-      if (!card.relief) this.pushUndo('word', Number(card.id));
+      await this.refreshHome();
+      if (!card.relief) this.pushUndo(Number(card.id));
       if (!this.data.card && !this.data.interleave && web.preferences.getStudyPreferences().zooSounds) web.sounds.playComplete();
       return card.relief ? '减负卡已看完（不改记忆数据）' : answer === 'forgot' ? '已安排稍后重学' : '已保存到本地库';
     });
@@ -530,16 +540,20 @@ Page({
     this.setData({ swipeStyle: '', swipeStamp: '' });
   },
 
-  pushUndo(kind, focusWordId = null) {
-    this.setData({
-      undoKinds: [...this.data.undoKinds, kind].slice(-2),
-      undoFocusWordIds: [...this.data.undoFocusWordIds, focusWordId].slice(-2)
-    });
+  /** 作答顺序在 lib/mixed-session 里记；页面只另记每一笔对应的专注词，撤销时退专注计时用。 */
+  pushUndo(focusWordId = null) {
+    this.setData({ undoFocusWordIds: [...this.data.undoFocusWordIds, focusWordId].slice(-2) });
+    this.syncUndo();
   },
 
   popUndo() {
-    this.setData({ undoKinds: this.data.undoKinds.slice(0, -1), undoFocusWordIds: this.data.undoFocusWordIds.slice(0, -1) });
+    this.setData({ undoFocusWordIds: this.data.undoFocusWordIds.slice(0, -1) });
     this.correctStreak = 0;
+    this.syncUndo();
+  },
+
+  syncUndo() {
+    this.setData({ undoEnabled: undoState(this.data.mode).enabled });
   },
 
   /*
@@ -549,13 +563,13 @@ Page({
    */
   handleUndo() {
     this.noteStudyFocusInteraction();
-    if (this.data.mode === 'mixed' && !this.data.undoKinds.length) return;
-    const kind = this.data.undoKinds[this.data.undoKinds.length - 1] || 'word';
+    const { kind, enabled } = undoState(this.data.mode);
+    if (!enabled) return;
     this.run('撤销上一张', async () => {
       if (kind && kind !== 'word') {
-        await undoInterleave(kind);
+        const item = await undoInterleave();
         this.popUndo();
-        this.showInterleave(nextOfKind(kind));
+        this.showInterleave(item);
         await this.refreshHome();
         return '已恢复作答前状态';
       }
@@ -564,7 +578,7 @@ Page({
       if (!result.undone) return result.reason;
       const focusWordId = this.data.undoFocusWordIds[this.data.undoFocusWordIds.length - 1];
       if (focusWordId) this.applyStudyFocusSnapshot(web.studyFocus.undoStudyFocusAnswer(focusWordId));
-      if (wasInterleaved) rewindInterleave();
+      undoWordInQueue(wasInterleaved);
       // 插播是「刚才那个单词」带出来的：撤销那次作答，插播也不该被它提前用掉。
       this.showInterleave(null);
       this.popUndo();
@@ -656,15 +670,14 @@ Page({
     const answer = event.currentTarget.dataset.answer;
     const interleave = this.data.interleave;
     if (!interleave || !answer) return;
-    const id = interleave.kind === 'grammar' ? interleave.card.id : interleave.kind === 'kanji' ? interleave.card.char : interleave.card.groupKey;
     this.run('记录作答', async () => {
-      await answerInterleave(interleave.kind, id, answer);
+      await answerInterleave(interleave, answer);
       if (web.preferences.getStudyPreferences().zooSounds) {
         if (answer === 'know' || answer === 'known_forever') web.sounds.playKnow(this.correctStreak || 0);
         else web.sounds.playDontKnow();
       }
       this.correctStreak = answer === 'know' || answer === 'known_forever' ? (this.correctStreak || 0) + 1 : 0;
-      this.pushUndo(interleave.kind);
+      this.pushUndo();
       // 一张插播之后回单词；今天单词真做完时 refreshHome 再挑下一种卡。
       this.showInterleave(null);
       await this.refreshHome();
@@ -684,7 +697,9 @@ Page({
     this.noteStudyFocusInteraction();
     const directionIndex = Number(event.detail.value);
     const direction = ['forward', 'reverse', 'kanji'][directionIndex] || 'forward';
-    this.setData({ directionIndex, direction, mode: 'classic', modeLabel: '经典模式' });
+    this.setData({ directionIndex, direction, mode: 'classic', modeLabel: '经典模式', interleave: null });
+    resetQueue();
+    this.syncUndo();
     this.refreshHome();
   },
 

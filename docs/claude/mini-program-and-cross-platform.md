@@ -373,3 +373,31 @@ JOIN 读的是 **grammar_state** —— **点了收藏永远显示不出来**，
 现在读写都走 `grammar_state`，并把已经误写进 app_state 的
 `favorite:*` 迁过来（`migrateFavoritesFromAppState`）。
 
+
+## ⚠️ 小程序视觉验收看 Taro 版（`taro-spike-2`），原生 `wechat-miniprogram` 的页面是淘汰界面（2026-10-11）
+
+10-11 混合学习队列重构时，我在开发者工具里打开的是原生 `wechat-miniprogram/` 的隔离副本，截了半天图，
+作者一眼指出「这不是已经被淘汰了的界面吗」。**现行小程序是 `taro-spike-2/`**：它的学习页直接编译
+`frontend/src/pages/WordStudy.tsx`（`frontend/src/routes/word.tsx` → `taro-spike-2/src/pages/word/index.tsx`），
+所以改网页页面 = 改小程序页面，验收必须在 Taro 版上看。原生版的 `npm test`（`shared/web.js` 新鲜度、`modes-smoke` 等）
+仍然要跑、仍是 CI 闸门，但它的 WXML 截图不能当视觉验收。
+
+在开发者工具里跑 Taro 版的做法（10-11 实测可行）：
+
+1. worktree 里 `cd taro-spike-2 && npm run build:weapp`（几分钟；会改 `reports/` 三份闸门报告 —— 改了 `frontend/src`
+   就该一起提交，见 `release-and-deployment.md`；`src/package-assets/**`、`lucide-packages.cjs` 的改动按那里说的还原）。
+2. `cli open --project <worktree>/taro-spike-2 --port <服务端口>`，再 `cli auto --project ... --auto-port 9431 --port <服务端口>`。
+   出厂库走项目配置里的微信云存储，用真实 appid（`touristappid` 已被拒「不存在此 AppID」）。
+3. **`miniprogram-automator` 对 Taro 项目能用**（`pageStack` / `evaluate` 正常；同一版开发者工具 2.02.2609231 下，
+   原生项目的 `pageStack` 是空的）。Taro 页面是 React，`page.data` 里没有业务状态：用 `(await page.$('page')).outerWxml()`
+   拿 WXML，按文字找元素 `id` 再 `page.$('#id').tap()`；「上一个」是含 `rotateccw` 图标的那个 button，看它的 `aria-disabled`。
+4. **后台 computer-use 点不到模拟器里的元素**：坐标点击会以缺 `touches` 的事件进到渲染层，报
+   `[渲染层错误] undefined is not iterable`（是点击方式的伪错误，不是应用的错），AX 索引也会被拒。别在这上面耗时间，直接用第 3 条。
+   控制台敲长代码也不可靠（自动补全会吞字）。
+5. 混合学习在会员门后面（`App.tsx` 的 `mixedStudy`）。验收时临时把 `taro-spike-2/src/platform/entitlements.weapp.cjs`
+   的 `cachedEntitlement` 改成直接返回 `active: true` 再构建一次，**跑完立刻 `git checkout` 还原，闸门报告用干净构建那份**。
+   `cli open` / `cli auto` 重开项目会清掉模拟器 storage，所以偏好 / 学习模式要在重开**之后**设，模式经「学习模式」页点进去
+   （`startStudyMode` 才会过付费闸并带上 `launchStudyMode`）。
+6. ⚠️ 模拟器 `wx.env.USER_DATA_PATH` 有 200 MB 上限，历次验收的隔离库目录（每个 25–30 MB，如 `shushugo-countdown-visual`、
+   `w15-visual`、`shushugo-post-exam-vqa`）会堆在那里。满了以后学习页弹「学习记录没能保存到本机」—— 是模拟器空间，不是代码坏了。
+   验收前先看一眼占用，用完删掉自己建的目录。

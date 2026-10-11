@@ -76,6 +76,15 @@ memory 是本机检查点（合并后从流水重放重建），tasks 是当天�
   跟 `--zoo-*` 变量。
 - 三个「汉字」是三件事，别互相回填：**汉字读音模式**（词里遮汉字、考整词读音，`direction=kanji_reading`）、
   **混合学习里的单独汉字卡**（一个字一种读音，`kanji_char_memory`）、**汉字单元**（旗子后面的 `kanji-unit-scheduler`）。
+- ⚠️ **混合学习的出卡裁判只有一份：`frontend/src/lib/mixed-session.ts`（2026-10-11）。** 四种卡在「下一张出哪种 /
+  今天是不是全完了 / 「上一个」撤哪种」上是**一条队列**：每 5 个单词轮一张别的卡（语法 → 汉字 → 辨析，当天没了的跳过），
+  单词没了就一直出别的卡，`pickMixedNext` 返回 `null` 才算完成。存储 / FSRS / 各自的撤销栈照旧分开，前端只管卡面。
+  网页 `WordStudy.tsx`（Taro 小程序编的也是它）和原生小程序 `runtime/learning.js`（经 `shared/web.js`）都只调这里。
+  **起因**：10-10 作者报「今日单词完成」时顶上停在 612/645 —— 网页答完最后一个单词有三条出口直接进完成页，
+  没问「还有别的卡吗」，33 条语法要重进页面才出来；两端的计数、轮次、撤销栈长度也早就各写一份、各走各的。
+  **以后加第五种卡 / 改插播规则 / 改完成判据只改这一个文件**，别再在页面组件里攒计数器；
+  调用方要做的只有：开场 `pickMixedNext({ word })`、答完单词 `recordMixedWordAnswer()` + `pickMixedNext({ word, afterWord: true })`、
+  答别的卡 `answerMixedOther`、撤销按 `mixedUndoKind()` 分派。测试在 `mixed-session.test.ts`（含 10-10 那个 bug 的形状）。
 
 ## 起点水平 → 备考计划：定了的方向 + 待办（2026-09-22）
 

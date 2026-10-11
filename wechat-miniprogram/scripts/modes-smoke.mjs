@@ -97,12 +97,13 @@ page.wordTouchMove(touch(10, 10));
 page.wordTouchEnd();
 await new Promise((resolve) => setTimeout(resolve, 280));
 assert.deepEqual(submitted, ['know', 'forgot']);
-page.pushUndo('word');
-page.pushUndo('grammar');
-page.pushUndo('kanji');
-assert.deepEqual(page.data.undoKinds, ['grammar', 'kanji']);
+// 作答顺序（撤哪一种）在 lib/mixed-session 里记、由 frontend 的 mixed-session.test.ts 盯；页面只另记专注词
+page.pushUndo(1);
+page.pushUndo(2);
+page.pushUndo(3);
+assert.deepEqual(page.data.undoFocusWordIds, [2, 3]);
 page.popUndo();
-assert.deepEqual(page.data.undoKinds, ['grammar']);
+assert.deepEqual(page.data.undoFocusWordIds, [2]);
 
 web.sounds.playFlip();
 web.sounds.playKnow(12);
@@ -123,18 +124,17 @@ assert.ok(mistakes.stats.planned >= 0);
 
 
 
-/* ---- 混合模式：每答 5 个单词插一张别的卡，三种轮着来 ---- */
-// 出的是网页那同一副牌（grammar-quiz / mixed-cards），所以在哪边答的都算数。
+/* ---- 混合模式：每答 5 个单词轮到一张别的卡，三种轮着来 ---- */
+// 出的是网页那同一副牌（grammar-quiz / mixed-cards），裁判也是网页那同一份（lib/mixed-session）。
+learning.resetQueue();
 const mixedSeen = new Set();
 let words = 0;
 let rewindChecked = false;
 for (let step = 0; step < 24; step += 1) {
   const home = await learning.getStudyHome({ mode: 'mixed' });
   if (home.interleave) {
-    const kind = home.interleave.kind;
-    mixedSeen.add(kind);
-    const id = kind === 'grammar' ? home.interleave.card.id : kind === 'kanji' ? home.interleave.card.char : home.interleave.card.groupKey;
-    await learning.answerInterleave(kind, id, 'know');
+    mixedSeen.add(home.interleave.kind);
+    await learning.answerInterleave(home.interleave, 'know');
     continue;
   }
   if (!home.card) break;
@@ -144,7 +144,7 @@ for (let step = 0; step < 24; step += 1) {
     if (!rewindChecked) {
       const kind = result.interleave.kind;
       assert.equal((await learning.undoAnswer({ mode: 'mixed' })).undone, true);
-      learning.rewindInterleave();
+      learning.undoWordInQueue(true);
       result = await learning.answerCard(home.card.id, 'know', { mode: 'mixed' });
       assert.equal(result.interleave?.kind, kind, '撤掉触发插播的单词，再答应重现同一种卡');
       rewindChecked = true;
@@ -155,8 +155,7 @@ for (let step = 0; step < 24; step += 1) {
     const kind = result.interleave.kind;
     mixedSeen.add(kind);
     assert.equal(words % 5, 0, '插播只在答满 5 个单词之后出现');
-    const id = kind === 'grammar' ? result.interleave.card.id : kind === 'kanji' ? result.interleave.card.char : result.interleave.card.groupKey;
-    await learning.answerInterleave(kind, id, 'know');
+    await learning.answerInterleave(result.interleave, 'know');
   }
 }
 assert.ok(mixedSeen.size >= 2, `插播应该轮到至少两种卡，实际只有 ${[...mixedSeen].join(',')}`);
@@ -166,9 +165,13 @@ for (const [kind, table] of [['kanji', 'kanji_char_reviews'], ['confusion', 'con
   assert.ok(Number(db.exec(`SELECT COUNT(*) FROM ${table}`)[0].values[0][0]) > 0, `${kind} 插播写的是 ${table}`);
 }
 // 撤销必须按刚答的那一种分派：撤语法不许动单词的流水
+const grammarCard = core.withDb(db, () => core.web.grammarQuiz.getGrammarQuizSession(core.web.preferences.getStudyPreferences().jlptTarget).card);
+assert.ok(grammarCard, '出厂库今天应该还有语法可答');
+await learning.answerInterleave({ kind: 'grammar', card: grammarCard }, 'know');
+assert.equal(learning.undoState('mixed').kind, 'grammar');
 const wordReviews = Number(db.exec("SELECT COUNT(*) FROM reviews WHERE direction = 'forward'")[0].values[0][0]);
 const grammarReviews = Number(db.exec('SELECT COUNT(*) FROM grammar_reviews')[0].values[0][0]);
-await learning.undoInterleave('grammar');
+assert.equal((await learning.undoInterleave())?.kind, 'grammar', '撤掉的语法要重新摆出来');
 assert.equal(Number(db.exec("SELECT COUNT(*) FROM reviews WHERE direction = 'forward'")[0].values[0][0]), wordReviews,
   '撤销语法插播不许碰单词流水（网页那边踩过：撤掉的是语法之前那个单词）');
 assert.equal(Number(db.exec('SELECT COUNT(*) FROM grammar_reviews')[0].values[0][0]), grammarReviews - 1);

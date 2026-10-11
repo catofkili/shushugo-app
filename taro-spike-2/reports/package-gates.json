@@ -2,19 +2,19 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1876511,
+      "bytes": 1878060,
       "passes": true
     },
     "study": {
-      "bytes": 419305,
+      "bytes": 419325,
       "passes": true
     },
     "account": {
-      "bytes": 258597,
+      "bytes": 258604,
       "passes": true
     },
     "content-pages": {
-      "bytes": 1150920,
+      "bytes": 1150945,
       "passes": true
     },
     "features": {
@@ -30,19 +30,19 @@
       "passes": true
     },
     "grammar-advanced": {
-      "bytes": 547379,
+      "bytes": 547381,
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 367393,
+      "bytes": 367422,
       "passes": true
     },
     "core": {
-      "bytes": 279124,
+      "bytes": 279123,
       "passes": true
     },
     "lazy": {
-      "bytes": 1000251,
+      "bytes": 1000472,
       "passes": true
     }
   },
@@ -1192,7 +1192,7 @@
     },
     {
       "source": "frontend/src/lib/study-core.ts",
-      "bytes": 83501
+      "bytes": 86714
     },
     {
       "source": "frontend/src/design.css",

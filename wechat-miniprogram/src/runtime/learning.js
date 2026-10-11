@@ -25,30 +25,23 @@ function ready() {
 const isPlanMode = (mode) => !mode || mode === 'classic' || mode === 'mixed';
 
 /*
- * 混合模式：每答 MIXED_EVERY 个单词插一张别的卡，三种轮着来（语法 → 单独汉字 → 疑难连线）。
- * 出的都是网页那同一副牌（同一份 grammar_progress / kanji_char_memory / confusion_progress、
- * 同一个当日清单和配额、同一套 FSRS），所以在哪边答的都算数，进度天然是一份账。
- * ⚠️ 插播卡是「盖在」单词卡上面的：底下那张单词卡照常排好，答完插播清掉就接着背词。
+ * 混合模式：单词 / 语法 / 单独汉字 / 疑难连线四种卡一条队列。下一张出哪一种、今天算不算完、
+ * 「上一个」撤哪一种，全部由网页的 lib/mixed-session 判（web.mixedSession，和网页学习页同一份源码）；
+ * 这里只把它给的卡摊成 WXML 能渲染的形状。
+ * ⚠️ 别的卡是「盖在」单词卡上面的：底下那张单词卡照常排好，答完别的卡清掉就接着背词。
  */
-const MIXED_EVERY = 5;
-const INTERLEAVE_KINDS = ['grammar', 'kanji', 'confusion'];
-let wordsSinceInterleave = 0;
-let interleaveIndex = 0;
-let interleaveIndexBefore = 0;
+const mixed = web.mixedSession;
 
-const grammarLevel = () => web.preferences.getStudyPreferences().jlptTarget;
+function toOtherView(item) {
+  if (!item) return null;
+  return item.kind === 'confusion' ? { kind: item.kind, card: normalizeMatching(item.card) } : { kind: item.kind, card: item.card };
+}
 
-function interleaveCard(database, kind) {
-  if (kind === 'grammar') {
-    const session = web.grammarQuiz.getGrammarQuizSession(grammarLevel());
-    return session.card ? { kind, card: session.card, canUndo: session.canUndo } : null;
-  }
-  if (kind === 'kanji') {
-    const session = web.mixedCards.getKanjiCardSession(database);
-    return session.card ? { kind, card: session.card } : null;
-  }
-  const session = web.mixedCards.getConfusionCardSession(database);
-  return session.card ? { kind, card: normalizeMatching(session.card) } : null;
+/** 问队列：单词那边有没有下一张 → 该出哪一种。只在混合模式问；返回别的卡（或 null）。 */
+function pickOther(mode, { word, afterWord = false }) {
+  if (mode !== 'mixed') return null;
+  const pick = mixed.pickMixedNext({ word, afterWord });
+  return pick && pick !== 'word' ? toOtherView(pick) : null;
 }
 
 /** 辨析卡的 notes 是 Map，WXML 只认普通对象；顺手把每个词的注记贴到成员上。 */
@@ -62,31 +55,6 @@ function normalizeMatching(card) {
   };
 }
 
-/** 该不该插播：答够 MIXED_EVERY 个单词就找一张，三种轮询，今天都空了就不插。 */
-function nextInterleave(database, mode, { force = false } = {}) {
-  if (mode !== 'mixed') return null;
-  if (!force) {
-    wordsSinceInterleave += 1;
-    if (wordsSinceInterleave < MIXED_EVERY) return null;
-  }
-  wordsSinceInterleave = 0;
-  for (let step = 0; step < INTERLEAVE_KINDS.length; step += 1) {
-    const kind = INTERLEAVE_KINDS[(interleaveIndex + step) % INTERLEAVE_KINDS.length];
-    const next = interleaveCard(database, kind);
-    if (next) {
-      interleaveIndexBefore = interleaveIndex;
-      interleaveIndex += step + 1;
-      return next;
-    }
-  }
-  return null;
-}
-
-/** 撤掉刚触发插播的单词后，再答同一张应该仍触发同一种插播。 */
-function rewindInterleave() {
-  wordsSinceInterleave = MIXED_EVERY - 1;
-  interleaveIndex = interleaveIndexBefore;
-}
 
 /**
  * 今日流程：减负卡 → 今日计划 → 压轴卡。和网页学习页同一条顺序、同一批判据
@@ -111,8 +79,9 @@ async function getStudyHome(options = {}) {
       const tail = web.wordApi.getDailyTailNext();
       if (tail) return view({ ...session, card: tail, phase: 'daily-tail' }, { mode, direction, tail: true });
     }
-    // 混合模式：单词今天背完之后剩下的三种卡接着上，四种都空了才算今天完成。
-    const interleave = !session.card ? nextInterleave(database, mode, { force: true }) : null;
+    // 混合模式：单词今天背完之后剩下的三种卡接着上，四种都空了才算今天完成（队列说了算）。
+    // 屏幕上已经摆着一张别的卡时不问：问一次就推进一次轮次，问出来的又用不上。
+    const interleave = !session.card && !options.otherShowing ? pickOther(mode, { word: false }) : null;
     return { ...view(session, { mode, direction }), interleave };
   });
 }
@@ -142,16 +111,21 @@ async function answerCard(wordId, answer, options = {}) {
       web.wordApi.advanceDailyRelief();
       return { relief: true };
     }
+    // 这一下算数了才谈得上轮到别的卡（和网页学习页同一个顺序：先记账，再问队列）。
+    // 压轴卡也是单词作答，一样计数、一样进撤销顺序（网页那边一直是这样，小程序原来漏了）。
+    const afterWord = () => {
+      mixed.recordMixedWordAnswer();
+      return pickOther(options.mode, { word: true, afterWord: true });
+    };
     if (options.tail) {
       const good = answer === 'know' || answer === 'known_forever';
       web.wordApi.submitWordAnswer(Number(wordId), answer);
       web.wordApi.advanceDailyTail({ requeue: !good });
-      return { tail: true };
+      return { tail: true, interleave: afterWord() };
     }
     if (options.unitKey) return web.wordApi.submitKanjiUnitAnswer(options.unitKey, answer);
     const submitted = core.recordAnswer(database, wordId, answer, options);
-    // 这一下算数了才谈得上插播（和网页学习页同一个顺序：先记账，再看要不要插）
-    return { ...submitted, interleave: nextInterleave(database, options.mode) };
+    return { ...submitted, interleave: afterWord() };
   });
   await saveDatabase();
   return result;
@@ -159,37 +133,37 @@ async function answerCard(wordId, answer, options = {}) {
 
 /* ---------------- 插播卡的评分 / 撤销：全部走网页那三条路 ---------------- */
 
-async function answerInterleave(kind, id, answer) {
+async function answerInterleave(item, answer) {
   const database = db();
-  const result = core.withDb(database, () => {
-    if (kind === 'grammar') return web.grammarQuiz.submitGrammarQuizAnswer(grammarLevel(), Number(id), answer);
-    if (kind === 'kanji') return web.mixedCards.submitKanjiCardAnswer(String(id), answer);
-    return web.mixedCards.submitConfusionCardAnswer(String(id), answer);
-  });
+  core.withDb(database, () => mixed.answerMixedOther(item, answer));
   await saveDatabase();
-  return result;
 }
 
 /**
- * 撤销插播卡。⚠️ 单词和三种插播卡各有一份互不知道对方存在的撤销栈，所以**必须按刚答的那种
- * 分派**（网页那边踩过：答完语法点「上一个」，撤掉的是语法之前那个单词 —— 一次误操作造两笔假数据）。
- * 页面记着栈顶是哪一种（`undoKinds`），插播卡自己那颗撤销按钮只走这条。
+ * 撤销栈顶那张别的卡，返回要重新摆出来的那张。⚠️ 单词和三种别的卡各有一份互不知道对方存在的撤销栈，
+ * 所以**必须按刚答的那种分派** —— 分派和栈都在 lib/mixed-session（网页踩过：答完语法点「上一个」，
+ * 撤掉的是语法之前那个单词，一次误操作造两笔假数据）。
  */
-async function undoInterleave(kind) {
+async function undoInterleave() {
   const database = db();
-  const result = core.withDb(database, () => {
-    if (kind === 'grammar') return web.grammarQuiz.undoLastGrammarQuizAnswer(grammarLevel());
-    if (kind === 'kanji') return web.mixedCards.undoKanjiCardAnswer();
-    return web.mixedCards.undoConfusionCardAnswer();
-  });
+  const item = core.withDb(database, () => mixed.undoMixedOther());
   await saveDatabase();
-  return result;
+  return toOtherView(item);
 }
 
-/** 混合模式下答完插播卡：拿同一种的下一张，没有了就回到单词。 */
-function nextOfKind(kind) {
-  const database = db();
-  return core.withDb(database, () => interleaveCard(database, kind));
+/** 单词那份撤销做完之后调：撤的若是带出别的卡的那个单词，计数和轮次一起退回。 */
+function undoWordInQueue(otherShowing) {
+  mixed.undoMixedWord({ otherShowing });
+}
+
+/** 「上一个」现在撤哪一种、亮不亮（判据在 lib/mixed-session）。 */
+function undoState(mode, wordCanUndo = true) {
+  return { kind: mixed.mixedUndoKind(), enabled: mixed.canUndoMixed(mode === 'mixed', wordCanUndo) };
+}
+
+/** 进学习页、切学习模式时清零队列的会话状态。 */
+function resetQueue() {
+  mixed.resetMixedSession();
 }
 
 /** 连线卡的四档由连错次数定（0 认识 / 1 模糊 / ≥2 忘记），不让用户点四颗 —— 答案全露着时选分等于灌假数据。 */
@@ -232,13 +206,13 @@ module.exports = {
   getStudyHome,
   answerCard,
   undoAnswer,
-  rewindInterleave,
   saveWordNote,
   searchWords,
   startEncore,
   answerInterleave,
   undoInterleave,
-  nextOfKind,
-  gradeMatching,
-  MIXED_EVERY
+  undoWordInQueue,
+  undoState,
+  resetQueue,
+  gradeMatching
 };
