@@ -24,7 +24,7 @@ jobs:
       run:
         working-directory: frontend
     env:
-      VITE_SYNC_API_URL: https://master-nihongo-sync.master-nihongo-lsc.workers.dev
+      VITE_SYNC_API_URL: https://api.shushugo.com
       # 音频放 R2 时填这个仓库变量(如 https://audio.example.com/),包里就不带 audio/,
       # 下面那步 tar 也不用配。两个都没配 = 网页版退回系统语音。
       VITE_AUDIO_BASE_URL: ${{ vars.AUDIO_BASE_URL }}

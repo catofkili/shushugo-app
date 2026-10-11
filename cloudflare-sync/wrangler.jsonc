@@ -8,10 +8,10 @@
   "placement": { "mode": "smart" },
   "workers_dev": true,
   "preview_urls": false,
-  // api.shushugo.com：小程序的云函数从大陆连不上 workers.dev（被墙），走自己的域名就通。
-  // workers.dev 保留 —— 已发布的 iOS 客户端还指着它。域名 DNS 托管在 Cloudflare，
-  // custom_domain 会自动建 DNS 记录和证书。
-  "routes": [{ "pattern": "api.shushugo.com", "custom_domain": true }],
+  // ⚠️ 2026-10-11 起后端已搬到阿里云（selfhost/README.md），这个文件只给构建和测试用，**不要部署它**：
+  // 一次误部署会把 master-nihongo-sync 换回旧后端，旧 iOS 的写入又落回已停用的 D1（脑裂）。
+  // 这里原来的 api.shushugo.com custom_domain 路由已删 —— 留着的话，部署会让 Cloudflare 把
+  // 该域名的 DNS 抢回去，小程序和网页一起断线。CF 上现在跑的是 proxy/ 里的转发层。
   "vars": {
     "APP_BUNDLE_ID": "com.shushugo.app",
     "APPLE_SIGN_IN_CLIENT_ID": "com.shushugo.app",

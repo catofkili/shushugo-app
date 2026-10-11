@@ -5,13 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",
-    "deploy": "wrangler deploy",
+    "deploy": "echo '后端已搬到阿里云，不要部署这个 Worker；见 selfhost/README.md' >&2 && exit 1",
     "d1:create": "wrangler d1 create master_nihongo_sync",
     "d1:migrate": "wrangler d1 migrations apply master_nihongo_sync",
     "d1:migrate:remote": "wrangler d1 migrations apply master_nihongo_sync --remote",
     "kv:create": "wrangler kv namespace create SYNC_DATA",
     "r2:create": "wrangler r2 bucket create master-nihongo-sync-snapshots",
-    "test": "node --experimental-strip-types scripts/entitlement-rules.test.mjs && node --experimental-strip-types scripts/apple-subscription.test.mjs && node scripts/worker-purchase-route.test.mjs && node scripts/trial-route.test.mjs && node scripts/launch-gift-route.test.mjs && node scripts/review-login-route.test.mjs && node scripts/weekly-report-route.test.mjs && node --experimental-strip-types scripts/wechat-pay.test.mjs && node scripts/worker-wechat-pay-route.test.mjs && node scripts/team-route.test.mjs && node scripts/team-overview-route.test.mjs && node scripts/team-streak-route.test.mjs && node scripts/duel-route.test.mjs && node scripts/worker-wechat-auth-route.test.mjs && node scripts/sync-route.test.mjs && node scripts/feedback-route.test.mjs && node scripts/d1-roundtrips.test.mjs",
+    "selfhost:build": "rm -rf selfhost/dist && wrangler deploy --dry-run --outdir selfhost/dist",
+    "test": "node --experimental-strip-types scripts/entitlement-rules.test.mjs && node --experimental-strip-types scripts/apple-subscription.test.mjs && node scripts/worker-purchase-route.test.mjs && node scripts/trial-route.test.mjs && node scripts/launch-gift-route.test.mjs && node scripts/review-login-route.test.mjs && node scripts/weekly-report-route.test.mjs && node --experimental-strip-types scripts/wechat-pay.test.mjs && node scripts/worker-wechat-pay-route.test.mjs && node scripts/team-route.test.mjs && node scripts/team-overview-route.test.mjs && node scripts/team-streak-route.test.mjs && node scripts/duel-route.test.mjs && node scripts/worker-wechat-auth-route.test.mjs && node scripts/sync-route.test.mjs && node scripts/feedback-route.test.mjs && node scripts/d1-roundtrips.test.mjs && node scripts/selfhost.test.mjs && node scripts/proxy.test.mjs",
     "check": "tsc --noEmit --strict --skipLibCheck --target ES2022 --module ESNext --moduleResolution bundler --lib ES2022,WebWorker --types @cloudflare/workers-types src/index.ts"
   },
   "devDependencies": {

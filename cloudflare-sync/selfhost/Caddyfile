@@ -1,0 +1,36 @@
+# /etc/caddy/Caddyfile。证书 Caddy 自己向 Let's Encrypt 申请（HTTP-01，要求 80 端口通、域名已指向本机）。
+# ⚠️ 只写已经指向本机的域名：没指过来的名字 Caddy 会一直申请失败、退避，
+#    等 DNS 真切过来时可能还在退避期里，于是切完那几分钟 TLS 握手失败。
+#
+# SHUSHUGO_PROXY_KEY 来自 /etc/caddy/proxy.env（systemd override 注入），
+# 和 Cloudflare 上转发 Worker 的 PROXY_KEY 是同一个值，见 ../proxy/index.js。
+(worker) {
+	@proxied header X-Shushugo-Proxy-Key {$SHUSHUGO_PROXY_KEY}
+	handle @proxied {
+		reverse_proxy 127.0.0.1:8787 {
+			header_up CF-Connecting-IP {header.X-Shushugo-Client-Ip}
+			header_up Host {header.X-Shushugo-Host}
+			header_up -X-Shushugo-Host
+			header_up -X-Shushugo-Proxy-Key
+			header_up -X-Shushugo-Client-Ip
+		}
+	}
+	handle {
+		# 直连的请求：客户端自己带的 CF-Connecting-IP 一律覆盖掉，不然谁都能伪造 IP 绕过限速。
+		reverse_proxy 127.0.0.1:8787 {
+			header_up CF-Connecting-IP {remote_host}
+			header_up -X-Shushugo-Host
+			header_up -X-Shushugo-Proxy-Key
+			header_up -X-Shushugo-Client-Ip
+		}
+	}
+}
+
+origin.shushugo.com, api.shushugo.com {
+	import worker
+}
+
+shushugo.com, www.shushugo.com {
+	root * /srv/shushugo-website
+	file_server
+}

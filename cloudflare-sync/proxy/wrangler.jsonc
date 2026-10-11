@@ -1,0 +1,17 @@
+{
+  // 和原来的同步 Worker 同名：部署它 = 把 master-nihongo-sync 换成只转发的版本。
+  // 密钥（secrets）跟着 Worker 名走，换代码不丢；D1/KV/R2 的数据也不会因为这里不绑定而被删。
+  // 回滚：cd .. && npx wrangler deploy（只在阿里云还没接受任何写入之前有效，见 ../selfhost/README.md）。
+  "name": "master-nihongo-sync",
+  "main": "index.js",
+  "compatibility_date": "2026-07-02",
+  "workers_dev": true,
+  "preview_urls": false,
+  // ⚠️ 不要在这里加 api.shushugo.com 的 routes / custom_domain：它的 DNS 直接指向阿里云，
+  // 加回来会被 Cloudflare 抢走（custom domain 会自己改 DNS 记录）。
+  // 旧 Worker 的每日清理已经由服务器上的 systemd 定时器接手，这里必须显式清空，不然两边各跑一遍。
+  "triggers": { "crons": [] },
+  "vars": {
+    "UPSTREAM": "https://origin.shushugo.com"
+  }
+}
