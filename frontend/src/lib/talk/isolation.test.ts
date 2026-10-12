@@ -48,7 +48,7 @@ const sourceFiles = (directory: string): string[] => readdirSync(directory, { wi
   return entry.isDirectory() ? sourceFiles(file) : /\.[cm]?[jt]sx?$/u.test(entry.name) ? [file] : [];
 });
 
-describe("开口练习发布隔离", () => {
+describe("开口练习与其它学习功能隔离", () => {
   it("网页和 Taro 只有指定页面或 talk 内部能引用数据层", () => {
     const violations = ["frontend/src", "taro-spike-2/src"].flatMap((directory) => sourceFiles(resolve(root, directory)))
       .filter((file) => !allowed(file))

@@ -6,13 +6,13 @@ import { CrossPlatformImage } from "../components/CrossPlatformImage";
 import { MascotSay } from "../components/MascotSay";
 import { today } from "../lib/study-core";
 import {
-  TALK_MARKER, loadTalkContent, talkContent, materializeTalkCards, recordTalkAnswer,
+  loadTalkContent, talkContent, materializeTalkCards, recordTalkAnswer,
   talkCard, talkFurigana, canUndoTalk, talkSceneSets, talkDueKeys, sceneSessionKeys,
   createTalkSession, advanceTalkSession, talkSessionProgress,
   undoLastTalkAnswer, talkEverAnswered, type TalkCard, type TalkSession
 } from "../lib/talk";
 import { listen as listenForSpeech, speechInputAvailable } from "../lib/talk/speech-input";
-import { talkDoneImage, talkHeroImage, talkImageSrc } from "../lib/talk/image-src";
+import { talkDoneImage, talkHeroImage, talkImageSrc, createTalkSceneImages, talkSceneImageFallback } from "../lib/talk/image-src";
 import { canPlayTalkAudio, playTalkAudio, stopTalkAudio } from "../lib/talk/audio";
 import "./talk.css";
 
@@ -38,9 +38,15 @@ type SceneSet = ReturnType<typeof talkSceneSets>;
 
 const LISTEN_ONLY_KEY = "shushugo-talk-listen-only";
 
-function SafeSceneImage(props: ComponentProps<typeof CrossPlatformImage>) {
-  const [failed, setFailed] = useState(false);
-  return failed ? null : <CrossPlatformImage {...props} onError={() => setFailed(true)} />;
+function SafeSceneImage({ src, onError, ...props }: ComponentProps<typeof CrossPlatformImage>) {
+  const primary = talkImageSrc(src);
+  const fallback = talkImageSrc(talkSceneImageFallback(src));
+  const [failed, setFailed] = useState<string[]>([]);
+  const source = failed.includes(primary) ? fallback : primary;
+  return failed.includes(source) ? null : <CrossPlatformImage {...props} src={source} onError={(event) => {
+    setFailed((sources) => [...sources, source]);
+    if (source === fallback) onError?.(event);
+  }} />;
 }
 
 function PracticeCard({ card, firstToday, showSceneTitle, inputAvailable, listenOnly, onListenOnlyChange, onMicBlocked, onAnswer }: {
@@ -200,7 +206,7 @@ function PracticeCard({ card, firstToday, showSceneTitle, inputAvailable, listen
     <section className="ds-card talk-card">
       {/* 翻面后收起图：答案和「下一张」要在一屏里，不能每张都往下滚 */}
       {showImage && <div className="talk-image">
-        <CrossPlatformImage src={talkImageSrc(card.image!)} alt="" className="talk-scene-image"
+        <SafeSceneImage src={card.image!} alt="" className="talk-scene-image"
           weappWidth="100%" weappHeight="100%" style={{ width: "100%", height: "100%", objectFit: "cover" }}
           onError={() => setImageFailed(true)} />
       </div>}
@@ -305,8 +311,11 @@ export function TalkPage() {
   const [welcome, setWelcome] = useState(false);
   const [doneArtFailed, setDoneArtFailed] = useState(false);
   const [initialCollection, setInitialCollection] = useState(() => new Set<string>());
+  const [sceneImages, setSceneImages] = useState(() => createTalkSceneImages());
+  const withSceneImage = (card: TalkCard | null, images = sceneImages): TalkCard | null =>
+    card?.image ? { ...card, image: images(card.image) } : card;
   // 撤销同时还原队列（包括刚追加的重来）和原 filler，不重新抽词。
-  const history = useRef<{ session: TalkSession; card: TalkCard; sceneId: string | null; collected: Set<string> }[]>([]);
+  const history = useRef<{ session: TalkSession; card: TalkCard; sceneId: string | null; collected: Set<string>; images: ReturnType<typeof createTalkSceneImages> }[]>([]);
   const refresh = useCallback(() => {
     setScenes(talkSceneSets(day));
     setDue(talkDueKeys(day));
@@ -341,12 +350,14 @@ export function TalkPage() {
     try {
       const nextSession = createTalkSession(id ? sceneSessionKeys(id) : talkDueKeys(day));
       if (!nextSession.keys.length) return;
-      const next = talkCard(nextSession.queue[0], { sceneId: id ?? undefined });
+      const images = createTalkSceneImages();
+      const next = withSceneImage(talkCard(nextSession.queue[0], { sceneId: id ?? undefined }), images);
       if (!next) throw new Error("卡片内容不可用");
       setInitialCollection(new Set(talkSceneSets(day).filter((scene) => scene.collected).map((scene) => scene.id)));
       setError("");
       setWelcome(false);
       setSceneId(id);
+      setSceneImages(() => images);
       setSession(nextSession);
       setCard(next);
       setTurn((value) => value + 1);
@@ -368,15 +379,15 @@ export function TalkPage() {
     const key = nextSession.queue[nextSession.cursor];
     let next: TalkCard | null;
     try {
-      next = key ? talkCard(key, sceneOptions) : null;
+      next = key ? withSceneImage(talkCard(key, sceneOptions)) : null;
       if (key && !next) throw new Error("卡片内容不可用");
       recordTalkAnswer(card.key, hints, gaveUp, card.filler);
     } catch { setError("这张没记上，请重试。"); return false; }
     if (key === card.key) {
       // 唯一一张立即重来时，等流水写入后换词；抽词失败仍用已生成的卡，不能把已记账说成失败再记一次。
-      try { next = talkCard(key, sceneOptions) ?? next; } catch { /* 保留已验证的下一张。 */ }
+      try { next = withSceneImage(talkCard(key, sceneOptions)) ?? next; } catch { /* 保留已验证的下一张。 */ }
     }
-    history.current.push({ session, card, sceneId, collected: initialCollection });
+    history.current.push({ session, card, sceneId, collected: initialCollection, images: sceneImages });
     setSession(nextSession);
     setCard(next);
     setError("");
@@ -391,8 +402,10 @@ export function TalkPage() {
       if (!key) return;
       const previous = history.current.pop();
       const restored = previous?.card.key === key ? previous : null;
-      const next = restored?.card ?? talkCard(key, { sceneId: restored?.sceneId ?? undefined });
+      const images = restored?.images ?? createTalkSceneImages();
+      const next = restored?.card ?? withSceneImage(talkCard(key), images);
       if (!next) throw new Error("卡片内容不可用");
+      setSceneImages(() => images);
       setSession(restored?.session ?? createTalkSession([key]));
       setSceneId(restored?.sceneId ?? null);
       setInitialCollection(restored?.collected ?? new Set(talkSceneSets(day).filter((scene) => scene.collected).map((scene) => scene.id)));
@@ -414,7 +427,7 @@ export function TalkPage() {
   const inputAvailable = speechAvailable && !micBlocked;
   const retry = () => { setError(""); setLoading(true); setAttempt((value) => value + 1); };
 
-  return <div className="talk-page" data-exp={TALK_MARKER}>
+  return <div className="talk-page">
     {!loading && session && <div className="talk-top">
       <button type="button" className="ds-chip focus-ring talk-back" onClick={home}>← 场景</button>
       <span className="talk-session-title">{sceneId ? scenes.find((scene) => scene.id === sceneId)?.title : "复习"}</span>
@@ -441,7 +454,7 @@ export function TalkPage() {
           <div className="talk-collection-grid">
             {section.scenes.map((scene) => <button type="button" key={scene.id} className="ds-btn-soft focus-ring talk-collection-item" onClick={() => start(scene.id)}>
               {/* 网页滚到后懒加载；小程序直接从云存储读取，原生 <image> 忽略 loading / decoding。 */}
-              <div className="talk-image"><SafeSceneImage src={talkImageSrc(scene.image)} alt="" className="talk-scene-image" loading="lazy" decoding="async"
+              <div className="talk-image"><SafeSceneImage src={scene.image} alt="" className="talk-scene-image" loading="lazy" decoding="async"
                 weappWidth="100%" weappHeight="100%" style={{ width: "100%", height: "100%", objectFit: "cover" }} /></div>
               <p className="talk-collection-title">{scene.title}</p>
               <p className="talk-collection-remaining">
@@ -462,7 +475,7 @@ export function TalkPage() {
               : <MascotSay sticker="empty-done" tone="good" size={96} className="ds-say-onbg talk-done-fallback">练完了</MascotSay>}
             <p className="talk-done-title">{sceneId ? "这个场景练完了" : "今天的复习做完了"}</p>
             {newScenes.map((scene) => <section key={scene.id} className="ds-card talk-new-scene">
-              <div className="talk-new-scene-thumb"><SafeSceneImage src={talkImageSrc(scene.image)} alt="" className="talk-scene-image"
+              <div className="talk-new-scene-thumb"><SafeSceneImage src={sceneImages(scene.image)} alt="" className="talk-scene-image"
                 weappWidth="100%" weappHeight="100%" style={{ width: "100%", height: "100%", objectFit: "cover" }} /></div>
               <div><p className="talk-kicker">收集到新场景</p><p className="talk-new-scene-title">{scene.title}</p></div>
             </section>)}

@@ -21,7 +21,7 @@ const routes = {
   confusion: 'study/confusion/index.wxss',
   kanjiReadings: 'study/kanji-readings/index.wxss',
   spelling: 'study/spelling/index.wxss',
-  // 实验功能「开口练习」：只有 SHUSHUGO_EXP_TALK=1 的预览构建里才有 talk- 类（docs/DAILY_TALK_SPEC.md §0）
+  // 开口练习样式只放在自己的 study 页面，保持主包体积。
   talk: 'study/talk/index.wxss',
   jlptPractice: 'study/jlpt-practice/index.wxss'
 };

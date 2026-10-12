@@ -41,9 +41,6 @@ const checks = [
   ['不是分段计时版', hits(/perf-overlay-marker/)],
   ['没有开发专用代码', hits(/__live-snapshot|开发环境常开 Pro/)],
   ['没有周报模拟夹具', hits(/__SHUSHUGO_DEV_ONLY_FIXTURE__/)],
-  // 实验功能「开口练习」只许出预览码（SHUSHUGO_EXP_TALK=1），见 docs/DAILY_TALK_SPEC.md §0。上线时删掉这两条。
-  ['没有实验功能的页面（开口练习）', JSON.stringify(app).includes('talk/index') ? ['app.json'] : []],
-  ['没有实验功能的代码（开口练习）', hits(/__SHUSHUGO_EXP_TALK__/)],
   // 单词拼写同样不许进发布包；它用独立指纹，便于单独解除拦截。
   ['没有实验功能的页面（单词拼写）', JSON.stringify(app).includes('spelling/index') ? ['app.json'] : []],
   ['没有实验功能的代码（单词拼写）', hits(/__SHUSHUGO_EXP_SPELLING__/)],

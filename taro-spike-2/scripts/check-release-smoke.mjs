@@ -37,7 +37,6 @@ for (const [label, text] of Object.entries({
   timing: 'console.log("[preview-timing] Taro study")',
   devOnly: 'var o="/__live-snapshot"',
   mockFixture: 'var o="__SHUSHUGO_DEV_ONLY_FIXTURE__"',
-  expTalk: 'var m="__SHUSHUGO_EXP_TALK__"',
   expSpelling: 'var m="__SHUSHUGO_EXP_SPELLING__"',
   expJlpt: 'var m="__SHUSHUGO_EXP_JLPT__"',
   devEnv: 'var e={"DEV":true}',
@@ -47,7 +46,7 @@ for (const [label, text] of Object.entries({
   accessToken: 'var c={accessToken:"0123456789abcdef"}'
 })) assert.equal(run({ 'common.js': `${clean};${text}` }), false, `${label} 要被拦住`);
 assert.equal(run({ 'common.js': clean, 'common.js.map': '{}' }), false, 'sourcemap 文件要被拦住');
-assert.equal(run({ 'common.js': clean, 'app.json': '{"pages":["pages/index/index"],"subPackages":[{"root":"study","pages":["talk/index"]}]}' }), false, '实验页面（开口练习）要被拦住');
+assert.equal(run({ 'common.js': clean, 'app.json': '{"pages":["pages/index/index"],"subPackages":[{"root":"study","pages":["talk/index"]}]}' }), true, '正式页面（开口练习）可以发布');
 assert.equal(run({ 'common.js': clean, 'app.json': '{"pages":["pages/index/index"],"subPackages":[{"root":"study","pages":["spelling/index"]}]}' }), false, '实验页面（单词拼写）要被拦住');
 assert.equal(run({ 'common.js': clean, 'app.json': '{"pages":["pages/index/index"],"subPackages":[{"root":"study","pages":["jlpt-practice/index"]}]}' }), false, '实验页面（JLPT 刷题）要被拦住');
 assert.equal(run({ 'common.js': clean }, { uploadWithSourceMap: true, urlCheck: true }), false, 'uploadWithSourceMap 要关');

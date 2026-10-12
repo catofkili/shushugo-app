@@ -100,14 +100,14 @@ describe("JLPT 刷题发布隔离", () => {
     expect(forbidden.some((file) => allowed(resolve(root, file)))).toBe(false);
   });
 
-  it("Taro 的 JLPT 和开口练习页面登记由各自开关独立控制", () => {
-    for (const talk of ["0", "1"]) for (const jlpt of ["0", "1"]) {
+  it("Taro 的开口练习始终登记，JLPT 页面仍独立由实验开关控制", () => {
+    for (const jlpt of ["0", "1"]) {
       const output = execFileSync(process.execPath, ["-e", `
         const { ROUTE_TABLE } = require('./taro-spike-2/src/platform/route-table.cjs');
         console.log(JSON.stringify(ROUTE_TABLE.map(route => route.page)));
-      `], { cwd: root, env: { ...process.env, SHUSHUGO_EXP_TALK: talk, SHUSHUGO_EXP_JLPT: jlpt }, encoding: "utf8" });
+      `], { cwd: root, env: { ...process.env, SHUSHUGO_EXP_JLPT: jlpt }, encoding: "utf8" });
       const pages: string[] = JSON.parse(output);
-      expect(pages.includes("talk")).toBe(talk === "1");
+      expect(pages.includes("talk")).toBe(true);
       expect(pages.includes("jlpt-practice")).toBe(jlpt === "1");
     }
   });

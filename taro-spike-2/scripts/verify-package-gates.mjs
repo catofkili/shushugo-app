@@ -140,7 +140,10 @@ const currentPagePaths = new Set(duplicatedPageComponents.map(({ source }) => so
 const unapprovedCoreDuplicates = duplicatedCoreModules.filter(({ source }) => !allowedCoreDuplicates[source]);
 const staleCoreAllowlist = Object.keys(allowedCoreDuplicates).filter((source) => !currentCorePaths.has(source));
 const unapprovedPageComponents = duplicatedPageComponents.filter(({ source }) => !allowedPageComponentDuplicates[source]);
-const stalePageComponentAllowlist = Object.keys(allowedPageComponentDuplicates).filter((source) => !currentPagePaths.has(source));
+// 新路由会改变 Taro 提取结果；组件已合成主包唯一实例时，重复已消除，不能为过闸门再强行复制。
+// 保留许可兼容已有 reports；彻底消失或只剩一个分包实例的旧条目仍须报过期。
+const stalePageComponentAllowlist = Object.keys(allowedPageComponentDuplicates).filter((source) =>
+  !currentPagePaths.has(source) && !(modulePackages.get(source)?.size === 1 && modulePackages.get(source).has('main')));
 const unapprovedPageComponentBytes = unapprovedPageComponents.reduce((sum, item) => sum + item.bytes, 0);
 const grammarHighlights = [...modulePackages].find(([source]) => /^frontend\/src\/lib\/grammarHighlights\.ts$/.test(source));
 const grammarHighlightsPackages = grammarHighlights ? [...grammarHighlights[1]].sort() : [];

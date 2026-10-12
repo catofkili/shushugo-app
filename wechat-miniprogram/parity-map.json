@@ -48,7 +48,7 @@
         "frontend/src/pages/TalkPage.tsx",
         "taro-spike-2/src/study/talk/index.tsx"
       ],
-      "reason": "开口练习仅在 Taro 实验预览版登记；小程序直接编译同一份 TalkPage.tsx，不维护第二份页面。运行验收见 docs/DAILY_TALK_WEAPP_PREVIEW.md。"
+      "reason": "2026-10-12 开口练习转正式入口；小程序直接编译同一份 TalkPage.tsx，场景选图与失败回退也是同一份页面逻辑。运行验收历史见 docs/DAILY_TALK_WEAPP_PREVIEW.md。"
     },
     {
       "web": "frontend/src/components/CrossPlatformImage.weapp.tsx",
@@ -89,7 +89,7 @@
         "wechat-miniprogram/src/pages/home/index.wxss",
         "frontend/src/components/ZooHome.tsx"
       ],
-      "reason": "路线 A：Taro 直接编译这份 ZooHome.tsx（主页入口随实验开关出现），原生 pages/home 已停止维护，见头部 2026-09-25 决定。"
+      "reason": "路线 A：Taro 直接编译这份 ZooHome.tsx，登记自身保证同源改动通过配对检查；2026-10-12 开口练习进入学习工具网格，JLPT 格仍由独立实验开关控制。原生 pages/home 已停止维护，见头部 2026-09-25 决定。"
     },
     {
       "web": "frontend/src/pages/AboutPage.tsx",

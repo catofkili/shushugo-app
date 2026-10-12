@@ -93,6 +93,14 @@ check / lint / test，应急才用 `SKIP_RELEASE_GATES=1`。
 - `webpack-stats.json` 本身仍带绝对路径（每次从不同 worktree 构建都是几千行 diff）；
   要消掉这份噪音得在 `config/index.js` 的 stats 插件里落盘前改写路径，还没做。
 
+### 2026-10-12 增补：新路由把已许可的分包组件合到主包时
+
+开口练习转正式路由后，fresh build 的 `DailyPlanSlider.weapp.tsx` 从 account / study 各一份变成 `common.js` 中唯一一份；
+旧重复清单却报「已过期」。这次不是旧 stats 路径错误：核对过新 chunks 中只出现主包实例，未许可重复为 0，主包仍低于 1,900,000 B。
+判据补成：已许可页面组件若现在**只存在于主包**，视为重复已消除，保留清单以兼容已提交 reports；不为消警告再复制组件，也不删旧许可。
+模块彻底消失、只剩一个分包实例、出现未许可重复、预算超限仍照旧拦截。`verify-package-gates.test.mjs` 用隔离 stats 验证这些边界。
+本次作者明确要求构建后还原 reports，按该要求处理；后续正式更新构建报告仍遵守上面的三份一起更新规则。
+
 ## ⚠️ 后端已从 Cloudflare 搬到阿里云（2026-10-11）
 
 **现状**：Worker 本体（`cloudflare-sync/src/index.ts`，一行没改）跑在阿里云武汉轻量服务器 `8.148.68.155`，

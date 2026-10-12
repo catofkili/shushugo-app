@@ -54,13 +54,6 @@ else
 fi
 
 # 3. 构建前端
-#
-# ⚠️ 实验功能（开口练习，见 docs/DAILY_TALK_SPEC.md §0）不许进发版包：环境变量打开了就拒绝，
-# 构建完再搜一遍它的指纹字符串兜底。上线时连同这两处一起删。
-if [ -n "${SHUSHUGO_EXP_TALK:-}" ]; then
-    echo -e "${RED}❌ SHUSHUGO_EXP_TALK 是实验功能开关，发版构建不许带${NC}"
-    exit 1
-fi
 if [ -n "${SHUSHUGO_EXP_SPELLING:-}" ]; then
     echo -e "${RED}❌ SHUSHUGO_EXP_SPELLING 是实验功能开关，发版构建不许带${NC}"
     exit 1
@@ -72,10 +65,6 @@ if [ -n "${SHUSHUGO_EXP_JLPT:-}" ]; then
 fi
 echo -e "${YELLOW}🔨 构建前端项目...${NC}"
 npm run build
-if grep -rq "__SHUSHUGO_EXP_TALK__" dist; then
-    echo -e "${RED}❌ 构建产物里有实验功能（开口练习）的代码${NC}"
-    exit 1
-fi
 if grep -rq "__SHUSHUGO_EXP_SPELLING__" dist; then
     echo -e "${RED}❌ 构建产物里有实验功能（单词拼写）的代码${NC}"
     exit 1
