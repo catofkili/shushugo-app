@@ -19,6 +19,8 @@ export interface StudyPreferences {
   showRomaji: boolean;
   /** 题目面上那枚「N4」等级标。默认关：起点当先验写进 FSRS 后，N4 词会当复习露面，标着等级等于把「在过一遍你的 N4」说出来 */
   showJlptLevel: boolean;
+  /** 正向单词今天最后一次见面改用拼写；设备偏好，默认关闭。 */
+  spellingEnabled: boolean;
   /** 学习强度 = 每日新词数(复习量由算法定) */
   dailyGoal: number;
   /**
@@ -98,6 +100,7 @@ export const defaultStudyPreferences: StudyPreferences = {
   autoPlay: true,
   showRomaji: false,
   showJlptLevel: false,
+  spellingEnabled: false,
   dailyGoal: 15,
   grammarDailyGoal: 5,
   reviewCap: 0,
@@ -166,6 +169,7 @@ export const normalizeStudyPreferences = (value: Partial<StudyPreferences> = {})
   autoPlay: value.autoPlay ?? defaultStudyPreferences.autoPlay,
   showRomaji: value.showRomaji ?? defaultStudyPreferences.showRomaji,
   showJlptLevel: value.showJlptLevel ?? defaultStudyPreferences.showJlptLevel,
+  spellingEnabled: value.spellingEnabled === true,
   dailyGoal: clampDailyGoal(Number(value.dailyGoal ?? defaultStudyPreferences.dailyGoal)),
   grammarDailyGoal: clampGrammarGoal(Number(value.grammarDailyGoal ?? defaultStudyPreferences.grammarDailyGoal)),
   kanjiDailyGoal: clampSmallGoal(Number(value.kanjiDailyGoal ?? defaultStudyPreferences.kanjiDailyGoal), 50),

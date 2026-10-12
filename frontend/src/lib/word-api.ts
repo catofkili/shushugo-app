@@ -1043,13 +1043,13 @@ export function submitKanjiUnitAnswer(unitKey: string, answer: WordAnswer): Word
   return getWordSession();
 }
 
-export function submitWordAnswer(wordId: number, answer: WordAnswer, options: WordSessionOptions = {}): WordSessionResponse {
-  perfTime("记账", () => applyWordAnswer(wordId, answer, options));
+export function submitWordAnswer(wordId: number, answer: WordAnswer, options: WordSessionOptions = {}, spelling = false): WordSessionResponse {
+  perfTime("记账", () => applyWordAnswer(wordId, answer, options, spelling));
   return getWordSession(options);
 }
 
 /** 只记这一次作答（FSRS、计数、流水、重刷排队、撤销快照），不选下一张。 */
-function applyWordAnswer(wordId: number, answer: WordAnswer, options: WordSessionOptions): void {
+function applyWordAnswer(wordId: number, answer: WordAnswer, options: WordSessionOptions, spelling = false): void {
   ensureProgressInitialized();
   if (!claimCurrentCard(wordId)) {
     // Stale or duplicate submission (e.g. a rapid double-tap before the card
@@ -1090,6 +1090,9 @@ function applyWordAnswer(wordId: number, answer: WordAnswer, options: WordSessio
     mistake_streak: Number(progress.mistake_streak ?? 0),
     // 撤销要能把 FSRS 状态原样放回去(null = 这次是它第一次进调度)
     fsrs: readFsrsState(wordId),
+    ...(spelling && answer === "forgot" ? {
+      always_spell: firstValue<number>("SELECT always_spell FROM spelling_memory WHERE word_id = ?", [wordId], 0)
+    } : {}),
     review_queue: getReviewQueue()
   };
 
@@ -1205,6 +1208,10 @@ function applyWordAnswer(wordId: number, answer: WordAnswer, options: WordSessio
   // 而这份画像按 adaptive.ts 自己的注释「只用于统计页展示」,不参与任何调度。
   // 现在只由 analytics/stats.ts 在打开统计页时按同一个阈值补算。
   // 代价:从不打开统计页的人,画像会一直停在上次打开时的值。它不影响出题。
+  if (spelling && answer === "forgot") {
+    db.run(`INSERT INTO spelling_memory (word_id, always_spell) VALUES (?, 1)
+      ON CONFLICT(word_id) DO UPDATE SET always_spell = 1`, [wordId]);
+  }
   pushUndoSnapshot({ ...snapshot, review_id: reviewId });
 
   persistSoon();
@@ -1228,6 +1235,8 @@ function applyWordAnswer(wordId: number, answer: WordAnswer, options: WordSessio
 export interface NextCardPreview {
   card: WordCard | null;
   phase: string;
+  /** 当前词按这档正常作答后是否今天毕业；没有下一张时也保留，供答前决定拼写。 */
+  graduatedForDay: boolean;
   /** 这一下「忘记」会打开当日错题回顾（UI 走同步路径，照原样处理） */
   dailyReviewWouldStart: boolean;
   /** 同一类答法（认识↔熟知、忘记↔模糊）能不能共用这张：不在收尾阶段、下一张也不是当前这张时才行 */
@@ -1264,6 +1273,7 @@ export function addAnswerPreview(
   try {
     previews.byAnswer[answer] = withProgressEventsMuted(() => {
       applyWordAnswer(previews.wordId, answer, options);
+      const graduatedForDay = isGraduatedForDay(readFsrsState(previews.wordId), studyDayEnd());
       const { card, phase } = nextCard(options);
       const day = today();
       const dueLeft = phase === "stage1" ? firstValue<number>(`
@@ -1274,6 +1284,7 @@ export function addAnswerPreview(
       return {
         card,
         phase,
+        graduatedForDay,
         dailyReviewWouldStart: checkDailyReview && answer === "forgot" && shouldStartDailyReview(true),
         // 收尾阶段（剩余 ≤ 一成）允许同一张连出，那时「忘记」和「模糊」排的重刷位置不同就可能选出不同的下一张。多留两张余量。
         sharedWithinClass: phase === "stage1" && card != null && card.id !== previews.wordId
@@ -1319,9 +1330,10 @@ export function submitWordAnswerWithPreview(
   wordId: number,
   answer: WordAnswer,
   preview: NextCardPreview,
-  options: WordSessionOptions = {}
+  options: WordSessionOptions = {},
+  spelling = false
 ): WordSessionResponse {
-  perfTime("记账", () => applyWordAnswer(wordId, answer, options));
+  perfTime("记账", () => applyWordAnswer(wordId, answer, options, spelling));
   setCurrentCard(preview.card);
   return {
     card: preview.card,
@@ -1396,6 +1408,9 @@ export function undoLastWordAnswer(options: WordSessionOptions = {}): WordSessio
     // FSRS 是唯一调度器,撤销必须把 due/S/D 一起放回作答前,
     // 否则这个词会带着一个凭空多出来的下次到期时间留在计划里。
     restoreFsrsState(Number(snapshot.word_id), (snapshot.fsrs ?? null) as FsrsState | null);
+    if (snapshot.always_spell != null) {
+      db.run("UPDATE spelling_memory SET always_spell = ? WHERE word_id = ?", [Number(snapshot.always_spell), Number(snapshot.word_id)]);
+    }
     if (Array.isArray(snapshot.review_queue)) {
       setReviewQueue(snapshot.review_queue.flatMap((item) => {
         if (!item || typeof item !== "object") return [];

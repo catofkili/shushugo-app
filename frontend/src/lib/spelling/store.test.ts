@@ -327,11 +327,14 @@ describe("正向毕业钩子和同步登记", () => {
     testDb.run("DELETE FROM spelling_tasks WHERE word_id = ?", [wordId]);
     expect(new Set(rowsFor("SELECT DISTINCT table_name FROM sync_tombstones WHERE table_name LIKE 'spelling_%'").map((row) => row.table_name)))
       .toEqual(new Set(spellingTables));
+    testDb.run("INSERT INTO spelling_memory (word_id, always_spell) VALUES (?, 1)", [wordId]);
+    testDb.run("INSERT OR REPLACE INTO app_state (key, value) VALUES ('last_answer', ?)", [JSON.stringify([{ word_id: wordId, always_spell: 0 }])]);
 
     const snapshot = new SQL.Database(await exportSyncSnapshot());
     try {
       expect(rows(snapshot, "SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'spelling_%'")).toEqual([]);
       expect(rows(snapshot, "SELECT table_name FROM sync_tombstones WHERE table_name LIKE 'spelling_%'")).toEqual([]);
+      expect(rows(snapshot, "SELECT value FROM app_state WHERE key = 'last_answer'")).toEqual([]);
     } finally {
       snapshot.close();
     }

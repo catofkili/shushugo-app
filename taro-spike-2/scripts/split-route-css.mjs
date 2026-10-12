@@ -20,7 +20,7 @@ const routes = {
   quickStudy: 'study/quick-study/index.wxss',
   confusion: 'study/confusion/index.wxss',
   kanjiReadings: 'study/kanji-readings/index.wxss',
-  spelling: 'study/spelling/index.wxss',
+  word: 'pages/word/index.wxss',
   // 开口练习样式只放在自己的 study 页面，保持主包体积。
   talk: 'study/talk/index.wxss',
   jlptPractice: 'study/jlpt-practice/index.wxss'
@@ -32,7 +32,7 @@ const prefixRoutes = [
   [['weekly-report', 'wr-'], [routes.weeklyReport]],
   [['vt-'], [routes.vocabTest]],
   [['talk-'], [routes.talk]],
-  [['sp-'], [routes.spelling]],
+  [['sp-'], [routes.word]],
   [['jq-'], [routes.jlptPractice]],
   [['wl-'], [routes.wordList]],
   [['quick-'], [routes.quickStudy]],

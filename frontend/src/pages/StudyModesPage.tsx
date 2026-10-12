@@ -3,6 +3,8 @@ import { defaultStudyMode, saveStudyMode, VISIBLE_STUDY_MODES } from "../lib/stu
 import type { StudyMode } from "../types/app";
 import { Sticker } from "../components/CapybaraMascot";
 import { useEntitlements } from "../hooks/useEntitlements";
+import { useEffect, useState } from "react";
+import { getStudyPreferences, PREFERENCES_EVENT, saveStudyPreferences } from "../lib/studyPreferences";
 
 interface StudyModesPageProps {
   selectedMode: StudyMode;
@@ -26,6 +28,12 @@ const MODE_ICONS: Record<StudyMode, typeof Layers3> = {
 export function StudyModesPage({ selectedMode, onModeChange, onStart }: StudyModesPageProps) {
   const currentMode = selectedMode || defaultStudyMode;
   const { isPro } = useEntitlements();
+  const [preferences, setPreferences] = useState(getStudyPreferences);
+  useEffect(() => {
+    const refresh = () => setPreferences(getStudyPreferences());
+    window.addEventListener(PREFERENCES_EVENT, refresh);
+    return () => window.removeEventListener(PREFERENCES_EVENT, refresh);
+  }, []);
 
   const chooseMode = (mode: StudyMode) => {
     onModeChange(saveStudyMode(mode));
@@ -80,6 +88,19 @@ export function StudyModesPage({ selectedMode, onModeChange, onStart }: StudyMod
           );
         })}
       </div>
+
+      <label className="mt-4 flex cursor-pointer items-center gap-3 rounded-2xl border border-white/15 bg-[#464949] p-4">
+        <span className="min-w-0 flex-1">
+          <span className="block text-sm font-bold text-white">拼写</span>
+          <span className="mt-1 block text-xs leading-5 text-white/58">每天最后一次见面时拼写；选忘记后，这个词一直用拼写。</span>
+        </span>
+        <span className="relative inline-flex shrink-0 items-center">
+          <input type="checkbox" aria-label="拼写" className="peer sr-only"
+            checked={preferences.spellingEnabled}
+            onChange={(event) => setPreferences(saveStudyPreferences({ ...getStudyPreferences(), spellingEnabled: event.target.checked }))} />
+          <span className="h-6 w-11 rounded-full bg-white/20 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-[#81D8CF] peer-checked:after:translate-x-5" />
+        </span>
+      </label>
 
       <button
         onClick={() => onStart(currentMode)}

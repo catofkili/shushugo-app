@@ -240,6 +240,7 @@ const USER_SCHEMA_DDL = [
   "ALTER TABLE content_favorites ADD COLUMN folder TEXT NOT NULL DEFAULT ''",
   "ALTER TABLE vocab_test_history ADD COLUMN levels_json TEXT NOT NULL DEFAULT ''",
   "ALTER TABLE reviews ADD COLUMN direction TEXT NOT NULL DEFAULT 'forward'",
+  "ALTER TABLE spelling_memory ADD COLUMN always_spell INTEGER NOT NULL DEFAULT 0",
   `CREATE TABLE IF NOT EXISTS study_time_by_period (
     period_start TEXT NOT NULL, device_id TEXT NOT NULL, seconds INTEGER NOT NULL DEFAULT 0,
     sync_updated_at TEXT, sync_origin_device TEXT, PRIMARY KEY (period_start, device_id)
@@ -267,6 +268,10 @@ export const ensureUserTables = () => {
     return;
   }
   ensureLocalSchema();
+  // CREATE IF NOT EXISTS 不补旧表的列；本机拼写标记也要随结构指纹迁移。
+  if (!rowsFor("PRAGMA table_info(spelling_memory)").some((row) => row.name === "always_spell")) {
+    db.run("ALTER TABLE spelling_memory ADD COLUMN always_spell INTEGER NOT NULL DEFAULT 0");
+  }
   db.run("CREATE TABLE IF NOT EXISTS app_state (key TEXT PRIMARY KEY, value TEXT NOT NULL)");
   const wordColumns = rowsFor("PRAGMA table_info(words)").map((row) => String(row.name ?? ""));
   if (!wordColumns.includes("jlpt_level")) {

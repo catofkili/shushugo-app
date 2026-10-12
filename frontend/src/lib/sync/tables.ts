@@ -184,6 +184,8 @@ export const DEVICE_LOCAL_STATE_KEYS = new Set([
   "weekly_report_events",
   // 尚未满十分钟的窗口只属于当前设备，不能让另一台设备接着重复累计。
   "study_focus_partial_windows",
+  // 单词撤销栈包含作答前的本机拼写标记，不能借 app_state 把 cloud:false 的状态送到别的设备。
+  "last_answer",
   // 到期弹窗是设备本地的已读状态；同步后不能让另一台设备错过提醒。
   "level_trial_expiry_noticed",
   ...CONTENT_MIGRATION_STATE_KEYS

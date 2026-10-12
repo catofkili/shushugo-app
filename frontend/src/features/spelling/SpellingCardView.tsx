@@ -16,9 +16,9 @@ import "../../pages/spelling.css";
 interface Props {
   card: SpellingCard;
   /** 用户选了档位：写流水和 FSRS。抛错时卡片留在原地让用户重试。 */
-  onFinish: (round: SpellingRound) => void;
-  /** 写完之后换下一张（页面）/ 关掉插播。 */
-  onNext: () => void;
+  onFinish: (round: SpellingRound) => void | Promise<void>;
+  /** 学习卡翻面时通知外层，复用发音、触觉和工具栏状态。 */
+  onReveal?: () => void;
   autoFocus?: boolean;
   checkInput?: (typed: string) => SpellingVerdict;
   autoPlay?: boolean;
@@ -37,7 +37,7 @@ const Marked = ({ parts }: { parts: MarkedText[] }) => <>
     : <span key={index}>{part.text}</span>)}
 </>;
 
-function CardInteraction({ card, onFinish, onNext, autoFocus = true, checkInput, autoPlay = false, voiceId, showMeaning = false, showTranslation = true }: Props) {
+function CardInteraction({ card, onFinish, onReveal, autoFocus = true, checkInput, autoPlay = false, voiceId, showMeaning = false, showTranslation = true }: Props) {
   const [state, setState] = useState(() => createRoundState(Date.now()));
   const [typed, setTyped] = useState("");
   const [error, setError] = useState("");
@@ -92,7 +92,10 @@ function CardInteraction({ card, onFinish, onNext, autoFocus = true, checkInput,
     void playPronunciation(card.target.surface, card.target.kana, voiceId).catch(() => undefined);
   }, [state.revealed, autoPlay, card.mode, card.target.kana, card.target.surface, voiceId]);
 
-  const change = (next: RoundState) => { current.current = next; setState(next); setError(""); };
+  const change = (next: RoundState) => {
+    if (next.revealed && !current.current.revealed) onReveal?.();
+    current.current = next; setState(next); setError("");
+  };
 
   const submitInput = () => {
     if (busy.current || composing.current || current.current.revealed) return;
@@ -106,19 +109,17 @@ function CardInteraction({ card, onFinish, onNext, autoFocus = true, checkInput,
     }
   };
 
-  const choose = (grade: WordAnswer) => {
+  const choose = async (grade: WordAnswer) => {
     if (busy.current || !current.current.revealed) return;
     busy.current = true;
     try {
-      // 结算和换卡分开；不放进 effect / setState updater，避免 StrictMode 重放写两遍。
-      onFinish(toRound(current.current, grade, clock()));
+      // 调用正常作答并换卡；不放进 effect / setState updater，避免 StrictMode 重放写两遍。
+      await onFinish(toRound(current.current, grade, clock()));
     } catch {
       busy.current = false;
       setError("这次没能保存，请重试");
       return;
     }
-    try { onNext(); }
-    catch { busy.current = false; setError("下一张暂时打不开，请重试"); }
   };
 
   const handleEnter = (event: KeyboardEvent<HTMLElement>) => {

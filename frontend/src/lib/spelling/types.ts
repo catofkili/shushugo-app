@@ -2,7 +2,7 @@
  * 单词拼写（docs/SPELLING_SPEC.md）的公共契约：只有类型，没有实现。
  * 各模块（kana / romaji / forms / check / diff / store）都对着这份写，改这里要同步改规格。
  *
- * ⚠️ 实验功能：不进发布包。除 `lib/spelling/index.ts` 外，别处不许 import 本目录（规格 §7）。
+ * 2026-10-12 起是学习模式开关；旧独立卡历史契约保留，正常作答走 word-api。
  */
 
 import type { WordAnswer } from "../../types/vocabulary";

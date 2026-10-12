@@ -24,7 +24,7 @@
         "frontend/src/pages/SpellingPage.tsx",
         "taro-spike-2/src/study/spelling/index.tsx"
       ],
-      "reason": "单词拼写仅在 Taro 实验预览版登记；小程序直接编译同一份 SpellingPage.tsx。开关和发布隔离见 docs/SPELLING_SPEC.md §7。"
+      "reason": "2026-10-12 独立拼写页及其 Taro 入口一起删除；拼写作为 WordStudy 的作答方式上线。"
     },
     {
       "web": "frontend/src/pages/spelling.css",
@@ -32,7 +32,7 @@
         "frontend/src/pages/spelling.css",
         "taro-spike-2/scripts/split-route-css.mjs"
       ],
-      "reason": "同一份 spelling.css 经 Taro/PostCSS 编译，sp- 规则由 split-route-css 移入 study/spelling/index.wxss。"
+      "reason": "同一份拼写卡样式经 Taro/PostCSS 编译，sp- 规则随 WordStudy 移入 pages/word/index.wxss。"
     },
     {
       "web": "frontend/src/pages/JlptPracticePage.tsx",
@@ -316,18 +316,16 @@
     {
       "web": "frontend/src/pages/SettingsPage.tsx",
       "mini": [
-        "wechat-miniprogram/src/pages/settings/index.js",
-        "wechat-miniprogram/src/pages/settings/index.wxml",
-        "wechat-miniprogram/src/pages/settings/index.wxss"
-      ]
+        "frontend/src/pages/SettingsPage.tsx"
+      ],
+      "reason": "路线 A：Taro 直接编译同一份学习偏好与模式设置页面，拼写共用 studyPreferences 设备偏好。"
     },
     {
       "web": "frontend/src/pages/StudyModesPage.tsx",
       "mini": [
-        "wechat-miniprogram/src/pages/modes/index.js",
-        "wechat-miniprogram/src/pages/modes/index.wxml",
-        "wechat-miniprogram/src/pages/modes/index.wxss"
-      ]
+        "frontend/src/pages/StudyModesPage.tsx"
+      ],
+      "reason": "路线 A：Taro 直接编译同一份学习偏好与模式设置页面，拼写共用 studyPreferences 设备偏好。"
     },
     {
       "web": "frontend/src/pages/TeamPage.tsx",

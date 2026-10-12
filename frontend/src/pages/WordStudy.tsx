@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type TouchEvent } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type TouchEvent } from "react";
 import { createPortal } from "react-dom";
 import { perfRecord } from "../lib/perf-marks";
 import { AlertCircle, ChevronRight, Eye, GitCompareArrows, Pencil, RotateCcw, Shuffle, Star, StickyNote, Timer, X } from "lucide-react";
@@ -54,7 +54,9 @@ import { accrueStudyTime, createStudyClock, drainStudySeconds, noteStudyInteract
 import { claimStudyFocusReward, continueStudyFocus, enterStudyFocus, finishStudyFocusAtDailyCompletion, getStudyFocusSnapshot, isStudyFocusArmed, recordStudyFocusAnswer, recordStudyFocusTime, leaveStudyFocus, resumeStudyFocus, sameStudyFocusState, setStudyFocusArmed, startStudyFocus, stopStudyFocus, STUDY_FOCUS_BASELINE_DAYS, STUDY_FOCUS_MIN_WORDS, STUDY_FOCUS_WINDOW_MS, undoStudyFocusAnswer, type StudyFocusSnapshot } from "../lib/study-focus";
 import { useStudyActivity, useStudyBreakTabBar } from "../hooks/useStudyActivity";
 
-const SpellingInline = __EXP_SPELLING__ ? lazy(() => import("../features/spelling/SpellingInline")) : null;
+import { SpellingCardView } from "../features/spelling/SpellingCardView";
+import { checkCardInput, spellingCard, spellingLookup } from "../lib/spelling/session";
+import { shouldSpellWord } from "../lib/spelling/study";
 
 interface WordStudyProps {
   initialMode?: StudyMode;
@@ -241,29 +243,8 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     setOther(item);
     setOtherRevealed(false);
   };
-  const [inlineWordId, setInlineWordId] = useState<number | null>(null);
-  const inlineApi = useRef<{
-    getSpellingPrefs: typeof import("../lib/spelling").getSpellingPrefs;
-    shouldInlineSpelling: typeof import("../features/spelling/SpellingInline").shouldInlineSpelling;
-  } | null>(null);
-  useEffect(() => {
-    // ⚠️ 必须是 if (__EXP_SPELLING__) {…} 包住 import()，不能写成提前 return：Taro 的 import() 是「立即加载」，
-    // 提前 return 剪不掉后面的依赖，发布包里 lib/spelling 会跟着进 lazy/tabs（check:release 拦的就是它）。
-    if (__EXP_SPELLING__) {
-      let active = true;
-      let cleanup = () => {};
-      void Promise.all([import("../lib/spelling"), import("../features/spelling/SpellingInline")]).then(([spelling, inline]) => {
-        if (!active) return;
-        let prefs = spelling.getSpellingPrefs();
-        const refresh = (event: Event) => { prefs = (event as CustomEvent<import("../lib/spelling").SpellingPrefs>).detail ?? spelling.getSpellingPrefs(); };
-        inlineApi.current = { getSpellingPrefs: () => prefs, shouldInlineSpelling: inline.shouldInlineSpelling };
-        window.addEventListener(spelling.SPELLING_PREFS_EVENT, refresh);
-        cleanup = () => window.removeEventListener(spelling.SPELLING_PREFS_EVENT, refresh);
-      }).catch(() => undefined);
-      return () => { active = false; cleanup(); inlineApi.current = null; };
-    }
-    return undefined;
-  }, []);
+  const [wordEncounter, setWordEncounter] = useState(0);
+  const [spellingDecision, setSpellingDecision] = useState<{ key: string; spell: boolean } | null>(null);
   // 辨析索引建好没。没建好就先不算 —— 详见 warmConfusionGroups
   const [distinctionsReady, setDistinctionsReady] = useState(false);
   const [activePopover, setActivePopover] = useState<"note" | "noteMemory" | "prompt" | null>(null);
@@ -292,7 +273,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     setFocusSnapshot((previous) => sameStudyFocusState(previous, next) ? previous : next);
   }, []);
   const dailyPlanFinished = !loading && (phase === "stage1" || phase === "done") && isPlanMode(initialMode) && Boolean(stats?.dailyPlanDone)
-    && !card && !grammarCard && !kanjiCard && !matchCard && (!__EXP_SPELLING__ || inlineWordId === null);
+    && !card && !grammarCard && !kanjiCard && !matchCard;
   useStudyBreakTabBar(focusSnapshot.status === "break" && !dailyPlanFinished);
   const [preferences, setPreferences] = useState<StudyPreferences>(() => getStudyPreferences());
   const [error, setError] = useState("");
@@ -460,6 +441,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
    * 同一套 FSRS），在哪边答的都算数。
    */
   const afterWordAnswered = useCallback((): boolean => {
+    setWordEncounter((value) => value + 1);
     recordMixedWordAnswer();
     if (initialMode !== "mixed") return false;
     const pick = pickMixedNext({ word: true, afterWord: true });
@@ -744,14 +726,19 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     setActivePopover(null);
   }, []);
 
-  const submitAnswer = useCallback(async (answer: WordAnswer, source: "pointer" | "key" | "swipe" = "pointer") => {
+  const submitAnswer = useCallback(async (answer: WordAnswer, source: "pointer" | "key" | "swipe" | "spelling" = "pointer") => {
     // submittingRef is synchronous, so a second tap is blocked immediately —
     // before React can re-render the `disabled`/`submitting` state — which is
     // what the `submitting` state alone could miss on a fast double-tap.
-    if (!card || submittingRef.current || submitting || reliefActive || dailyReviewIntro || focusBreakRef.current
-      || (__EXP_SPELLING__ && inlineWordId !== null)) return;
+    if (!card || submittingRef.current || submitting || reliefActive || dailyReviewIntro || focusBreakRef.current) {
+      if (source === "spelling") throw new Error("暂时无法作答");
+      return;
+    }
     await flushActiveStudyTime(undefined, "never");
-    if (focusBreakRef.current) return;
+    if (focusBreakRef.current) {
+      if (source === "spelling") throw new Error("学习已暂停");
+      return;
+    }
     // 刚翻面的那几十毫秒不收**手指**评分 —— 见 REVEAL_INPUT_LOCK_MS。
     // 键盘不受这道闸:那条路上「显示答案」和评分是不同的键,不存在同一个位置连击的问题,
     // 拦一下只会吃掉快手用户的合法输入。甩卡也不受:它自己要先飞 240ms,早就过去了。
@@ -791,10 +778,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     // 快路径：这一下的下一张已经算好了（见 word-api「预算下一张」）→ 先换卡，记账等这一帧画出来再做。
     // 插播语法的这一下、压轴 / 错题回顾 / 汉字单元，以及没算好、算完之后库又变了的，都走下面的同步路径。
     const grammarTurnDue = initialMode === "mixed" && mixedTurnDue();
-    // 毕业判断读入库后的正向状态；默认关闭时仍走原来的延后记账快路径。
-    const inlineCandidate = __EXP_SPELLING__ && phase === "stage1" && !answeredUnitKey && !wasDailyReview && !wasTail
-      && !!inlineApi.current?.getSpellingPrefs().inlineAfterGraduation;
-    const preview = !answeredUnitKey && !wasDailyReview && !wasTail && !grammarTurnDue && !inlineCandidate
+    const preview = !answeredUnitKey && !wasDailyReview && !wasTail && !grammarTurnDue
       ? takeAnswerPreview(previewsRef.current, answeredCardId, answer)
       : null;
     if (preview?.card) {
@@ -805,7 +789,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
       showWordCard(preview.card, preview.phase);
       pendingAnswerRef.current = () => {
         try {
-          const data = submitWordAnswerWithPreview(answeredCardId, answer, preview, sessionOptions);
+          const data = submitWordAnswerWithPreview(answeredCardId, answer, preview, sessionOptions, source === "spelling");
           answerFocusedWord(answeredCardId, answer);
           setStats(data.stats);
           setCanUndo(Boolean(data.canUndo));
@@ -829,7 +813,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     try {
       const data = answeredUnitKey && phase === "kanji"
         ? submitKanjiUnitAnswer(answeredUnitKey, answer)
-        : submitWordAnswer(answeredCardId, answer, sessionOptions);
+        : submitWordAnswer(answeredCardId, answer, sessionOptions, source === "spelling");
       answerFocusedWord(answeredCardId, answer);
       // 这一下算数了才谈得上轮到别的卡；下面各条分支照常把下一张单词卡排好摆在别的卡底下。
       const otherShown = afterWordAnswered();
@@ -849,11 +833,6 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
         if (!otherShown) void loadNext(initialMode);
       };
       let nextStats = data.stats;
-      if (__EXP_SPELLING__ && inlineCandidate && inlineApi.current) {
-        try {
-          if (inlineApi.current.shouldInlineSpelling(answeredCardId, inlineApi.current.getSpellingPrefs())) setInlineWordId(answeredCardId);
-        } catch { /* 拼写实验的读库失败不能把已入库的单词作答变成提交失败。 */ }
-      }
       if (!data.card && trackingActiveRef.current) {
         const trackedStats = await flushActiveStudyTime(undefined, "force");
         trackingActiveRef.current = false;
@@ -1027,6 +1006,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "提交失败");
+      if (source === "spelling") throw err;
     } finally {
       submittingRef.current = false;
       setSubmitting(false);
@@ -1034,7 +1014,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
       // 落在同一个同步 tick 里(submitWordAnswer 是同步 SQLite,常见路径没有 await),
       // React 一批处理,中间态从来没渲染过。印章的收尾交给 RATE_BURST_MS 那个计时器。
     }
-  }, [answerFocusedWord, card, dailyReviewActive, dailyReviewIntro, afterWordAnswered, flushActiveStudyTime, flushPendingAnswer, initialMode, inlineWordId, loadNext, onDailyModeComplete, phase, reliefActive, sessionOptions, showWordCard, stats, submitting, tailActive, unitKey]);
+  }, [answerFocusedWord, card, dailyReviewActive, dailyReviewIntro, afterWordAnswered, flushActiveStudyTime, flushPendingAnswer, initialMode, loadNext, onDailyModeComplete, phase, reliefActive, sessionOptions, showWordCard, stats, submitting, tailActive, unitKey]);
 
   useEffect(() => () => window.clearTimeout(rateBurstTimerRef.current), []);
 
@@ -1055,6 +1035,19 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
 
   const previewEligible = Boolean(card) && !loading && !submitting && !unitKey && !reliefActive && !dailyReviewActive
     && !dailyReviewIntro && !tailActive && !grammarCard && !kanjiCard && !matchCard;
+  const spellingCandidate = Boolean(card) && preferences.spellingEnabled && phase === "stage1"
+    && !unitKey && !reliefActive && !dailyReviewActive && !dailyReviewIntro && !tailActive
+    && !grammarCard && !kanjiCard && !matchCard;
+  const spellingKey = `${card?.id}:${phase}:${wordEncounter}`;
+  // 在预算出来之前不露普通作答界面；一旦出卡就固定题型，后台重算不会打断已输入的答案。
+  const preparingSpelling = spellingCandidate && spellingDecision?.key !== spellingKey;
+  const spellingActive = spellingCandidate && spellingDecision?.key === spellingKey && spellingDecision.spell;
+  const spellingView = useMemo(() => {
+    if (!spellingActive || !card) return null;
+    const next = spellingCard(card.id, "meaning");
+    return next && { ...next, jlptLevel: preferences.showJlptLevel ? next.jlptLevel : "" };
+  }, [spellingActive, card, preferences.showJlptLevel]);
+  const spellingInputLookup = useMemo(() => spellingView ? spellingLookup(spellingView.wordId) : null, [spellingView]);
   const runPreviews = useCallback((cardId: number) => {
     const run = ++previewRunRef.current;
     const checkDailyReview = isPlanMode(initialMode) && phase === "stage1" && !dailyReviewTriggeredRef.current;
@@ -1067,11 +1060,15 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
         if (answer !== "know") await new Promise((resolve) => setTimeout(resolve, 0));
         if (run !== previewRunRef.current) return;
         addAnswerPreview(previews, answer, sessionOptions, checkDailyReview);
+        if (answer === "know" && spellingCandidate) {
+          const spell = shouldSpellWord(cardId, previews.byAnswer.know?.graduatedForDay === true, true, phase);
+          setSpellingDecision((current) => current?.key === spellingKey ? current : { key: spellingKey, spell });
+        }
         const nextCard = previews.byAnswer[answer]?.card;
         if (nextCard) void prefetchPronunciation(nextCard.kanji, nextCard.kana, preferences.voiceId);
       }
     })();
-  }, [initialMode, phase, preferences.voiceId, sessionOptions]);
+  }, [initialMode, phase, preferences.voiceId, sessionOptions, spellingCandidate, spellingKey]);
   useEffect(() => {
     previewsRef.current = null;
     // 快路径刚换卡、记账还没落库：先不算，记账之后 setStats 会让这里带着新状态再跑一遍
@@ -1115,7 +1112,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
         || distinctionOpen
         // 语法卡盖在上面时键位归它（GrammarCard 自己挂了一套一模一样的）；汉字卡、辨析卡同理
         || grammarCard || kanjiCard || matchCard
-        || (__EXP_SPELLING__ && inlineWordId !== null)
+        || spellingActive || preparingSpelling
         || isEditableTarget(event.target)
       ) return;
 
@@ -1139,10 +1136,9 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [card, distinctionOpen, grammarCard, kanjiCard, matchCard, inlineWordId, loading, revealed, submitting, submitAnswer, revealAnswer, unitKey, phase]);
+  }, [card, distinctionOpen, grammarCard, kanjiCard, matchCard, spellingActive, preparingSpelling, loading, revealed, submitting, submitAnswer, revealAnswer, unitKey, phase]);
 
   const undo = async () => {
-    if (__EXP_SPELLING__ && inlineWordId !== null) return;
     flushPendingAnswer();
     // 混合模式：四种卡各有一份互不知道对方的撤销栈，按作答顺序的栈顶分派（lib/mixed-session）。
     // 栈顶是别的卡：撤掉它并重新摆出来；是单词才走下面单词那份。
@@ -1172,6 +1168,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
         rewindDailyTail(undoneTailId);
         tailUndoIdsRef.current = tailUndoIdsRef.current.slice(0, -1);
       }
+      setWordEncounter((value) => value + 1);
       setCard(data.card);
       setUnitKey(data.unitKey ?? null);
       setUnitTarget(data.unitTarget ?? null);
@@ -1407,7 +1404,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
   };
 
   // 甩卡只在「答案已显示」时生效:没看答案就甩等于瞎评分。
-  const swipeEnabled = Boolean(card) && revealed && !submitting && !reliefActive && !dailyReviewIntro;
+  const swipeEnabled = Boolean(card) && !spellingActive && !preparingSpelling && revealed && !submitting && !reliefActive && !dailyReviewIntro;
 
   const handleTouchStart = (event: TouchEvent<HTMLDivElement>) => {
     const touch = event.touches[0];
@@ -1549,12 +1546,6 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
       </ScrollArea>,
       document.body
     );
-  }
-
-  if (__EXP_SPELLING__ && inlineWordId !== null && SpellingInline) {
-    return <Suspense fallback={<p className="sp-loading" role="status">正在准备</p>}>
-      <SpellingInline key={inlineWordId} wordId={inlineWordId} onClose={() => setInlineWordId(null)} />
-    </Suspense>;
   }
 
   if (kanjiCard || matchCard) {
@@ -1904,8 +1895,15 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
           </div>
         )}
 
-        {loading ? (
+        {loading || preparingSpelling ? (
           <div className="grid min-h-[360px] place-items-center text-center text-sm font-semibold text-white/55"><div><CapybaraWalk size={72} className="mb-3" /><p>正在取下一张…</p></div></div>
+        ) : spellingView ? (
+          <ScrollArea className="sp-study min-h-0 flex-1">
+            <SpellingCardView key={spellingKey} card={spellingView}
+              checkInput={(typed) => checkCardInput(spellingView, typed, spellingInputLookup!)}
+              onReveal={revealAnswer} voiceId={preferences.voiceId}
+              onFinish={(round) => submitAnswer(round.grade, "spelling")} />
+          </ScrollArea>
         ) : card ? (
           <div
             key={`${card.id}:${unitKey ?? "word"}`}

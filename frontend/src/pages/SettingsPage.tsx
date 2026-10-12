@@ -501,6 +501,18 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
             </label>
           </div>
 
+          <div className="flex items-center gap-3 border-t border-white/10 p-4">
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-bold text-white">拼写</p>
+              <p className="mt-0.5 text-xs text-white/50">每天最后一次见面时拼写；选忘记后，这个词一直用拼写。</p>
+            </div>
+            <label className="relative inline-flex shrink-0 cursor-pointer items-center">
+              <input type="checkbox" aria-label="拼写" checked={preferences.spellingEnabled}
+                onChange={(event) => updatePreference({ spellingEnabled: event.target.checked })} className="peer sr-only" />
+              <div className="h-6 w-11 rounded-full bg-white/20 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-[#81D8CF] peer-checked:after:translate-x-5" />
+            </label>
+          </div>
+
           <div className="border-t border-white/10 p-4">
             <div className="mb-3">
               <p className="text-sm font-bold text-white">动效强度</p>

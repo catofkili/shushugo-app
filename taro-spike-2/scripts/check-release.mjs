@@ -41,9 +41,6 @@ const checks = [
   ['不是分段计时版', hits(/perf-overlay-marker/)],
   ['没有开发专用代码', hits(/__live-snapshot|开发环境常开 Pro/)],
   ['没有周报模拟夹具', hits(/__SHUSHUGO_DEV_ONLY_FIXTURE__/)],
-  // 单词拼写同样不许进发布包；它用独立指纹，便于单独解除拦截。
-  ['没有实验功能的页面（单词拼写）', JSON.stringify(app).includes('spelling/index') ? ['app.json'] : []],
-  ['没有实验功能的代码（单词拼写）', hits(/__SHUSHUGO_EXP_SPELLING__/)],
   // 刷题用独立开关和指纹，开口练习上线时不能一起放行（docs/JLPT_PRACTICE_SPEC.md §0）。
   ['没有实验功能的页面（JLPT 刷题）', JSON.stringify(app).includes('jlpt-practice/index') ? ['app.json'] : []],
   ['没有实验功能的代码（JLPT 刷题）', hits(/__SHUSHUGO_EXP_JLPT__/)],

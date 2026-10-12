@@ -12,6 +12,7 @@
 - ## ⚠️ 新项目必须编译并运行小程序版；前端必须做视觉检查（2026-09-25） → `docs/claude/mini-program-and-cross-platform.md`
 - ## ⚠️ 开口练习（日常会话）是实验功能，不许进任何发布包（2026-09-30） → `docs/claude/experimental-features.md`
 - ## ⚠️ 单词拼写（Spelling）是实验功能，不进任何发布包（2026-10-02 起，作者睡觉期间 Claude 全权做完） → `docs/claude/experimental-features.md`
+  - **2026-10-12 增补**：作者已决定作为学习模式开关上线；上一条保留作历史，现行判据见该专题「2026-10-12 作者决定上线」和 `docs/SPELLING_SPEC.md` 同日落地节。拼写表仍 cloud:false。
 - ## ⚠️ JLPT 刷题也是实验功能，开关单独一个（2026-10-02） → `docs/claude/experimental-features.md`
 - ## ⚠️ 查我的真实学习数据：`cd frontend && npm run db -- <词>` → `docs/claude/real-learning-data.md`
 - ## ⚠️ 推 main 之前先跑 `scripts/ci-local.sh`（2026-10-03） → `CLAUDE.md`

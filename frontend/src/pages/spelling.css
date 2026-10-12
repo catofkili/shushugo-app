@@ -1,32 +1,10 @@
-.sp-page {
-  width: 100%;
-  max-width: 560px;
-  margin: 0 auto;
-  padding: 16px 12px 24px;
-  color: var(--ds-ink);
-  background: var(--ds-bg);
-  box-sizing: border-box;
-}
-
-.sp-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.sp-progress {
-  margin: 0;
-  font-size: 13px;
-  color: var(--ds-ink-2);
-}
-
 .sp-card {
   padding: 20px 16px;
   min-width: 0;
   scroll-margin-top: 12px;
 }
+
+.sp-study { width: 100%; max-width: 640px; margin: 0 auto; }
 
 .sp-card:focus { outline: none; } /* 露出答案后焦点交给卡片本身（接 V / B / N / M），不画焦点框 */
 
@@ -136,10 +114,6 @@
 .sp-grade-key { font-size: 11px; font-weight: 800; opacity: .55; }
 .sp-grade:focus-visible { outline: 2px solid var(--ds-primary); outline-offset: 3px; }
 
-.sp-empty { display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 48px 12px; text-align: center; }
-.sp-empty-title { margin: 0; font-size: 18px; line-height: 1.6; }
-.sp-loading { padding: 48px 0; text-align: center; font-size: 14px; color: var(--ds-ink-2); }
-.sp-page-error { margin-bottom: 16px; font-size: 13px; line-height: 1.6; color: var(--ds-ink-2); }
 .sp-error { margin: 12px 0 0; font-size: 13px; line-height: 1.6; color: var(--ds-ink-2); }
 
 @media (prefers-reduced-motion: reduce) {

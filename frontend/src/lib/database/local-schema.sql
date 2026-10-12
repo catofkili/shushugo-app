@@ -420,10 +420,12 @@ CREATE TABLE IF NOT EXISTS talk_tasks (
   PRIMARY KEY (reviewed_on, card_key)
 );
 
--- 实验单词拼写：从正向状态播种独立 FSRS 卡。只在本机增量保存，不进云快照。
+-- 拼写历史保留；学习模式的「一直拼写」只用 always_spell，不再播种独立 FSRS 卡。
+-- 三张表仍只在本机增量保存，不进云快照，避免旧版拒绝同步。
 -- fsrs_* 列由 ensureFsrsColumns 补；三张表必须先在本文件存在，不能由运行模块懒建。
 CREATE TABLE IF NOT EXISTS spelling_memory (
   word_id INTEGER PRIMARY KEY,
+  always_spell INTEGER NOT NULL DEFAULT 0,
   seen_count INTEGER NOT NULL DEFAULT 0,
   right_count INTEGER NOT NULL DEFAULT 0,
   fuzzy_count INTEGER NOT NULL DEFAULT 0,

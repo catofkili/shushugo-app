@@ -35,7 +35,7 @@ try {
   assert.equal(fs.readFileSync(path.join(scratch, 'dist/lazy/tabs.wxss'), 'utf8'), '');
   assert.deepEqual(selectors(read('study/word-list/index.wxss')), ['.wl-row']);
   assert.deepEqual(selectors(read('study/quick-study/index.wxss')), ['.quick-study-row']);
-  assert.deepEqual(selectors(read('study/spelling/index.wxss')), ['.sp-root']);
+  assert.deepEqual(selectors(read('pages/word/index.wxss')), ['.sp-root']);
   assert.deepEqual(selectors(read('study/jlpt-practice/index.wxss')), ['.jq-card']);
   const confusion = read('study/confusion/index.wxss');
   const kanji = read('study/kanji-readings/index.wxss');

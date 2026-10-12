@@ -187,6 +187,10 @@ export const mergeWordInto = (db: Database, fromId: number, intoId: number): num
   ), 0);
 
   replaceSingleRow(db, "progress", fromId, intoId, preferFrom);
+  // 拼写标记与独立拼写历史的 seen_count 无关，两条词任一被标记就保留。
+  const alwaysSpell = tableExists("spelling_memory") && columnsOf("spelling_memory").includes("always_spell")
+    ? firstValue<number>("SELECT MAX(always_spell) FROM spelling_memory WHERE word_id IN (?, ?)", [fromId, intoId], 0)
+    : 0;
   ["reverse_memory", "kanji_memory", "kanji_reading_memory", "spelling_memory"].forEach((table) => {
     if (!tableExists(table)) return;
     const keepClicks = firstValue<number>(
@@ -201,6 +205,7 @@ export const mergeWordInto = (db: Database, fromId: number, intoId: number): num
     );
     replaceSingleRow(db, table, fromId, intoId, dropClicks > keepClicks);
   });
+  if (alwaysSpell) db.run("UPDATE spelling_memory SET always_spell = 1 WHERE word_id = ?", [intoId]);
 
   ["stage1_tasks", "stage2_progress", "kanji_progress", "kanji_reading_progress", "critical_reviews", "spelling_tasks"].forEach((table) => {
     migrateDatedRows(db, table, fromId, intoId, preferFrom);

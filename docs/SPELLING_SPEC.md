@@ -261,3 +261,19 @@ export const lastEncounterToday(wordId: number, day?: string): boolean;  // 这�
   只有 `SHUSHUGO_EXP_SPELLING=1` 才开。页面和入口都包在里面；`lib/spelling/` 只许被 `index.ts` 对外（`isolation.test.ts` 钉着，抄 `lib/talk/isolation.test.ts`）。
 - `check:release`（taro）和 `scripts/build-ios.sh` 拦它的指纹字符串 `__SHUSHUGO_EXP_SPELLING__`，同开口练习。
 - 上线前：落地方式定下来、三张表的 `cloud` 从 false 改上云（按 `docs/DAILY_TALK_SPEC.md` §7 的发版顺序）、去掉开关和拦截、小程序跟上（同一份 TSX，Taro）。
+
+
+## 2026-10-12 落地方式：学习模式开关
+
+作者决定：拼写作为学习模式中的一个默认关闭的小开关；开启后，最后一次见面要求拼写，档位仍由用户自己选；拼写时选「忘记」后持续要求拼写，出卡顺序与普通学习完全一致。**本节是现行口径，以上独立页面、独立 FSRS、插播、偏好和实验隔离记录保留作为历史，不再是发布行为。**
+
+- **开关**：学习模式页和设置页的学习偏好共用 `studyPreferences.spellingEnabled`，默认 false、设备本地存储；两端编译同一份 TSX。关闭时全部恢复普通作答，已有「一直拼写」标记保留，重新开启后继续生效。
+- **答前判定最后一次出现**：仅正向 `stage1` 普通单词卡，在出卡前读取正常作答预算 `AnswerPreviews.byAnswer.know.graduatedForDay`。该值是在 SAVEPOINT 内运行正式 `applyWordAnswer` 后，用 `isGraduatedForDay` 判断当前词，再整体回滚取得；不能拿答后的 `lastEncounterToday`，不能按固定次数 / due 单独模拟调度。最后一个词答完没有下一张时也保留毕业结果，不能用 `takeAnswerPreview` 的非空下一张作唯一判据。
+- **排除规则**：反向、汉字读音 / 汉字单元、减负、压轴 / 每日尾巴、当日错题回顾不变；顽固词仍按原插播正向资格 `fsrs_lapses < LEECH_LAPSE_THRESHOLD` 排除——**只排除「今天最后一次」这条路**；已标「一直拼写」的词变成顽固词后照样拼写（Claude 审查时改，作者原话「不再回到非拼写模式」）。普通错题本 / 自选清单仍是正常正向卡，可用相同判据。题型在本次出卡时固定；后台预算重算不能改变已输入答案的卡面。
+- **卡片本身改成拼写**：题面固定 `meaning`（中文题面、词性、拍数；JLPT 标仍遵守学习偏好），使用现有 `SpellingCardView`，提交或看答案后逐字标红，再由用户选忘记 / 模糊 / 认识 / 熟知。没有对错反馈、推荐档位或重试裁决。输入接受形式与标红引擎不变。
+- **只有一次正式作答**：所选档位直接交给 `submitWordAnswer` / `submitWordAnswerWithPreview`，照常写 `reviews`、正向 FSRS、统计、柚子与同一个撤销栈；不写额外的 `spelling_reviews`，不播种拼写 FSRS，不插额外卡，不给重复出现或提前出现的优先权。混合模式的卡种轮次沿用原队列。
+- **一直拼写**：拼写作答且选忘记时，正常单词记账同时把 `spelling_memory.always_spell` 设为 1；以后符合以上正向资格的每次出现都用拼写，不要求再次满足毕业预测。认识 / 模糊 / 熟知不清除它，正常卡选忘记不产生它。撤销快照记录作答前的标记；撤销这次忘记恢复旧值（旧值为 1 则仍为 1）。合并重复词条时对两条的标记取并集，不能由独立拼写历史 seen_count 的胜者覆盖掉标记。
+- **兼容与删除**：旧本机表增补列、旧流水和独立 FSRS 历史保留；三个 `spelling_*` 表继续 `cloud: false`。删除主页独立入口、网页 / Taro 拼写路由、`SpellingPage`、`SpellingInline` 的全部接入与独立偏好面板。删除拼写实验编译开关和发布拦截；开口练习 / JLPT 的独立实验开关及拦截保留。
+- **未来上云仍是单独发版任务**：先让所有端更新到认得相关表与列、但仍 cloud:false 的版本；全部更新后才能改为上云。当前公开构建包含拼写功能，不能把解除实验隔离误当成允许上传本机拼写表。
+
+**本机撤销也不能借道上云**：`last_answer` 是当前设备的单词撤销栈，新增的作答前 `always_spell` 值存在这份快照中。因此把该键登记为设备本地状态，云快照导出和合并两侧都过滤；否则表虽然 cloud:false，另一设备仍会收到标记的旧值，并可能用另一设备的撤销覆盖本机标记。正常 reviews 和正向 FSRS 照常同步。

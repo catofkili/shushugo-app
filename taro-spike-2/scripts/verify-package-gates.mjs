@@ -36,6 +36,8 @@ const allowedCoreDuplicates = {
 };
 // Route components can appear in lazy tabs and route subpackages after splitting;
 // accept only this reviewed file set and fail on new or stale duplicate entries.
+// 2026-10-12 拼写并入单词标签页后，DailyPlanSlider.weapp.tsx 已进入主包、不再重复；
+// 24 个核心重复模块未变。改清单仍须对照本次构建，不能按旧 reports 把滑杆加回去。
 const allowedPageComponentDuplicates = {
   'frontend/src/pages/Library.tsx': 'The grammar tab and grammar library subpackage each render this route from their isolated package graphs.',
   'frontend/src/pages/ConfusionPage.tsx': 'The study quiz and grammar subpackage include this route in separate package entry graphs.',
@@ -59,7 +61,6 @@ const allowedPageComponentDuplicates = {
   'frontend/src/components/ExampleSentence.tsx': 'Example sentences are rendered from both content and grammar route packages.',
   'frontend/src/components/JapaneseWordRuby.tsx': 'Word ruby rendering is used in the study, grammar, and lazy tab routes.',
   'frontend/src/components/ReviewButton.tsx': 'Review controls appear in the content and grammar route packages.',
-  'frontend/src/components/DailyPlanSlider.weapp.tsx': 'The account and study routes each render their package-local slider.',
   'frontend/src/components/Disclosure.weapp.tsx': 'Zoo, grammar, account, and study pages render this small disclosure in isolated package graphs; open state belongs to each mounted control and no user data is cached.',
   'frontend/src/components/JapaneseRubyText.weapp.tsx': 'Ruby text is used by lazy tabs and independently loaded content/grammar routes.',
   'frontend/src/components/CrossPlatformImage.weapp.tsx': 'Brand images are used by the account, content shop, and lazy route graphs; this small adapter enables WebP and sets native image dimensions.',
