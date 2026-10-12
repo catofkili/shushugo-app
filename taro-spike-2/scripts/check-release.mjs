@@ -42,8 +42,10 @@ const checks = [
   ['没有开发专用代码', hits(/__live-snapshot|开发环境常开 Pro/)],
   ['没有周报模拟夹具', hits(/__SHUSHUGO_DEV_ONLY_FIXTURE__/)],
   // 刷题用独立开关和指纹，开口练习上线时不能一起放行（docs/JLPT_PRACTICE_SPEC.md §0）。
-  ['没有实验功能的页面（JLPT 刷题）', JSON.stringify(app).includes('jlpt-practice/index') ? ['app.json'] : []],
+  ['没有实验功能的页面（JLPT 刷题）', /jlpt-practice\/index|"jlpt-bank"/.test(JSON.stringify(app)) ? ['app.json'] : []],
   ['没有实验功能的代码（JLPT 刷题）', hits(/__SHUSHUGO_EXP_JLPT__/)],
+  // 题库是懒加载的独立文件，不经过带指纹的那段代码；按题号格式（n3-v-trial2-01）再拦一道
+  ['没有实验功能的题库（JLPT 刷题）', hits(/\bn[1-5]-[vg]-[a-z0-9-]+-\d{2}\b/)],
   ['没有密钥', hits(new RegExp([
     /-----BEGIN [A-Z ]*PRIVATE KEY-----/.source,
     /(app_?secret|private_?key|api_?key|secret_?key|wechat_?(?:pay_?)?app_?key|(?:access|refresh|auth)_?token)["']?\s*[:=]\s*["'][A-Za-z0-9+/=_-]{16,}["']/.source,

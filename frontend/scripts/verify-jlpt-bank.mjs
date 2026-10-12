@@ -16,10 +16,43 @@ const KINDS = new Set([
 const VOCAB_KINDS = new Set([
   "kanji-reading", "orthography", "word-formation", "context", "paraphrase", "usage"
 ]);
+// 每套卷每级各题型的题数（出题流水线 gen-sets.sh 的那张表）。只验题目形状的话，漏写一整科的半套卷也能放行。
+// 顺序同 KINDS。
+const SET_COUNTS = {
+  N1: [6, 0, 0, 7, 6, 6, 10, 5, 4],
+  N2: [5, 5, 3, 7, 5, 5, 12, 5, 5],
+  N3: [8, 6, 0, 11, 5, 5, 13, 5, 5],
+  N4: [7, 5, 0, 8, 4, 4, 13, 4, 4],
+  N5: [7, 5, 0, 6, 3, 0, 9, 4, 4]
+};
 const QUESTION_KEYS = new Set([
   "id", "level", "kind", "setId", "stem", "options", "answer", "explanation",
-  "distractors", "order", "passageId", "target"
+  "distractors", "order", "passageId", "target", "furigana"
 ]);
+// N5/N4 考点以外的汉字全注音（照官方 N5/N4 的做法，N3 起不注），由 build-jlpt-furigana.mjs 生成。
+const FURIGANA_LEVELS = new Set(["N5", "N4"]);
+const KANJI = /[\u3400-\u9fff々〇]/u;
+
+/** 注音下标要对得上原文、不重叠，且原文里每个汉字（除 skip 范围）都有注音；题目改了没重跑脚本就会在这里露馅。 */
+const furiganaProblem = (text, annotations, skip = null) => {
+  if (!Array.isArray(annotations)) return "注音必须是数组";
+  const covered = new Set();
+  let cursor = 0;
+  for (const item of annotations) {
+    const base = isRecord(item) ? text.slice(item.start, item.start + item.length) : "";
+    if (!isRecord(item) || !Number.isInteger(item.start) || !Number.isInteger(item.length) || item.start < cursor
+      || item.length <= 0 || item.start + item.length > text.length || typeof item.reading !== "string"
+      || !/^[ぁ-ゖー]+$/u.test(item.reading) || ![...base].every((char) => KANJI.test(char))) {
+      return `注音和原文对不上（${JSON.stringify(item)}）`;
+    }
+    for (let at = item.start; at < item.start + item.length; at += 1) covered.add(at);
+    cursor = item.start + item.length;
+  }
+  for (let at = 0; at < text.length; at += 1) {
+    if (KANJI.test(text[at]) && !covered.has(at) && !(skip && at >= skip[0] && at < skip[1])) return `「${text[at]}」没注音`;
+  }
+  return null;
+};
 const databaseCache = new WeakMap();
 
 const isRecord = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
@@ -50,7 +83,7 @@ function readDbContent(db) {
 }
 
 /** Return all structural/content errors and non-blocking warnings for one bank. */
-export function verifyJlptBank(bank, db, expectedLevel = bank?.level) {
+export function verifyJlptBank(bank, db, expectedLevel = bank?.level, { completeSets = true } = {}) {
   const errors = [];
   const warnings = [];
   const error = (where, message) => errors.push(`${where}: ${message}`);
@@ -65,7 +98,7 @@ export function verifyJlptBank(bank, db, expectedLevel = bank?.level) {
 
   const requiredRoot = ["version", "level", "sets", "passages", "questions"];
   for (const key of requiredRoot) if (!has(bank, key)) error("题库", `缺少字段 ${key}`);
-  for (const key of Object.keys(bank)) if (!requiredRoot.includes(key)) error("题库", `未知字段 ${key}`);
+  for (const key of Object.keys(bank)) if (!requiredRoot.includes(key) && key !== "passageFurigana") error("题库", `未知字段 ${key}`);
   if (typeof bank.version !== "string") error("题库.version", "必须是字符串");
   if (!LEVELS.includes(bank.level)) error("题库.level", "必须是 N1–N5 之一");
   if (expectedLevel && bank.level !== expectedLevel) {
@@ -95,7 +128,7 @@ export function verifyJlptBank(bank, db, expectedLevel = bank?.level) {
 
   const ids = new Set();
   const questionRows = [];
-  const answerCounts = new Map();
+  const answerCounts = new Map(); // "setId v|g" → 四个位置各几题
   const targetCounts = new Map();
   const level = bank.level;
 
@@ -142,16 +175,21 @@ export function verifyJlptBank(bank, db, expectedLevel = bank?.level) {
     }
     if (!optionNo(question.answer)) error(where, "answer 必须是 1–4");
     else if (typeof question.setId === "string") {
-      const counts = answerCounts.get(question.setId) ?? [0, 0, 0, 0];
+      const key = `${question.setId} ${VOCAB_KINDS.has(question.kind) ? "文字・語彙" : "文法"}`;
+      const counts = answerCounts.get(key) ?? [0, 0, 0, 0];
       counts[question.answer - 1] += 1;
-      answerCounts.set(question.setId, counts);
+      answerCounts.set(key, counts);
     }
-    if (typeof question.explanation !== "string") error(where, "explanation 必须是字符串");
+    if (typeof question.explanation !== "string" || !question.explanation.trim()) error(where, "explanation 必须是非空字符串");
     if (!isRecord(question.distractors)) error(where, "distractors 必须是对象");
     else for (const [key, value] of Object.entries(question.distractors)) {
       if (!new Set(["1", "2", "3", "4"]).has(key)) error(where, `distractors 键 ${key} 不在 1–4 内`);
-      if (typeof value !== "string") error(where, `distractors.${key} 必须是字符串`);
+      if (typeof value !== "string" || !value.trim()) error(where, `distractors.${key} 必须是非空字符串`);
       if (key === String(question.answer)) error(where, "distractors 不能包含 answer 对应的键");
+    }
+    // 规则「每个干扰项都要写一句它为什么错」：少一条就是那一项没想过
+    if (isRecord(question.distractors) && optionNo(question.answer)) for (const number of ["1", "2", "3", "4"]) {
+      if (number !== String(question.answer) && !has(question.distractors, number)) error(where, `distractors 缺少错项 ${number} 的说明`);
     }
 
     const marked = typeof question.stem === "string" ? question.stem : "";
@@ -183,6 +221,21 @@ export function verifyJlptBank(bank, db, expectedLevel = bank?.level) {
       }
     } else if (has(question, "order")) {
       if (!Array.isArray(question.order) || !question.order.every(optionNo)) error(where, "order 必须省略或为选项号数组");
+    }
+
+    // 解析正文里写的「第N句／第N项」「[a,b,c,d]」必须和现在的 answer / order 对得上：
+    // shuffleAnswers 打乱选项时不改解析正文，写了编号就会指错（2026-10-10 普查，卷 1–3 共 11 题）。规则里已禁止写编号，这里兜底。
+    if (typeof question.explanation === "string" && optionNo(question.answer)) {
+      const orderLike = [...question.explanation.matchAll(/[\[［]\s*(\d)\s*[,，、]\s*(\d)\s*[,，、]\s*(\d)\s*[,，、]\s*(\d)\s*[\]］]/g)];
+      for (const m of orderLike) {
+        if (!Array.isArray(question.order) || question.order.join() !== m.slice(1).join()) error(where, `解析里的顺序 ${m[0]} 与 order 对不上`);
+      }
+      const nth = [...question.explanation.matchAll(/第([一二三四1-4１-４])[句项]/g)];
+      const digit = { 一: 1, 二: 2, 三: 3, 四: 4, "１": 1, "２": 2, "３": 3, "４": 4 };
+      if (question.kind === "usage" && nth.length === 1 && (question.explanation.match(/第/g) ?? []).length === 1) {
+        const n = digit[nth[0][1]] ?? Number(nth[0][1]);
+        if (n !== question.answer) error(where, `解析里的「${nth[0][0]}」与 answer ${question.answer} 对不上`);
+      }
     }
 
     if (question.kind === "passage") {
@@ -233,9 +286,36 @@ export function verifyJlptBank(bank, db, expectedLevel = bank?.level) {
     }
   }
 
+  // 注音：N5/N4 必须齐全且对得上原文（改了题要重跑 node scripts/build-jlpt-furigana.mjs），N3 起不许有
+  const rerun = "，改完题要跑 node scripts/build-jlpt-furigana.mjs";
+  if (!FURIGANA_LEVELS.has(level)) {
+    if (has(bank, "passageFurigana") || questionRows.some((question) => has(question, "furigana"))) error("题库", `${String(level)} 不注音（只有 N5/N4 注音）`);
+  } else {
+    for (const question of questionRows) {
+      if (typeof question.stem !== "string" || !Array.isArray(question.options)) continue;
+      const furigana = isRecord(question.furigana) ? question.furigana : {};
+      const target = question.kind === "kanji-reading" ? /\[\[([^]*?)\]\]/u.exec(question.stem) : null;
+      const skip = target ? [target.index + 2, target.index + 2 + target[1].length] : null;
+      const stemProblem = furiganaProblem(question.stem, furigana.stem ?? [], skip);
+      if (stemProblem) error(question.id, `题干${stemProblem}${rerun}`);
+      if (question.kind === "orthography") continue;  // 表记题的选项就是被考的汉字，不注
+      question.options.forEach((option, index) => {
+        const problem = typeof option === "string" ? furiganaProblem(option, furigana.options?.[index] ?? []) : null;
+        if (problem) error(question.id, `选项 ${index + 1} ${problem}${rerun}`);
+      });
+    }
+    if (isRecord(bank.passages)) for (const [passageId, passage] of Object.entries(bank.passages)) {
+      const problem = typeof passage === "string" ? furiganaProblem(passage, bank.passageFurigana?.[passageId] ?? []) : null;
+      if (problem) error(`passages.${passageId}`, `${problem}${rerun}`);
+    }
+  }
+
   if (isRecord(bank.passages)) for (const [passageId, passage] of Object.entries(bank.passages)) {
     if (typeof passage !== "string") continue;
     const markers = [...passage.matchAll(/\[(\d+)\]/g)];
+    if (markers.some(([, number], index) => index > 0 && Number(number) <= Number(markers[index - 1][1]))) {
+      error(`passages.${passageId}`, "文章空号必须按出现先后递增、不能重复");
+    }
     for (const [, number] of markers) {
       if (!questionRows.some((question) => question.kind === "passage" && question.passageId === passageId && question.stem === `[${number}]`)) {
         error(`passages.${passageId}`, `文章标记 [${number}] 没有对应题目`);
@@ -243,14 +323,22 @@ export function verifyJlptBank(bank, db, expectedLevel = bank?.level) {
     }
   }
 
-  for (const [setId, counts] of answerCounts) {
-    if (!counts.some(Boolean)) continue;
-    if (Math.max(...counts) - Math.min(...counts) > 3) {
-      warnings.push(`set ${setId}: 正解位置分布为 ${counts.map((count, index) => `${index + 1}=${count}`).join(" ")}`);
+  // 规则 6：每科 1–4 各出现的次数相差不超过 2
+  for (const [key, counts] of answerCounts) {
+    if (Math.max(...counts) - Math.min(...counts) > 2) {
+      error(`set ${key}`, `正解位置分布为 ${counts.map((count, index) => `${index + 1}=${count}`).join(" ")}，相差超过 2`);
     }
   }
+  // 同一级跨套也不许重复考点（出题时会把前几套用过的考点列给作者）
   for (const [target, count] of targetCounts) if (count > 1) {
-    warnings.push(`target ${target} 在 ${String(level)} 出现 ${count} 次`);
+    error(`target ${target}`, `在 ${String(level)} 出现 ${count} 次`);
+  }
+  if (completeSets && SET_COUNTS[level]) for (const setId of setIds) {
+    const inSet = questionRows.filter((question) => question.setId === setId);
+    [...KINDS].forEach((kind, index) => {
+      const actual = inSet.filter((question) => question.kind === kind).length;
+      if (actual !== SET_COUNTS[level][index]) error(`set ${setId}`, `${kind} 应有 ${SET_COUNTS[level][index]} 题，实际 ${actual} 题`);
+    });
   }
 
   return { errors, warnings };
@@ -283,15 +371,8 @@ function runSelfTest() {
   const bad = (name, mutate, expected, expectedLevel = "N3") => {
     const bank = structuredClone(fixtureBank());
     mutate(bank);
-    const result = verifyJlptBank(bank, db, expectedLevel);
+    const result = verifyJlptBank(bank, db, expectedLevel, { completeSets: false });
     assert(result.errors.some((message) => message.includes(expected)), `${name}: ${result.errors.join("\n")}`);
-    count += 1;
-  };
-  const good = (name, mutate, expected) => {
-    const bank = structuredClone(fixtureBank());
-    mutate(bank);
-    const result = verifyJlptBank(bank, db, "N3");
-    assert(result.errors.length === 0 && result.warnings.some((message) => message.includes(expected)), `${name}: ${JSON.stringify(result)}`);
     count += 1;
   };
   const q = (bank) => bank.questions[0];
@@ -300,6 +381,8 @@ function runSelfTest() {
   assert(malformed.errors.some((message) => message.includes("必须是对象"))); count += 1;
   bad("root type", (b) => { b.version = 4; }, "version: 必须是字符串");
   bad("root missing field", (b) => { delete b.version; }, "缺少字段 version");
+  bad("furigana above N4", (b) => { q(b).furigana = { stem: [] }; }, "N3 不注音");
+  bad("missing furigana", (b) => { b.level = "N5"; for (const question of b.questions) question.level = "N5"; }, "没注音", "N5");
   bad("root unknown field", (b) => { b.extra = true; }, "未知字段 extra");
   bad("filename level", () => {}, "文件要求 N2", "N2");
   bad("sets type", (b) => { b.sets = {}; }, "sets: 必须是数组");
@@ -325,6 +408,8 @@ function runSelfTest() {
   bad("answer range", (b) => { q(b).answer = 5; }, "answer 必须是 1–4");
   bad("distractor key", (b) => { q(b).distractors["5"] = "错"; }, "键 5");
   bad("answer distractor", (b) => { q(b).distractors["1"] = "错"; }, "不能包含 answer");
+  bad("explanation position drift", (b) => { q(b).kind = "usage"; q(b).stem = "[[読む]]の使い方として正しい文はどれですか。"; q(b).explanation = "第三句が正しい。"; }, "与 answer 1 对不上");
+  bad("explanation order drift", (b) => { q(b).explanation = "正しい順序は[3,4,1,2]。"; }, "与 order 对不上");
   bad("distractors type", (b) => { q(b).distractors = []; }, "distractors 必须是对象");
   bad("underline marker", (b) => { q(b).kind = "kanji-reading"; q(b).id = "n3-v-trial1-01"; q(b).stem = "普通题干"; }, "[[…]]");
   bad("blank marker", (b) => { q(b).stem = "这里没有空。"; }, "（　…）");
@@ -347,7 +432,14 @@ function runSelfTest() {
   bad("copied stem", (b) => { q(b).stem = "文法の辞書例文です。"; }, "題干照抄");
   bad("copied option", (b) => { q(b).options[0] = "単語の辞書例文です。"; }, "选项照抄");
   bad("unknown question field", (b) => { q(b).no = 1; }, "未知字段 no");
-  good("answer spread warning", (b) => {
+  bad("missing distractor", (b) => { delete q(b).distractors["2"]; }, "缺少错项 2");
+  bad("empty explanation", (b) => { q(b).explanation = " "; }, "explanation 必须是非空");
+  bad("passage markers out of order", (b) => {
+    q(b).kind = "passage"; q(b).stem = "[2]"; q(b).target = null; q(b).passageId = "p"; b.passages.p = "前 [2] 后 [1]。";
+    const second = structuredClone(q(b)); second.id = "n3-g-trial1-02"; second.stem = "[1]"; b.questions.push(second);
+  }, "按出现先后递增");
+  assert(verifyJlptBank(fixtureBank(), db, "N3").errors.some((message) => message.includes("kanji-reading 应有 8 题"))); count += 1;
+  bad("answer spread", (b) => {
     const first = q(b);
     for (let index = 0; index < 5; index += 1) {
       const copy = structuredClone(first);
@@ -356,14 +448,14 @@ function runSelfTest() {
       b.questions.push(copy);
     }
     b.questions.shift();
-  }, "正解位置分布");
-  good("duplicate target warning", (b) => {
+  }, "相差超过 2");
+  bad("duplicate target", (b) => {
     const copy = structuredClone(q(b));
     copy.id = "n3-g-trial1-02";
     b.questions.push(copy);
   }, "出现 2 次");
 
-  const positive = verifyJlptBank(fixtureBank(), db, "N3");
+  const positive = verifyJlptBank(fixtureBank(), db, "N3", { completeSets: false });
   assert.deepEqual(positive, { errors: [], warnings: [] }, JSON.stringify(positive));
   count += 1;
   const standaloneStar = structuredClone(fixtureBank());
@@ -372,7 +464,8 @@ function runSelfTest() {
   q(standaloneStar).order = [1, 2, 3, 4];
   q(standaloneStar).answer = 2;
   delete q(standaloneStar).distractors["2"];
-  const starResult = verifyJlptBank(standaloneStar, db, "N3");
+  q(standaloneStar).distractors["1"] = "错项说明";
+  const starResult = verifyJlptBank(standaloneStar, db, "N3", { completeSets: false });
   assert.deepEqual(starResult.errors, [], JSON.stringify(starResult));
   count += 1;
   db.close();

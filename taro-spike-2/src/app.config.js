@@ -28,10 +28,17 @@ export default {
     { root: 'grammar-advanced', pages: ['placeholder/index'] },
     { root: 'grammar-pages', pages: ['compile/index'] },
     { root: 'core', pages: ['index'] },
-    { root: 'lazy', pages: ['placeholder/index'] }
+    { root: 'lazy', pages: ['placeholder/index'] },
+    // JLPT 题库（实验功能）单独一个分包：放在 lazy 里时两套卷就占了 560 KB，lazy 还装着各 tab 的界面代码，
+    // 第四套卷就会顶到 2 MB。开关关着不登记这个分包，发布包里没有它。
+    ...(process.env.SHUSHUGO_EXP_JLPT === '1' ? [{ root: 'jlpt-bank', pages: ['placeholder/index'] }] : [])
   ],
   // 四个标签页一进来就预下载 lazy 界面代码和 SQL.js WASM。
-  preloadRule: Object.fromEntries(mainRoutes.map((route) => [route.path, { network: 'all', packages: ['lazy', 'core'] }])),
+  preloadRule: {
+    ...Object.fromEntries(mainRoutes.map((route) => [route.path, { network: 'all', packages: ['lazy', 'core'] }])),
+    // 进刷题页就先把题库分包下好，点等级时不用再等下载
+    ...(process.env.SHUSHUGO_EXP_JLPT === '1' ? { 'study/jlpt-practice/index': { network: 'all', packages: ['jlpt-bank'] } } : {})
+  },
   window: {
     navigationBarTitleText: '收集日',
     navigationBarBackgroundColor: '#FBF6EC',

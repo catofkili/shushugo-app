@@ -12,6 +12,7 @@
     "zoo": "vite --config zoo-lab/vite.config.ts --host",
     "build": "vite build",
     "build:furigana": "node scripts/build-furigana.mjs",
+    "build:jlpt-furigana": "node scripts/build-jlpt-furigana.mjs",
     "build:kanji-unit-index": "node scripts/build-kanji-reading-unit-index.mjs",
     "build:grammar-title-furigana": "node scripts/build-furigana.mjs --titles-only",
     "audit:token-tooltips": "node --experimental-strip-types scripts/audit-token-tooltips.mjs --check",

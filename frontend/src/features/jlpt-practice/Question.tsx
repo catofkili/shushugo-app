@@ -1,13 +1,23 @@
 import { Check, X } from "lucide-react";
+import { JapaneseRuby } from "../../components/JapaneseRuby";
 import { MascotSay } from "../../components/MascotSay";
 import { ScrollArea } from "../../components/ScrollArea";
 import { KIND_LABEL, parseStem, type JlptBank, type JlptQuestion, type OptionNo } from "../../lib/jlpt-practice";
+import type { FuriganaAnnotation } from "../../types/furigana";
 
-export function Stem({ text, activeRef }: { text: string; activeRef?: number }) {
+/** 只有 N5/N4 有注音（照官方）。furigana 的下标对整段原文，这里挑出落在 [start, start+text.length) 的那些。 */
+function Ruby({ text, start = 0, furigana }: { text: string; start?: number; furigana?: readonly FuriganaAnnotation[] }) {
+  const inside = furigana
+    ?.filter(item => item.start >= start && item.start + item.length <= start + text.length)
+    .map(item => ({ ...item, start: item.start - start }));
+  return inside?.length ? <JapaneseRuby text={text} furigana={inside} /> : <>{text}</>;
+}
+
+export function Stem({ text, furigana, activeRef }: { text: string; furigana?: readonly FuriganaAnnotation[]; activeRef?: number }) {
   return <>{parseStem(text).map((part, index) => {
     switch (part.type) {
-      case "text": return <span className="jq-text" key={index}>{part.text}</span>;
-      case "underline": return <span className="jq-underline" key={index}>{part.text}</span>;
+      case "text": return <span className="jq-text" key={index}><Ruby text={part.text} start={part.start} furigana={furigana} /></span>;
+      case "underline": return <span className="jq-underline" key={index}><Ruby text={part.text} start={part.start} furigana={furigana} /></span>;
       case "blank": return <span className="jq-blank" key={index} aria-label="空欄" />;
       case "slot": return <span className="jq-slot" key={index} aria-label={part.star ? "★の位置" : "空欄"}>
         <span className="jq-star">{part.star ? "★" : "\u00a0"}</span><span className="jq-slot-line" />
@@ -19,12 +29,13 @@ export function Stem({ text, activeRef }: { text: string; activeRef?: number }) 
 
 export function QuestionStem({ bank, question }: { bank: JlptBank; question: JlptQuestion }) {
   const passage = question.passageId ? bank.passages[question.passageId] : undefined;
+  const passageFurigana = question.passageId ? bank.passageFurigana?.[question.passageId] : undefined;
   const activeRef = parseStem(question.stem).find(part => part.type === "ref");
   return <>
-    {passage && <ScrollArea key={question.id} className="jq-passage" role="region" aria-label="文章">
-      <div className="jq-passage-content"><Stem text={passage} activeRef={activeRef?.type === "ref" ? activeRef.n : undefined} /></div>
+    {passage && <ScrollArea key={question.id} className={`jq-passage ${passageFurigana?.length ? "jq-passage-ruby" : ""}`} role="region" aria-label="文章">
+      <div className="jq-passage-content"><Stem text={passage} furigana={passageFurigana} activeRef={activeRef?.type === "ref" ? activeRef.n : undefined} /></div>
     </ScrollArea>}
-    <p className="jq-stem"><Stem text={question.stem} /></p>
+    <p className="jq-stem"><Stem text={question.stem} furigana={question.furigana?.stem} /></p>
   </>;
 }
 
@@ -49,7 +60,7 @@ export function Question({ bank, question, chosen, reveal = false, showKind = tr
         return <button type="button" key={no} disabled={reveal || disabled} aria-pressed={chosen === no}
           className={`ds-choice jq-choice focus-ring ${correct ? "is-correct" : wrong ? "is-wrong" : chosen === no ? "jq-choice-selected" : ""}`}
           onClick={() => onChoose(no)}>
-          <span className="ds-choice-key">{no}</span><span className="jq-option">{option}</span>
+          <span className="ds-choice-key">{no}</span><span className="jq-option"><Ruby text={option} furigana={question.furigana?.options?.[index]} /></span>
           {correct && <Check size={16} className="jq-icon" />}
           {wrong && <X size={16} className="jq-icon" />}
         </button>;

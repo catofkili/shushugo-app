@@ -13,7 +13,7 @@
 
 import { createRequire } from "node:module";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import path from "node:path";
 import vm from "node:vm";
 import initSqlJs from "sql.js";
@@ -803,4 +803,7 @@ const main = async () => {
   console.log(`   审计报告: ${reportPath}`);
 };
 
-await main();
+// build-jlpt-furigana.mjs 借用这里的分词和读音规则；被 import 时不跑整库注音。
+if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) await main();
+
+export { buildTokenizer, tokenizeSentence, loadOverrides, loadReadingFixes, hasKanji };

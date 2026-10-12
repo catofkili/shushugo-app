@@ -54,18 +54,18 @@ afterEach(() => { testDb.close(); vi.useRealTimers(); });
 describe("JLPT 数据层", () => {
   it("逐段解析每种标记，保留普通文本与不合规格的括号", () => {
     expect(parseStem("前[[漢字]]（　）（　　　）＿＿★＿＿[12]後( )（ ）")).toEqual([
-      { type: "text", text: "前" }, { type: "underline", text: "漢字" },
+      { type: "text", text: "前", start: 0 }, { type: "underline", text: "漢字", start: 3 },
       { type: "blank" }, { type: "blank" }, { type: "slot", star: false }, { type: "slot", star: true },
-      { type: "ref", n: 12 }, { type: "text", text: "後( )（ ）" }
+      { type: "ref", n: 12 }, { type: "text", text: "後( )（ ）", start: 24 }
     ]);
     // 手写题的实际写法：★ 自己占一个空，前后用半角或全角空格隔开
     expect(parseStem("店で ＿＿ ★ ＿＿　＿＿、買う。").filter((part) => part.type === "slot")).toEqual([
       { type: "slot", star: false }, { type: "slot", star: true }, { type: "slot", star: false }, { type: "slot", star: false }
     ]);
     expect(parseStem("")).toEqual([]);
-    expect(parseStem("普通文字")).toEqual([{ type: "text", text: "普通文字" }]);
+    expect(parseStem("普通文字")).toEqual([{ type: "text", text: "普通文字", start: 0 }]);
     expect(parseStem("[[改\n行]][1][2]")).toEqual([
-      { type: "underline", text: "改\n行" }, { type: "ref", n: 1 }, { type: "ref", n: 2 }
+      { type: "underline", text: "改\n行", start: 2 }, { type: "ref", n: 1 }, { type: "ref", n: 2 }
     ]);
   });
 

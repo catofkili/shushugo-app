@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { DatabaseSync } from "node:sqlite";
-import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { verifyJlptBank } from "./verify-jlpt-bank.mjs";
@@ -51,7 +52,41 @@ function parseArgs(args) {
 function printHelp() {
   console.log(`用法: node scripts/build-jlpt-bank.mjs [--src <目录>] [--set trial1 --title "试做卷 1"] [--allow-undone] [--allow-doubt]
 
-默认只导入含 DONE 的等级-科目目录。--allow-undone 和 --allow-doubt 仅供本地试跑。`);
+一套卷必须 N1–N5 两科共 10 个目录齐全、都有审校完成标记 DONE。--allow-undone 和 --allow-doubt 仅供本地试跑。`);
+}
+
+// Codex 照「正解位置要均匀」写出来的常是 1234 1234 循环（卷 1、卷 2 十科里有七科），审校也没拦住，
+// 背下规律就能蒙对，盲做审校也会被规律带着走。所以正解位置不靠出题人：run-job.sh 在审校前洗一遍，
+// 导入时再按「套卷-等级-科目」洗一遍。每科正解位置各占四分之一；种子固定，重导同一份源结果不变。
+// 格式不对的题（不是四个选项、answer 不在 1–4）原样返回，交给 verify 报错。
+export function shuffleAnswers(questions, seed) {
+  let draws = 0;
+  const random = () => createHash("sha256").update(`${seed}-${draws++}`).digest().readUInt32LE(0) / 2 ** 32;
+  const shuffle = (items) => {
+    for (let i = items.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(random() * (i + 1));
+      [items[i], items[j]] = [items[j], items[i]];
+    }
+    return items;
+  };
+  const slots = shuffle(questions.map((_, index) => index % 4 + 1));
+  return questions.map((question, index) => {
+    if (!Array.isArray(question?.options) || question.options.length !== 4 || ![1, 2, 3, 4].includes(question.answer)) return question;
+    const moved = new Map([[question.answer, slots[index]]]);
+    const rest = shuffle([1, 2, 3, 4].filter((n) => n !== slots[index]));
+    for (const old of [1, 2, 3, 4]) if (old !== question.answer) moved.set(old, rest.pop());
+    const options = [];
+    for (const [old, to] of moved) options[to - 1] = question.options[old - 1];
+    return {
+      ...question,
+      options,
+      answer: moved.get(question.answer),
+      distractors: question.distractors && typeof question.distractors === "object" && !Array.isArray(question.distractors)
+        ? Object.fromEntries(Object.entries(question.distractors).map(([key, value]) => [String(moved.get(Number(key)) ?? key), value]))
+        : question.distractors,
+      order: Array.isArray(question.order) ? question.order.map((n) => moved.get(n) ?? n) : question.order
+    };
+  });
 }
 
 function readSources(options) {
@@ -61,16 +96,18 @@ function readSources(options) {
   const inputErrors = [];
   if (!existsSync(options.src)) throw new Error(`找不到题目源目录: ${options.src}`);
 
-  const dirs = readdirSync(options.src, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => entry.name.match(/^(N[1-5])-(vocab|grammar)$/))
-    .filter(Boolean)
-    .sort((a, b) => LEVELS.indexOf(a[1]) - LEVELS.indexOf(b[1]) || a[2].localeCompare(b[2]));
-
-  for (const [, level, section] of dirs) {
+  // 原来缺目录 / 没 DONE 就静默跳过，半套卷也能导进去（卷 3 第一次撞额度后只剩两科）
+  for (const level of LEVELS) for (const section of ["vocab", "grammar"]) {
     const dir = resolve(options.src, `${level}-${section}`);
     const file = resolve(dir, "questions.json");
-    if (!existsSync(file) || (!options.allowUndone && !existsSync(resolve(dir, "DONE")))) continue;
+    if (!existsSync(file)) {
+      if (!options.allowUndone) inputErrors.push(`${level}-${section}: 缺少 questions.json`);
+      continue;
+    }
+    if (!options.allowUndone && !existsSync(resolve(dir, "DONE"))) {
+      inputErrors.push(`${level}-${section}: 没有审校完成标记 DONE`);
+      continue;
+    }
     let questions;
     try { questions = JSON.parse(readFileSync(file, "utf8")); }
     catch (cause) { inputErrors.push(`${level}-${section}: questions.json 无法解析 (${cause.message})`); continue; }
@@ -100,6 +137,7 @@ function readSources(options) {
         inputErrors.push(`${level} ${section} no ${question.no ?? "?"}: ${question.kind} 应放在 ${actualSection} 目录`);
         continue;
       }
+      if (question.level !== level) inputErrors.push(`${where}: level ${String(question.level)} 和目录 ${level} 不一致`);
       if (!Number.isSafeInteger(question.no) || question.no < 1) {
         inputErrors.push(`${level} ${section} questions[${index}]: no 必须是正整数`);
         continue;
@@ -107,6 +145,7 @@ function readSources(options) {
       rows.push({ source: question, kind, no: question.no, level, section });
     }
     rows.sort((a, b) => a.no - b.no);
+    if (rows.some((row, index) => row.no !== index + 1)) inputErrors.push(`${level}-${section}: no 必须从 1 起连续、不重复`);
 
     const passageRows = rows.filter((row) => row.kind === "passage");
     // passage: null 等于没有这个字段（审校会把其它文章题上的 passage 写成 null）
@@ -122,7 +161,9 @@ function readSources(options) {
       else passages.set(passageId, passage);
     }
 
-    for (const { source, kind, no } of rows) {
+    const shuffledSources = shuffleAnswers(rows.map((row) => row.source), `${options.setId}-${level}-${section}`);
+    for (const [index, { kind, no }] of rows.entries()) {
+      const source = shuffledSources[index];
       const letter = section === "vocab" ? "v" : "g";
       const question = {
         id: `${level.toLowerCase()}-${letter}-${options.setId}-${String(no).padStart(2, "0")}`,
@@ -136,7 +177,9 @@ function readSources(options) {
         distractors: source.distractors,
         target: source.target
       };
-      if (source.order !== null && source.order !== undefined) question.order = source.order;
+      if (source.order !== null && source.order !== undefined) {
+        question.order = source.order;
+      }
       if (kind === "passage") question.passageId = passageId;
       imported.push({ level, section, no, question });
     }
@@ -199,16 +242,10 @@ async function main() {
     throw new Error("发现 doubt 非 null 的题；未写入题库。需要本地试跑时加 --allow-doubt。" );
   }
 
-  mkdirSync(DATA_DIR, { recursive: true });
   const banks = new Map();
   for (const level of LEVELS) {
     const file = resolve(DATA_DIR, `${level.toLowerCase()}.json`);
-    const oldBank = readExistingBank(file, level);
-    const bank = mergeLevel(level, oldBank, imported, passages, options);
-    writeFileSync(file, `${JSON.stringify(bank, null, 2)}\n`);
-    banks.set(level, bank);
-    const bySection = imported.filter((row) => row.level === level);
-    console.log(`${level}: 写入 ${bank.questions.length} 题（本次 vocab ${bySection.filter((row) => row.section === "vocab").length}，grammar ${bySection.filter((row) => row.section === "grammar").length}）`);
+    banks.set(level, mergeLevel(level, readExistingBank(file, level), imported, passages, options));
   }
 
   const db = new DatabaseSync(DB_PATH, { readOnly: true });
@@ -225,10 +262,18 @@ async function main() {
   } finally {
     db.close();
   }
-  console.log(`导入后校验: ${totalErrors} 错误，${totalWarnings} 警告`);
+  console.log(`校验: ${totalErrors} 错误，${totalWarnings} 警告`);
+  // 先在内存里合并、校验，全过了才写盘：不让有错的题库落进仓库（以前是先写再报错）
   if (totalErrors) {
-    console.error("题库文件已经写入；校验发现的问题留给题目主编处理，导入脚本只修自身错误。" );
+    console.error("校验没过，题库文件一个都没改。改源题后重新导入。");
     process.exitCode = 1;
+    return;
+  }
+  mkdirSync(DATA_DIR, { recursive: true });
+  for (const [level, bank] of banks) {
+    writeFileSync(resolve(DATA_DIR, `${level.toLowerCase()}.json`), `${JSON.stringify(bank, null, 2)}\n`);
+    const bySection = imported.filter((row) => row.level === level);
+    console.log(`${level}: 写入 ${bank.questions.length} 题（本次 vocab ${bySection.filter((row) => row.section === "vocab").length}，grammar ${bySection.filter((row) => row.section === "grammar").length}）`);
   }
 }
 

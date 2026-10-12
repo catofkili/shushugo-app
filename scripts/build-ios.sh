@@ -65,6 +65,11 @@ if grep -rq "__SHUSHUGO_EXP_JLPT__" dist; then
     echo -e "${RED}❌ 构建产物里有实验功能（JLPT 刷题）的代码${NC}"
     exit 1
 fi
+# 题库是单独的懒加载文件，不带上面那个指纹；按题号格式（n3-v-trial2-01）再搜一遍
+if grep -rqE "\bn[1-5]-[vg]-[a-z0-9-]+-[0-9]{2}\b" dist; then
+    echo -e "${RED}❌ 构建产物里有实验功能（JLPT 刷题）的题库${NC}"
+    exit 1
+fi
 
 # 4. 同步到 iOS
 echo -e "${YELLOW}📱 同步到 iOS 项目...${NC}"
