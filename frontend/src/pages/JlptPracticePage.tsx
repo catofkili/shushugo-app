@@ -7,7 +7,7 @@ import { PracticeResult } from "../features/jlpt-practice/Result";
 import { getStudyPreferences } from "../lib/studyPreferences";
 import { scrollPageToTop } from "../lib/touch-adapter";
 import {
-  JLPT_LEVELS, JLPT_PRACTICE_MARKER, KIND_LABEL, jlptKindStats, loadJlptBank,
+  JLPT_LEVELS, KIND_LABEL, jlptKindStats, loadJlptBank,
   mistakeQuestions, mockParts, pickDrillQuestions,
   type JlptAnswer, type JlptBank, type JlptKind, type JlptLevel, type JlptMockPart, type JlptQuestion
 } from "../lib/jlpt-practice";
@@ -81,7 +81,7 @@ export function JlptPracticePage() {
   const stats = activeBank && !session ? jlptKindStats(activeBank) : [];
   const mistakes = stats.reduce((sum, stat) => sum + stat.mistakes, 0);
 
-  return <div className="jq-page" data-jlpt-practice={JLPT_PRACTICE_MARKER}>
+  return <div className="jq-page">
     {session && activeBank ? <>
       {error ? <>
         <MascotSay sticker="mood-puzzled" tone="warn" className="ds-say-onbg">{error}</MascotSay>

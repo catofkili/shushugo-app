@@ -24,8 +24,6 @@ const previewTimingEnabled = process.env.TARO_PREVIEW_TIMING === '1';
 // 分段计时浮层（PerfOverlay）但 React 用正式版：量真机体验用。计时版的性能分析版 React 本身就慢，会把「点击到换卡」量大。
 // 和计时版一样只许出预览码，check:release 会拦（产物里带 preview-timing 模块）。
 const perfOverlayEnabled = process.env.TARO_PERF_OVERLAY === '1';
-// 刷题实验开关独立于开口练习，带开关只许预览。
-const expJlptEnabled = process.env.SHUSHUGO_EXP_JLPT === '1';
 
 module.exports = {
   projectName: 'shushugo-taro-spike-2',
@@ -181,7 +179,6 @@ module.exports = {
         // 网页在 vite.config.ts 里 define 的常量，这里要同名补上，否则用到它的页面（关于）渲染时 ReferenceError 整页空白。
         __APP_VERSION__: JSON.stringify(require(path.join(frontend, 'package.json')).version),
         __TARO_PERF_OVERLAY__: JSON.stringify(perfOverlayEnabled),
-        __EXP_JLPT__: JSON.stringify(expJlptEnabled),
         'process.env.TARO_ATTRIBUTE_SELECTORS': JSON.stringify(JSON.stringify(attributeSelectors))
       }]);
       chain.plugin('shushugo-shared-shims').use(webpack.NormalModuleReplacementPlugin, [

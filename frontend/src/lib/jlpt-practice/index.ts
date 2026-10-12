@@ -1,10 +1,7 @@
-// JLPT 刷题（实验功能）的唯一入口。允许引用的页面和功能目录由 isolation.test.ts 钉住。
+// JLPT 刷题的唯一入口。允许引用的页面和功能目录由 isolation.test.ts 钉住。
 // 对外函数签名与 types.ts 是数据层、界面、题库导入三方的接口约定。
 
 export * from "./types";
-
-/** 小程序 check:release 和 iOS 发版脚本认这个指纹；页面里要用到它，免得被摇掉。 */
-export const JLPT_PRACTICE_MARKER = "__SHUSHUGO_EXP_JLPT__";
 
 /** 按等级懒加载题库，每级一个 JSON；同级只加载一次，失败可重试。 */
 export { loadJlptBank } from "./bank";

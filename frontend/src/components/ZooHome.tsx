@@ -424,12 +424,10 @@ export function ZooHome({
             <span aria-hidden="true"><Sticker name="icon-practice" size={36} /></span>
             <b>开口练习</b>
           </button>
-          {__EXP_JLPT__ && (
-            <button onClick={() => onNavigate("jlpt-practice")}>
-              <span aria-hidden="true"><Sticker name="icon-grammar" size={36} /></span>
-              <b>JLPT 刷题</b>
-            </button>
-          )}
+          <button onClick={() => onNavigate("jlpt-practice")}>
+            <span aria-hidden="true"><Sticker name="icon-grammar" size={36} /></span>
+            <b>JLPT 刷题</b>
+          </button>
           <button onClick={() => onNavigate("kanji-readings")}>
             <span aria-hidden="true"><Sticker name="icon-kanji-readings" size={36} /></span>
             <b>一字多音</b>

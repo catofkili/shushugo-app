@@ -28,16 +28,14 @@ describe("拼写作为正常学习卡上线", () => {
     expect(source("frontend/src/components/ZooHome.tsx")).not.toContain('onNavigate("spelling")');
   });
 
-  it("Taro 没有独立拼写路由，开口练习始终登记，JLPT 跟开关", () => {
-    for (const jlpt of ["0", "1"]) {
-      const output = execFileSync(process.execPath, ["-e", `
-        const { ROUTE_TABLE } = require('./taro-spike-2/src/platform/route-table.cjs');
-        console.log(JSON.stringify(ROUTE_TABLE.map(route => route.page)));
-      `], { cwd: root, env: { ...process.env, SHUSHUGO_EXP_JLPT: jlpt }, encoding: "utf8" });
-      const pages: string[] = JSON.parse(output);
-      expect(pages.includes("spelling")).toBe(false);
-      expect(pages.includes("talk")).toBe(true);
-      expect(pages.includes("jlpt-practice")).toBe(jlpt === "1");
-    }
+  it("Taro 没有独立拼写路由，开口和 JLPT 始终登记", () => {
+    const output = execFileSync(process.execPath, ["-e", `
+      const { ROUTE_TABLE } = require('./taro-spike-2/src/platform/route-table.cjs');
+      console.log(JSON.stringify(ROUTE_TABLE.map(route => route.page)));
+    `], { cwd: root, env: process.env, encoding: "utf8" });
+    const pages: string[] = JSON.parse(output);
+    expect(pages.includes("spelling")).toBe(false);
+    expect(pages.includes("talk")).toBe(true);
+    expect(pages.includes("jlpt-practice")).toBe(true);
   });
 });

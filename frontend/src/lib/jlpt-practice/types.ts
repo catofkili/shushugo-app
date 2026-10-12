@@ -1,4 +1,4 @@
-// JLPT 刷题（实验功能，`__EXP_JLPT__`）：题库格式和对外接口的类型。
+// JLPT 刷题题库格式和对外接口的类型。
 // 这份是数据层、界面、题库导入三方共用的约定，改字段要三边一起改。规格见 docs/JLPT_PRACTICE_SPEC.md。
 import type { FuriganaAnnotation } from "../../types/furigana";
 

@@ -199,16 +199,13 @@ export function JlptPlanPage({ onBack, onStartWords, onStartGrammar }: Props) {
               />
             </div>
           </div>
-          {/* 实验功能 JLPT 刷题的入口（docs/JLPT_PRACTICE_SPEC.md §0）：只跳转，不 import lib/jlpt-practice */}
-          {__EXP_JLPT__ && (
-            <button onClick={() => navigate("jlpt-practice")} className="ds-card focus-ring mb-3 flex w-full items-center gap-3 p-4 text-left">
-              <span className="min-w-0 flex-1">
-                <span className="block text-base font-black jp-ink">JLPT 刷题</span>
-                <span className="mt-0.5 block text-sm ds-ink2">按题型练 · 模拟卷</span>
-              </span>
-              <ChevronRight size={18} className="shrink-0 jp-muted" />
-            </button>
-          )}
+          <button onClick={() => navigate("jlpt-practice")} className="ds-card focus-ring mb-3 flex w-full items-center gap-3 p-4 text-left">
+            <span className="min-w-0 flex-1">
+              <span className="block text-base font-black jp-ink">JLPT 刷题</span>
+              <span className="mt-0.5 block text-sm ds-ink2">按题型练 · 模拟卷</span>
+            </span>
+            <ChevronRight size={18} className="shrink-0 jp-muted" />
+          </button>
 
           {/* ③ 吉祥物说：起点估算、来不及、额度不够、没开会员 —— 以前是四块橙描边的干巴巴色块 */}
           <div className="mb-2 space-y-3">

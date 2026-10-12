@@ -130,3 +130,9 @@ Taro Doctor 阶段 panic，按作者要求用 `--no-check` 编译，并按 packa
 - 网页的滚动容器是外层 `<main class="app-landscape-main">`，不是 window：`lib/touch-adapter` 的 `scrollPageToTop` 原来只滚 window，
   在网页上什么都不动（2026-10-02 修，刷题页是第一个真正依赖它的页面）。
 
+### 2026-10-12 作者决定上线
+
+作者决定「把刷题、开口都放到学习功能里」；卷 1–3 共 723 题返修完成后，JLPT 刷题已去掉编译期开关、环境变量和网页 / Taro / iOS 发布拦截，主页「学习工具」和备考计划入口无条件显示。题库继续放在 `jlpt-bank` 分包（本次构建测得 1,015,758 B；此前记录 842,540 B），`jlpt_answers` 仍为 `cloud: false`，不挂 Pro、不进今日计划 / 成就 / 柚子。
+
+仍未做：作答表改上云的发版顺序、真实 iPhone / 小程序设备验收。本源码状态不代表已部署、上传、提审或公开发布。
+

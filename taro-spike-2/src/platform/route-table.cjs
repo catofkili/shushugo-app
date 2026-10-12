@@ -32,10 +32,7 @@ const definitions = [
   ['achievements', 'content-pages/achievements/index', false, 'content-pages'],
   ['about', 'content-pages/about/index', false, 'content-pages'],
   ['talk', 'study/talk/index', false, 'study'],
-  // 刷题的实验开关独立，Node 登记和包内 DefinePlugin 必须同值。
-  ...((typeof __EXP_JLPT__ !== 'undefined' ? __EXP_JLPT__ : process.env.SHUSHUGO_EXP_JLPT === '1')
-    ? [['jlpt-practice', 'study/jlpt-practice/index', false, 'study']]
-    : [])
+  ['jlpt-practice', 'study/jlpt-practice/index', false, 'study']
 ];
 
 module.exports = definitions.map(([page, path, tab, subpackage]) => ({

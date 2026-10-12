@@ -77,8 +77,6 @@ export default defineConfig(({ command }) => ({
   ],
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
-    // JLPT 独立开关；开口练习上线时不能把刷题一起带进发布包。
-    __EXP_JLPT__: JSON.stringify(command === "serve" || process.env.SHUSHUGO_EXP_JLPT === "1"),
   },
   build: {
     outDir: "dist",

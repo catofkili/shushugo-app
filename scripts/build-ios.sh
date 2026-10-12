@@ -54,22 +54,8 @@ else
 fi
 
 # 3. 构建前端
-# JLPT 开关独立拦截，不能随开口练习上线一起解除（docs/JLPT_PRACTICE_SPEC.md §0）。
-if [ -n "${SHUSHUGO_EXP_JLPT:-}" ]; then
-    echo -e "${RED}❌ SHUSHUGO_EXP_JLPT 是实验功能开关，发版构建不许带${NC}"
-    exit 1
-fi
 echo -e "${YELLOW}🔨 构建前端项目...${NC}"
 npm run build
-if grep -rq "__SHUSHUGO_EXP_JLPT__" dist; then
-    echo -e "${RED}❌ 构建产物里有实验功能（JLPT 刷题）的代码${NC}"
-    exit 1
-fi
-# 题库是单独的懒加载文件，不带上面那个指纹；按题号格式（n3-v-trial2-01）再搜一遍
-if grep -rqE "\bn[1-5]-[vg]-[a-z0-9-]+-[0-9]{2}\b" dist; then
-    echo -e "${RED}❌ 构建产物里有实验功能（JLPT 刷题）的题库${NC}"
-    exit 1
-fi
 
 # 4. 同步到 iOS
 echo -e "${YELLOW}📱 同步到 iOS 项目...${NC}"
