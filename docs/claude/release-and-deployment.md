@@ -58,6 +58,8 @@ check / lint / test，应急才用 `SKIP_RELEASE_GATES=1`。
 
 ### ⚠️ 网页版默认没有预生成读音音频
 
+> **2026-10-12 增补：下面的 `AUDIO_ARTIFACT_URL` / R2 制品方案已被音频包取代。** 网页/iOS 和 Taro 均读取腾讯云开发总索引；Pages 工作流不再拉 tar 音频制品，Vite 不复制 `audio-src`、`audio/words`、`audio/examples` 到发布包（`audio/talk` 沿用）。生成/作者上传/CORS/缓存配置见音频专题「音频包（2026-10-12）」。这不表示云端已经上传或已验收。
+
 那 137 MB 不在版本库里（见 `.gitignore`），干净 runner 上 checkout 完根本没有，
 于是网页版**静默**退回系统 TTS，而构建全绿、没有任何提示。
 `deploy-pages.yml` 现在支持 `AUDIO_ARTIFACT_URL` + `AUDIO_ARTIFACT_SHA256`
@@ -129,3 +131,13 @@ DNS 仍托管在 Cloudflare（只是 DNS，不收费）。小程序云函数的 
 **待办**：服务器 R2 对象没有异机备份（只有每天一次的 SQLite 备份，保留 14 天）—— 阿里云控制台开自动快照；
 官网 `shushugo.com` 仍在 Cloudflare Pages（`shushugo-website`），要搬的话 Caddyfile 末尾已有静态站点块的写法（`/srv/shushugo-website`），DNS 切过去再启用；
 CF 上旧 Worker 留下的 secret（RESEND 等）和 D1/KV/R2 数据还在，确认稳定一段时间后再清。
+
+### 2026-10-12 音频包分包验收增补
+
+音频缓存适配器用 `globalThis.__shushugoAudioPackClient` 保存唯一实例：即使 Taro 把定义复制进独立分包，
+总索引、下载去重、并发上限和文件 LRU 都由同一实例管理。`speech-packs.ts` 不保留学习计划，购买/偏好每次现读。
+新增的允许项分别解释纯格式/哈希函数、类定义和唯一实例的边界，不能把其他有学习数据缓存的模块照此放行。
+本次实际 webpack stats 中 `DailyPlanSlider.weapp.tsx` 已不再跨分包复制（`duplicatedModules` 无此项）；
+它的旧「account/study 各一份」说明因此失效，随构建证据移除该过期允许项，而非扩大分包/重复代码限额。
+用户本次明确要求验收后还原 `taro-spike-2/reports`，因此保留的是基线报告；下一次提交/发布前必须重新构建，
+不能拿还原后的旧报告代替这次源码的构建证明。Doctor panic 时只跳过 Doctor，后面的所有脚本仍按 package.json 顺序执行。

@@ -25,6 +25,7 @@ import {
   extendGrammarQuizPlan,
   getGrammarQuizSession,
   grammarNewQuota,
+  grammarAudioPlan,
   grammarQuizRanking,
   submitGrammarQuizAnswer,
   undoLastGrammarQuizAnswer,
@@ -57,6 +58,14 @@ describe("语法考题（和单词同一套 FSRS）", () => {
   beforeEach(() => {
     testDb = new SQL.Database(new Uint8Array(readFileSync(seedPath)));
     prefStore.clear();
+  });
+
+  it("prepares the planned grammar examples on page entry without recording answers", () => {
+    const session = getGrammarQuizSession(LEVEL);
+    const examples = grammarAudioPlan(LEVEL);
+    expect(examples).toContain(session.card!.exampleJp);
+    expect(examples.length).toBeLessThanOrEqual(session.newQuota);
+    expect(testDb.exec("SELECT COUNT(*) FROM grammar_reviews")[0].values[0][0]).toBe(0);
   });
 
   it("题面仍是句型，答案是接续 + 中文意 + 例句", () => {

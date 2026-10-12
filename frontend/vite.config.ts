@@ -1,6 +1,6 @@
 import { defineConfig, type ViteDevServer } from "vite";
 import react from "@vitejs/plugin-react";
-import { mkdirSync, renameSync, writeFileSync } from "node:fs";
+import { mkdirSync, renameSync, writeFileSync, cpSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import pkg from "./package.json";
@@ -74,11 +74,18 @@ export default defineConfig(({ command }) => ({
   plugins: [
     react(),
     liveSnapshotPlugin(),
+    // public/audio-src is a read-only synthesis-source symlink, never an iOS/Web shipping asset.
+    { name: "exclude-audio-sources", closeBundle() {
+      const excluded = ["audio-src", "audio/words", "audio/examples"].map(name => resolve("public", name));
+      cpSync(resolve("public"), resolve("dist"), { recursive: true,
+        filter: source => !excluded.some(path => source === path || source.startsWith(`${path}/`)) });
+    } },
   ],
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
   },
   build: {
+    copyPublicDir: false,
     outDir: "dist",
     assetsDir: "assets",
     // ⚠️ **最低支持系统是 iOS 16.4,三处必须一起说同一个数**:这里、

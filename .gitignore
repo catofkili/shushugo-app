@@ -104,6 +104,8 @@ nihongo-port-*.db
 # 预生成的单词读音音频(scripts/build-word-audio.mjs 生成,约 11k 个文件 / 数十 MB)。
 # 属于构建产物,不进版本库;换机器重跑脚本即可,没有它时 App 自动退回系统语音合成。
 frontend/public/audio/
+frontend/public/audio-src
+frontend/audio-pack-dist/
 
 # 表记审计脚本的中间产物(scripts/audit-kanji-orthography.mjs 跑出来的分档草稿)。
 # 真正的产物是 src/data/kanji_orthography.json 和 scripts/kanji-orthography-manual-review.json,

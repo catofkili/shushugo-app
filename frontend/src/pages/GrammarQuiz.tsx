@@ -8,6 +8,7 @@ import { ScrollArea } from "../components/ScrollArea";
 import {
   extendGrammarQuizPlan,
   getGrammarQuizSession,
+  grammarAudioPlan,
   grammarQuizRanking,
   submitGrammarQuizAnswer,
   undoLastGrammarQuizAnswer,
@@ -15,6 +16,7 @@ import {
   type GrammarQuizAnswer,
   type GrammarQuizSession
 } from "../lib/grammar-quiz";
+import { prefetchExamples } from "../lib/speech";
 
 interface GrammarQuizProps {
   /** 进来时用哪个等级。列表页选「全部等级」时给 null，由这里自己挑一个并把选择器亮出来。 */
@@ -41,6 +43,7 @@ export const GrammarQuiz = ({ initialLevel, onBack }: GrammarQuizProps) => {
 
   useEffect(() => {
     setSession(getGrammarQuizSession(level));
+    void prefetchExamples(grammarAudioPlan(level));
     setRevealed(false);
     setShowRanking(false);
   }, [level]);
@@ -53,6 +56,7 @@ export const GrammarQuiz = ({ initialLevel, onBack }: GrammarQuizProps) => {
 
   const encore = useCallback(() => {
     setSession(extendGrammarQuizPlan(level));
+    void prefetchExamples(grammarAudioPlan(level));
     setRevealed(false);
     setShowRanking(false);
   }, [level]);

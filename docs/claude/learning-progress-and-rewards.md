@@ -127,6 +127,8 @@
 
 #### 商店可用性闸门（`lib/shop-availability.ts`）
 
+**2026-10-12 增补：声音名单改读腾讯云开发音频包总索引。** `availableVoices()` 来自共用 `speech-packs.ts`：免费 `voicevox-8` 可先提供已有音频，付费 `voicevox-10/11` 必须在新索引中存在且 `complete: true`（单词、单词例句、语法例句的源音频全部齐全）才可买/装备/试听。背景生成尚未结束时两个付费声音继续显示「即将上架」，不以目录存在或本机有几条样本当成可售。三端使用同一判断；资源就绪后作者重跑生成并上传 `--packs`，用户下次启动读到新索引自动开放。下面 `AUDIO_ARTIFACT_URL`、`--audio` 的旧补传步骤已被音频包取代，保留作历史记录。
+
 **商品在当前平台资源没就绪，就当 `soon` 处理：不能买、不能装备、不出试听；已拥有但本设备不可用时按钮写「此设备暂不可用」。**
 全部用能力检测，不按平台名分支：声音 = `speech.availableVoices()` 里有没有这个 id；音效 = `zoo-sounds.soundAvailable()`
 （网页看 `AudioContext`，小程序替身自己回答）；皮肤 = `mascotSkinReady(id)`。购买和装备入口再各查一次。

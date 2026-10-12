@@ -252,7 +252,8 @@ export const ensureStage1Tasks = () => {
   reconcileStage1NewQuota(day);
 };
 
-export const todayWordAudioPlan = (): { kanji: string; kana: string; example: string }[] => rowsFor(`
+type WordAudioPlan = { kanji: string; kana: string; example: string };
+const planRows = (day: string, end: Date): WordAudioPlan[] => rowsFor(`
   SELECT w.kanji, w.kana, w.example_jp AS example
   FROM stage1_tasks t
   JOIN words w ON w.id = t.word_id
@@ -261,11 +262,41 @@ export const todayWordAudioPlan = (): { kanji: string; kana: string; example: st
     AND p.known_forever = 0
     AND (p.fsrs_due IS NULL OR p.fsrs_due <= ?)
   ORDER BY t.order_index ASC, t.word_id ASC
-`, [today(), studyDayEnd().toISOString()]).map((row) => ({
+`, [day, end.toISOString()]).map((row) => ({
   kanji: String(row.kanji ?? ""),
   kana: String(row.kana ?? ""),
   example: String(row.example ?? "")
 }));
+
+export const todayWordAudioPlan = (): WordAudioPlan[] => planRows(today(), studyDayEnd());
+
+/** Read-only superset for the next study day; it never materializes tomorrow's task rows. */
+export const tomorrowWordAudioPlan = (): WordAudioPlan[] => {
+  const current = new Date(`${today()}T12:00:00`);
+  current.setDate(current.getDate() + 1);
+  const end = new Date(current);
+  end.setDate(end.getDate() + 1); end.setHours(4, 0, 0, 0);
+  const due = rowsFor(`
+    SELECT w.kanji, w.kana, w.example_jp AS example
+    FROM words w JOIN progress p ON p.word_id = w.id
+    WHERE p.known_forever = 0 AND p.seen_count > 0
+      AND p.fsrs_due IS NOT NULL AND p.fsrs_due <= ?
+    ORDER BY p.fsrs_due ASC, w.id ASC
+  `, [end.toISOString()]).map((row) => ({
+    kanji: String(row.kanji ?? ""), kana: String(row.kana ?? ""), example: String(row.example ?? "")
+  }));
+  const quota = dailyNewQuota();
+  const rows = rowsFor(`
+    SELECT w.kanji, w.kana, w.example_jp AS example
+    FROM words w JOIN progress p ON p.word_id = w.id
+    WHERE p.seen_count = 0 AND p.known_forever = 0
+    ORDER BY ${newWordOrderSql("w")}
+    LIMIT ?
+  `, [Math.max(quota * 4, quota)]).map((row) => ({
+    kanji: String(row.kanji ?? ""), kana: String(row.kana ?? ""), example: String(row.example ?? "")
+  }));
+  return [...due, ...rows];
+};
 
 /** 首页空闲时提前建当天候选集的只读干扰缓存，不创建计划行或改库。 */
 export const warmStage1SelectionCache = (): void => {

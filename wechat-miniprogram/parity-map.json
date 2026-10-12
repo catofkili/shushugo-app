@@ -206,8 +206,10 @@
       "mini": [
         "wechat-miniprogram/src/pages/grammar/index.js",
         "wechat-miniprogram/src/pages/grammar/index.wxml",
-        "wechat-miniprogram/src/pages/grammar/index.wxss"
-      ]
+        "wechat-miniprogram/src/pages/grammar/index.wxss",
+        "frontend/src/pages/GrammarQuiz.tsx"
+      ],
+      "reason": "路线 A：Taro 直接编译同一份 GrammarQuiz.tsx，页面进入时预取语法例句包，登记自身。"
     },
     {
       "web": "frontend/src/pages/HelpPage.tsx",

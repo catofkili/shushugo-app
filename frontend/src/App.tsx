@@ -22,6 +22,7 @@ import { consumePendingWeeklyReportWeekStart, loadReminderSettings, syncWeeklyRe
 import { OPEN_GRAMMAR_FOUNDATION_EVENT } from "./lib/grammar-foundation-navigation";
 import { shouldShowLevelSetup } from "./lib/level-plan";
 import { AppShell, markTrialNoticeRead } from "./app/AppShell";
+import { AUDIO_OFFLINE_NOTICE_EVENT } from "./lib/speech-packs";
 import type { AppContextValue } from "./app/AppContext";
 import { createAppActions } from "./app/actions";
 import { getAppState, setAppState, useAppState } from "./app/app-store";
@@ -305,6 +306,12 @@ export default function App() {
     };
     window.addEventListener(CLOUD_SYNC_EVENT, handleCloudSync);
     return () => window.removeEventListener(CLOUD_SYNC_EVENT, handleCloudSync);
+  }, [showNotice]);
+
+  useEffect(() => {
+    const onAudioOffline = (event: Event) => showNotice((event as CustomEvent<{ isWeapp?: boolean }>).detail?.isWeapp ? "没有网络，今天有些读音放不了。" : "没有网络，今天有些读音会换成系统声音。", 4200);
+    window.addEventListener(AUDIO_OFFLINE_NOTICE_EVENT, onAudioOffline);
+    return () => window.removeEventListener(AUDIO_OFFLINE_NOTICE_EVENT, onAudioOffline);
   }, [showNotice]);
 
   const navigateToPage = useCallback((newPage: Page, studyModeOverride?: StudyMode) => {

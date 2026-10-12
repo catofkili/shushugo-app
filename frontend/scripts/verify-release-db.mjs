@@ -18,9 +18,12 @@ const dbPath = path.join(publicDir, "nihongo.db");
 // 网页原型、设计稿、导出的 HTML 放进 public/ 都会随网页版一起公开。
 // 所以改成白名单:只有明确列出的顶层条目允许存在,新增任何东西都必须
 // 先在这里登记,顺便逼着人想一遍「这个真的要对外公开吗」。
+// 2026-10-12 的 audio-src 是唯一的只读源目录例外：Vite 的 exclude-audio-sources 插件不复制它。
+// 这不允许其他私有素材放进 public；成品目录仍在 public 之外。
 const ALLOWED_PUBLIC_ENTRIES = new Set([
   "nihongo.db",   // 出厂词库
   "audio",        // 预生成单词读音
+  "audio-src",    // 打包源软链，不进入 Web/iOS 发布产物
   "brand",        // 收集日公开品牌素材
   ".DS_Store"
 ]);

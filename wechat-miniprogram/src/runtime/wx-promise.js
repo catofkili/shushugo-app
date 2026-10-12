@@ -59,9 +59,8 @@ function readCompressedFile(filePath, compressionAlgorithm = 'br') {
       filePath,
       compressionAlgorithm,
       success: (result) => {
-        if (result?.data instanceof ArrayBuffer) return resolve(new Uint8Array(result.data));
-        if (result?.data instanceof Uint8Array) return resolve(result.data);
-        reject(new Error('微信解压结果不是二进制数据'));
+        // DevTools can return ArrayBuffer from another JS realm, just like readFile; instanceof loses it.
+        try { resolve(toBytes(result)); } catch (error) { reject(error); }
       },
       fail: reject
     });

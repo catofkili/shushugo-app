@@ -75,6 +75,8 @@ Shepard 音把这个约束整个拿掉：同一个音级在**九个八度上同�
 
 ## 例句音频：预生成、放 R2 按需拉，不进包也不在端上合成（2026-09-17）
 
+> **云端来源、逐句下载和发布步骤已被下文「音频包（2026-10-12）」取代。** 下列生成、句调迁移和读音校对的历史依据保留；开口练习不在这次迁移里。
+
 `scripts/build-example-audio.mjs` → `public/audio/examples/<voice>/<hash>.aac`，运行时
 `speech.ts` 的 `playExample` / `prefetchExample`，入口是单词卡和语法卡例句框旁的
 `ExamplePlayButton`（`WordStudyPanels.tsx`，两张卡共用）。
@@ -130,6 +132,8 @@ VOICEVOX 按重音短语逐拍预测音高，只知道每个短语的重音型�
 
 ### ⚠️ 待办（2026-09-18 定下、还没做）：参考引擎从 Kyoko 换成 AivisSpeech，然后上 R2
 
+> **「上 R2」已被音频包取代**；参考引擎/内容权利问题仍以实际生成流程和 `CONTENT_RIGHTS.md` 为准，不能因为换存储就认作已完成。
+
 **为什么要换**：Kyoko 是为了免安装、十分钟出 A/B 才选的。作为参考它有两个短板：
 ① 它自己的句调只是「还行」（Apple 老一代引擎），参考的天花板就是结果的天花板；
 ② macOS SLA 把系统语音的输出限定个人非商用，音高曲线算不算「输出」没有先例
@@ -176,6 +180,8 @@ R2 的操作步骤在 `scripts/upload-audio.sh` 头部；密钥只能作者自�
 
 ### 上线步骤（`scripts/upload-audio.sh` 头部有命令）
 
+> **已被音频包取代，以下是旧步骤，不再用于新客户端发布。**
+
 1. 开 VOICEVOX，`node scripts/build-example-audio.mjs --limit 20` 试听，再全量（一个声音约 4–6 小时，断点续跑）。
 2. `rclone` 推到 R2 桶 `shushugo-audio`，配自定义域名 **和 CORS**——⚠️ `index.json` 是跨域
    `fetch`，没 CORS 就整个退回系统语音，而且没有任何报错；`<audio>` 本身不需要 CORS。
@@ -185,6 +191,169 @@ R2 的操作步骤在 `scripts/upload-audio.sh` 头部；密钥只能作者自�
    用户选了别的声音会退到例句库自己的默认（`resolveVoice("examples")`）。
 
 **先只做 voicevox-8（春日部つむぎ）。** R2 上多两个声音不花钱，花的是本机十小时。
+
+## 音频包（2026-10-12）
+
+### 为什么换、三端各读什么
+
+作者要求「放云端，但尽可能少下载」。旧网页的音频不在 git，线上可能一句预生成音频都没有；
+小程序一天计划五百多个词，逐词再逐例句请求会有上千次下载。现在一张单词卡的读音与例句一起装包，
+网页、Capacitor iOS 和 Taro 都读腾讯云开发 **同一个环境、同一个总索引、同一批包**。不增加依赖、不启动合成引擎。
+
+- 环境：`wechat-miniprogram/cloudbaserc.json` 的 `cloud1-d3g7dauie3961575b`，上海。
+- 小程序：`cloud://cloud1-d3g7dauie3961575b.636c-cloud1-d3g7dauie3961575b-1491634527/audio/packs/`。
+  `config.js` 和 Taro 实际替换的 `src/platform/config.weapp.cjs` 必须同时保留 `audioPackBaseUrl`。
+  预取用 `wx.cloud.downloadFile`，不为每个包额外调一次 `getTempFileURL`。
+- 网页/iOS：`https://636c-cloud1-d3g7dauie3961575b-1491634527.tcb.qcloud.la/audio/packs/`。
+  默认域名的结构由现有 fileID 中的桶标识推导，发布前作者仍要在控制台「域名信息」核对，并做下面的无签名 GET 验收。
+  这里没有 Web CloudBase 登录 SDK、签名 URL、Worker 转发或新的 R2 音频来源。
+- `audio/talk/` 不改。Vite 发布拷贝明确排除 `audio-src`、旧的 words/examples，保留 talk；
+  不能直接让 Vite 追着只读 `audio-src` 软链把几百 MB 源音频复制进 Web/iOS 包。
+
+官方依据：[CloudBase 云存储的默认 CDN 域名、公开读和缓存规则](https://cloud.tencent.com/document/product/876/46898)，
+[COS 控制台跨域配置](https://www-sg.tencentcloud.com/document/product/436/11488)，
+[CloudBase CLI 上传命令](https://docs.cloudbase.net/cli-v1/storage)。这些文档证明产品能力，**不证明本环境已配置/已上传**。
+
+### 怎么分包：跟选词的档位走，不替调度器排序
+
+`word-api/filters.ts` 的新词顺序是 `N5/N4/N3 → N2 → N1` 三档，再按 importance 降序，档内随机。
+还有点名词、未见过的旧计划词优先；复习受 FSRS、顽固词闸和上限后的随机池影响，出卡再由优先级与排片器决定。
+因此打包按 **同一个级别档 + 同一个 importance** 分组，每组固定 64 个词；表记/假名只用于包内稳定排序，
+**不改变任何选词、随机抽样或作答顺序**。每词的读音和自己的例句在同一包。运行时固定表达也加入，不能只读种子库。
+语法按等级、`sort_order`，每 64 条单独打包；不会因学一条语法而拉单词包。
+相同例句可能被多张卡使用，总索引只指向第一份可用位置；各卡自己的包仍含自己的句音。
+
+voicevox-8 的实际构建（本次读取只读源目录，非估算）：
+
+| 指标 | 数值 |
+| --- | --- |
+| 包数 | 206 |
+| 平均 / 最大 | 769,036 / 921,081 B（751 / 900 KiB） |
+| 全部包 | 158,421,497 B（151.1 MiB） |
+| 不同单词读音 / 不同例句 | 11,709 / 11,681 |
+| voicevox-8 单声音总索引 | JSON 924,416 B；gzip 402,283 B；Brotli 327,457 B |
+| 三声音索引的当前局部生成快照 | gzip 590,993 B；Brotli 468,183 B（付费例句生成中，最终数字会变） |
+
+751–900 KiB 单包在 5–10 Mbps 下纯传输约 0.6–1.5 秒；两路并发在约 10 Mbps 下首包约 1–2 秒。
+这是按字节数计算的 4G 预算，**没有实测真机网络/RTT**。学习页把当前卡的包放在预取清单最前。
+一天涉及哪些包不能仅靠「64 词一包」除计划词数：随机复习会跨包，下面真实回放才是依据。
+
+### 真实计划回放：一天究竟下载几个包
+
+先用 `npm run db -- --help`，再用 `--file /Users/lsc/Documents/shushugo/frontend/.local/live.db --status` 核对真实快照。
+本次复制的是 **2026-10-12 10:00:13 UTC** 写入的只读快照，没连/刷新作者的 5173。
+取 2026-09-13～10-12 最近 30 个自然日里的 **27 个有 stage1_tasks 的计划日**，每词按当前内容匹配读音+例句，
+按计划顺序回放整包 80 MiB LRU，不只算实际点过播放的卡：
+
+| 口径 | 中位数 |
+| --- | --- |
+| 每日计划词数 | 518 |
+| 每天都清缓存后的需求 | 82 包，63,784,413 B（60.8 MiB） |
+| 连续使用并保留 80 MiB LRU | **5 个新增包/天**，4,277,170 B（4.1 MiB） |
+| 当前 10-12 计划 | 540 词，冷缓存 88 包；连续回放新增 8 包 |
+
+首日回放是冷启动，82 次包下载；以后缓存重用才降到 5 次/天的中位数，另有每次启动的一次极小版本指针请求。
+不要宣传「新用户第一天只下五个包」。历史计划中有 0–12 个表记/假名匹配不上当前成品音频的词，
+估算报告明确列 `unmappedWords`；这些不算包下载，不能拿它当全量内容 100% 覆盖。
+这是当前词库映射下的历史计划回放，没模拟网络完成先后、真实磁盘占用、逐张访问对 LRU 的微小变化。
+复现命令和逐日明细在生成目录 `estimate.json`；个人快照和逐日明细不进 git。
+
+### 格式、更新和请求边界
+
+`SAP1`：4 字节 magic + 4 字节小端 JSON 长度 + ASCII JSON（片段 key → offset/length）+ 拼接的 ADTS AAC。
+单词 key 为 `w:<表记|假名 FNV64>`，句子 key 为 `e:<句子 FNV64>`，与现有生成脚本共用 `speech-audio.ts`。
+下载后先校验头部和每个范围，半包/坏包不落缓存。索引/包路径也须验证，不能让云端 JSON 任意读写用户目录。
+
+- 包名是 `voicevox-*/<分组>-<完整 SHA256>.sap`；固定分组里改一条音频，只换该包和总索引。
+  如果同一句在多个卡包里重复，重复的包也会更新；新增/删词或改优先级导致分组边界变化也可能换更多包。
+- 一个逻辑总索引共享三声音的片段 key 列表，声音各自记录包名、字节数和片段位置，减少三份随机哈希重复。
+  上传 gzip/Brotli 两种编码，是同一 JSON 的两种传输格式，不是两个资源来源。
+  网页/iOS 原生 `DecompressionStream("gzip")`（iOS 16.4 起），小程序 `readCompressedFile("br")`。
+- `current.json` 只含 64 位十六进制内容版本，版本指向 `index-<SHA256>.json.gz/.br`。
+  每进程首次需要音频时查一次指针；版本没变就直接用本机索引，变了才下总索引。离线用上次有效索引。
+  首次索引取不到时，60 秒内不随每次播放重复撞请求；正在运行的版本要等下一次启动才查更新。
+- 首页空闲时预热；进入学习页马上按今日计划预取全部需要的包，进入语法页预取该等级的计划候选，
+  加餐也预取。语法 capped review 会重新随机抽，因此预热到期候选池，避免只预热第一次抽到的子集。
+  同一次进入学习页还会预取明天：明天到期的复习词加上 `4 × 每日新词配额` 的未见词超集（随机选词仍由调度器决定，
+  超集只为减少明天再次下载）。今天包和明天包在本次缓存回收中都受保护；空间不够时今天先写，明天包放弃并在下一次进入重试。
+  单卡例句、下一张单词仍有提前预热；所有入口同包去重，**全客户端最多两路包/兜底传输**。
+- 点播放先读本机。如果包正在下，加入已有请求；没缓存才发单条 `Range` 请求取 AAC。
+  网页/iOS 一次 HTTPS；小程序该罕见路径用 `getTempFileURL` + `wx.request`（两次接口），正常预取不用此路径。
+  服务端忽略 Range 返回 200 时校验并缓存整包，不会把整包当成一条 AAC。
+  单条兜底缓存也带包内容哈希，重新合成同一个词后不会被旧的 AAC 命中遮住。
+- 某学习日第一次进入学习页，若今天所需包缺失且预取因无网失败，网页/iOS 用已有提示层提示「没有网络，今天有些读音会换成系统声音。」；
+  小程序提示「没有网络，今天有些读音放不了。」。提示键只写本机 `localStorage` / wx storage，按学习日每天最多一次；今天包已经齐全时不提示。
+
+### 本机缓存和声音商品
+
+共用 `AudioPackClient`：网页/iOS 用独立 IndexedDB `shushugo-audio-packs`，字节和 LRU 元数据同事务写入；
+小程序用 `USER_DATA_PATH/audio-packs`，先 `.tmp` 再 rename，只有音频包缓存清理自己的孤儿临时文件。
+缓存上限 **80 MiB**，按整包 LRU；旧声音切换后先淘汰。空间/配额写入失败时继续淘汰音频重试，
+不删除出厂库、学习数据库、备份或 talk。索引和播放用的两个临时 AAC 在上限外，约数 MiB/数十 KiB；
+80 MiB 不是对小程序整个 200 MB 文件空间的独占保证，其他数据变大时实际可保留的音频会更少。
+升级只清旧读音缓存 `USER_DATA_PATH/audio/YYYY-MM-DD`，其他目录保留；两个播放临时 AAC 每次覆盖，不随卡数增长。
+
+Taro 分包可以复制类定义，但用 `globalThis.__shushugoAudioPackClient` 保存唯一实例，
+避免两份 LRU 台账互相覆盖或同包下载两次。`speech-packs.ts` 不留学习计划快照，偏好/购买状态每次现读。
+两个付费声音要在新总索引中存在且 `complete: true` 才进入 `availableVoices()`，三端商店共用原 `itemAvailable`。
+voicevox-8 默认免费，允许先用已有音频；不能用「磁盘上有个 voicevox-10 目录」证明付费资源完整。
+
+### 生成、复跑、作者上传
+
+```bash
+cd /Users/lsc/Documents/shushugo-wt/audio-packs/frontend
+node --no-warnings scripts/build-audio-packs.mjs --voice voicevox-8 --out audio-pack-dist/voice8-measure
+node --no-warnings scripts/build-audio-packs.mjs
+node --no-warnings scripts/estimate-audio-packs.mjs audio-pack-dist/live-estimate.db
+cd ../wechat-miniprogram
+# 作者先完成控制台清单，自己 tcb login；确认后台合成结束后重跑上面完整构建，再执行：
+TCB=/path/to/tcb bash scripts/upload-cloud-content.sh --packs
+```
+
+源默认是 `frontend/public/audio-src`（本次软链到主目录音频），**只读，不合成、不删孤儿、不改源索引**。
+输出 `frontend/audio-pack-dist`（gitignore）。内容不变时包/版本逐字节不变，也不重写已有相同文件。
+`index.json` 是展开后的本机检查版，`stats.json` / `missing.json` 是统计/缺项；只有 `upload.json` 指定的制品会上传。
+活跃生成期间只把已有完整 ADTS 文件装包，缺少/破帧的列缺项；这不是整个源目录的一致快照，**合成结束后重跑再上传**。
+本次缺项：voicevox-8 的两个语法例句是「彼女に会いたくてしようがない。」（326）、
+「泣いてもしようがないから、次のことを考えよう。」（337）。10/11 例句仍在作者后台生成；
+未改任何源文件，源内容不足也不能伪造 `complete: true` 让商店提前售卖。
+
+`--packs` 上传前本地核对两编码解压相同、总索引 SHA256、所有包 SHA256、映射和上传清单；
+必须包含三声音（单声音测量产物不能发布）。摘掉六种大小写代理变量再调 tcb，
+HTTPS HEAD 只有 404 才上传，200 跳过已有哈希制品；403/网络错误不能当作「文件不存在」。
+包和版本索引完成后才发布 `current.json`，相同指针不重复传；任一步失败不发布新版本。
+不自动清云端旧包，旧客户端仍可能引用；不修改任何云端权限/CORS/CDN 配置。
+本次只在临时目录里用假的 curl/tcb 测了跳过、失败停止、代理清理、指针最后发布，**没有实际上传**。
+
+### 作者在控制台做的清单（助手不操作）
+
+1. 打开上述环境「云存储 → 文件管理」，核对桶和默认域名与代码一致；HTTPS 地址必须是无签名的长期下载地址。
+2. 「权限管理」确认 `audio/packs/` 可公开读、客户端不可写。若桶含私有内容，使用自定义规则只放行这个前缀，
+   保留原有私有目录和写规则；不把整桶直接改成公开读写。后台管理员/tcb 负责写入。
+3. 从文件管理的桶名链接到 COS 控制台「安全管理 → 跨域访问 CORS 设置」加**读规则**：Origin `*`（兼容 iOS 的
+   `capacitor://localhost`、Android 的 `https://localhost`、网页和独立验证端口，不带 credentials）；Methods `GET, HEAD`；
+   Allow-Headers `Range`；Expose-Headers `Content-Range, Content-Length, ETag`；Max-Age `86400`。
+   若默认 CDN 不透传 CORS 头，在 CDN 响应头设置补齐同样的允许源/公开响应头，并重新验收。
+   COS 自动响应 OPTIONS，不用给浏览器开放上传/删除。此处是静态 HTTPS，不需另接 Web SDK 安全域名/匿名登录。
+4. 「缓存设置」给 `/audio/packs` 的哈希包/版本索引长缓存（可 365 天），**更高优先级**的
+   `/audio/packs/current.json` 设置 0 秒，避免 CDN 长期返回旧版本指针。不要为 `.gz/.br` 上传物加 `Content-Encoding`，
+   它们是实际压缩文件，Content-Type 可用 `application/octet-stream`；网页也兼容已经自动解压的 gzip 响应。
+5. 作者先确认 10/11 生成完、补齐 voicevox-8 缺句，重跑构建，再用 `--packs` 上传。
+   云存储 SDK 下载包无需逐包加普通下载域名；**小程序 Range 兜底用 wx.request**，须核对微信「request 合法域名」
+   包含 `getTempFileURL` 实际返回的 HTTPS 主机，不能用「开发者工具忽略合法域名」当发布验收。
+6. 在无 CloudBase 登录的浏览器验收 `current.json`、一个 `.gz` 索引、一个包：200、CORS 头可见；
+   `Range: bytes=0-7` 返回 206、正确 Content-Range 和 8 B。小程序也验证下载、Brotli 解压、复开缓存命中和声音切换。
+   上传后在三端核对两个付费声音是否自动可买；没有做这一层不能说云端/真机已可用。
+
+### 验收记录
+
+本节数字来自本次实际构建和只读计划回放。自动验收覆盖包格式往返、映射/稳定哈希、单句替换、LRU、
+坏包不入缓存、并发去重、命中零请求、版本变动/离线、微信文件写入/播放中断和上传脚本离线模拟。
+本次验收：SAP1/映射/LRU/命中/断网提示新增测试通过；`tsc`、lint（仅既有 warning）和 Vite build 通过。
+当前全量 `vitest run` 有 15 个 5 秒超时（grammar seed、seed migration、sync merge、startup metrics、隔离扫描等），
+没有音频测试断言失败，因此 `scripts/ci-local.sh` 在 frontend test 阶段停止；音频相关测试与小程序 32 项 smoke 全部通过。
+Taro Doctor 在 macOS `system-configuration` 触发 panic，按门禁要求改用 `taro build --no-check`，后续脚本和分包门禁通过，
+主包 1,881,797 B（1.795 MiB）。本次未做浏览器/真机视觉、云端上传或控制台配置验收；音频源仍有缺项，不能据此宣称线上可用。
 
 ## 辨析只有一份：`confusion-groups.ts`
 

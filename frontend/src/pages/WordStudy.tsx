@@ -9,7 +9,9 @@ import { checkAchievements } from "../lib/userProfile";
 import { claimDailyPlanYuzu, settleYuzu } from "../lib/yuzu";
 import { reportTeamActivity } from "../lib/team-activity";
 import { triggerCountdownHaptic, triggerMemoryHaptic, triggerReliefHaptic, triggerRevealHaptic, triggerSwipeArmHaptic } from "../lib/haptics";
-import { playPronunciation, prefetchPronunciation } from "../lib/speech";
+import { playPronunciation, prefetchPronunciation, prefetchWordPlanAudio, prefetchExamples } from "../lib/speech";
+import { todayWordAudioPlan, tomorrowWordAudioPlan } from "../lib/word-api";
+import { grammarAudioPlan } from "../lib/grammar-quiz";
 import { playComplete, playCountdownTick, playDontKnow, playFlip, playKnow, playReliefDeal } from "../lib/zoo-sounds";
 import {
   ExampleBlock,
@@ -477,6 +479,18 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     resetMixedSession();
     void loadNext(initialMode);
   }, [initialMode, loadNext]);
+
+  const prefetchedAudioPlan = useRef("");
+  useEffect(() => {
+    if (loading) return;
+    const key = `${initialMode}:${preferences.voiceId}:${preferences.jlptTarget}`;
+    if (prefetchedAudioPlan.current === key) return;
+    prefetchedAudioPlan.current = key;
+    const plan = todayWordAudioPlan();
+    if (card) plan.unshift({ kanji: card.kanji, kana: card.kana, example: card.example.jp });
+    void prefetchWordPlanAudio(plan, tomorrowWordAudioPlan());
+    if (initialMode === "mixed") void prefetchExamples(grammarAudioPlan(preferences.jlptTarget));
+  }, [loading, initialMode, preferences.voiceId, preferences.jlptTarget, card]);
 
   useEffect(() => {
     if (!reliefActive || !card?.id || reliefLeaving || loading) return;

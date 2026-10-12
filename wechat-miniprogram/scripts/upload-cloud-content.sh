@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# 把出厂词库（原库 + Brotli 压缩版）+ 内容 manifest（默认）、单词读音（--audio）、例句音频（--examples）或吉祥物皮肤（--skins）推到云开发的云存储。
+# 把出厂词库（默认）、音频包（--packs）或吉祥物皮肤（--skins）推到云开发的云存储。
+# --audio / --examples 仅供旧版客户端维护；2026-10-12 起新客户端只读 --packs 的总索引。
 # 每次 bake-seed-db 之后跑一次；音频只在重新合成后跑。
 # 需要先 `tcb login`（设备码登录，微信扫码）。皮肤生成后执行 `./scripts/upload-cloud-content.sh --skins`；tcb 装在哪都行：TCB=/path/to/tcb ./scripts/upload-cloud-content.sh
 #
@@ -12,6 +13,39 @@ TCB=${TCB:-tcb}
 ENV_ID=$(node -p "require('./cloudbaserc.json').envId")
 FILE_ID_BASE=$(node -p "require('./src/config.js').seedDatabaseUrl.replace(/\/seed\/nihongo\.db$/, '')")
 [ -n "$FILE_ID_BASE" ] || { echo "config.js 的 seedDatabaseUrl 还没填 fileID 前缀"; exit 1; }
+
+if [ "${1:-}" = "--packs" ]; then
+  PACK_DIST=${PACK_DIST:-../frontend/audio-pack-dist}
+  PUBLIC_BASE=$(node -p "const b=require('./src/config.js').audioPackBaseUrl; 'https://'+b.split('/')[2].split('.')[1]+'.tcb.qcloud.la/audio/packs/'")
+  LIST=$(mktemp)
+  HEADERS=$(mktemp)
+  CURRENT=$(mktemp)
+  trap 'rm -f "$LIST" "$HEADERS" "$CURRENT"' EXIT
+  # Validate every local artifact before the first upload; stale/mixed build outputs must not become a published catalog.
+  node --no-warnings scripts/audio-pack-upload-manifest.mjs "$PACK_DIST" > "$LIST"
+  uploaded=0
+  skipped=0
+  while IFS= read -r file; do
+    pack_http_status=$(curl --silent --show-error --head --max-time 30 --output "$HEADERS" --write-out '%{http_code}' "$PUBLIC_BASE$file")
+    case "${pack_http_status}" in
+      200|206) skipped=$((skipped + 1));;
+      404) "$TCB" storage upload "$PACK_DIST/$file" "audio/packs/$file" --times 3 -e "$ENV_ID" < /dev/null
+           uploaded=$((uploaded + 1));;
+      *) echo "云存储检查失败 HTTP ${pack_http_status}：${file}；检查公开读权限，未发布 current.json" >&2; exit 1;;
+    esac
+  done < "$LIST"
+  # Pointer goes last. A failed transfer never advertises a catalog whose packs are missing.
+  pack_http_status=$(curl --silent --show-error --max-time 30 --output "$CURRENT" --write-out '%{http_code}' "${PUBLIC_BASE}current.json")
+  if [ "${pack_http_status}" = 200 ] && cmp -s "$PACK_DIST/current.json" "$CURRENT"; then
+    echo "current.json 未变，跳过。"
+  elif [ "${pack_http_status}" = 200 ] || [ "${pack_http_status}" = 404 ]; then
+    "$TCB" storage upload "$PACK_DIST/current.json" audio/packs/current.json --times 3 -e "$ENV_ID" < /dev/null
+  else
+    echo "current.json 检查失败 HTTP ${pack_http_status}，未更新指针" >&2; exit 1
+  fi
+  echo "音频包/版本索引：新增上传 ${uploaded}，云端已有跳过 ${skipped}；current.json 最后发布。"
+  exit 0
+fi
 
 if [ "${1:-}" = "--examples" ]; then
   # 例句音频（约 143 MB / 一万一千多个文件）。小程序按 audioBaseUrl 把 /words 换成 /examples 来找（speech.weapp.ts）。

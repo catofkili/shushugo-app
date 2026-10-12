@@ -420,6 +420,18 @@ export const grammarPlanRemaining = (level: string, day = today()) => {
  */
 export const grammarPlanDone = (level: string, day = today()) => graduatedTodayCount(level, day);
 
+/** Prefetch the level's candidates before the first card; grammar's capped review pool can be randomized again. */
+export const grammarAudioPlan = (level: string): string[] => {
+  const { reviewIds, newIds } = planIds(level, today());
+  // Prefetch the due candidate pool: capped reviews re-randomize, so the first sampled subset is insufficient.
+  const due = reviewIds.length ? rowsFor(`SELECT g.id FROM grammar_points g JOIN grammar_progress p ON p.grammar_id=g.id
+    WHERE g.level=? AND p.known_forever=0 AND p.seen_count>0 AND (p.fsrs_due IS NULL OR p.fsrs_due<=?)`, [level, studyDayEnd().toISOString()]).map(row => Number(row.id)) : [];
+  const ids = [...new Set([...due, ...newIds])];
+  if (!ids.length) return [];
+  return rowsFor(`SELECT example_jp FROM grammar_points WHERE id IN (${ids.map(() => "?").join(",")})`, ids)
+    .map(row => String(row.example_jp ?? "")).filter(Boolean);
+};
+
 /** 取当前这一条。今天的都过关了就返回 card=null，由界面问要不要加餐。 */
 export const getGrammarQuizSession = (level: string): GrammarQuizSession => {
   const day = today();

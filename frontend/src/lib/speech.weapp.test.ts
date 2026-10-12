@@ -1,147 +1,97 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { brotliCompressSync, brotliDecompressSync } from "node:zlib";
+import { runInNewContext } from "node:vm";
+import { encodeAudioPack, decodeAudioPack } from "./audio-pack-format";
+import { pronunciationAudioName, exampleAudioName } from "./speech-audio";
 
-vi.mock("./studyPreferences", () => ({ getStudyPreferences: () => ({ voiceId: "voicevox-8" }) }));
+vi.mock("./audio-pack-platform", () => import("./audio-pack-platform.weapp"));
+vi.mock("./studyPreferences", () => ({ getStudyPreferences: () => ({ voiceId: "voicevox-8" }), PREFERENCES_EVENT: "prefs" }));
 vi.mock("./yuzu", () => ({ voiceUnlocked: (id: string) => id !== "voicevox-11" }));
 
 const runtime = vi.hoisted(() => {
-  const files = new Set<string>();
-  const temporaryFiles = new Map<string, string | Uint8Array>();
+  const files = new Map<string, Uint8Array>();
   const listeners: { canplay?: () => void; error?: () => void } = {};
-  const context = {
-    src: "",
-    stop: vi.fn(),
-    play: vi.fn(),
-    offCanplay: vi.fn(() => { listeners.canplay = undefined; }),
-    offError: vi.fn(() => { listeners.error = undefined; }),
-    onCanplay: vi.fn((fn: () => void) => { listeners.canplay = fn; }),
-    onError: vi.fn((fn: () => void) => { listeners.error = fn; }),
-    get listeners() { return listeners; }
-  };
-  return {
-    files,
-    temporaryFiles,
-    context,
-    downloadedIds: [] as string[],
-    removedDirectory: "",
-    fs: {} as Record<string, (...args: any[]) => void>,
-    cloud: { init: vi.fn(), getTempFileURL: vi.fn() }
-  };
+  const context = { src: "", stop: vi.fn(), play: vi.fn(),
+    offCanplay: vi.fn(() => { listeners.canplay = undefined; }), offError: vi.fn(() => { listeners.error = undefined; }),
+    onCanplay: vi.fn((fn: () => void) => { listeners.canplay = fn; }), onError: vi.fn((fn: () => void) => { listeners.error = fn; }), listeners };
+  return { files, context, downloadedIds: [] as string[], removedDirectory: "", fs: {} as Record<string, (...args: any[]) => void>,
+    cloud: { init: vi.fn(), getTempFileURL: vi.fn(), downloadFile: vi.fn() } };
 });
-
-const bytes = (value: string | Uint8Array): Uint8Array => typeof value === "string" ? new TextEncoder().encode(value) : value;
+const version = "b".repeat(64);
+const word = (kanji: string, kana: string) => `w:${pronunciationAudioName(kanji, kana)}`;
+const keys = [word("灰皿", "はいざら"), word("箸", "はし"), word("勉強", "べんきょう"), `e:${exampleAudioName("灰皿を使います。")}`];
 
 beforeEach(() => {
-  runtime.files.clear();
-  runtime.temporaryFiles.clear();
-  runtime.downloadedIds.length = 0;
-  runtime.removedDirectory = "";
-  runtime.context.offCanplay();
-  runtime.context.offError();
-  vi.clearAllMocks();
-
+  vi.resetModules(); delete (globalThis as any).__shushugoAudioPackClient;
+  runtime.files.clear(); runtime.downloadedIds.length = 0; runtime.removedDirectory = "";
+  runtime.context.offCanplay(); runtime.context.offError(); vi.clearAllMocks();
+  const encoder = new TextEncoder();
   Object.assign(runtime.fs, {
-    readdir: (options: { success: (result: { files: string[] }) => void }) => options.success({ files: ["2026-09-26"] }),
-    rmdir: (options: { dirPath: string; success: () => void }) => { runtime.removedDirectory = options.dirPath; options.success(); },
-    mkdir: (options: { success: () => void }) => options.success(),
-    access: (options: { path: string; success: () => void; fail: (error: unknown) => void }) => (
-      runtime.files.has(options.path) ? options.success() : options.fail({ errMsg: "no such file" })
-    ),
-    stat: (options: { path: string; success: (result: { stats: { size: number } }) => void; fail: (error: unknown) => void }) => {
-      const content = runtime.temporaryFiles.get(options.path);
-      return content
-        ? options.success({ stats: { size: bytes(content).byteLength } })
-        : options.fail({ errMsg: "no such file" });
+    readdir: (o: any) => o.success({ files: o.dirPath.endsWith("/audio") ? ["2026-09-26", "talk"] : [] }),
+    rmdir: (o: any) => { runtime.removedDirectory = o.dirPath; o.success(); }, mkdir: (o: any) => o.success(),
+    stat: (o: any) => runtime.files.has(o.path) ? o.success({ stats: { size: runtime.files.get(o.path)!.length } }) : o.fail({ errMsg: "no such file" }),
+    readFile: (o: any) => {
+      const data = runtime.files.get(o.filePath);
+      if (!data) return o.fail({ errMsg: "no such file" });
+      o.success({ data: o.encoding === "utf8" ? new TextDecoder().decode(data) : data.slice().buffer });
     },
-    readFile: (options: { filePath: string; success: (result: { data: ArrayBuffer }) => void; fail: (error: unknown) => void }) => {
-      const content = runtime.temporaryFiles.get(options.filePath);
-      if (!content) return options.fail({ errMsg: "no such file" });
-      const data = bytes(content);
-      return options.success({ data: data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength) as ArrayBuffer });
-    },
-    copyFile: (options: { destPath: string; success: () => void }) => { runtime.files.add(options.destPath); options.success(); },
-    unlink: (options: { filePath: string; success: () => void }) => {
-      runtime.files.delete(options.filePath);
-      runtime.temporaryFiles.delete(options.filePath);
-      options.success();
-    }
+    readCompressedFile: (o: any) => o.success({ data: runInNewContext("Uint8Array.from(bytes).buffer", { bytes: [...brotliDecompressSync(runtime.files.get(o.filePath)!)] }) }),
+    writeFile: (o: any) => { runtime.files.set(o.filePath, typeof o.data === "string" ? encoder.encode(o.data) : new Uint8Array(o.data)); o.success(); },
+    rename: (o: any) => { runtime.files.set(o.newPath, runtime.files.get(o.oldPath)!); runtime.files.delete(o.oldPath); o.success(); },
+    unlink: (o: any) => { runtime.files.delete(o.filePath); o.success(); }
   });
-  runtime.cloud.getTempFileURL.mockImplementation(async ({ fileList }: { fileList: string[] }) => ({
-    fileList: [{ fileID: fileList[0], tempFileURL: `https://temp/${encodeURIComponent(fileList[0])}` }]
-  }));
-
-  vi.stubGlobal("wx", {
-    env: { USER_DATA_PATH: "/wx-user" },
-    cloud: runtime.cloud,
-    getFileSystemManager: () => runtime.fs,
-    createInnerAudioContext: () => runtime.context,
-    downloadFile: ({ url, success }: { url: string; success: (result: { tempFilePath: string; statusCode: number }) => void }) => {
-      const fileID = decodeURIComponent(url.replace("https://temp/", ""));
-      runtime.downloadedIds.push(fileID);
-      const path = `/wx-user/tmp-${runtime.downloadedIds.length}`;
-      const content = fileID.endsWith("/words/index.json")
-        ? JSON.stringify({ voices: [{ id: "voicevox-8", label: "声", ext: ".aac" }, { id: "voicevox-11", label: "男声", ext: ".aac" }], default: "voicevox-8" })
-        : fileID.endsWith("/examples/index.json")
-          ? JSON.stringify({ voices: [{ id: "voicevox-8", label: "声", ext: ".aac" }], default: "voicevox-8" })
-          : new Uint8Array([1, 2, 3]);
-      runtime.temporaryFiles.set(path, content);
-      success({ tempFilePath: path, statusCode: 200 });
-      return {};
-    }
+  const packs = new Map<string, Uint8Array>();
+  const voices = [8, 11].map(id => {
+    const data = encodeAudioPack(new Map(keys.map(k => [k, new Uint8Array([id, 2, 3])])));
+    const name = `voicevox-${id}/w-0-${"a".repeat(64)}.sap`; packs.set(name, data);
+    return { id: `voicevox-${id}`, label: `voice ${id}`, ext: ".aac", engine: "voicevox", count: 3, complete: true,
+      packs: [[name, data.length]], clips: Object.fromEntries(Object.entries(decodeAudioPack(data)).map(([k, [offset, length]]) => [k, [0, offset, length]])) };
   });
+  const index = { format: 1, default: "voicevox-8", voices };
+  runtime.cloud.downloadFile.mockImplementation(async ({ fileID }: { fileID: string }) => {
+    runtime.downloadedIds.push(fileID); const path = `/wx-user/tmp-${runtime.downloadedIds.length}`;
+    const relative = fileID.split("/audio/packs/")[1];
+    const content = relative === "current.json" ? encoder.encode(JSON.stringify({ version }))
+      : relative.endsWith(".br") ? new Uint8Array(brotliCompressSync(JSON.stringify(index))) : packs.get(relative)!;
+    runtime.files.set(path, content); return { tempFilePath: path };
+  });
+  vi.stubGlobal("wx", { env: { USER_DATA_PATH: "/wx-user" }, cloud: runtime.cloud, getFileSystemManager: () => runtime.fs, createInnerAudioContext: () => runtime.context });
   vi.stubGlobal("window", { addEventListener: vi.fn(), dispatchEvent: vi.fn() });
-  vi.stubGlobal("localStorage", { getItem: () => null, setItem: vi.fn(), removeItem: vi.fn() });
 });
 
-afterEach(() => {
-  vi.useRealTimers();
-  vi.unstubAllGlobals();
-  vi.resetModules();
-});
+afterEach(() => { vi.unstubAllGlobals(); vi.resetModules(); delete (globalThis as any).__shushugoAudioPackClient; });
 
-describe("小程序当天音频缓存", () => {
-  it("按单词和例句顺序写入当天目录，重排时不重复下载已缓存文件", async () => {
-    vi.useFakeTimers();
+describe("小程序音频包缓存与播放", () => {
+  it("downloads a word and example once into USER_DATA_PATH and retires only the old dated cache", async () => {
     const speech = await import("./speech.weapp");
-    speech.prefetchWordPlanAudio([{ kanji: "灰皿", kana: "はいざら", example: "灰皿を使います。" }]);
-    await vi.runAllTimersAsync();
-
-    expect(runtime.downloadedIds.filter((id) => /\/audio\/(words|examples)\/[^/]+\/[0-9a-f]{16}\.aac$/.test(id))).toHaveLength(2);
-    expect([...runtime.files].some((path) => /\/audio\/\d{4}-\d{2}-\d{2}\/words\/voicevox-8\/[0-9a-f]{16}\.aac$/.test(path))).toBe(true);
-    expect([...runtime.files].some((path) => /\/audio\/\d{4}-\d{2}-\d{2}\/examples\/voicevox-8\/[0-9a-f]{16}\.aac$/.test(path))).toBe(true);
+    const plan = [{ kanji: "灰皿", kana: "はいざら", example: "灰皿を使います。" }];
+    await speech.prefetchWordPlanAudio(plan); await speech.prefetchWordPlanAudio(plan);
+    expect(runtime.downloadedIds.filter(id => id.endsWith(".sap"))).toHaveLength(1);
+    expect(runtime.downloadedIds.filter(id => id.includes("index-"))).toHaveLength(1);
+    expect(runtime.cloud.getTempFileURL).not.toHaveBeenCalled();
+    expect([...runtime.files.keys()].filter(p => p.endsWith(".sap"))).toHaveLength(1);
     expect(runtime.removedDirectory).toBe("/wx-user/audio/2026-09-26");
-
-    speech.prefetchWordPlanAudio([{ kanji: "灰皿", kana: "はいざら", example: "灰皿を使います。" }]);
-    await vi.runAllTimersAsync();
-    expect(runtime.downloadedIds.filter((id) => /\/audio\/(words|examples)\/[^/]+\/[0-9a-f]{16}\.aac$/.test(id))).toHaveLength(2);
+    expect([...runtime.files.keys()].some(p => p.endsWith(".tmp"))).toBe(false);
   });
 
-  it("新播放开始时解开旧 Promise，只有当前播放的错误会 reject", async () => {
+  it("settles the previous playback on interruption and rejects only the current audio error", async () => {
     const speech = await import("./speech.weapp");
-    await speech.loadVoices();
-
+    await speech.prefetchWordPlanAudio([{ kanji: "灰皿", kana: "はいざら", example: "" }]);
     const previous = speech.playPronunciation("灰皿", "はいざら");
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    await vi.waitFor(() => expect(runtime.context.onError).toHaveBeenCalledTimes(1));
     const current = speech.playPronunciation("箸", "はし");
-    const currentRejection = expect(current).rejects.toThrow("暂不可用");
-    await expect(previous).resolves.toBeUndefined();
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    runtime.context.listeners.error?.();
-    await currentRejection;
+    const rejection = expect(current).rejects.toThrow("暂不可用"); await expect(previous).resolves.toBeUndefined();
+    await vi.waitFor(() => expect(runtime.context.onError).toHaveBeenCalledTimes(2)); runtime.context.listeners.error?.(); await rejection;
   });
 
-  it("试听音色时先中断当前读音；没买的声音也放它自己（不退回默认声）", async () => {
-    const speech = await import("./speech.weapp");
+  it("previews the unpurchased voice from its own cached pack and interrupts the active word", async () => {
+    const speech = await import("./speech.weapp"); await speech.prefetchVoicePreviews();
     const current = speech.playPronunciation("灰皿", "はいざら");
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    const stopCount = runtime.context.stop.mock.calls.length;
-
-    const preview = speech.previewVoice("voicevox-11");
-    expect(runtime.context.stop).toHaveBeenCalledTimes(stopCount + 1);
-    await expect(current).resolves.toBeUndefined();
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(runtime.context.play).toHaveBeenCalledTimes(2);
-    expect(runtime.context.src).toContain("/words/voicevox-11/");
-    runtime.context.listeners.canplay?.();
-    await preview;
+    await vi.waitFor(() => expect(runtime.context.onError).toHaveBeenCalledTimes(1));
+    const stops = runtime.context.stop.mock.calls.length, preview = speech.previewVoice("voicevox-11");
+    expect(runtime.context.stop).toHaveBeenCalledTimes(stops + 1); await expect(current).resolves.toBeUndefined();
+    await vi.waitFor(() => expect(runtime.context.onError).toHaveBeenCalledTimes(2));
+    expect(runtime.files.get(runtime.context.src)).toEqual(new Uint8Array([11, 2, 3]));
+    runtime.context.listeners.canplay?.(); await preview;
   });
 });

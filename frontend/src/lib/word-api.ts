@@ -90,7 +90,7 @@ import { kanjiUnitIndexLoaded, loadKanjiUnitIndex } from "./kanji-unit-index";
 export { getReviewQueue, setReviewQueue } from "./word-api/session-state";
 export { ensureProgressInitialized } from "./word-api/bootstrap";
 export { getWordStats } from "./word-api/stats";
-export { todayWordAudioPlan, warmStage1SelectionCache } from "./word-api/stage1";
+export { todayWordAudioPlan, tomorrowWordAudioPlan, warmStage1SelectionCache } from "./word-api/stage1";
 export {
   advanceDailyRelief,
   ensureDailyRelief,

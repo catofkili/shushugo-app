@@ -11,6 +11,7 @@ const platformAdapters = new Map([
   ['frontend/src/lib/pick-image', path.join(frontend, 'src/lib/pick-image.weapp.ts')],
   ['frontend/src/lib/notifications', path.join(frontend, 'src/lib/notifications.weapp.ts')],
   ['frontend/src/lib/speech', path.join(frontend, 'src/lib/speech.weapp.ts')],
+  ['frontend/src/lib/audio-pack-platform', path.join(frontend, 'src/lib/audio-pack-platform.weapp.ts')],
   ['frontend/src/lib/share-image', path.join(frontend, 'src/lib/share-image.weapp.ts')],
   ['frontend/src/lib/share-canvas', path.join(frontend, 'src/lib/share-canvas.weapp.ts')],
   ['frontend/src/lib/platform-dialogs', path.join(root, 'src/platform/platform-dialogs.weapp.ts')],
