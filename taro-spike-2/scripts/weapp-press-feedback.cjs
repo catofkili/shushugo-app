@@ -6,16 +6,17 @@ module.exports = () => ({
     const aliases = [];
     selectorParser((selectors) => {
       selectors.each((selector) => {
-        let hasActive = false;
+        // :active → .is-pressed；:disabled → .is-disabled（见 press-feedback-jsx-runtime.weapp.cjs：小程序里禁用的按钮不带原生 disabled）。
+        const classes = { ':active': 'is-pressed', ':disabled': 'is-disabled' };
+        let hasAlias = false;
         selector.walkPseudos((pseudo) => {
-          if (pseudo.value.toLowerCase() === ':active') hasActive = true;
+          if (classes[pseudo.value.toLowerCase()]) hasAlias = true;
         });
-        if (!hasActive) return;
+        if (!hasAlias) return;
         const alias = selector.clone();
         alias.walkPseudos((pseudo) => {
-          if (pseudo.value.toLowerCase() === ':active') {
-            pseudo.replaceWith(selectorParser.className({ value: 'is-pressed' }));
-          }
+          const name = classes[pseudo.value.toLowerCase()];
+          if (name) pseudo.replaceWith(selectorParser.className({ value: name }));
         });
         aliases.push(alias.toString());
       });

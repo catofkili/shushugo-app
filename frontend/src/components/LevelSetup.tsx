@@ -19,6 +19,7 @@ import { shouldOfferOnboardingGift, completeLevelSetup } from "../lib/level-setu
 import { deferWordPlanUntilKanaComplete } from "../lib/kana-progress";
 import { MascotSay } from "./MascotSay";
 import { Sticker } from "./CapybaraMascot";
+import { DailyPlanSlider } from "./DailyPlanSlider";
 import { ExamDatePicker } from "./ExamDatePicker";
 import { ScrollArea } from "./ScrollArea";
 import { useEntitlements } from "../hooks/useEntitlements";
@@ -198,7 +199,7 @@ export function LevelSetup({ open, dismissible = false, isAuthenticated = false,
             <div className="ls-sliders">
               {(Object.keys(FAMILIARITY_LABELS) as Array<keyof Familiarity>).map((kind) => <label key={kind} className="block">
                 <span className="flex items-center justify-between text-sm font-bold"><span>{FAMILIARITY_LABELS[kind]}</span><span className="ds-pill ds-pill-primary">{SLIDER_TEXT[familiarity[kind]]}</span></span>
-                <input className="mt-2 w-full" type="range" min={0} max={100} step={25} value={familiarity[kind]} onChange={(event) => setFamiliarity({ ...familiarity, [kind]: Number(event.target.value) })} />
+                <div className="mt-2 w-full"><DailyPlanSlider max={100} step={25} value={familiarity[kind]} onChange={(value) => setFamiliarity({ ...familiarity, [kind]: value })} /></div>
               </label>)}
             </div>
           </Step>
