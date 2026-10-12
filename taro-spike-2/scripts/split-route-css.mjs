@@ -95,6 +95,19 @@ appCss.walkAtRules((rule) => {
   if (!rule.nodes?.length) rule.remove();
 });
 
+// ⚠️ 异步块（lazy/*.js）里只有它自己用到的 CSS，webpack 会抽成同名的 lazy/*.wxss（现在只有 lazy/tabs.wxss：
+// 四个标签页的界面代码，如 ZooHome 的 zoo-post-exam、拼写插播的 sp-）。但没有任何 wxss 引它，运行时的 <link> 在小程序里是空操作，
+// 所以这些规则在真机上全都不生效。lazy 是分包，主包的 app.wxss / 标签页 wxss 不能 @import 分包文件，
+// 所以整份并进 app.wxss（顺序在最后，和 webpack 原本的「异步块样式后加载」一致），原文件留空（runtime.js 还认这个路径）。
+const lazyDir = path.join(dist, 'lazy');
+for (const name of fs.existsSync(lazyDir) ? fs.readdirSync(lazyDir) : []) {
+  if (!name.endsWith('.wxss')) continue;
+  const lazyPath = path.join(lazyDir, name);
+  const lazyCss = postcss.parse(fs.readFileSync(lazyPath, 'utf8'), { from: lazyPath });
+  appCss.append(lazyCss.nodes);
+  fs.writeFileSync(lazyPath, '');
+}
+
 for (const [relative, css] of moved) {
   const filename = path.join(dist, relative);
   fs.mkdirSync(path.dirname(filename), { recursive: true });

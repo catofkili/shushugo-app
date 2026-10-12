@@ -8,7 +8,7 @@ import postcss from 'postcss';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const scratch = fs.mkdtempSync(path.join(root, '.route-css-test-'));
 try {
-  for (const dir of ['scripts', 'dist', 'reports']) fs.mkdirSync(path.join(scratch, dir));
+  for (const dir of ['scripts', 'dist', 'dist/lazy', 'reports']) fs.mkdirSync(path.join(scratch, dir));
   fs.copyFileSync(path.join(root, 'scripts/split-route-css.mjs'), path.join(scratch, 'scripts/split-route-css.mjs'));
   fs.writeFileSync(path.join(scratch, 'dist/app.wxss'), `
 .ach-card,.wl-row { color:red }
@@ -22,11 +22,17 @@ try {
 .wr-entrance-veil,.vt-timer { display:block }
 .wl-row .yz-card { color:green }
 `);
+  // 异步块样式整份并进 app.wxss（含 @media 包裹，且排在最后），原文件清空
+  fs.writeFileSync(path.join(scratch, 'dist/lazy/tabs.wxss'), `.zoo-x { color:red }
+@media (max-width:600px) { .sp-page,.theme-dark .sp-card { display:block } }
+.sp-input { color:blue }`);
   execFileSync(process.execPath, [path.join(scratch, 'scripts/split-route-css.mjs')]);
   const read = (name) => postcss.parse(fs.readFileSync(path.join(scratch, 'dist', name), 'utf8'));
   const app = read('app.wxss');
   const selectors = (css) => { const values = []; css.walkRules((r) => values.push(r.selector.trim())); return values; };
-  assert.deepEqual(selectors(app), ['.ach-card', '.shared', '.wr-entrance-veil,.vt-timer', '.wl-row .yz-card']);
+  assert.deepEqual(selectors(app), ['.ach-card', '.shared', '.wr-entrance-veil,.vt-timer', '.wl-row .yz-card', '.zoo-x', '.sp-page,.theme-dark .sp-card', '.sp-input']);
+  assert.equal(app.last.prev().name, 'media');
+  assert.equal(fs.readFileSync(path.join(scratch, 'dist/lazy/tabs.wxss'), 'utf8'), '');
   assert.deepEqual(selectors(read('study/word-list/index.wxss')), ['.wl-row']);
   assert.deepEqual(selectors(read('study/quick-study/index.wxss')), ['.quick-study-row']);
   assert.deepEqual(selectors(read('study/spelling/index.wxss')), ['.sp-root']);

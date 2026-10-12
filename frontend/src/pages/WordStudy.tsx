@@ -247,18 +247,22 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     shouldInlineSpelling: typeof import("../features/spelling/SpellingInline").shouldInlineSpelling;
   } | null>(null);
   useEffect(() => {
-    if (!__EXP_SPELLING__) return;
-    let active = true;
-    let cleanup = () => {};
-    void Promise.all([import("../lib/spelling"), import("../features/spelling/SpellingInline")]).then(([spelling, inline]) => {
-      if (!active) return;
-      let prefs = spelling.getSpellingPrefs();
-      const refresh = (event: Event) => { prefs = (event as CustomEvent<import("../lib/spelling").SpellingPrefs>).detail ?? spelling.getSpellingPrefs(); };
-      inlineApi.current = { getSpellingPrefs: () => prefs, shouldInlineSpelling: inline.shouldInlineSpelling };
-      window.addEventListener(spelling.SPELLING_PREFS_EVENT, refresh);
-      cleanup = () => window.removeEventListener(spelling.SPELLING_PREFS_EVENT, refresh);
-    }).catch(() => undefined);
-    return () => { active = false; cleanup(); inlineApi.current = null; };
+    // ⚠️ 必须是 if (__EXP_SPELLING__) {…} 包住 import()，不能写成提前 return：Taro 的 import() 是「立即加载」，
+    // 提前 return 剪不掉后面的依赖，发布包里 lib/spelling 会跟着进 lazy/tabs（check:release 拦的就是它）。
+    if (__EXP_SPELLING__) {
+      let active = true;
+      let cleanup = () => {};
+      void Promise.all([import("../lib/spelling"), import("../features/spelling/SpellingInline")]).then(([spelling, inline]) => {
+        if (!active) return;
+        let prefs = spelling.getSpellingPrefs();
+        const refresh = (event: Event) => { prefs = (event as CustomEvent<import("../lib/spelling").SpellingPrefs>).detail ?? spelling.getSpellingPrefs(); };
+        inlineApi.current = { getSpellingPrefs: () => prefs, shouldInlineSpelling: inline.shouldInlineSpelling };
+        window.addEventListener(spelling.SPELLING_PREFS_EVENT, refresh);
+        cleanup = () => window.removeEventListener(spelling.SPELLING_PREFS_EVENT, refresh);
+      }).catch(() => undefined);
+      return () => { active = false; cleanup(); inlineApi.current = null; };
+    }
+    return undefined;
   }, []);
   // 辨析索引建好没。没建好就先不算 —— 详见 warmConfusionGroups
   const [distinctionsReady, setDistinctionsReady] = useState(false);
