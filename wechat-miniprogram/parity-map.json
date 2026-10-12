@@ -140,6 +140,20 @@
       ]
     },
     {
+      "web": "frontend/src/components/DailyPlanSlider.tsx",
+      "mini": [
+        "frontend/src/components/DailyPlanSlider.tsx"
+      ],
+      "reason": "路线 A：Taro 直接编译 frontend/src 这份源码，原生小程序页面已停止维护（见头部 2026-09-25 决定）；登记自身是为了推送范围内的历史提交过配对检查，不代表原生页面要同步。"
+    },
+    {
+      "web": "frontend/src/components/DailyPlanSlider.weapp.tsx",
+      "mini": [
+        "frontend/src/components/DailyPlanSlider.weapp.tsx"
+      ],
+      "reason": "路线 A：Taro 直接编译 frontend/src 这份源码，原生小程序页面已停止维护（见头部 2026-09-25 决定）；登记自身是为了推送范围内的历史提交过配对检查，不代表原生页面要同步。"
+    },
+    {
       "web": "frontend/src/components/ExamDatePicker.tsx",
       "mini": [
         "wechat-miniprogram/src/features/jlpt-plan/index.js",
@@ -234,8 +248,10 @@
       "mini": [
         "wechat-miniprogram/src/features/jlpt-plan/index.js",
         "wechat-miniprogram/src/features/jlpt-plan/index.wxml",
-        "wechat-miniprogram/src/features/jlpt-plan/index.wxss"
-      ]
+        "wechat-miniprogram/src/features/jlpt-plan/index.wxss",
+        "frontend/src/components/LevelSetup.tsx"
+      ],
+      "reason": "路线 A：Taro 直接编译 frontend/src 这份源码，原生小程序页面已停止维护（见头部 2026-09-25 决定）；登记自身是为了推送范围内的历史提交过配对检查，不代表原生页面要同步。"
     },
     {
       "web": "frontend/src/pages/NotificationSettings.tsx",
