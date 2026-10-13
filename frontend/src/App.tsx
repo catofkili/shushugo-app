@@ -310,14 +310,15 @@ export default function App() {
   }, [showNotice]);
 
   // 线上网页第一次打开时说一声读音用的是系统声音（作者 2026-10-13），之后不再提示。
+  // 新用户一进来就是起点水平弹窗，提示条（z-50）会被盖住，等弹窗关了再说。
   useEffect(() => {
-    if (!PUBLIC_WEB_WITHOUT_PACKS) return;
+    if (!PUBLIC_WEB_WITHOUT_PACKS || levelSetupOpen) return;
     try {
       if (localStorage.getItem("shushugo-web-voice-notice")) return;
       localStorage.setItem("shushugo-web-voice-notice", "1");
     } catch { return; }
     showNotice("网页版用系统自带的声音朗读。", 5000);
-  }, [showNotice]);
+  }, [showNotice, levelSetupOpen]);
 
   useEffect(() => {
     const onAudioOffline = (event: Event) => showNotice((event as CustomEvent<{ isWeapp?: boolean }>).detail?.isWeapp ? "没有网络，今天有些读音放不了。" : "没有网络，今天有些读音会换成系统声音。", 4200);
