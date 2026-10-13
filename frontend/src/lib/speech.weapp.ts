@@ -20,7 +20,7 @@ async function play(kind: Kind, hash: string, voice?: string | null, preview = f
   const current = interrupt(kind);
   const bytes = await audioClip(clipKey(kind, hash), voice, preview);
   if (current !== sequence[kind]) return;
-  if (!bytes) throw new Error("这条云端音频暂不可用，请稍后重试。");
+  if (!bytes) { console.warn("[audio] 没取到音频", kind, hash, voice); throw new Error("这条云端音频暂不可用，请稍后重试。"); }
   // Only two transient AAC files exist outside the pack LRU; each is overwritten on the next playback.
   const path = `${wx.env.USER_DATA_PATH}/audio-playing-${kind}.aac`;
   await new Promise<void>((resolve, reject) => wx.getFileSystemManager().writeFile({ filePath: path, data: bytes.slice().buffer, success: resolve, fail: reject }));

@@ -1,4 +1,6 @@
 import { AudioPackClient, type AudioCacheEntry, type AudioPackStore } from "./audio-pack-cache";
+// 网页替身要导出同名常量（build:weapp 的 verify-shim-exports 检查）；小程序永远走云 SDK，不存在「线上网页不取包」。
+export const PUBLIC_WEB_WITHOUT_PACKS = false;
 declare const require: (path: string) => any;
 declare const wx: any;
 const config = require("../../../wechat-miniprogram/src/config.js");
@@ -70,12 +72,9 @@ export function createAudioPackClient(): AudioPackClient {
     pointer: () => downloaded("current.json", async path => JSON.parse(text(await readFile(path)))),
     index: version => downloaded(`index-${version}.json.br`, async path => JSON.parse(text(await readCompressedFile(path, "br")))),
     pack: name => downloaded(name, readFile),
-    range: async (name, offset, length) => {
-      const { fileList } = await wx.cloud.getTempFileURL({ fileList: [`${base}${name}`] });
-      const result = await new Promise<any>((resolve, reject) => wx.request({ url: fileList[0].tempFileURL, header: { Range: `bytes=${offset}-${offset + length - 1}` }, responseType: "arraybuffer", success: resolve, fail: reject }));
-      if (result.statusCode !== 200 && result.statusCode !== 206) throw new Error("这条云端音频暂不可用");
-      if (result.statusCode === 206 && !String(result.header?.["Content-Range"] ?? result.header?.["content-range"]).startsWith(`bytes ${offset}-${offset + length - 1}/`)) throw new Error("Invalid audio range");
-      return { bytes: new Uint8Array(result.data), partial: result.statusCode === 206 };
-    }
+    // 包还没下好时点播放：整包走云 SDK 下（0.7–0.9 MB），不走 wx.request + Range。
+    // 真机上 wx.request 要在微信后台「request 合法域名」里加 tcb.qcloud.la，没加就静默失败、读音没声（开发者工具不校验，测不出来）；
+    // SDK 下载不需要这条配置。clip() 对「整包」返回值有现成处理（校验大小、存成包）。
+    range: async name => ({ bytes: await downloaded(name, readFile), partial: false })
   });
 }

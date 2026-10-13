@@ -346,11 +346,12 @@ export function TalkPage() {
     }
   }, [card, session]);
 
-  const start = (id: string | null) => {
+  // 列表上每张缩略图和点进去的练习用同一张（chosen 是列表那一份选图）；「再练一遍」不传，重新抽。
+  const start = (id: string | null, chosen?: ReturnType<typeof createTalkSceneImages>) => {
     try {
       const nextSession = createTalkSession(id ? sceneSessionKeys(id) : talkDueKeys(day));
       if (!nextSession.keys.length) return;
-      const images = createTalkSceneImages();
+      const images = chosen ?? createTalkSceneImages();
       const next = withSceneImage(talkCard(nextSession.queue[0], { sceneId: id ?? undefined }), images);
       if (!next) throw new Error("卡片内容不可用");
       setInitialCollection(new Set(talkSceneSets(day).filter((scene) => scene.collected).map((scene) => scene.id)));
@@ -366,6 +367,7 @@ export function TalkPage() {
 
   const home = () => {
     stopTalkAudio();
+    setSceneImages(() => createTalkSceneImages());
     setSession(null);
     setCard(null);
     setError("");
@@ -452,9 +454,9 @@ export function TalkPage() {
         {sceneSections.map((section) => <section key={section.id} className="talk-group">
           {section.title && <h2 className="talk-group-title">{section.title}</h2>}
           <div className="talk-collection-grid">
-            {section.scenes.map((scene) => <button type="button" key={scene.id} className="ds-btn-soft focus-ring talk-collection-item" onClick={() => start(scene.id)}>
+            {section.scenes.map((scene) => <button type="button" key={scene.id} className="ds-btn-soft focus-ring talk-collection-item" onClick={() => start(scene.id, sceneImages)}>
               {/* 网页滚到后懒加载；小程序直接从云存储读取，原生 <image> 忽略 loading / decoding。 */}
-              <div className="talk-image"><SafeSceneImage src={scene.image} alt="" className="talk-scene-image" loading="lazy" decoding="async"
+              <div className="talk-image"><SafeSceneImage src={sceneImages(scene.image)} alt="" className="talk-scene-image" loading="lazy" decoding="async"
                 weappWidth="100%" weappHeight="100%" style={{ width: "100%", height: "100%", objectFit: "cover" }} /></div>
               <p className="talk-collection-title">{scene.title}</p>
               <p className="talk-collection-remaining">

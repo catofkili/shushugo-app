@@ -67,7 +67,8 @@ export function StudyModesPage({ selectedMode, onModeChange, onStart }: StudyMod
               }`}
               aria-pressed={active}
             >
-              <div className="flex items-start gap-4">
+              {/* w-full：小程序的 button 是 inline-flex + 居中，不写满宽的话每张卡的内容各自居中、左边对不齐（2026-10-13 真机） */}
+              <div className="flex w-full items-start gap-4">
                 <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-white/15 bg-[#81D8CF]/16 text-[#81D8CF]">
                   <Icon size={24} />
                 </span>

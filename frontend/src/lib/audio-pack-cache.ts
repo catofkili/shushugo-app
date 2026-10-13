@@ -66,7 +66,7 @@ export class AudioPackClient {
         const index = validateAudioPackIndex(await this.transport.index(pointer.version));
         await this.store.writeIndex({ version: pointer.version, index }).catch(() => undefined);
         this.index = index;
-      } catch { /* Offline startup retains the last valid catalog. */ }
+      } catch (error) { console.warn("[audio] 目录加载失败，沿用上次的：", (error as { errMsg?: string })?.errMsg ?? error); /* Offline startup retains the last valid catalog. */ }
       if (!this.index) { this.retryAfter = Date.now() + 60_000; this.loading = undefined; }
     })();
   }
@@ -137,7 +137,7 @@ export class AudioPackClient {
           })().finally(() => this.downloads.delete(name));
           this.downloads.set(name, task);
         }
-        await task.catch(() => { complete = false; });
+        await task.catch((error) => { complete = false; console.warn("[audio] 预取失败", name, (error as { errMsg?: string })?.errMsg ?? error); });
       }
     }));
     return complete;
