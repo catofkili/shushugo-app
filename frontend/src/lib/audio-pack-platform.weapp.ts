@@ -1,6 +1,4 @@
 import { AudioPackClient, type AudioCacheEntry, type AudioPackStore } from "./audio-pack-cache";
-// 网页替身要导出同名常量（build:weapp 的 verify-shim-exports 检查）；小程序永远走云 SDK，不存在「线上网页不取包」。
-export const PUBLIC_WEB_WITHOUT_PACKS = false;
 declare const require: (path: string) => any;
 declare const wx: any;
 const config = require("../../../wechat-miniprogram/src/config.js");
