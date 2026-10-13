@@ -31,13 +31,15 @@ export default {
     { root: 'lazy', pages: ['placeholder/index'] },
     // JLPT 题库单独一个分包：放在 lazy 里时两套卷就占了 560 KB，lazy 还装着各 tab 的界面代码，
     // 第四套卷就会顶到 2 MB。（2026-10-12 上线后照旧单独分包，卷 1–3 实测 1,015,758 B。）
-    { root: 'jlpt-bank', pages: ['placeholder/index'] }
+    { root: 'jlpt-bank', pages: ['placeholder/index'] },
+    // 2026-10-13 补量后一个分包装不下（见 lib/jlpt-practice/bank.ts）：N4、N5 另放一个
+    { root: 'jlpt-bank-2', pages: ['placeholder/index'] }
   ],
   // 四个标签页一进来就预下载 lazy 界面代码和 SQL.js WASM。
   preloadRule: {
     ...Object.fromEntries(mainRoutes.map((route) => [route.path, { network: 'all', packages: ['lazy', 'core'] }])),
     // 进刷题页就先把题库分包下好，点等级时不用再等下载
-    'study/jlpt-practice/index': { network: 'all', packages: ['jlpt-bank'] }
+    'study/jlpt-practice/index': { network: 'all', packages: ['jlpt-bank', 'jlpt-bank-2'] }
   },
   window: {
     navigationBarTitleText: '收集日',
