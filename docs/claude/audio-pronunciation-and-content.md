@@ -310,6 +310,11 @@ cd ../wechat-miniprogram
 TCB=/path/to/tcb bash scripts/upload-cloud-content.sh --packs
 ```
 
+**线上公开网页不取音频包（2026-10-13 作者定）**：「网页端不能赚钱而且容易被破，我不想管理，核心功能存在就行」。
+非 dev、非 Capacitor 时 `PUBLIC_WEB_WITHOUT_PACKS` 为真，`fetchAudio` 直接失败不发请求，一律系统朗读；第一次打开（起点水平弹窗关了之后）提示一句「网页版用系统自带的声音朗读。」。
+⚠️ 背景：云开发「自定义安全规则」要付费套餐，免费档匿名 HTTPS 读 `audio/packs/` 一律 403，上面「控制台清单」第 2、3 步在免费档做不了。
+**iOS App 上架前必须解决**：Capacitor 仍走云端 HTTPS，现在会 403 → 退回系统声音、付费声音不可买。可选：升级云开发套餐 / 单开腾讯云 COS 公开读桶（按量计费）/ App 内用签名地址。
+
 **本机 5173 读本机包（2026-10-13 作者定）**：dev 下 `AUDIO_PACK_BASE` 指向 `frontend/audio-pack-dist/`，不走云；要测云端那条路用 `VITE_AUDIO_PACKS=cloud npm run dev`。
 主目录没有 `audio-src` 软链，生成新音频后在主目录重打一次：`cd frontend && node --no-warnings scripts/build-audio-packs.mjs --source public/audio --out audio-pack-dist`
 （和上传那份逐字节相同，版本哈希一致即可确认）。不重打的话本机播放的是旧包。
