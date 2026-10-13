@@ -109,7 +109,7 @@ export function JlptPracticePage() {
           {mistakes > 0 && <button type="button" className="ds-btn-soft jq-mistakes focus-ring" onClick={() => start("mistakes")}><History size={18} /><span className="jq-grow">错题本</span><span>{mistakes} 题</span></button>}
           <section className="ds-card jq-card jq-stack">
             <h2 className="jq-heading"><Play size={18} />模拟卷</h2>
-            {activeBank.sets.map(set => {
+            {activeBank.sets.filter(set => !set.drillOnly).map(set => {
               const parts = mockParts(activeBank, set.id);
               const count = parts.reduce((sum, part) => sum + part.questions.length, 0);
               const minutes = parts.reduce((sum, part) => sum + part.minutes, 0);

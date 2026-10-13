@@ -110,7 +110,8 @@ export function verifyJlptBank(bank, db, expectedLevel = bank?.level, { complete
   else for (const [index, set] of bank.sets.entries()) {
     const where = `sets[${index}]`;
     if (!isRecord(set)) { error(where, "必须是对象"); continue; }
-    if (!sameKeys(set, ["id", "title"])) error(where, "字段必须且只能是 id、title");
+    if (!sameKeys(set, set.drillOnly === undefined ? ["id", "title"] : ["id", "title", "drillOnly"])) error(where, "字段必须且只能是 id、title（题池再加 drillOnly: true）");
+    else if (set.drillOnly !== undefined && set.drillOnly !== true) error(where, "drillOnly 只能是 true");
     if (typeof set.id !== "string" || !set.id) error(where, "id 必须是非空字符串");
     else if (setIds.has(set.id)) error(where, `set id 重复 ${set.id}`);
     else setIds.add(set.id);
@@ -333,7 +334,9 @@ export function verifyJlptBank(bank, db, expectedLevel = bank?.level, { complete
   for (const [target, count] of targetCounts) if (count > 1) {
     error(`target ${target}`, `在 ${String(level)} 出现 ${count} 次`);
   }
+  const drillOnlyIds = new Set((Array.isArray(bank.sets) ? bank.sets : []).filter((set) => set?.drillOnly).map((set) => set.id));
   if (completeSets && SET_COUNTS[level]) for (const setId of setIds) {
+    if (drillOnlyIds.has(setId)) continue; // 题池没有固定配比
     const inSet = questionRows.filter((question) => question.setId === setId);
     [...KINDS].forEach((kind, index) => {
       const actual = inSet.filter((question) => question.kind === kind).length;
@@ -387,6 +390,7 @@ function runSelfTest() {
   bad("filename level", () => {}, "文件要求 N2", "N2");
   bad("sets type", (b) => { b.sets = {}; }, "sets: 必须是数组");
   bad("set shape", (b) => { b.sets[0].extra = true; }, "只能是 id、title");
+  bad("drillOnly must be true", (b) => { b.sets[0].drillOnly = false; }, "drillOnly 只能是 true");
   bad("duplicate set", (b) => { b.sets.push({ ...b.sets[0] }); }, "set id 重复");
   bad("passages type", (b) => { b.passages = []; }, "passages: 必须是字符串字典");
   bad("passage value type", (b) => { b.passages.p = 1; }, "文章必须是非空字符串");

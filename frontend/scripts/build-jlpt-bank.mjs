@@ -30,7 +30,7 @@ const DATE = new Intl.DateTimeFormat("en-CA", {
 }).format(new Date());
 
 function parseArgs(args) {
-  const options = { src: DEFAULT_SRC, setId: "trial1", title: "试做卷 1", allowUndone: false, allowDoubt: false };
+  const options = { src: DEFAULT_SRC, setId: "trial1", title: "试做卷 1", allowUndone: false, allowDoubt: false, drillOnly: false };
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
     if (arg === "--src" || arg === "--set" || arg === "--title") {
@@ -42,6 +42,7 @@ function parseArgs(args) {
       if (arg === "--title") options.title = value;
     } else if (arg === "--allow-undone") options.allowUndone = true;
     else if (arg === "--allow-doubt") options.allowDoubt = true;
+    else if (arg === "--drill-only") options.drillOnly = true;
     else if (arg === "--help" || arg === "-h") options.help = true;
     else throw new Error(`未知参数 ${arg}`);
   }
@@ -50,7 +51,7 @@ function parseArgs(args) {
 }
 
 function printHelp() {
-  console.log(`用法: node scripts/build-jlpt-bank.mjs [--src <目录>] [--set trial1 --title "试做卷 1"] [--allow-undone] [--allow-doubt]
+  console.log(`用法: node scripts/build-jlpt-bank.mjs [--src <目录>] [--set trial1 --title "试做卷 1"] [--allow-undone] [--allow-doubt] [--drill-only]
 
 一套卷必须 N1–N5 两科共 10 个目录齐全、都有审校完成标记 DONE。--allow-undone 和 --allow-doubt 仅供本地试跑。`);
 }
@@ -206,7 +207,7 @@ function mergeLevel(level, oldBank, imported, importedPassages, options) {
   );
   const hasSources = importedLevel.length > 0;
   const sets = Array.isArray(oldBank.sets) ? oldBank.sets.filter((set) => set?.id !== options.setId) : [];
-  if (hasSources) sets.push({ id: options.setId, title: options.title });
+  if (hasSources) sets.push(options.drillOnly ? { id: options.setId, title: options.title, drillOnly: true } : { id: options.setId, title: options.title });
 
   const passages = { ...(oldBank.passages && typeof oldBank.passages === "object" ? oldBank.passages : {}) };
   const candidatePassageIds = new Set([

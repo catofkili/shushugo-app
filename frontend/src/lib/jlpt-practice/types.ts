@@ -80,6 +80,8 @@ export interface JlptSet {
   id: string;
   /** 给人看的名字，比如「试做卷 1」。 */
   title: string;
+  /** 题池：只进「按题型练」，不进模拟卷（各题型的题数不是整套卷的配比，没有文章题）。 */
+  drillOnly?: boolean;
 }
 
 export interface JlptBank {
