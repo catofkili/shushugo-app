@@ -542,3 +542,15 @@ FSRS 就收到假的「记住了」，把复习排到几天后，然后必然再
 坑：SQL 模板字符串里注释用 `--` 不能用 `//`；`ensureFsrsColumns` 按 (db, 表名) 记忆化，测试里 DROP/CREATE 同名表要自带 `fsrs_*` 列。
 
 
+
+## 名单式快速复习：只当场练，不进记忆（2026-10-14 用户定）
+
+完成页「快速复习今天的顽固词」、周报「复习这些词」都走 `QuickStudyPanel` 的名单模式（`wordIds` / `stubbornQuickIds`）。
+
+- **不写 FSRS、不记专注度。** 这批词当天已经按计划答过，再提交一遍等于同一天给同一个词叠多次评分。
+  名单模式的提交只在组件里记「忘记/模糊」，末页提交后这些词成为下一轮，全部认识才结束；练完也不调 `onDailyModeComplete`（那个会切学习模式）。
+  `recordStubbornQuickStudy` 记加餐账（柚子/周加餐次数）照旧——那是「做了」，不是「记住了」。
+- ⚠️ **这个入口从上线起就没打开过名单。** 网页 `App.tsx` 的 `navigateToPage` 一进 `quick-study` 就无条件把 `stubbornQuickIds` 清成 null，
+  而 `actions.startStubbornQuickStudy` 是先放名单再跳页，于是用户看到的是「已学完」的今日快速学习。
+  小程序（`taro-spike-2/src/platform/WeappPage.tsx`）早就按「从 word / weekly-report 来的不清」修过；网页现在用同一条判据。
+  再加入口往 quick-study 塞名单时，要么从这两页跳，要么同步改两边的判据。

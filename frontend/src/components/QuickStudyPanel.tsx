@@ -18,7 +18,10 @@ type Props = {
   variant?: "entry" | "page";
   onDailyModeComplete?: () => void;
   /**
-   * 指定一批词过一遍（完成页的「快速复习今天的顽固词」）。
+   * 指定一批词过一遍（完成页的「快速复习今天的顽固词」、周报的复习）。
+   * **只当场练，不进记忆**（2026-10-14 用户定）：不写 FSRS、不记专注度；
+   * 评「忘记/模糊」的词下一轮再出，全部认识才算完。这批词今天已经按计划答过了，
+   * 再写一遍等于给同一天的同一个词叠好几次评分。
    * 这一趟**不碰草稿**：草稿是「今天那份快速学习做到哪了」，
    * 拿一次性的名单去覆盖它，用户回到快速学习会发现自己排了一半的那页没了。
    */
@@ -87,6 +90,8 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
   // 旧日期草稿在下次进入快速学习时会被丢弃。
   const draftStudyDateRef = useRef(studyDate());
   const batchWordIdsRef = useRef<number[]>(wordIds ?? []);
+  /** 名单模式这一轮里没记住的词，末页提交后成为下一轮。 */
+  const batchMissedRef = useRef<WordCard[]>([]);
   useEffect(() => {
     batchWordIdsRef.current = wordIds ?? [];
   }, [wordIds]);
@@ -99,6 +104,7 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
       await yieldToPaint();
       if (batchWordIdsRef.current.length) {
         const data = getQuickStudySessionForWords(batchWordIdsRef.current);
+        batchMissedRef.current = [];
         setCards(data.cards.slice(0, QUICK_STUDY_PAGE_SIZE));
         setNextCards(data.cards.slice(QUICK_STUDY_PAGE_SIZE));
         setSeenWordIds(new Set(data.cards.map((card) => card.id)));
@@ -353,11 +359,15 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
     setSubmitting(true);
     setError("");
     try {
-      submitQuickStudyBatch(
-        cards.map((card) => ({ wordId: card.id, answer: ratings[card.id] ?? DEFAULT_QUICK_RATING })),
-        phase
-      );
-      cards.forEach((card) => recordStudyFocusAnswer(card.id, ratings[card.id] ?? DEFAULT_QUICK_RATING));
+      const answers = cards.map((card) => ({ wordId: card.id, answer: ratings[card.id] ?? DEFAULT_QUICK_RATING }));
+      if (batchMode) {
+        batchMissedRef.current.push(...cards.filter((_card, index) => (
+          answers[index].answer === "forgot" || answers[index].answer === "fuzzy"
+        )));
+      } else {
+        submitQuickStudyBatch(answers, phase);
+        answers.forEach(({ wordId, answer }) => recordStudyFocusAnswer(wordId, answer));
+      }
 
       setSubmitSummary(null);
       const nextPageNumber = pageNumber + 1;
@@ -419,10 +429,10 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
       }
 
       // 本轮所有不同词都已出现过。当前末页提交后才开启错误词/下一阶段的新一轮。
-      // 指定名单过完就结束，不接着把今天剩下的词拉进来 —— 用户点的是
-      // 「快速复习今天的顽固词」，不是「开始一轮快速学习」。
+      // 指定名单只在名单里转：下一轮 = 这一轮没记住的，不把今天剩下的词拉进来 ——
+      // 用户点的是「快速复习今天的顽固词」，不是「开始一轮快速学习」。
       const nextPass = batchMode
-        ? { cards: [] as WordCard[], phase }
+        ? { cards: batchMissedRef.current.splice(0), phase }
         : getQuickStudySession(QUICK_STUDY_PREFETCH_SIZE);
       const nextPage = nextPass.cards.slice(0, QUICK_STUDY_PAGE_SIZE);
       const followingPage = nextPass.cards.slice(QUICK_STUDY_PAGE_SIZE);
@@ -437,7 +447,8 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
         setRatings({});
         setRevealedIds(new Set());
         selection.exit();
-        onDailyModeComplete?.();
+        // 名单练完不算「今日快速学习完成」，那个回调会切模式。
+        if (!batchMode) onDailyModeComplete?.();
         return;
       }
 
@@ -637,11 +648,18 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
           })}
         </div>
       ) : (
-        <div className="quick-study-empty">
-          <b>当前没有待复习词</b>
-          <span>想继续巩固，可以进入完整学习页。</span>
-          <button onClick={() => onNavigate("word")}>进入单词学习 →</button>
-        </div>
+        batchMode ? (
+          <div className="quick-study-empty">
+            <b>这批都认识了</b>
+            <button onClick={() => onNavigate("word")}>回单词学习 →</button>
+          </div>
+        ) : (
+          <div className="quick-study-empty">
+            <b>当前没有待复习词</b>
+            <span>想继续巩固，可以进入完整学习页。</span>
+            <button onClick={() => onNavigate("word")}>进入单词学习 →</button>
+          </div>
+        )
       )}
 
       {submitSummary && (
