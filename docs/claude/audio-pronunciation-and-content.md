@@ -310,6 +310,10 @@ cd ../wechat-miniprogram
 TCB=/path/to/tcb bash scripts/upload-cloud-content.sh --packs
 ```
 
+**本机 5173 读本机包（2026-10-13 作者定）**：dev 下 `AUDIO_PACK_BASE` 指向 `frontend/audio-pack-dist/`，不走云；要测云端那条路用 `VITE_AUDIO_PACKS=cloud npm run dev`。
+主目录没有 `audio-src` 软链，生成新音频后在主目录重打一次：`cd frontend && node --no-warnings scripts/build-audio-packs.mjs --source public/audio --out audio-pack-dist`
+（和上传那份逐字节相同，版本哈希一致即可确认）。不重打的话本机播放的是旧包。
+
 源默认是 `frontend/public/audio-src`（本次软链到主目录音频），**只读，不合成、不删孤儿、不改源索引**。
 输出 `frontend/audio-pack-dist`（gitignore）。内容不变时包/版本逐字节不变，也不重写已有相同文件。
 `index.json` 是展开后的本机检查版，`stats.json` / `missing.json` 是统计/缺项；只有 `upload.json` 指定的制品会上传。
