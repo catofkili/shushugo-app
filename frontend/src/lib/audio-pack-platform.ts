@@ -2,7 +2,11 @@ import { AudioPackClient, type AudioCacheEntry, type AudioPackStore } from "./au
 import type { AudioPackIndex } from "./audio-pack-format";
 
 // CloudBase's public CDN URL, same bucket as cloudbaserc.json / config.js. No SDK or signed URL on web/iOS.
-export const AUDIO_PACK_BASE = "https://636c-cloud1-d3g7dauie3961575b-1491634527.tcb.qcloud.la/audio/packs/";
+// 作者本机 5173 读本机打好的包（frontend/audio-pack-dist，gitignore；Vite dev 按项目根目录直接提供），不走云。
+// 要在本机测云端那条路时：VITE_AUDIO_PACKS=cloud npm run dev。（2026-10-13 作者定）
+export const AUDIO_PACK_BASE = import.meta.env.DEV && import.meta.env.VITE_AUDIO_PACKS !== "cloud"
+  ? `${import.meta.env.BASE_URL}audio-pack-dist/`
+  : "https://636c-cloud1-d3g7dauie3961575b-1491634527.tcb.qcloud.la/audio/packs/";
 
 export function browserAudioPackStore(): AudioPackStore {
   let opening: Promise<IDBDatabase> | undefined;
