@@ -61,9 +61,6 @@ export interface Env {
   WECHAT_PAY_ENV?: string;
   WECHAT_PAY_PRICES?: string;
   LAUNCH_GIFT_CLAIM_UNTIL?: string;
-  /** 审核员专用登录：密码（secret）和截止时间（var）都配了才开。见 reviewLogin。 */
-  REVIEW_LOGIN_PASSWORD?: string;
-  REVIEW_LOGIN_UNTIL?: string;
   /** 小程序后台「消息推送」配的 Token，校验 xpay_* 推送用 */
   WECHAT_MSG_TOKEN?: string;
   /** "1" = 生产模式:Turnstile 和邮件服务必须配好,否则认证路由直接 503。 */
@@ -1127,30 +1124,40 @@ const login = async (request: Request, env: Env) => {
  * 网页那套邮箱密码登录在小程序里用不了（要 Turnstile 人机验证，小程序里没有）。
  *
  * 怎么把风险压小：
- * - 只有 REVIEW_LOGIN_PASSWORD（secret）和 REVIEW_LOGIN_UNTIL（截止时间）同时配了才开，过了截止时间路由 404、
- *   `/api/auth/config` 的 reviewLoginOpen 变 false，小程序登录页的入口随之消失；
- * - 登进去的是一个专用账号（review@shushugo.com），没有任何真实用户数据，权益只给到截止时间，
- *   会话也不超过截止时间；这个账号的邮箱密码登录走不通（密码哈希是随机的）；
+ * - 密码是一次性的：存在 review_passwords 表（只存 SHA-256 摘要，不进密钥库、不进仓库），由
+ *   scripts/mint-review-passwords.mjs 生成。第一次登录起算 7 天，过期作废；一直没用过的到 use_by 也作废。
+ *   表里没有任何有效密码时，`/api/auth/config` 的 reviewLoginOpen 为 false，小程序登录页的入口随之消失；
+ * - 登进去的是一个专用账号（review@shushugo.com），没有任何真实用户数据，权益只给到该密码的到期时间，
+ *   会话也不超过到期时间；这个账号的邮箱密码登录走不通（密码哈希是随机的）；
  * - 按 IP 限速，密码比的是 SHA-256 摘要。
- * 撤销：删掉两个配置，或等它自己到期。
+ * 撤销：把对应行的 expires_at 改成过去，或直接删行。
  */
 const REVIEW_ACCOUNT_EMAIL = "review@shushugo.com";
-const reviewLoginWindow = (env: Env) => {
-  const until = Date.parse(env.REVIEW_LOGIN_UNTIL ?? "");
-  return { open: Boolean(env.REVIEW_LOGIN_PASSWORD) && Number.isFinite(until) && Date.now() < until, until };
-};
+const REVIEW_PASSWORD_LIFETIME_MS = 7 * 24 * 60 * 60 * 1000;
+const reviewLoginOpen = async (env: Env) => Boolean(await env.DB.prepare(`
+  SELECT 1 AS ok FROM review_passwords
+  WHERE (first_login_at IS NULL AND use_by > ?) OR expires_at > ?
+  LIMIT 1
+`).bind(new Date().toISOString(), new Date().toISOString()).first());
 
 const reviewLogin = async (request: Request, env: Env) => {
-  const window = reviewLoginWindow(env);
-  if (!window.open) return json({ detail: "Not found" }, 404);
   await rateLimit(env, request, "review-login", 10, 3600);
   const body = await readJson<{ account?: string; password?: string }>(request);
-  const accountOk = normalizeEmail(body.account) === REVIEW_ACCOUNT_EMAIL;
-  const passwordOk = (await sha256(String(body.password ?? ""))) === (await sha256(env.REVIEW_LOGIN_PASSWORD!));
-  if (!accountOk || !passwordOk) return json({ detail: "账号或密码不正确。" }, 401);
-
-  const until = new Date(window.until).toISOString();
   const now = new Date().toISOString();
+  const passwordHash = await sha256(String(body.password ?? ""));
+  const row = await env.DB.prepare(
+    "SELECT use_by, first_login_at, expires_at FROM review_passwords WHERE password_hash = ?"
+  ).bind(passwordHash).first<{ use_by: string; first_login_at: string | null; expires_at: string | null }>();
+  const valid = row && (row.first_login_at ? row.expires_at! > now : row.use_by > now);
+  if (normalizeEmail(body.account) !== REVIEW_ACCOUNT_EMAIL || !valid) return json({ detail: "账号或密码不正确。" }, 401);
+
+  let until = row.expires_at;
+  if (!row.first_login_at) {
+    until = new Date(Date.now() + REVIEW_PASSWORD_LIFETIME_MS).toISOString();
+    await env.DB.prepare("UPDATE review_passwords SET first_login_at = ?, expires_at = ? WHERE password_hash = ? AND first_login_at IS NULL")
+      .bind(now, until, passwordHash).run();
+  }
+  until = until!;
   let user = await env.DB.prepare(`
     SELECT id, email, password_hash, password_salt, display_name, email_verified_at FROM users WHERE email = ?
   `).bind(REVIEW_ACCOUNT_EMAIL).first<UserRow>();
@@ -3799,7 +3806,7 @@ const route = async (request: Request, env: Env) => {
     appleClientId: env.APPLE_SIGN_IN_CLIENT_ID ?? env.APP_BUNDLE_ID ?? null,
     wechatAppEnabled: Boolean(env.WECHAT_MOBILE_APP_ID && env.WECHAT_MOBILE_APP_SECRET),
     turnstileEnabled: turnstileEnabled(env),
-    reviewLoginOpen: reviewLoginWindow(env).open
+    reviewLoginOpen: await reviewLoginOpen(env)
   });
   if (request.method === "POST" && url.pathname === "/api/auth/register") return register(request, env);
   if (request.method === "POST" && url.pathname === "/api/auth/login") return login(request, env);

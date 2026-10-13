@@ -157,3 +157,16 @@ CF 上旧 Worker 留下的 secret（RESEND 等）和 D1/KV/R2 数据还在，确
 它的旧「account/study 各一份」说明因此失效，随构建证据移除该过期允许项，而非扩大分包/重复代码限额。
 用户本次明确要求验收后还原 `taro-spike-2/reports`，因此保留的是基线报告；下一次提交/发布前必须重新构建，
 不能拿还原后的旧报告代替这次源码的构建证明。Doctor panic 时只跳过 Doctor，后面的所有脚本仍按 package.json 顺序执行。
+
+### 2026-10-13 审核账号改成一次性密码（不再进密钥库）
+
+背景：原来审核登录靠 `REVIEW_LOGIN_PASSWORD`（密钥）+ `REVIEW_LOGIN_UNTIL`（截止日），密码要进服务器密钥文件、自动审查会拦，截止日一到审核员就登不进去。
+现在：`review_passwords` 表（迁移 0019）只存 SHA-256 摘要；账号固定 `review@shushugo.com`（小程序登录页自动填好），密码一次性、每个用一份。
+
+- 第一次登录起算 7 天（`expires_at`），过期作废；一直没用的到 `use_by` 也作废。权益和会话都不超过该密码自己的 `expires_at`，重复登录不会往后推。
+- 表里没有任何有效密码时 `/api/auth/config` 的 `reviewLoginOpen` 为 false，登录页入口消失。
+- 生成：`node cloudflare-sync/scripts/mint-review-passwords.mjs <个数> <use_by YYYY-MM-DD> <明文输出文件>`，标准输出的 SQL 用 `sudo sqlite3` 灌进服务器库。
+  **明文输出文件放在仓库外面**（仓库是公开的）；明文只给提审的人。
+- 撤销某个密码：删那一行或把 `expires_at` 改成过去。
+- 一次提审只用一个；被驳回要重提就换下一个（没用过的不占时间）。
+- 旧的 `REVIEW_LOGIN_PASSWORD` / `REVIEW_LOGIN_UNTIL` 已从代码里删除，服务器 `worker.env` 里残留的两行无害，可以删。

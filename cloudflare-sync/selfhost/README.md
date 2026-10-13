@@ -146,7 +146,6 @@ curl -sS -w '\nHTTP %{http_code} total=%{time_total}s\n' http://127.0.0.1:8787/a
 | `WECHAT_MOBILE_APP_ID`、`WECHAT_MOBILE_APP_SECRET` | 微信开放平台移动应用；微信移动端登录用，与小程序凭据不同 |
 | `WECHAT_PAY_SANDBOX_APP_KEY` 或 `WECHAT_PAY_PRODUCTION_APP_KEY` | 微信小程序虚拟支付后台，填写与 `WECHAT_PAY_ENV` 对应的一项 |
 | `WECHAT_MSG_TOKEN` | 微信小程序消息推送配置；微信支付通知校验用 |
-| `REVIEW_LOGIN_PASSWORD`、`REVIEW_LOGIN_UNTIL` | 审核登录专用密码及 ISO 截止时间；两项同时配置且未到期才开放 |
 | `REQUIRE_AUTH_HARDENING` | 生产认证强化，默认 `1`；填写 `0` 会关闭强化 |
 | `WEEKLY_REPORT_RETENTION_DAYS` | 可选周报保留天数；不填则不清理，期限须由产品明确确认 |
 | `APP_STORE_ENVIRONMENT` | 可选 `Sandbox` / `Production`；默认 `Production` |

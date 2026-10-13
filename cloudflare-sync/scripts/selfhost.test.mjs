@@ -382,16 +382,19 @@ try {
     assert.equal((await call("/api/feedback", { auth: null, body: feedback })).status, 429, "real D1 UPSERT RETURNING returns no row once the feedback quota is exhausted");
     assert.equal(await runtime.env.DB.prepare("SELECT COUNT(*) AS n FROM feedback_reports").first("n"), 10);
 
-    runtime.env.REVIEW_LOGIN_PASSWORD = "adapter-review-password";
-    runtime.env.REVIEW_LOGIN_UNTIL = new Date(Date.now() + 5 * 60 * 1000).toISOString();
-    const review = await call("/api/auth/review-login", { auth: null, body: { account: "review@shushugo.com", password: runtime.env.REVIEW_LOGIN_PASSWORD } });
+    const reviewPassword = "adapter-review-password";
+    await runtime.env.DB.prepare("INSERT INTO review_passwords (password_hash, use_by) VALUES (?, ?)")
+      .bind(createHash("sha256").update(reviewPassword).digest("base64url"), new Date(Date.now() + 86_400_000).toISOString()).run();
+    const review = await call("/api/auth/review-login", { auth: null, body: { account: "review@shushugo.com", password: reviewPassword } });
     assert.equal(review.status, 200, JSON.stringify(review.body));
     assert.equal(review.body.email, "review@shushugo.com");
     assert.equal(review.body.entitlements.isPro, true);
-    assert.equal(review.body.entitlements.expiresAt, runtime.env.REVIEW_LOGIN_UNTIL);
+    const reviewRow = await runtime.env.DB.prepare("SELECT first_login_at, expires_at FROM review_passwords").first();
+    assert.ok(reviewRow.first_login_at && Math.abs(Date.parse(reviewRow.expires_at) - Date.now() - 7 * 86_400_000) < 60_000, "first login starts the seven-day clock");
+    assert.equal(review.body.entitlements.expiresAt, reviewRow.expires_at);
     const reviewSession = await runtime.env.DB.prepare("SELECT expires_at FROM sessions WHERE token_hash = ?")
       .bind(createHash("sha256").update(review.body.access_token).digest("base64url")).first();
-    assert.equal(reviewSession.expires_at, runtime.env.REVIEW_LOGIN_UNTIL);
+    assert.equal(reviewSession.expires_at, reviewRow.expires_at);
 
     await runtime.env.DB.prepare("UPDATE feedback_reports SET created_at = ? WHERE rowid = (SELECT MIN(rowid) FROM feedback_reports)")
       .bind(Math.floor(Date.now() / 1000) - 181 * 24 * 60 * 60).run();
