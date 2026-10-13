@@ -26,7 +26,8 @@ const WIN = 960; // 40ms
 /** 参考引擎念一遍,返回 24k 单声道 PCM(Float32,-1..1)。 */
 export async function referenceWav(text) {
   const path = join(tmpdir(), `prosody-${process.pid}-${Math.random().toString(36).slice(2)}.wav`);
-  await run("say", ["-v", "Kyoko", "-r", "180", "-o", path, `--data-format=LEI16@${SR}`, text]);
+  // say 偶尔会卡死不退出（2026-10-12 实测两句挂了 8 分钟，整批停住），30 秒杀掉，当这句失败、下一遍补。
+  await run("say", ["-v", "Kyoko", "-r", "180", "-o", path, `--data-format=LEI16@${SR}`, text], { timeout: 30_000 });
   const wav = readFileSync(path);
   unlinkSync(path);
   const dataOff = wav.indexOf("data") + 8;

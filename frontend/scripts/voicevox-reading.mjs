@@ -95,11 +95,15 @@ export function intendedReading(item) {
   const chars = [...item.text];
   const byStart = new Map(item.furigana.map(([start, length, reading]) => [start, { length, reading }]));
   let kana = "";
+  let lastReading = "";
   const particleAt = new Set(); // kana 串里的字符下标
   for (let index = 0; index < chars.length; ) {
     const segment = byStart.get(index);
     if (segment) {
-      kana += segment.reading;
+      // 出厂振假名把「中々」的々标成 [6,1,"々"]，读音照抄了々（2026-10-13 查到）；按前一个汉字的读音重复。
+      const reading = segment.reading === "々" ? lastReading : segment.reading;
+      kana += reading;
+      lastReading = reading;
       index += segment.length;
       continue;
     }
