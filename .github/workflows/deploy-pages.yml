@@ -38,7 +38,8 @@ jobs:
       - run: npm run check
       - run: npm run lint
       - run: npm test
-      # 读音和例句统一从腾讯云开发 audio/packs 读取；不再下载 R2 / tar 音频制品。
+      # 线上公开网页不取音频包，一律系统朗读（作者 2026-10-13 定，见 audio-pack-platform.ts 的 PUBLIC_WEB_WITHOUT_PACKS），
+      # 所以这里不下载 R2 / tar 音频制品，也不检查云存储可达性；音频包只给 App / 小程序 / 本机 dev。
       - name: Build Zoo Lab
         run: npx vite build --config zoo-lab/vite.config.ts --base=/shushugo-app/zoo/
       - name: Build app
@@ -49,7 +50,7 @@ jobs:
           cp -R zoo-lab/dist/. dist/zoo/
           printf '{"commit":"%s"}\n' "$GITHUB_SHA" > dist/release.json
           printf 'User-agent: *\nDisallow: /\n' > dist/robots.txt
-          echo "读音 / 例句：腾讯云开发 audio/packs，按今日计划预取到本机缓存。"
+          echo "读音 / 例句：线上网页用系统朗读（首次打开提示一句）；音频包只给 App / 小程序 / 本机 dev。"
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

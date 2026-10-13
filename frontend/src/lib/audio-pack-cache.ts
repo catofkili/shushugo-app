@@ -95,6 +95,14 @@ export class AudioPackClient {
       }
     });
   }
+  /** 整库落盘撞上配额时由 storage.ts 调用：清空缓存（含今天受保护的包），返回是否真腾出了东西。下载来的东西随时能再下。 */
+  reclaim(): Promise<boolean> {
+    return this.serial(async () => {
+      const entries = await this.store.list();
+      for (const e of entries) await this.store.remove(e.name);
+      return entries.length > 0;
+    });
+  }
   private read(name: string): Promise<Uint8Array | null> {
     return this.serial(async () => {
       const data = await this.store.read(name);
@@ -109,7 +117,8 @@ export class AudioPackClient {
     const selectedAtStart = this.selectedVoice;
     const packs = [...new Set(keys.flatMap(key => voice.clips[key] ? [voice.clips[key][0]] : []))];
     if (protect) { this.protectedPacks.clear(); for (const slot of packs) this.protectedPacks.add(voice.packs[slot][0]); }
-    let complete = keys.every(key => Boolean(voice.clips[key]));
+    // 只有下载失败才算不完整：索引里本来就没有的 key（自导的词、改过的例句）不是网络问题，不能触发「没有网络」提示。
+    let complete = true;
     // Two transfers keep the first pack responsive; the whole plan is queued on page entry.
     let cursor = 0;
     await Promise.all([0, 1].map(async () => {

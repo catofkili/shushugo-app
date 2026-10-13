@@ -1333,8 +1333,9 @@
 [data-theme="dark"] .zoo-ring-total{fill:#f3efe6}
 [data-theme="dark"] .zoo-plan-legend li.on{background:rgba(255,255,255,.06)}
 
-/* —— T4 学习工具：七个入口按 4 + 3 排成两行，保证图标和标题都有呼吸空间。 —— */
-.zoo-quad{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px}
+/* —— T4 学习工具：十个入口按 5 + 5 排成两行（2026-10-13 开口练习、JLPT 刷题进来后从 4 列改的：4 列会排出 4/4/2 的孤行，
+   见 interface-and-design-system.md 里「第六个孤零零掉到第二行」那条）。再加入口先数一数能不能被 5 整除。 —— */
+.zoo-quad{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:3px}
 .zoo-quad button{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0;
   border:0;border-radius:16px;background:transparent;padding:8px 2px;color:var(--zoo-ink)}
 .zoo-quad button:active{background:rgba(192,133,82,.1)}

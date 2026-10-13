@@ -311,6 +311,29 @@ describe("微信文件存储", () => {
     expect(Buffer.from(files.get('/wx-user/masternihongo/nihongo.db.prev')!).toString()).toBe('main');
   });
 
+  it("整库写不下时先清空音频包缓存再重试一次；没东西可腾就照旧报错", async () => {
+    platform.value = 'wechat';
+    const client = { reclaim: vi.fn(async () => true) };
+    (globalThis as any).__shushugoAudioPackClient = client;
+    const writeFile = fileManager.writeFile.bind(fileManager);
+    let first = true;
+    vi.spyOn(fileManager, 'writeFile').mockImplementation((options: any) => {
+      if (first) { first = false; return fail(options, 'exceed the storage limit'); }
+      writeFile(options);
+    });
+    const { saveDatabase } = await import("./storage");
+    exportDatabase.mockReturnValueOnce(new Uint8Array([5]));
+    await saveDatabase();
+    expect(client.reclaim).toHaveBeenCalledTimes(1);
+    expect(files.get('/wx-user/masternihongo/nihongo.db')).toEqual(new Uint8Array([5]));
+
+    client.reclaim.mockResolvedValue(false);
+    vi.spyOn(fileManager, 'writeFile').mockImplementation((options: any) => fail(options, 'exceed the storage limit'));
+    exportDatabase.mockReturnValueOnce(new Uint8Array([6]));
+    await expect(saveDatabase()).rejects.toBeDefined();
+    delete (globalThis as any).__shushugoAudioPackClient;
+  });
+
   it("小程序上的整库恢复点只留最近一份", async () => {
     platform.value = 'wechat';
     setFile('/wx-user/masternihongo/recovery-before-biru-2480-to-775.db', 'old');

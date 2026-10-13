@@ -6,8 +6,10 @@
 #   - local-schema.sql 改了没重新生成小程序共享包（check-shared）
 #   - 出厂词库改了没重新生成汉字读音单元索引（prebuild 校验）
 #   - 推送范围里的旧提交没有小程序配对（check-parity 对整段范围逐个提交检查）
+# 2026-10-13 补的一步：taro-spike-2 的 npm test（分包闸门）GitHub CI 不跑，改了许可清单没重建报告、或小程序替身漏导出，
+#   发布对照时才发现 main 上是红的。它只读提交进 git 的 reports、不重新构建，约 3 秒。
 # 想完全模拟 CI（没有 .local/、没有 node_modules 以外的本地文件），在干净克隆里跑：
-#   git clone --no-hardlinks . ../_ci-check && ln -s $PWD/frontend/node_modules ../_ci-check/frontend/node_modules && ../_ci-check/scripts/ci-local.sh
+#   git clone --no-hardlinks . ../_ci-check && ln -s $PWD/frontend/node_modules ../_ci-check/frontend/node_modules && ln -s $PWD/taro-spike-2/node_modules ../_ci-check/taro-spike-2/node_modules && ../_ci-check/scripts/ci-local.sh
 set -e
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 BASE=$(git -C "$ROOT" rev-parse origin/main 2>/dev/null || true)
@@ -23,6 +25,10 @@ rm -rf dist
 echo "== wechat-miniprogram（全部检查，含 check-shared / check-parity）"
 cd "$ROOT/wechat-miniprogram"
 TZ=Asia/Shanghai PARITY_BASE_SHA="$BASE" PARITY_HEAD_SHA=$(git -C "$ROOT" rev-parse HEAD) npm test
+
+echo "== taro-spike-2（分包闸门 + 小程序 smoke；读提交的 reports，不重新构建）"
+cd "$ROOT/taro-spike-2"
+npm test
 
 echo "== cloudflare-sync（typecheck + test）"
 cd "$ROOT/cloudflare-sync"

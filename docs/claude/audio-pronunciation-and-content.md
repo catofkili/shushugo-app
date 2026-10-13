@@ -284,6 +284,13 @@ voicevox-8 的实际构建（本次读取只读源目录，非估算）：
 - 某学习日第一次进入学习页，若今天所需包缺失且预取因无网失败，网页/iOS 用已有提示层提示「没有网络，今天有些读音会换成系统声音。」；
   小程序提示「没有网络，今天有些读音放不了。」。提示键只写本机 `localStorage` / wx storage，按学习日每天最多一次；今天包已经齐全时不提示。
 
+> **2026-10-13 修（发布前对照 V3 / V4）**：① 事件必须派发到 `window`，不是 `globalThis`——小程序的 `globalThis` 没有 `dispatchEvent`，
+> Taro 页面听的是 TaroWindow（`app-polyfills.weapp.ts`），原来的 `globalThis.dispatchEvent?.()` 在小程序里什么都没发出去，
+> 而当天的提示键已经写进 storage，当天也不会再试。② `prefetch` 返回的「是否完整」现在**只看下载有没有失败**：
+> 索引里本来就没有的 key（自导的词、改过的例句，文档自己记的「每天 0–12 个映射不上的词」）不算失败，
+> 否则网络正常、包也下全了，作者这样的用户几乎每天会收到一条假的「没有网络」。③ 「今天」的判定在明天的预取之前就发提示，不等明天的包跑完（弱网下会拖很久）。
+> 判据：`speech-packs.test.ts`（两条）、`audio-pack-cache.test.ts`。403 / CORS 没配好仍会被说成「没有网络」，这条没有区分。
+
 ### 本机缓存和声音商品
 
 共用 `AudioPackClient`：网页/iOS 用独立 IndexedDB `shushugo-audio-packs`，字节和 LRU 元数据同事务写入；

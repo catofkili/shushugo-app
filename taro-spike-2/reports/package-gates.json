@@ -2,19 +2,19 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1878060,
+      "bytes": 1888184,
       "passes": true
     },
     "study": {
-      "bytes": 419325,
+      "bytes": 1088212,
       "passes": true
     },
     "account": {
-      "bytes": 258604,
+      "bytes": 276965,
       "passes": true
     },
     "content-pages": {
-      "bytes": 1150945,
+      "bytes": 1169736,
       "passes": true
     },
     "features": {
@@ -34,7 +34,7 @@
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 367422,
+      "bytes": 385286,
       "passes": true
     },
     "core": {
@@ -42,12 +42,16 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 1000472,
+      "bytes": 1004681,
+      "passes": true
+    },
+    "jlpt-bank": {
+      "bytes": 1015758,
       "passes": true
     }
   },
   "maxUnapprovedPageComponentBytes": 100000,
-  "duplicateSourceModuleCount": 62,
+  "duplicateSourceModuleCount": 66,
   "duplicatedModules": [
     {
       "source": "frontend/src/lib/vocab-test.ts",
@@ -64,7 +68,8 @@
       "packages": [
         "content-pages",
         "grammar-pages",
-        "lazy"
+        "lazy",
+        "study"
       ]
     },
     {
@@ -92,22 +97,24 @@
       ]
     },
     {
+      "source": "frontend/src/lib/audio-pack-cache.ts",
+      "bytes": 32332,
+      "packages": [
+        "account",
+        "content-pages",
+        "grammar-pages",
+        "lazy",
+        "study"
+      ]
+    },
+    {
       "source": "frontend/src/data/grammar_title_furigana.json",
       "bytes": 30888,
       "packages": [
         "content-pages",
         "grammar-pages",
-        "lazy"
-      ]
-    },
-    {
-      "source": "frontend/src/lib/speech.weapp.ts",
-      "bytes": 30692,
-      "packages": [
-        "account",
-        "content-pages",
-        "grammar-pages",
-        "lazy"
+        "lazy",
+        "study"
       ]
     },
     {
@@ -116,6 +123,17 @@
       "packages": [
         "content-pages",
         "grammar-pages"
+      ]
+    },
+    {
+      "source": "frontend/src/lib/audio-pack-platform.weapp.ts",
+      "bytes": 19497,
+      "packages": [
+        "account",
+        "content-pages",
+        "grammar-pages",
+        "lazy",
+        "study"
       ]
     },
     {
@@ -207,7 +225,8 @@
       "packages": [
         "content-pages",
         "grammar-pages",
-        "lazy"
+        "lazy",
+        "study"
       ]
     },
     {
@@ -216,7 +235,19 @@
       "packages": [
         "content-pages",
         "grammar-pages",
-        "lazy"
+        "lazy",
+        "study"
+      ]
+    },
+    {
+      "source": "frontend/src/lib/speech-packs.ts",
+      "bytes": 11782,
+      "packages": [
+        "account",
+        "content-pages",
+        "grammar-pages",
+        "lazy",
+        "study"
       ]
     },
     {
@@ -225,7 +256,8 @@
       "packages": [
         "content-pages",
         "grammar-pages",
-        "lazy"
+        "lazy",
+        "study"
       ]
     },
     {
@@ -234,7 +266,8 @@
       "packages": [
         "content-pages",
         "grammar-pages",
-        "lazy"
+        "lazy",
+        "study"
       ]
     },
     {
@@ -290,6 +323,28 @@
       ]
     },
     {
+      "source": "frontend/src/lib/audio-pack-format.ts",
+      "bytes": 6939,
+      "packages": [
+        "account",
+        "content-pages",
+        "grammar-pages",
+        "lazy",
+        "study"
+      ]
+    },
+    {
+      "source": "frontend/src/lib/speech.weapp.ts",
+      "bytes": 6741,
+      "packages": [
+        "account",
+        "content-pages",
+        "grammar-pages",
+        "lazy",
+        "study"
+      ]
+    },
+    {
       "source": "frontend/src/components/ProReadingPreview.tsx",
       "bytes": 6340,
       "packages": [
@@ -315,6 +370,17 @@
       ]
     },
     {
+      "source": "frontend/src/lib/speech-audio.ts",
+      "bytes": 4985,
+      "packages": [
+        "account",
+        "content-pages",
+        "grammar-pages",
+        "lazy",
+        "study"
+      ]
+    },
+    {
       "source": "frontend/src/components/ShareImageSheet.weapp.tsx",
       "bytes": 4926,
       "packages": [
@@ -337,7 +403,8 @@
       "packages": [
         "content-pages",
         "grammar-pages",
-        "lazy"
+        "lazy",
+        "study"
       ]
     },
     {
@@ -346,7 +413,8 @@
       "packages": [
         "account",
         "content-pages",
-        "lazy"
+        "lazy",
+        "study"
       ]
     },
     {
@@ -373,7 +441,8 @@
       "packages": [
         "content-pages",
         "grammar-pages",
-        "lazy"
+        "lazy",
+        "study"
       ]
     },
     {
@@ -392,7 +461,8 @@
       "packages": [
         "content-pages",
         "grammar-pages",
-        "lazy"
+        "lazy",
+        "study"
       ]
     },
     {
@@ -417,7 +487,8 @@
       "packages": [
         "content-pages",
         "grammar-pages",
-        "lazy"
+        "lazy",
+        "study"
       ]
     },
     {
@@ -434,7 +505,8 @@
       "packages": [
         "content-pages",
         "grammar-pages",
-        "lazy"
+        "lazy",
+        "study"
       ]
     },
     {
@@ -544,14 +616,6 @@
       ]
     },
     {
-      "source": "frontend/src/components/DailyPlanSlider.weapp.tsx",
-      "bytes": 651,
-      "packages": [
-        "account",
-        "study"
-      ]
-    },
-    {
       "source": "frontend/src/components/JapaneseRubyText.weapp.tsx",
       "bytes": 602,
       "packages": [
@@ -589,7 +653,7 @@
       ]
     }
   ],
-  "duplicatedCoreModuleCount": 24,
+  "duplicatedCoreModuleCount": 29,
   "duplicatedCoreModules": [
     {
       "source": "frontend/src/lib/vocab-test.ts",
@@ -607,7 +671,8 @@
       "packages": [
         "content-pages",
         "grammar-pages",
-        "lazy"
+        "lazy",
+        "study"
       ],
       "reason": "Conjugation explanations are derived from static verb-pair hints; the module keeps no user-data cache."
     },
@@ -621,15 +686,28 @@
       "reason": "Weekly metrics are calculated from query results on demand; no user records are cached in the module."
     },
     {
-      "source": "frontend/src/lib/speech.weapp.ts",
-      "bytes": 30692,
+      "source": "frontend/src/lib/audio-pack-cache.ts",
+      "bytes": 32332,
       "packages": [
         "account",
         "content-pages",
         "grammar-pages",
-        "lazy"
+        "lazy",
+        "study"
       ],
-      "reason": "Only public voice-index content and package-local audio handles are cached; user preferences are read live and no study data is cached."
+      "reason": "The class definition can be duplicated; audio-pack-platform.weapp stores its sole live instance on globalThis for all route bundles."
+    },
+    {
+      "source": "frontend/src/lib/audio-pack-platform.weapp.ts",
+      "bytes": 19497,
+      "packages": [
+        "account",
+        "content-pages",
+        "grammar-pages",
+        "lazy",
+        "study"
+      ],
+      "reason": "globalThis.__shushugoAudioPackClient is shared by every subpackage; only that instance owns the wx file ledger and transfer queue."
     },
     {
       "source": "frontend/src/lib/study-focus.ts",
@@ -667,9 +745,22 @@
       "packages": [
         "content-pages",
         "grammar-pages",
-        "lazy"
+        "lazy",
+        "study"
       ],
       "reason": "Dictionary matches are computed from the supplied database rows; results are not retained in a module cache."
+    },
+    {
+      "source": "frontend/src/lib/speech-packs.ts",
+      "bytes": 11782,
+      "packages": [
+        "account",
+        "content-pages",
+        "grammar-pages",
+        "lazy",
+        "study"
+      ],
+      "reason": "All catalog/cache/transfer state belongs to the process-wide client. Preferences and voice ownership are read live; plan arrays are not retained."
     },
     {
       "source": "frontend/src/lib/team-activity.ts",
@@ -691,6 +782,30 @@
       "reason": "Share and save operations use the image passed to each call and retain no mutable user state."
     },
     {
+      "source": "frontend/src/lib/audio-pack-format.ts",
+      "bytes": 6939,
+      "packages": [
+        "account",
+        "content-pages",
+        "grammar-pages",
+        "lazy",
+        "study"
+      ],
+      "reason": "SAP1 encoding/catalog validation are pure functions; there is no module-level cache."
+    },
+    {
+      "source": "frontend/src/lib/speech.weapp.ts",
+      "bytes": 6741,
+      "packages": [
+        "account",
+        "content-pages",
+        "grammar-pages",
+        "lazy",
+        "study"
+      ],
+      "reason": "Only public voice-index content and package-local audio handles are cached; user preferences are read live and no study data is cached."
+    },
+    {
       "source": "frontend/src/lib/distinction-quiz.ts",
       "bytes": 6302,
       "packages": [
@@ -708,6 +823,18 @@
         "lazy"
       ],
       "reason": "The WeakSet records only an idempotent legacy-migration marker per DB object; position values remain in the shared database."
+    },
+    {
+      "source": "frontend/src/lib/speech-audio.ts",
+      "bytes": 4985,
+      "packages": [
+        "account",
+        "content-pages",
+        "grammar-pages",
+        "lazy",
+        "study"
+      ],
+      "reason": "Reading normalization and audio hashes are pure functions with no user state."
     },
     {
       "source": "frontend/src/lib/team-rules.ts",
@@ -755,7 +882,8 @@
       "packages": [
         "content-pages",
         "grammar-pages",
-        "lazy"
+        "lazy",
+        "study"
       ],
       "reason": "Grammar form matching is a pure calculation over the supplied grammar point."
     },
@@ -765,7 +893,8 @@
       "packages": [
         "content-pages",
         "grammar-pages",
-        "lazy"
+        "lazy",
+        "study"
       ],
       "reason": "Memoized values are deterministic lookups over bundled title-furigana content, not user data."
     },
@@ -832,15 +961,20 @@
     "frontend/src/lib/vocab-test.ts": "Question selection and scoring are calculated on demand; active sessions live in the shared database, not a module cache.",
     "frontend/src/lib/conjugation-explanation.ts": "Conjugation explanations are derived from static verb-pair hints; the module keeps no user-data cache.",
     "frontend/src/lib/analytics/weekly.ts": "Weekly metrics are calculated from query results on demand; no user records are cached in the module.",
-    "frontend/src/lib/speech.weapp.ts": "Only public voice-index content and package-local audio handles are cached; user preferences are read live and no study data is cached.",
+    "frontend/src/lib/audio-pack-cache.ts": "The class definition can be duplicated; audio-pack-platform.weapp stores its sole live instance on globalThis for all route bundles.",
+    "frontend/src/lib/audio-pack-platform.weapp.ts": "globalThis.__shushugoAudioPackClient is shared by every subpackage; only that instance owns the wx file ledger and transfer queue.",
     "frontend/src/lib/study-focus.ts": "Each isolated route package mounts only its own study source; partial baseline windows are persisted on page exit, countdown state is deliberately discarded, and rewards are guarded by unique database ledger keys.",
     "frontend/src/lib/analytics/weekly-reports.ts": "Reports are read from and written to the shared database on each call; the module keeps no report snapshot.",
     "frontend/src/lib/share-canvas.weapp.ts": "The canvas and file sequence are temporary rendering state scoped to a page bundle, not persisted user data.",
     "frontend/src/lib/token-dictionary.ts": "Dictionary matches are computed from the supplied database rows; results are not retained in a module cache.",
+    "frontend/src/lib/speech-packs.ts": "All catalog/cache/transfer state belongs to the process-wide client. Preferences and voice ownership are read live; plan arrays are not retained.",
     "frontend/src/lib/team-activity.ts": "Study rows and account-keyed caches are read from SQLite/localStorage on each call; only request coalescing is module-local, and duplicate route requests merge activity idempotently on the Worker.",
     "frontend/src/lib/share-image.weapp.ts": "Share and save operations use the image passed to each call and retain no mutable user state.",
+    "frontend/src/lib/audio-pack-format.ts": "SAP1 encoding/catalog validation are pure functions; there is no module-level cache.",
+    "frontend/src/lib/speech.weapp.ts": "Only public voice-index content and package-local audio handles are cached; user preferences are read live and no study data is cached.",
     "frontend/src/lib/distinction-quiz.ts": "Question groups and results are derived from the shared database on demand; there is no module-level user-data cache.",
     "frontend/src/lib/grammarProgressPreferences.ts": "The WeakSet records only an idempotent legacy-migration marker per DB object; position values remain in the shared database.",
+    "frontend/src/lib/speech-audio.ts": "Reading normalization and audio hashes are pure functions with no user state.",
     "frontend/src/lib/team-rules.ts": "Team periods, check-in eligibility, and duel scores are pure calculations over supplied values; the module keeps no mutable state.",
     "frontend/src/lib/useStudyTimer.ts": "Timer state and intervals belong to each mounted React hook instance; no shared module state is retained.",
     "frontend/src/lib/study-clock.ts": "Timer state is passed immutably between calls and belongs to the mounted page, not a module singleton.",
@@ -939,7 +1073,8 @@
       "packages": [
         "content-pages",
         "grammar-pages",
-        "lazy"
+        "lazy",
+        "study"
       ],
       "reason": "Ruby rendering is shared by the lazy tab chunk and independently loaded content/grammar routes."
     },
@@ -949,7 +1084,8 @@
       "packages": [
         "content-pages",
         "grammar-pages",
-        "lazy"
+        "lazy",
+        "study"
       ],
       "reason": "The dictionary popover is used by lazy tabs and independently loaded grammar/content routes."
     },
@@ -959,7 +1095,8 @@
       "packages": [
         "content-pages",
         "grammar-pages",
-        "lazy"
+        "lazy",
+        "study"
       ],
       "reason": "Shared data for the GrammarTermHint weapp variant; duplicated alongside it."
     },
@@ -1017,7 +1154,8 @@
       "packages": [
         "content-pages",
         "grammar-pages",
-        "lazy"
+        "lazy",
+        "study"
       ],
       "reason": "Grammar point previews are used by lazy tabs and content/grammar routes."
     },
@@ -1027,7 +1165,8 @@
       "packages": [
         "account",
         "content-pages",
-        "lazy"
+        "lazy",
+        "study"
       ],
       "reason": "Brand images are used by the account, content shop, and lazy route graphs; this small adapter enables WebP and sets native image dimensions."
     },
@@ -1046,7 +1185,8 @@
       "packages": [
         "content-pages",
         "grammar-pages",
-        "lazy"
+        "lazy",
+        "study"
       ],
       "reason": "Grammar term hints are rendered by both the lazy tab chunk and grammar/content routes (W6 weapp variant)."
     },
@@ -1100,15 +1240,6 @@
       "reason": "Review controls appear in the content and grammar route packages."
     },
     {
-      "source": "frontend/src/components/DailyPlanSlider.weapp.tsx",
-      "bytes": 651,
-      "packages": [
-        "account",
-        "study"
-      ],
-      "reason": "The account and study routes each render their package-local slider."
-    },
-    {
       "source": "frontend/src/components/JapaneseRubyText.weapp.tsx",
       "bytes": 602,
       "packages": [
@@ -1146,10 +1277,9 @@
     "frontend/src/components/ExampleSentence.tsx": "Example sentences are rendered from both content and grammar route packages.",
     "frontend/src/components/JapaneseWordRuby.tsx": "Word ruby rendering is used in the study, grammar, and lazy tab routes.",
     "frontend/src/components/ReviewButton.tsx": "Review controls appear in the content and grammar route packages.",
-    "frontend/src/components/DailyPlanSlider.weapp.tsx": "The account and study routes each render their package-local slider.",
     "frontend/src/components/JapaneseRubyText.weapp.tsx": "Ruby text is used by lazy tabs and independently loaded content/grammar routes."
   },
-  "duplicatedPageComponentBytes": 244666,
+  "duplicatedPageComponentBytes": 244015,
   "unapprovedPageComponents": [],
   "stalePageComponentAllowlist": [],
   "unapprovedPageComponentBytes": 0,
@@ -1164,15 +1294,15 @@
     },
     {
       "source": "frontend/src/app.css",
-      "bytes": 150745
+      "bytes": 153059
     },
     {
       "source": "frontend/src/styles.css",
-      "bytes": 141446
+      "bytes": 141988
     },
     {
       "source": "frontend/src/lib/word-api.ts",
-      "bytes": 140950
+      "bytes": 141975
     },
     {
       "source": "taro-spike-2/node_modules/react-reconciler/cjs/react-reconciler.production.min.js",
@@ -1183,20 +1313,20 @@
       "bytes": 91227
     },
     {
+      "source": "frontend/src/lib/storage.ts",
+      "bytes": 90130
+    },
+    {
       "source": "taro-spike-2/src/platform/WeappPage.tsx",
       "bytes": 89479
     },
     {
-      "source": "frontend/src/lib/storage.ts",
-      "bytes": 88749
-    },
-    {
       "source": "frontend/src/lib/study-core.ts",
-      "bytes": 86714
+      "bytes": 87246
     },
     {
       "source": "frontend/src/design.css",
-      "bytes": 73549
+      "bytes": 75105
     }
   ],
   "passes": true

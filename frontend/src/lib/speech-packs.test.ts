@@ -54,8 +54,16 @@ it("emits the offline notice at most once per study day when today's pack cannot
   pack.mockRejectedValue(new Error("offline"));
   const events: Event[] = [];
   const onEvent = (event: Event) => events.push(event);
-  vi.stubGlobal("dispatchEvent", onEvent);
+  window.addEventListener(speech.AUDIO_OFFLINE_NOTICE_EVENT, onEvent);
   await speech.prefetchWordPlanAudio([plan]);
   await speech.prefetchWordPlanAudio([plan]);
   expect(events).toHaveLength(1);
+});
+
+it("does not claim the network is down when a planned word is simply missing from the index", async () => {
+  const speech = await import("./speech-packs");
+  const events: Event[] = [];
+  window.addEventListener(speech.AUDIO_OFFLINE_NOTICE_EVENT, e => events.push(e));
+  await speech.prefetchWordPlanAudio([plan, { kanji: "自導", kana: "じどう", example: "" }]);
+  expect(events).toHaveLength(0);
 });

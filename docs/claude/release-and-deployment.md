@@ -60,6 +60,11 @@ check / lint / test，应急才用 `SKIP_RELEASE_GATES=1`。
 
 > **2026-10-12 增补：下面的 `AUDIO_ARTIFACT_URL` / R2 制品方案已被音频包取代。** 网页/iOS 和 Taro 均读取腾讯云开发总索引；Pages 工作流不再拉 tar 音频制品，Vite 不复制 `audio-src`、`audio/words`、`audio/examples` 到发布包（`audio/talk` 沿用）。生成/作者上传/CORS/缓存配置见音频专题「音频包（2026-10-12）」。这不表示云端已经上传或已验收。
 
+> **2026-10-13 增补（发布前对照 V8）**：上一条「网页/iOS 读腾讯云开发总索引」对**线上公开网页**已不成立——作者 10-13 定：线上网页不取音频包、一律系统朗读，
+> 首次打开提示一句（`PUBLIC_WEB_WITHOUT_PACKS`，`audio-pack-platform.ts`；「网页端不能赚钱而且容易被破，我不想管理」）。
+> 所以 Pages 工作流**不**检查云存储的 `current.json` 能否匿名访问（原来想加的 `::warning::` 没有对象了）：网页走系统声音是设计，不是静默事故。
+> 音频包只给 App（Capacitor）、小程序、本机 dev。**iOS 上架前**仍要解决云存储免费档匿名 HTTPS 403（见音频专题），那一步的可达性验收放在 iOS 发版前，不在 Pages 部署里。
+
 那 137 MB 不在版本库里（见 `.gitignore`），干净 runner 上 checkout 完根本没有，
 于是网页版**静默**退回系统 TTS，而构建全绿、没有任何提示。
 `deploy-pages.yml` 现在支持 `AUDIO_ARTIFACT_URL` + `AUDIO_ARTIFACT_SHA256`
@@ -102,6 +107,17 @@ check / lint / test，应急才用 `SKIP_RELEASE_GATES=1`。
 判据补成：已许可页面组件若现在**只存在于主包**，视为重复已消除，保留清单以兼容已提交 reports；不为消警告再复制组件，也不删旧许可。
 模块彻底消失、只剩一个分包实例、出现未许可重复、预算超限仍照旧拦截。`verify-package-gates.test.mjs` 用隔离 stats 验证这些边界。
 本次作者明确要求构建后还原 reports，按该要求处理；后续正式更新构建报告仍遵守上面的三份一起更新规则。
+
+### 2026-10-13 增补：main 上 `taro-spike-2 && npm test` 曾经是红的（发布前对照 V1）
+
+交付（`ebc914a..6ad8fbcc`）改了核心重复许可清单，却按「作者要求构建后还原 reports」把 reports 留在 10-11 的旧构建上：
+闸门读旧 stats，报「核心模块重复允许清单不匹配：已过期 [audio-pack-format.ts, speech-audio.ts, …]」。**GitHub CI 和 `ci-local.sh` 原来都不跑 `taro-spike-2` 的测试，所以这条红灯谁也看不到。**
+同一次重建还翻出两个同类的东西，都是「改了一头没改另一头」：
+- `verify-shim-exports`：`App.tsx` 用了 `PUBLIC_WEB_WITHOUT_PACKS`（线上网页不取包，94657483），小程序替身 `audio-pack-platform.weapp.ts` 没导出，`build:weapp` 第一步就拦住。替身里恒为 `false`。
+- `verify-package-gates.test.mjs` 的夹具用的是已从许可清单删掉的 `DailyPlanSlider.weapp.tsx`，测试自己红；换成仍在清单里的 `DailyPlanRing.weapp.tsx`。**夹具要用清单里现有的条目，清单删条目时顺手 grep 一下测试。**
+现在的做法：改了许可清单 / 会影响分包的源码，当场 `npm run build:weapp` 并把六份 reports 一起提交（本次是 `webpack-stats.json`、`package-sizes.json`、`package-gates.json`、
+`css-source-bytes.json`、`require-async-paths.json`、`route-css-split.json`，`src/` 下没有副作用改动）；`scripts/ci-local.sh` 加了 `taro-spike-2` 的 `npm test`（只读 reports，约 3 秒）。
+本次重建后主包 1,888,184 B（上限 1,900,000，余量约 11.8 KB——下一次往主包加东西要先腾地方），`jlpt-bank` 分包 1,015,758 B。
 
 ## ⚠️ 后端已从 Cloudflare 搬到阿里云（2026-10-11）
 

@@ -1,7 +1,7 @@
 {
   "expectedTargetCount": 12,
-  "callCount": 14,
-  "resolvedTargetCount": 14,
+  "callCount": 19,
+  "resolvedTargetCount": 19,
   "calls": [
     {
       "caller": "common.js",
@@ -72,6 +72,31 @@
       "caller": "runtime.js",
       "request": "./lazy/mascot-skins.js",
       "target": "lazy/mascot-skins.js"
+    },
+    {
+      "caller": "runtime.js",
+      "request": "./jlpt-bank/jlpt-n1.js",
+      "target": "jlpt-bank/jlpt-n1.js"
+    },
+    {
+      "caller": "runtime.js",
+      "request": "./jlpt-bank/jlpt-n2.js",
+      "target": "jlpt-bank/jlpt-n2.js"
+    },
+    {
+      "caller": "runtime.js",
+      "request": "./jlpt-bank/jlpt-n3.js",
+      "target": "jlpt-bank/jlpt-n3.js"
+    },
+    {
+      "caller": "runtime.js",
+      "request": "./jlpt-bank/jlpt-n4.js",
+      "target": "jlpt-bank/jlpt-n4.js"
+    },
+    {
+      "caller": "runtime.js",
+      "request": "./jlpt-bank/jlpt-n5.js",
+      "target": "jlpt-bank/jlpt-n5.js"
     }
   ]
 }

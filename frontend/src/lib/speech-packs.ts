@@ -42,7 +42,8 @@ const notifyOfflineOnce = () => {
   } catch { /* Storage can be unavailable in private mode; event remains best effort. */ }
   wxStore?.setStorageSync?.(key, "1");
   const isWeapp = Boolean((globalThis as typeof globalThis & { wx?: unknown }).wx);
-  globalThis.dispatchEvent?.(new CustomEvent(OFFLINE_NOTICE_EVENT, { detail: { isWeapp } }));
+  // 必须是 window：Taro 页面听的是 TaroWindow，派发到 globalThis 在小程序里什么都收不到（见 app-polyfills.weapp.ts）。
+  window.dispatchEvent(new CustomEvent(OFFLINE_NOTICE_EVENT, { detail: { isWeapp } }));
 };
 export const AUDIO_OFFLINE_NOTICE_EVENT = OFFLINE_NOTICE_EVENT;
 
@@ -53,9 +54,10 @@ export async function prefetchWordPlanAudio(items: readonly WordAudioPlanItem[],
   await client.selectVoice(voice.id).catch(() => undefined);
   const keys = items.flatMap(w => [clipKey("words", pronunciationAudioName(w.kanji, w.kana)), ...(w.example.trim() ? [clipKey("examples", exampleAudioName(w.example))] : [])]);
   const todayOk = await client.prefetch(voice, keys, true).catch(() => false);
+  // 今天的结果一出来就提示，不等明天的预取（弱网下明天的包可能很久才跑完）。
+  if (!todayOk) notifyOfflineOnce();
   const tomorrowKeys = tomorrow.flatMap(w => [clipKey("words", pronunciationAudioName(w.kanji, w.kana)), ...(w.example.trim() ? [clipKey("examples", exampleAudioName(w.example))] : [])]);
   if (tomorrowKeys.length) await client.prefetch(voice, tomorrowKeys).catch(() => false);
-  if (!todayOk) notifyOfflineOnce();
 }
 export async function prefetchExamples(sentences: readonly string[], preferred?: string | null): Promise<void> {
   await client.load();

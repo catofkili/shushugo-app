@@ -90,7 +90,7 @@ export function JlptPracticePage() {
         : session.mode === "mock" ? <MockSession key={session.id} bank={activeBank} parts={session.parts} sessionId={session.id} onDone={setResult} onBack={back} />
           : <DrillSession key={session.id} bank={activeBank} questions={session.questions} mode={session.mode} sessionId={session.id} onDone={setResult} onBack={back} />}
     </> : <>
-      <div className="jq-head"><h1 className="jq-title">JLPT 刷题</h1><span className="jq-muted">实验功能</span></div>
+      <div className="jq-head"><h1 className="jq-title">JLPT 刷题</h1></div>
       <div className="jq-levels" aria-label="等级">
         {JLPT_LEVELS.map(item => <button type="button" key={item} className="ds-chip focus-ring" aria-pressed={level === item} onClick={() => changeLevel(item)}>{item}</button>)}
       </div>

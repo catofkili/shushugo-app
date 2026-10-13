@@ -89,7 +89,7 @@
         "wechat-miniprogram/src/pages/home/index.wxss",
         "frontend/src/components/ZooHome.tsx"
       ],
-      "reason": "路线 A：Taro 直接编译这份 ZooHome.tsx，登记自身保证同源改动通过配对检查；2026-10-12 开口练习进入学习工具网格，JLPT 格仍由独立实验开关控制。原生 pages/home 已停止维护，见头部 2026-09-25 决定。"
+      "reason": "路线 A：Taro 直接编译这份 ZooHome.tsx，登记自身保证同源改动通过配对检查；2026-10-12 开口练习进入学习工具网格，JLPT 格仍由独立实验开关控制（2026-10-13 更正：JLPT 开关已删，格子正常显示）。原生 pages/home 已停止维护，见头部 2026-09-25 决定。"
     },
     {
       "web": "frontend/src/pages/AboutPage.tsx",

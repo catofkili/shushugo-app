@@ -1,27 +1,27 @@
 {
-  "appWxssBytesBefore": 281945,
-  "appWxssBytesAfter": 209656,
+  "appWxssBytesBefore": 283637,
+  "appWxssBytesAfter": 214607,
   "movedRuleBytesByRoute": {
     "content-pages/weekly-report/index.wxss": 161,
-    "content-pages/yuzu-shop/index.wxss": 15800,
-    "study/confusion/index.wxss": 8458,
-    "study/jlpt-practice/index.wxss": 5301,
-    "study/kanji-readings/index.wxss": 12031,
-    "study/quick-study/index.wxss": 11132,
-    "study/team/index.wxss": 11453,
+    "content-pages/yuzu-shop/index.wxss": 16013,
+    "study/confusion/index.wxss": 8496,
+    "study/jlpt-practice/index.wxss": 5375,
+    "study/kanji-readings/index.wxss": 12069,
+    "study/quick-study/index.wxss": 11262,
+    "study/team/index.wxss": 11736,
     "study/vocab-test/index.wxss": 3275,
-    "study/word-list/index.wxss": 14047
+    "study/word-list/index.wxss": 14118
   },
   "movedRuleCountByRoute": {
-    "content-pages/yuzu-shop/index.wxss": 141,
-    "study/word-list/index.wxss": 125,
-    "study/team/index.wxss": 115,
+    "content-pages/yuzu-shop/index.wxss": 144,
+    "study/word-list/index.wxss": 127,
+    "study/team/index.wxss": 118,
     "content-pages/weekly-report/index.wxss": 2,
-    "study/quick-study/index.wxss": 90,
-    "study/confusion/index.wxss": 78,
-    "study/kanji-readings/index.wxss": 112,
+    "study/quick-study/index.wxss": 92,
+    "study/confusion/index.wxss": 79,
+    "study/kanji-readings/index.wxss": 113,
     "study/vocab-test/index.wxss": 35,
-    "study/jlpt-practice/index.wxss": 61
+    "study/jlpt-practice/index.wxss": 63
   },
   "routes": {
     "vocabTest": "study/vocab-test/index.wxss",
@@ -32,7 +32,7 @@
     "quickStudy": "study/quick-study/index.wxss",
     "confusion": "study/confusion/index.wxss",
     "kanjiReadings": "study/kanji-readings/index.wxss",
-    "spelling": "study/spelling/index.wxss",
+    "word": "pages/word/index.wxss",
     "talk": "study/talk/index.wxss",
     "jlptPractice": "study/jlpt-practice/index.wxss"
   }

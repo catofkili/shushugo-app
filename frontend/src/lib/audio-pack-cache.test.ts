@@ -111,6 +111,15 @@ describe("audio packs", () => {
     expect(transport.index).toHaveBeenCalledTimes(2);
   });
 
+  it("prefetch reports a failed download but not a key the catalog never had; reclaim empties the cache incl. protected packs", async () => {
+    const c = client(); expect(await c.prefetch(voice, [word, "w:ffffffffffffffff"], true)).toBe(true);
+    expect(data.has(name)).toBe(true);
+    expect(await c.reclaim()).toBe(true); expect(entries.size).toBe(0); expect(data.size).toBe(0);
+    expect(await c.reclaim()).toBe(false);
+    transport.pack.mockRejectedValueOnce(new Error("offline"));
+    expect(await c.prefetch(voice, [word])).toBe(false);
+  });
+
   it("removes a corrupted on-disk pack before using the single-clip fallback", async () => {
     data.set(name, bytes.slice(0, -1));
     const c = client(); expect(await c.clip(voice, word)).toEqual(new Uint8Array([1, 2, 3]));

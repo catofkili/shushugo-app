@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 
 const root = fs.mkdtempSync(path.join(os.tmpdir(), 'talk-package-gates-'));
-const source = 'frontend/src/components/DailyPlanSlider.weapp.tsx';
+const source = 'frontend/src/components/DailyPlanRing.weapp.tsx';
 try {
   fs.mkdirSync(path.join(root, 'scripts'));
   fs.mkdirSync(path.join(root, 'reports'));

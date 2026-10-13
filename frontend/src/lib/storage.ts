@@ -467,12 +467,24 @@ const saveFileDatabase = async (data: Uint8Array | string): Promise<void> => {
   // 再长一点就每次整库快照都失败（增量从此只涨不清，写盘失败横幅常驻）。先删 prev，峰值压到两份。
   // 代价很小：main 在写 tmp 的全程都是完整的，prev 只防 main 读不出来；浏览器端本来就只存一份。
   if (isWechatFileStorage()) await deleteFileIfExists(DB_FILE_PREV);
-  await Filesystem.writeFile({
+  const writeTmp = () => Filesystem.writeFile({
     path: DB_FILE_TMP,
     data: typeof data === 'string' ? data : fileData(data),
     directory: DB_DIRECTORY,
     recursive: true
   });
+  try {
+    await writeTmp();
+  } catch (error) {
+    // ⚠️ 同一块 200 MB 里还住着音频包缓存（最多 80 MiB，见 audio-pack-cache.ts）。音频是下载来的、随时能再下，
+    // 库不是：写不下就把音频缓存清空再试一次，绝不能让库让位给音频（音频那一侧遇到配额失败本来就会自己腾地方）。
+    // 不判断错误文字（平台本地化），清空后没有东西可腾就原样抛出。
+    const audio = isWechatFileStorage()
+      ? (globalThis as typeof globalThis & { __shushugoAudioPackClient?: { reclaim?: () => Promise<boolean> } }).__shushugoAudioPackClient
+      : undefined;
+    if (!audio?.reclaim || !await audio.reclaim().catch(() => false)) throw error;
+    await writeTmp();
+  }
   if (await fileExists(DB_FILE_MAIN)) {
     await deleteFileIfExists(DB_FILE_PREV);
     await Filesystem.rename({

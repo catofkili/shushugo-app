@@ -2,6 +2,8 @@ import { AudioPackClient, type AudioCacheEntry, type AudioPackStore } from "./au
 declare const require: (path: string) => any;
 declare const wx: any;
 const config = require("../../../wechat-miniprogram/src/config.js");
+// 小程序走云开发 SDK 取包；「线上网页不取包」只是公开网页的决定（见 audio-pack-platform.ts），这里恒为 false。
+export const PUBLIC_WEB_WITHOUT_PACKS = false;
 const { readFile, readCompressedFile, makeDirectory, removeFile } = require("../../../wechat-miniprogram/src/runtime/wx-promise.js");
 const fs = wx.getFileSystemManager();
 const root = `${wx.env.USER_DATA_PATH}/audio-packs`;
