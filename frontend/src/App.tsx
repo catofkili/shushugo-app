@@ -23,6 +23,7 @@ import { OPEN_GRAMMAR_FOUNDATION_EVENT } from "./lib/grammar-foundation-navigati
 import { shouldShowLevelSetup } from "./lib/level-plan";
 import { AppShell, markTrialNoticeRead } from "./app/AppShell";
 import { AUDIO_OFFLINE_NOTICE_EVENT } from "./lib/speech-packs";
+import { PUBLIC_WEB_WITHOUT_PACKS } from "./lib/audio-pack-platform";
 import type { AppContextValue } from "./app/AppContext";
 import { createAppActions } from "./app/actions";
 import { getAppState, setAppState, useAppState } from "./app/app-store";
@@ -306,6 +307,16 @@ export default function App() {
     };
     window.addEventListener(CLOUD_SYNC_EVENT, handleCloudSync);
     return () => window.removeEventListener(CLOUD_SYNC_EVENT, handleCloudSync);
+  }, [showNotice]);
+
+  // 线上网页第一次打开时说一声读音用的是系统声音（作者 2026-10-13），之后不再提示。
+  useEffect(() => {
+    if (!PUBLIC_WEB_WITHOUT_PACKS) return;
+    try {
+      if (localStorage.getItem("shushugo-web-voice-notice")) return;
+      localStorage.setItem("shushugo-web-voice-notice", "1");
+    } catch { return; }
+    showNotice("网页版用系统自带的声音朗读。", 5000);
   }, [showNotice]);
 
   useEffect(() => {

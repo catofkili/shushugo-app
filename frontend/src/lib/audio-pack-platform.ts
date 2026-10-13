@@ -1,5 +1,10 @@
+import { Capacitor } from "@capacitor/core";
 import { AudioPackClient, type AudioCacheEntry, type AudioPackStore } from "./audio-pack-cache";
 import type { AudioPackIndex } from "./audio-pack-format";
+
+// 线上公开网页不取音频包，一律系统朗读（作者 2026-10-13：「网页端不能赚钱而且容易被破，我不想管理，核心功能存在就行」）。
+// 只有 App（Capacitor）和本机 dev 取包。fetchAudio 直接失败、不发请求；load() 吞掉错误，audioClip 返回 null → speech.ts 退回系统声音。
+export const PUBLIC_WEB_WITHOUT_PACKS = !import.meta.env.DEV && !Capacitor.isNativePlatform();
 
 // CloudBase's public CDN URL, same bucket as cloudbaserc.json / config.js. No SDK or signed URL on web/iOS.
 // 作者本机 5173 读本机打好的包（frontend/audio-pack-dist，gitignore；Vite dev 按项目根目录直接提供），不走云。
@@ -55,6 +60,7 @@ export function browserAudioPackStore(): AudioPackStore {
 }
 
 const fetchAudio = async <T>(path: string, read: (response: Response) => Promise<T>, headers?: Record<string, string>): Promise<T> => {
+  if (PUBLIC_WEB_WITHOUT_PACKS) throw new Error("网页版不取音频包");
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 15_000);
   try {
