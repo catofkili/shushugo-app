@@ -401,3 +401,12 @@ JOIN 读的是 **grammar_state** —— **点了收藏永远显示不出来**，
 6. ⚠️ 模拟器 `wx.env.USER_DATA_PATH` 有 200 MB 上限，历次验收的隔离库目录（每个 25–30 MB，如 `shushugo-countdown-visual`、
    `w15-visual`、`shushugo-post-exam-vqa`）会堆在那里。满了以后学习页弹「学习记录没能保存到本机」—— 是模拟器空间，不是代码坏了。
    验收前先看一眼占用，用完删掉自己建的目录。
+
+## ⚠️ 给 `*.weapp.ts` 替身加 / 改导出之前先想一件事：`ci-local.sh` 不跑 `build:weapp`（2026-10-13）
+
+网页文件被 `*.weapp.ts` 替身替换时（`taro-spike-2/config/platform-adapters.cjs`），**网页新增一个导出、替身没有同名导出**，真机上就是 `x is not a function`。
+`npm run build:weapp` 的第一道闸门 `verify-shim-exports` 会拦这个，但 `scripts/ci-local.sh` 和 GitHub CI 都不跑它——10-13 推 main 时
+`audio-pack-platform.ts` 加了 `PUBLIC_WEB_WITHOUT_PACKS`、替身没跟，`build:weapp` 在 main 上红了一天没人知道（预览包是推之前编的）。
+**判据**：改了 `frontend/src/lib/*.ts` 里有 `.weapp.ts` 兄弟文件的模块，推 main 前顺手跑一次 `cd taro-spike-2 && npm run build:weapp`。
+同一天还有一条：小程序里 `wx.request` 访问云存储的临时下载地址，真机要在微信后台配「request 合法域名」，开发者工具不校验、测不出来；
+能用云 SDK（`wx.cloud.downloadFile`）的地方不要用 `wx.request`（读音包的单条兜底因此改成整包走 SDK）。
