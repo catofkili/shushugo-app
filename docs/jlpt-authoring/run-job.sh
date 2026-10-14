@@ -15,6 +15,12 @@ const dirs=[path.join(root,name),...fs.readdirSync(root).filter(d=>/^set\d+$/.te
 const out=new Set();for(const d of dirs){if(path.resolve(d)===path.resolve(me))continue;const f=path.join(d,"questions.json");
 if(!fs.existsSync(f))continue;for(const q of JSON.parse(fs.readFileSync(f,"utf8")))if(q.target&&q.target.surface)out.add(q.target.surface);}
 process.stdout.write([...out].join("、"));' "$ROOT" "$DIR" "$LV-$SEC")
+# 已入库题库的考点（卷 1–3 返修时换过考点，只看旧 questions.json 会漏）
+BANK="${JLPT_REPO:-$HOME/Documents/shushugo}/frontend/src/data/jlpt/$(echo "$LV" | tr A-Z a-z).json"
+if [ -f "$BANK" ]; then
+  BT=$(node -e 'const b=JSON.parse(require("fs").readFileSync(process.argv[1],"utf8"));process.stdout.write([...new Set(b.questions.map(q=>q.target&&q.target.surface).filter(Boolean))].join("、"))' "$BANK")
+  USED="${USED}${USED:+、}${BT}"
+fi
 codex=/Applications/ChatGPT.app/Contents/Resources/codex-cli/bin/codex
 if [ "$SEC" = vocab ]; then NAME="言語知識（文字・語彙）"; else NAME="言語知識（文法）"; fi
 ROWS=$(echo "$TABLE" | tr '|' '\n' | awk '{printf "| %s | %s | %s |\n",$1,$2,$3}')
@@ -34,13 +40,21 @@ $( [ -n "$USED" ] && printf "%s\n\n%s\n" "- ⚠️ 下面这些考点在前几�
 
 EOF
 }
+# 模型：10-10 作者看了 luna 出的卷 4 说「狗屁不通」，默认换成 B 档 sol；JLPT_MODEL 可覆盖。
 # JLPT_CODEX_HOMES="$HOME/.codex-b $HOME/.codex"：前一个号撞额度就换下一个号重跑（10-09 加了第二个号）
 run() {
   for home in ${JLPT_CODEX_HOMES:-$HOME/.codex}; do
-    CODEX_HOME=$home "$codex" exec --skip-git-repo-check -C "$DIR" -s workspace-write -m gpt-6-luna \
-      -c model_reasoning_effort="max" -c service_tier="fast" -o "$1.last.md" - < "$1.prompt.md" > "$1.log" 2>&1
+    CODEX_HOME=$home "$codex" exec --skip-git-repo-check -C "$DIR" -s workspace-write -m "${JLPT_MODEL:-gpt-6.1-sol}" \
+      -c model_reasoning_effort="${JLPT_EFFORT:-high}" -o "$1.last.md" - < "$1.prompt.md" > "$1.log" 2>&1
     status=$?
-    grep -q "your usage limit" "$1.log" || return $status
+    grep -q "your usage limit" "$1.log" || {
+      # 模型临时满载（10-13 卷 4 N2 文法就这样失败）：等一会重试，最多 6 次
+      n=0; while grep -q "at capacity" "$1.log" && [ $n -lt 6 ]; do
+        n=$((n+1)); sleep 120
+        CODEX_HOME=$home "$codex" exec --skip-git-repo-check -C "$DIR" -s workspace-write -m "${JLPT_MODEL:-gpt-6.1-sol}" \
+          -c model_reasoning_effort="${JLPT_EFFORT:-high}" -o "$1.last.md" - < "$1.prompt.md" > "$1.log" 2>&1; status=$?
+      done
+      grep -q "your usage limit" "$1.log" || return $status; }
   done
   return 1
 }
@@ -50,6 +64,7 @@ if [ "${REVIEW_ONLY:-}" != 1 ] || [ ! -s questions.json ]; then
 { header 出题
   echo '交付：本目录下的 `questions.json`，以及 `self-check.md`（写完后自己从头做一遍：犹豫过的题号和原因、因此改过的题、正解位置分布、考点覆盖）。完成后最后一条消息只写一句：交付了什么、有几道题标了 doubt。'
   echo; cat "$ROOT/rules.md"; } > write.prompt.md
+[ "${PROMPT_ONLY:-}" = 1 ] && exit 0   # 只生成 write.prompt.md（交给 Claude 子代理手写时用）
 run write || { echo "出题阶段退出码非 0" > FAILED; exit 1; }
 grep -q "usage limit" write.log && { echo "出题阶段撞额度" > FAILED; exit 1; }
 fi

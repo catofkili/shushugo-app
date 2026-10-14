@@ -90,13 +90,13 @@
     },
     {
       "caller": "runtime.js",
-      "request": "./jlpt-bank/jlpt-n4.js",
-      "target": "jlpt-bank/jlpt-n4.js"
+      "request": "./jlpt-bank-2/jlpt-n4.js",
+      "target": "jlpt-bank-2/jlpt-n4.js"
     },
     {
       "caller": "runtime.js",
-      "request": "./jlpt-bank/jlpt-n5.js",
-      "target": "jlpt-bank/jlpt-n5.js"
+      "request": "./jlpt-bank-2/jlpt-n5.js",
+      "target": "jlpt-bank-2/jlpt-n5.js"
     }
   ]
 }

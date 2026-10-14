@@ -95,3 +95,32 @@ N5/N4 题库里考点以外的汉字都带注音（规则和原因见 `docs/clau
 返修流程里多一步：`apply.py --write` / `rebalance.py` 之后，在 `frontend/` 跑 `npm run build:jlpt-furigana`，再 `verify-jlpt-bank.mjs`。
 新题的注音要打出来通读（`scripts/build-jlpt-furigana.mjs` 头注释里有一行命令），读错的加进脚本的 `READING_FIXES`。
 
+
+## 补量：卷 4、卷 5 + 题型练习池卷 6（2026-10-13 起）
+
+起因：作者问「一个等级才十几道」——卷 1–3 每级只有 114–174 题，按题型练时每个题型 9–39 题。作者定了两件事都做：
+① 每级再出两套整卷（卷 4、5，题数配比同卷 1–3）；② 一份只进「按题型练」的题池（卷 6，`pool1`，`drillOnly: true`），把偏薄的题型补到每级约 40 道。
+结果：N1 270 / N2 365 / N3 345 / N4 325 / N5 264，共 1,569 题。**文章题不进池**（导入器一份题只收一篇文章），每级 5 篇文章、约 20–25 个空。
+
+- **调度**：`gen-more.sh`（卷 4→5→6 每科一条链，同时最多 5 个 Codex；可反复跑）。题池的表在脚本里的 `p()`。`./gen-more.sh prompt <套号> <科目>` 只生成任务书（`run-job.sh` 的 `PROMPT_ONLY=1`），交给 Claude 子代理手写时用。
+  目录里有 `CLAIMED` 的科目调度脚本会跳过（子代理在写）；写完撤掉再跑，GPT 补盲做审校。
+- **效率与分工**：sol `high`（`JLPT_EFFORT` 可改，不再默认 max + fast）。额度用完时两个号都耗尽，刷新时间在报错里（"try again at …"）；`resume-more.sh` 的做法是睡到刷新后再 `exec gen-more.sh`。
+  Haiku / Sonnet 子代理可以写稿（`AGENT-BRIEF.md` 是它们的任务书），**稿子一律再过 GPT 盲做审校和 Claude 通读**。这次实际：Sonnet 写 N2/N4 的文法、语汇，质量接近 sol；Haiku 写 N5，能用但近义词题（言い換え）偏宽，N5 内的近义词对不严格同义。
+- **入库**：`node --no-warnings scripts/build-jlpt-bank.mjs --src <set 目录> --set trial4 --title "试做卷 4"`；题池再加 `--drill-only --set pool1 --title "题型练习池"`。
+  这次导入器加了三样：N5/N4 注音在校验前就位（不用先入库再跑 `build:jlpt-furigana`）；审校按选项**文字**写的错项说明键自动转成选项号；排序题说明里正解那一块的键自动剔掉。
+
+### ⚠️ 这次踩的坑
+
+- **审校会改了选项没改 `answer`**（set4 N1 文法 17、19：干扰项换了，正解的位置挪了，`answer` 还指着旧位置）。`check-key-vs-explanation.cjs <questions.json…>` 粗筛：解析引的是另一个选项、正解文字却没出现就报。716 题里它抓到了这 2 题，别的靠通读。
+  **不要拿 `questions.draft.json` 和 `questions.json` 对比找漂移**：审校会正当地改题干，对比出来一半是噪音（试过，报了 55 题，真错位只有 2）。
+- **排序题 ★ 的位置要和 `answer` 对上**（set4 N1 文法 12：`order[★ 位置]` 是 3，`answer` 写 2）。导入校验会拦，但它只在导入时才报——通读时对一下。
+- **同一套内同一考点出现两次**：导入校验拦（`target word:1261 在 N4 出现 2 次`）。这次 4 处：同套的文法题和语汇题都考「ぜひ／実は」，一套的文章题和用法题都考「一概に」，题池的「見える」「誰」与已入库题重复。处理：文章题 `target` 设 null（允许），其它换考点或删题（删题要重排 `no`）。
+- **「模型满载」不是额度问题**：`ERROR: Selected model is at capacity` 会让一份失败，`run-job.sh` 现在等 2 分钟重试，最多 6 次。另有「stream disconnected」（断网）也是整份失败，重跑那条链即可（`./gen-more.sh chain <科目>`）。
+- **审校可能跑很久不退出**（一份 60 题的题池审了两个多小时）：看 `review.md` 在不在、`ps` 里 codex 进程还在不在，别急着重启。
+- **审校把「实用上有第二正解」的用法题标 doubt 但不改**：题池 N4 语汇 7 题这样。处理是我把误文换成母语者一定认为错的（搭配错、自他动词错、明显矛盾），不是删题。
+- **注音读音钉又加了几条**：`二人`（kuromoji 读成に・にん）、独立选项里的 `十分`、`何時か`（读成いつ）、`十個`。数字＋量词每次补量都要扫一遍：见 `build-jlpt-furigana.mjs` 头注释里的通读命令，再 grep 一遍「数字＋人／日／時／分／本…」的读音。
+- **我自己加的句子要带 N4/N5 的全角空格和 `[[ ]]` 标记**（用法题选项里的考点要 `[[…]]`），否则和别的题格式不一致。
+
+### 小程序分包
+
+题库约 1.98 MB（JSON），一个分包装不下 2 MB：N1–N3 在 `jlpt-bank`，N4–N5（带注音更大）在 `jlpt-bank-2`（`bank.ts` 的 webpackChunkName、`app.config.js`、`src/jlpt-bank-2/placeholder`）。进刷题页预下载两个分包。再往上加题要看 `reports/package-sizes.json`。
