@@ -1,7 +1,7 @@
 import { useEffect, useState, type TouchEvent } from "react";
 import { Capacitor } from "@capacitor/core";
 import { ArrowLeft, ChevronLeft, ChevronRight, Search } from "lucide-react";
-import { Sticker, type StickerName, BrandIcon } from "./CapybaraMascot";
+import { Sticker, type StickerName, BrandIcon, useMascotSkin } from "./CapybaraMascot";
 import type { JLPTLevel } from "../types/grammar";
 import type { Page, StudyMode } from "../types/app";
 import type { SearchResult } from "../lib/search-api";
@@ -13,12 +13,14 @@ import { scrollPageToTop } from "../lib/touch-adapter";
 export { mobileTitles } from "../app/navigation-titles";
 
 // 主页取代了原来的「工具箱」：工具箱的学习模式、收藏、进度概览等入口都挪到了主页。
-// 图标是作者 2026-09-19 补的高清 Tab 图标那组（带水豚，含语法）
-const navItems: { page: Page; label: string; icon: StickerName }[] = [
-  { page: "home", label: "主页", icon: "tab-home" },
-  { page: "word", label: "单词学习", icon: "tab-study" },
-  { page: "grammar", label: "语法", icon: "tab-grammar" },
-  { page: "profile", label: "我的", icon: "tab-me" }
+// 图标（2026-10-14 v3，作者定的方案 A）：没选中的格只画物件（nav-*），选中那格是水豚抱着这格的物件（nav-*-capy）——
+// 底栏永远只有一只水豚，跟着用户走。作者原话「水豚当然应该是主角」，所以选中格不许也换成纯物件。
+// 装了皮肤时选中格用皮肤自己的 tab-*（鳄鱼那套有），不然一屏里冒出两种动物。
+const navItems: { page: Page; label: string; skinIcon: StickerName; object: StickerName; capy: StickerName }[] = [
+  { page: "home", label: "主页", skinIcon: "tab-home", object: "nav-home", capy: "nav-home-capy" },
+  { page: "word", label: "单词学习", skinIcon: "tab-study", object: "nav-word", capy: "nav-word-capy" },
+  { page: "grammar", label: "语法", skinIcon: "tab-grammar", object: "nav-grammar", capy: "nav-grammar-capy" },
+  { page: "profile", label: "我的", skinIcon: "tab-me", object: "nav-profile", capy: "nav-profile-capy" }
 ];
 
 const isGrammarPage = (page: Page) => page === "grammar" || page === "detail";
@@ -54,6 +56,8 @@ export function AppNavigation({
   onToggleSidebar,
   studyMode = null
 }: AppNavigationProps) {
+  const skin = useMascotSkin();
+  const tabIcon = (item: typeof navItems[number], active: boolean) => !active ? item.object : skin ? item.skinIcon : item.capy;
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -237,7 +241,7 @@ export function AppNavigation({
                       : "border-transparent text-white/78 backdrop-blur-xl hover:border-white/20 hover:bg-[#81D8CF]/15"
                   }`}
                 >
-                  <Sticker name={item.icon} size={20} className={active ? "" : "opacity-80"} />
+                  <Sticker name={tabIcon(item, active)} size={20} className={active ? "" : "opacity-80"} />
                   <span className={sidebarCollapsed ? "lg:hidden" : ""}>{item.label}</span>
                 </button>
               </div>
@@ -291,7 +295,7 @@ export function AppNavigation({
                 className={`focus-ring app-tab${active ? " is-active" : ""}`}
               >
                 <span className="app-tab-pill">
-                  <Sticker name={item.icon} size={30} className={`app-tab-icon${active ? " is-active" : ""}`} />
+                  <Sticker name={tabIcon(item, active)} size={30} className={`app-tab-icon${active ? " is-active" : ""}`} />
                 </span>
                 <span className="app-tab-label">{item.label}</span>
               </button>

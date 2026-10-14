@@ -45,7 +45,10 @@ export type StickerName =
   | "tool-modes" | "tool-grammar" | "tool-wordlist" | "tool-confusion" | "tool-talk" | "tool-jlpt"
   | "tool-kanji-readings" | "tool-favorites" | "tool-vocab-test" | "tool-shop" | "tool-team"
   | "tool-modes-capy" | "tool-grammar-capy" | "tool-wordlist-capy" | "tool-confusion-capy" | "tool-talk-capy" | "tool-jlpt-capy"
-  | "tool-kanji-readings-capy" | "tool-favorites-capy" | "tool-vocab-test-capy" | "tool-shop-capy" | "tool-team-capy";
+  | "tool-kanji-readings-capy" | "tool-favorites-capy" | "tool-vocab-test-capy" | "tool-shop-capy" | "tool-team-capy"
+  // 底栏（方案 A）：没选中 = 物件，选中 = 水豚抱物件。见 AppNavigation 的 navItems
+  | "nav-home" | "nav-word" | "nav-grammar" | "nav-profile"
+  | "nav-home-capy" | "nav-word-capy" | "nav-grammar-capy" | "nav-profile-capy";
 
 /**
  * 吉祥物皮肤（柚子商店 mascot 槽位）。每套皮肤是 `public/brand/sheet-<皮肤>/` 下**同名**的一批贴纸，

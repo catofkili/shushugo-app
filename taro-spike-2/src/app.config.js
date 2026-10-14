@@ -15,7 +15,8 @@ export default {
       pagePath: route.path,
       text: ({ home: '主页', word: '单词', grammar: '语法', profile: '我的' })[route.page],
       iconPath: `assets/tabs/${route.page}.png`,
-      selectedIconPath: `assets/tabs/${route.page}.png`
+      // 2026-10-14 v3 方案 A：没选中 = 物件，选中 = 水豚抱物件（底栏只有一只水豚，跟着用户走）。网页同一套在 AppNavigation 的 navItems
+      selectedIconPath: `assets/tabs/${route.page}-on.png`
     }))
   },
   subPackages: [
