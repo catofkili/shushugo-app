@@ -305,7 +305,6 @@ export function ZooHome({
              模式切换从旁边那张 119px 的大卡收进大卡右下角的一枚 chip：
              它是「改设置」，不该和「开始学」抢同一个视觉重量。 */}
       <section className="zoo-tray zoo-tray-today">
-        {activeCount > 0 && <div className="zoo-now-hint"><span className="ds-nudge zoo-now-nudge">今天还差 {activeCount} 个</span></div>}
         <button className="zoo-now" onClick={onStartStudy}>
           <span className="zoo-now-kick">{activeInfo.title}</span>
           <b className="zoo-now-num">{heroNum}</b>
@@ -337,7 +336,7 @@ export function ZooHome({
           <Sticker name={heroSticker} size={96} className="zoo-now-mascot" />
           <span className="zoo-now-go">
             {heroPct !== null ? <span className="zoo-now-bar" aria-label={`今天完成 ${heroPct}%`}><i style={{ width: `${heroPct}%` }} /></span> : <span />}
-            <span className="zoo-now-cta">{heroCta} →</span>
+            <span className={`zoo-now-cta${activeCount > 0 ? " ds-nudge" : ""}`}>{heroCta} →</span>
           </span>
         </button>
 

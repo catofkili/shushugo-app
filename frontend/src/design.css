@@ -371,20 +371,16 @@
   animation-delay: calc(var(--i, 0) * var(--ds-stagger));
 }
 .ds-bump { display: inline-block; transform-origin: center; animation: ds-bump var(--ds-dur-slow) var(--ds-ease-spring) both; }
-.ds-nudge {
-  display: inline-flex; align-items: center; min-height: 28px; padding: 4px 11px;
-  border-radius: 999px; background: var(--ds-surface); color: var(--ds-ink-2);
-  box-shadow: var(--ds-shadow); font-size: 12px; font-weight: 800; line-height: 1.25;
-  animation: ds-nudge 2.4s ease-in-out infinite both;
-}
+/* 「先点这个」：一屏只给一个元素。按钮自己呼吸一圈光，不另挂气泡——气泡要写字，写的总是旁边已经写过的数 */
+.ds-nudge { animation: ds-nudge 2.4s ease-in-out infinite both; }
 .app-tab-icon.ds-tab-bump { animation: ds-tab-pop 200ms var(--ds-ease-spring) both; }
 .fin-yuzu-flight { animation: fin-yuzu-fly 520ms var(--ds-ease-out) both; }
 @keyframes ds-enter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes ds-stagger-in { from { opacity: 0; transform: translateY(10px) scale(.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
 @keyframes ds-bump { 0% { transform: scale(1); } 52% { transform: scale(1.22); } 100% { transform: scale(1); } }
 @keyframes ds-nudge {
-  0%, 100% { transform: translateY(0); box-shadow: var(--ds-shadow); }
-  50% { transform: translateY(-4px); box-shadow: 0 0 0 5px color-mix(in srgb, var(--ds-primary) 13%, transparent), var(--ds-shadow); }
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--ds-nudge-ring, var(--ds-primary)) 0%, transparent); }
+  50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--ds-nudge-ring, var(--ds-primary)) 40%, transparent); }
 }
 @keyframes ds-tab-pop { 0% { transform: scale(.9); } 55% { transform: scale(1.12); } 100% { transform: scale(1); } }
 @keyframes fin-yuzu-fly {
@@ -439,13 +435,10 @@
 .zoo-now-mascot { position: relative; z-index: 1; grid-row: 1 / 4; grid-column: 2; align-self: center; margin: -8px -6px 0 0; animation: zooHopIdle 3.2s ease-in-out infinite; }
 [data-motion="off"] .zoo-now-mascot { animation: none; }
 [data-theme] .zoo-now-go { grid-row: auto; grid-column: 1 / -1; justify-self: stretch; display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; }
-[data-theme] .zoo-now-hint { display: flex; justify-content: flex-end; margin: 0 16px 6px 0; }
-[data-theme] .zoo-now-nudge { position: relative; background: var(--ds-primary-tint); color: var(--ds-primary-ink); }
-[data-theme] .zoo-now-nudge::after { content: ""; position: absolute; right: 17px; bottom: -4px; width: 8px; height: 8px; transform: rotate(45deg); background: var(--ds-primary-tint); }
 .zoo-now-bar { flex: 1; height: 6px; overflow: hidden; border-radius: 999px; background: rgba(255, 255, 255, .32); }
 [data-theme="dark"] .zoo-now-bar { background: rgba(0, 0, 0, .22); }
 .zoo-now-bar i { display: block; height: 100%; border-radius: inherit; background: currentColor; opacity: .85; }
-.zoo-now-cta { flex: none; display: inline-flex; align-items: center; gap: 4px; padding: 8px 16px; border-radius: 999px; background: rgba(255, 255, 255, .9); color: #2B241C; font-size: 14px; font-weight: 800; }
+.zoo-now-cta { --ds-nudge-ring: #fff; flex: none; display: inline-flex; align-items: center; gap: 4px; padding: 8px 16px; border-radius: 999px; background: rgba(255, 255, 255, .9); color: #2B241C; font-size: 14px; font-weight: 800; }
 [data-theme] .zoo-now-foot { margin-top: 10px; }
 [data-theme] .zoo-mode-chip { border: 0; background: var(--ds-surface); box-shadow: var(--ds-shadow); padding: 7px 14px; color: var(--ds-ink-2); font-size: 13px; }
 [data-theme] .zoo-mode-chip b { color: var(--ds-ink); }
