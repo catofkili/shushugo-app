@@ -2,11 +2,11 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1675763,
+      "bytes": 1681817,
       "passes": true
     },
     "study": {
-      "bytes": 988905,
+      "bytes": 993224,
       "passes": true
     },
     "account": {
@@ -14,7 +14,7 @@
       "passes": true
     },
     "content-pages": {
-      "bytes": 1116265,
+      "bytes": 1116826,
       "passes": true
     },
     "features": {
@@ -42,7 +42,7 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 888038,
+      "bytes": 892472,
       "passes": true
     },
     "jlpt-bank": {
@@ -55,7 +55,7 @@
     }
   },
   "maxUnapprovedPageComponentBytes": 100000,
-  "duplicateSourceModuleCount": 88,
+  "duplicateSourceModuleCount": 89,
   "duplicatedModules": [
     {
       "source": "frontend/src/lib/vocab-test.ts",
@@ -531,6 +531,14 @@
       ]
     },
     {
+      "source": "frontend/src/hooks/useCountUp.ts",
+      "bytes": 4288,
+      "packages": [
+        "content-pages",
+        "lazy"
+      ]
+    },
+    {
       "source": "frontend/src/components/daily-plan-ring-geometry.ts",
       "bytes": 3947,
       "packages": [
@@ -566,14 +574,6 @@
         "grammar-pages",
         "lazy",
         "study"
-      ]
-    },
-    {
-      "source": "frontend/src/hooks/useCountUp.ts",
-      "bytes": 2958,
-      "packages": [
-        "content-pages",
-        "lazy"
       ]
     },
     {
@@ -710,6 +710,14 @@
         "account",
         "content-pages",
         "grammar-pages",
+        "lazy",
+        "study"
+      ]
+    },
+    {
+      "source": "frontend/src/components/ComboBadge.tsx",
+      "bytes": 1487,
+      "packages": [
         "lazy",
         "study"
       ]
@@ -1608,6 +1616,15 @@
       "reason": "The lazy overlays and account setup page render this stateless presentational wrapper using the shared mascot adapter."
     },
     {
+      "source": "frontend/src/components/ComboBadge.tsx",
+      "bytes": 1487,
+      "packages": [
+        "lazy",
+        "study"
+      ],
+      "reason": "The grammar/JLPT/vocabulary/distinction study routes and mixed-study lazy tab render the same badge; only transient display state belongs to each mounted instance."
+    },
+    {
       "source": "frontend/src/components/SelectField.weapp.tsx",
       "bytes": 1147,
       "packages": [
@@ -1691,13 +1708,14 @@
     "frontend/src/components/ExampleSentence.tsx": "Example sentences are rendered from both content and grammar route packages.",
     "frontend/src/components/ScrollArea.weapp.tsx": "The lazy overlays and independent account routes render native ScrollViews; scroll state belongs to the mounted control.",
     "frontend/src/components/MascotSay.tsx": "The lazy overlays and account setup page render this stateless presentational wrapper using the shared mascot adapter.",
+    "frontend/src/components/ComboBadge.tsx": "The grammar/JLPT/vocabulary/distinction study routes and mixed-study lazy tab render the same badge; only transient display state belongs to each mounted instance.",
     "frontend/src/components/SelectField.weapp.tsx": "The lazy setup panel and independent account forms render native Pickers using values/callbacks passed as props; no module cache exists.",
     "frontend/src/components/JapaneseWordRuby.tsx": "Word ruby rendering is used in the study, grammar, and lazy tab routes.",
     "frontend/src/components/ReviewButton.tsx": "Review controls appear in the content and grammar route packages.",
     "frontend/src/components/DailyPlanSlider.weapp.tsx": "The lazy setup panel and account/study plan pages render native Sliders; values and commit callbacks are owned by each mounted parent, not this stateless adapter.",
     "frontend/src/components/JapaneseRubyText.weapp.tsx": "Ruby text is used by lazy tabs and independently loaded content/grammar routes."
   },
-  "duplicatedPageComponentBytes": 344199,
+  "duplicatedPageComponentBytes": 345686,
   "unapprovedPageComponents": [],
   "stalePageComponentAllowlist": [],
   "unapprovedPageComponentBytes": 0,
@@ -1716,7 +1734,7 @@
     },
     {
       "source": "frontend/src/styles.css",
-      "bytes": 131743
+      "bytes": 131010
     },
     {
       "source": "frontend/src/lib/sync-api.ts",
@@ -1740,7 +1758,7 @@
     },
     {
       "source": "frontend/src/design.css",
-      "bytes": 74439
+      "bytes": 81674
     },
     {
       "source": "taro-spike-2/src/platform/WeappPage.tsx",
