@@ -96,6 +96,10 @@ export const GRAMMAR_INTENSITY_ANCHORS = [
 export const GRAMMAR_INTENSITY_MIN = 0;
 export const GRAMMAR_INTENSITY_MAX = 30;
 
+// 2026-10-14 作者：陪伴水豚先搁置（docs/STUDY_BUDDY_SPEC.md 末节）。背词页不画它、设置里不出开关；
+// 偏好字段、状态机和作答事件都留着，重新启用时把这里改成 false 即可。
+export const STUDY_BUDDY_SHELVED = true;
+
 export const defaultStudyPreferences: StudyPreferences = {
   theme: "system",
   autoPlay: true,

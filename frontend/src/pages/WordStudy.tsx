@@ -6,7 +6,7 @@ import { perfRecord } from "../lib/perf-marks";
 import { AlertCircle, Check, ChevronRight, Eye, GitCompareArrows, Pencil, RotateCcw, Shuffle, Sparkles, Star, StickyNote, Timer, X } from "lucide-react";
 import { WordAnswer, WordCard, WordSessionResponse, WordStats } from "../types/vocabulary";
 import { addFavorite, addWordStudySeconds, advanceDailyRelief, advanceDailyTail, rewindDailyTail, continueKanjiStudy, continueStage2Study, continueTodayPlanStudy, getDailyReliefNext, getDailyTailNext, getWordSession, getWordStats, hasDailyReviewTriggered, jumpToSimilarWord, markDailyReviewTriggered, markTodayWordCheckin, pickDailyReviewNext, shouldStartDailyReview, startEncore as startEncoreSession, submitKanjiUnitAnswer, submitWordAnswer, toggleFavorite, undoLastWordAnswer, questionMeaningRivals, updateWordNote, updateWordQuestionMeaning, addAnswerPreview, answerPreviewsFresh, startAnswerPreviews, submitWordAnswerWithPreview, takeAnswerPreview, type AnswerPreviews } from "../lib/api";
-import { getStudyPreferences, PREFERENCES_EVENT, StudyPreferences } from "../lib/studyPreferences";
+import { getStudyPreferences, PREFERENCES_EVENT, STUDY_BUDDY_SHELVED, StudyPreferences } from "../lib/studyPreferences";
 import { checkAchievements } from "../lib/userProfile";
 import { claimDailyPlanYuzu, settleYuzu } from "../lib/yuzu";
 import { reportTeamActivity } from "../lib/team-activity";
@@ -1509,7 +1509,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
   const cardRotate = Math.max(-SWIPE_MAX_ROTATE, Math.min(SWIPE_MAX_ROTATE, cardShift / 40));
   const swipeProgress = Math.min(Math.abs(swipeX) / SWIPE_COMMIT_PX, 1);
   const countdownRemaining = remainingPlanWords(stats);
-  const buddyVisible = preferences.studyBuddy && !loading && !dailyPlanFinished
+  const buddyVisible = !STUDY_BUDDY_SHELVED && preferences.studyBuddy && !loading && !dailyPlanFinished
     && focusSnapshot.status !== "break" && Boolean(card || other);
   const buddyRemaining = !stats ? 0 : initialMode === "reverse"
     ? Math.max(0, stats.stage2Total - stats.stage2Completed)

@@ -31,6 +31,7 @@ import {
   defaultStudyPreferences,
   getStudyPreferences,
   saveStudyPreferences,
+  STUDY_BUDDY_SHELVED,
   StudyPreferences,
   ThemePreference
 } from "../lib/studyPreferences";
@@ -452,7 +453,7 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
             </label>
           </div>
 
-          <div className="flex items-center gap-3 border-b border-white/10 p-4">
+          {!STUDY_BUDDY_SHELVED && <div className="flex items-center gap-3 border-b border-white/10 p-4">
             <div className="min-w-0 flex-1">
               <p className="text-sm font-bold text-white">背词页陪伴水豚</p>
             </div>
@@ -466,7 +467,7 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
               />
               <div className="peer h-6 w-11 rounded-full bg-white/20 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-[#81D8CF] peer-checked:after:translate-x-5"></div>
             </label>
-          </div>
+          </div>}
 
 
           <div className="flex items-center gap-3 border-b border-white/10 p-4">
