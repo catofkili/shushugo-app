@@ -53,7 +53,8 @@ export const claimStreakCelebration = (): Omit<StreakCelebrationProps, "onClose"
     week: days.map((day) => (day > snap.today ? "none" : statuses[day] ?? "none")),
     todayIndex: days.indexOf(snap.today),
     milestone: lights && isStreakMilestone(to) ? to : null,
-    yuzu: lights && to > 0 && to % 7 === 0 ? YUZU.streak7 : 0,
+    // 奖励跟大火苗走：今天变金、且这一段连胜里的大火苗刚好攒满 7 的倍数（和 settleYuzu 同一判据）
+    yuzu: kind !== "lit" && snap.goldInStreak > 0 && snap.goldInStreak % 7 === 0 ? YUZU.streak7 : 0,
     firstEver: lights && to === 1 && snap.everLitBefore === 0,
     rekindled: lights && to === 1 && snap.everLitBefore >= 3,
     canRepair: lights && to === 1 && repairableStreakDays().length > 0

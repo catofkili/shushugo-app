@@ -165,11 +165,12 @@ export const settleYuzu = (): number => {
   const words = firstValue<number>(
     "SELECT COUNT(DISTINCT word_id) FROM reviews WHERE reviewed_on = ? AND direction = 'forward'", [day], 0);
   if (words >= YUZU.studyWords && book("study", day, YUZU.study)) earned += YUZU.study;
-  // settleYuzu 每次落盘都会调用，streakSnapshot 要扫全表：先用只查今天的判据挡掉没亮的时候
-  // ponytail: 亮了之后非 7 倍数的日子每次落盘仍扫一次全表，嫌慢就按学习日缓存（补签时清）
-  if (todayStreakStatus() !== "none") {
-    const { streak } = streakSnapshot();
-    if (streak > 0 && streak % 7 === 0 && book("streak", day, YUZU.streak7)) earned += YUZU.streak7;
+  // 7 日连击：同一段连胜里每攒满 7 个大火苗（清完计划那天）发一次；小火苗和补签只保连胜不断（lib/streak.ts goldInStreak）。
+  // settleYuzu 每次落盘都会调用，streakSnapshot 要扫全表：先用只查今天的判据挡掉今天不是大火苗的时候
+  // ponytail: 金了之后每次落盘仍扫一次全表，嫌慢就按学习日缓存（补签时清）
+  if (todayStreakStatus() === "gold") {
+    const { goldInStreak } = streakSnapshot();
+    if (goldInStreak % 7 === 0 && book("streak", day, YUZU.streak7)) earned += YUZU.streak7;
   }
   if (readEncoreLog(day).dayWords > 0 && book("encore", day, YUZU.encore)) earned += YUZU.encore;
   rowsFor("SELECT id FROM achievements WHERE id NOT IN (SELECT key FROM yuzu_ledger WHERE kind = 'achievement')")

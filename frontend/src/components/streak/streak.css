@@ -18,7 +18,9 @@
   position: relative; display: inline-block; flex: none; vertical-align: middle;
   width: var(--sf); height: calc(var(--sf) * 1.12);
 }
+/* 金 = 大火苗：比小火苗大一圈（只缩放画面，不占布局） */
 .sf-gold {
+  transform: scale(1.12); transform-origin: 50% 92%;
   --sf-a: #FFF1A6; --sf-b: #FFC83A; --sf-c: #E39410;
   --sf-core-a: #FFFFFF; --sf-core-b: #FFF0A0;
   --sf-out-a: #FFF4BC; --sf-out-b: #FFD45C;

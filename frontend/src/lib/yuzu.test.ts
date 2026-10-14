@@ -76,20 +76,25 @@ describe("收入", () => {
     expect(settleYuzu()).toBe(0);
   });
 
-  it("20 次作答点亮第七天，不必清完计划，连击奖励只发一次", () => {
+  it("小火苗保连胜不发奖：第七天只是亮（20 次作答），不发连击", () => {
     checkin("2026-09-13", "2026-09-14", "2026-09-15", "2026-09-16", "2026-09-17", "2026-09-18");
-    answers(19);
+    answers(20);
     expect(settleYuzu()).toBe(0);
-    answers(1);
+  });
+
+  it("大火苗得奖：中间夹着小火苗不断，攒满 7 个大火苗那天发一次", () => {
+    // 9/12 只亮（20 题），其余 7 天清完计划：连胜 8 天、大火苗 7 个
+    checkin("2026-09-13", "2026-09-14", "2026-09-15", "2026-09-16", "2026-09-17", "2026-09-18");
+    db.run("INSERT INTO word_study_time VALUES ('2026-09-12', 300)");
+    expect(settleYuzu()).toBe(0);
+    checkin(TODAY);
     expect(settleYuzu()).toBe(YUZU.streak7);
     expect(settleYuzu()).toBe(0);
   });
 
-  it("300 秒也能点亮第七天，补签天接入连续亮天数", () => {
-    checkin("2026-09-13", "2026-09-14", "2026-09-15", "2026-09-16", "2026-09-17", "2026-09-18");
+  it("补签天保连胜但不算大火苗", () => {
+    checkin("2026-09-13", "2026-09-14", "2026-09-15", "2026-09-16", "2026-09-17", "2026-09-18", TODAY);
     db.run("INSERT INTO yuzu_ledger VALUES ('repair_card', '2026-09-16', 0, ?)", [TODAY]);
-    db.run("INSERT INTO word_study_time VALUES (?, 300)", [TODAY]);
-    expect(settleYuzu()).toBe(YUZU.streak7);
     expect(settleYuzu()).toBe(0);
   });
 });

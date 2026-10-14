@@ -11,6 +11,11 @@ export interface StreakSnapshot {
   todayAnswers: number; todaySeconds: number;
   /** 今天之前亮过的天数，区分第一天和重新点燃。 */
   everLitBefore: number;
+  /**
+   * 这一段连胜里的大火苗（金）个数。小火苗（亮 / 补签）只保连胜不断，大火苗才攒奖励：
+   * 每攒满 7 个得一次 7 日连击柚子（作者 2026-10-14：「小火苗保连胜，大火苗得奖励」）。
+   */
+  goldInStreak: number;
 }
 
 export function streakTier(streak: number): FlameTier {
@@ -27,8 +32,10 @@ export function summarizeStreak(statuses: Map<string, DayStatus>, day: string, h
   const todayStatus = statuses.get(day) ?? "none";
   let cursor = todayStatus !== "none" ? day : shiftDay(day, -1);
   let streak = 0;
+  let goldInStreak = 0;
   while (lit.has(cursor)) {
     streak += 1;
+    if (statuses.get(cursor) === "gold") goldInStreak += 1;
     const previous = shiftDay(cursor, -1);
     if (previous === cursor) break;
     cursor = previous;
@@ -43,7 +50,7 @@ export function summarizeStreak(statuses: Map<string, DayStatus>, day: string, h
     today: day, todayStatus, streak, longest, litDays: days.length,
     atRisk: streak > 0 && todayStatus === "none" && (hour >= 20 || hour < 4),
     tier: streakTier(streak), nextMilestone: STREAK_MILESTONES.find((n) => n > streak) ?? null,
-    todayAnswers, todaySeconds, everLitBefore: days.filter((date) => date < day).length
+    todayAnswers, todaySeconds, everLitBefore: days.filter((date) => date < day).length, goldInStreak
   };
 }
 
