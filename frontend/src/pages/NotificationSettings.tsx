@@ -1,5 +1,5 @@
-import { ArrowLeft, Bell, BellRing, Clock, FileText, Volume2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ArrowLeft, Bell, BellRing, FileText, Volume2 } from "lucide-react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { MascotSay } from "../components/MascotSay";
 import {
   checkReminderPermission,
@@ -15,6 +15,8 @@ import {
 interface NotificationSettingsProps {
   onBack: () => void;
 }
+
+const staggerStyle = (index: number) => ({ "--i": index < 8 ? index : 0 }) as CSSProperties;
 
 const buildStatusText = (result: ReminderSyncResult) => {
   if (!result.native) return "浏览器预览不会发送系统通知，iOS App 内会生效。";
@@ -111,99 +113,83 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
 
       {/* 推送通知 */}
       <div className="mb-4">
-        <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.18em] text-white/45">推送通知</p>
-        <div className="overflow-hidden rounded-2xl border border-white/15 bg-[#464949]">
-          <div className="flex items-center gap-3 border-b border-white/10 p-4">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#81D8CF]/20 text-[#81D8CF]">
-              <BellRing size={20} />
-            </div>
+        <p className="ds-section">推送通知</p>
+        <div className="ds-card w7-list ds-stagger overflow-hidden">
+          <div className="w7-row flex items-center gap-3 px-4 py-3" style={staggerStyle(0)}>
+            <BellRing size={20} className="shrink-0 text-[var(--ds-ink-2)]" />
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-bold text-white">通知栏测试</p>
+              <p className="text-[15px] font-bold text-white">通知栏测试</p>
               <p className="mt-0.5 text-xs text-white/50">请求权限，并立刻发一条学习提醒测试</p>
             </div>
             <button
               onClick={testNotification}
               disabled={testing || syncing}
-              className="focus-ring shrink-0 rounded-2xl bg-[#81D8CF] px-3 py-2 text-xs font-black !text-[#2f3333] disabled:opacity-50"
+              className="ds-btn-soft w7-small-button focus-ring shrink-0 disabled:opacity-50"
             >
               {testing ? "发送中" : "测试"}
             </button>
           </div>
 
-          <div className="flex items-center gap-3 border-b border-white/10 p-4">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#81D8CF]/20 text-[#81D8CF]">
-              <Bell size={20} />
-            </div>
+          <div className="w7-row flex items-center gap-3 px-4 py-3" style={staggerStyle(1)}>
+            <Bell size={20} className="shrink-0 text-[var(--ds-ink-2)]" />
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-bold text-white">学习提醒</p>
+              <p className="text-[15px] font-bold text-white">学习提醒</p>
               <p className="mt-0.5 text-xs text-white/50">每天提醒你按时学习</p>
             </div>
-            <label className="relative inline-flex cursor-pointer items-center">
-              <input
-                type="checkbox"
-                checked={settings.studyReminder}
-                onChange={(e) => updateSettings({ studyReminder: e.target.checked }, e.target.checked)}
-                className="peer sr-only"
-              />
-              <div className="peer h-6 w-11 rounded-full bg-white/20 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-[#81D8CF] peer-checked:after:translate-x-5"></div>
-            </label>
-          </div>
-
-          {settings.studyReminder && (
-            <div className="border-b border-white/10 bg-[#3c3f3f] px-4 py-3">
-              <label className="flex items-center gap-3">
-                <Clock size={16} className="text-white/60" />
-                <span className="shrink-0 whitespace-nowrap text-xs text-white/70">提醒时间</span>
+            <div className="ml-auto flex shrink-0 items-center gap-2">
+              {settings.studyReminder && (
                 <input
                   type="time"
                   value={settings.studyTime}
+                  aria-label="学习提醒时间"
                   onChange={(e) => updateSettings({ studyTime: e.target.value })}
-                  className="focus-ring ml-auto w-auto rounded-2xl border border-white/20 bg-[#464949] px-3 py-1 text-sm text-white"
+                  className="ds-chip w7-time-chip focus-ring"
                 />
+              )}
+              <label className="relative inline-flex cursor-pointer items-center">
+                <input
+                  type="checkbox"
+                  checked={settings.studyReminder}
+                  onChange={(e) => updateSettings({ studyReminder: e.target.checked }, e.target.checked)}
+                  className="peer sr-only"
+                />
+                <div className="peer h-6 w-11 rounded-full bg-white/20 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-[#81D8CF] peer-checked:after:translate-x-5"></div>
               </label>
             </div>
-          )}
-
-          <div className="flex items-center gap-3 border-b border-white/10 p-4">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#81D8CF]/20 text-[#81D8CF]">
-              <Bell size={20} />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-bold text-white">复习提醒</p>
-              <p className="mt-0.5 text-xs text-white/50">到期复习时提醒你</p>
-            </div>
-            <label className="relative inline-flex cursor-pointer items-center">
-              <input
-                type="checkbox"
-                checked={settings.reviewReminder}
-                onChange={(e) => updateSettings({ reviewReminder: e.target.checked }, e.target.checked)}
-                className="peer sr-only"
-              />
-              <div className="peer h-6 w-11 rounded-full bg-white/20 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-[#81D8CF] peer-checked:after:translate-x-5"></div>
-            </label>
           </div>
 
-          {settings.reviewReminder && (
-            <div className="border-b border-white/10 bg-[#3c3f3f] px-4 py-3">
-              <label className="flex items-center gap-3">
-                <Clock size={16} className="text-white/60" />
-                <span className="shrink-0 whitespace-nowrap text-xs text-white/70">提醒时间</span>
+          <div className="w7-row flex items-center gap-3 px-4 py-3" style={staggerStyle(2)}>
+            <Bell size={20} className="shrink-0 text-[var(--ds-ink-2)]" />
+            <div className="min-w-0 flex-1">
+              <p className="text-[15px] font-bold text-white">复习提醒</p>
+              <p className="mt-0.5 text-xs text-white/50">到期复习时提醒你</p>
+            </div>
+            <div className="ml-auto flex shrink-0 items-center gap-2">
+              {settings.reviewReminder && (
                 <input
                   type="time"
                   value={settings.reviewTime}
+                  aria-label="复习提醒时间"
                   onChange={(e) => updateSettings({ reviewTime: e.target.value })}
-                  className="focus-ring ml-auto w-auto rounded-2xl border border-white/20 bg-[#464949] px-3 py-1 text-sm text-white"
+                  className="ds-chip w7-time-chip focus-ring"
                 />
+              )}
+              <label className="relative inline-flex cursor-pointer items-center">
+                <input
+                  type="checkbox"
+                  checked={settings.reviewReminder}
+                  onChange={(e) => updateSettings({ reviewReminder: e.target.checked }, e.target.checked)}
+                  className="peer sr-only"
+                />
+                <div className="peer h-6 w-11 rounded-full bg-white/20 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-[#81D8CF] peer-checked:after:translate-x-5"></div>
               </label>
             </div>
-          )}
+          </div>
 
-          <div className="flex items-center gap-3 border-b border-white/10 p-4">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#81D8CF]/20 text-[#81D8CF]">
-              <FileText size={20} />
-            </div>
+          <div className="w7-row flex items-center gap-3 px-4 py-3" style={staggerStyle(3)}>
+            <FileText size={20} className="shrink-0 text-[var(--ds-ink-2)]" />
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-bold text-white">学习回顾通知</p>
+              <p className="text-[15px] font-bold text-white">学习回顾通知</p>
               <p className="mt-0.5 text-xs text-white/50">周日下午 14:30，提醒你查看这一周的回顾</p>
             </div>
             <label className="relative inline-flex cursor-pointer items-center">
@@ -217,12 +203,10 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
             </label>
           </div>
 
-          <div className="flex items-center gap-3 p-4">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#81D8CF]/20 text-[#81D8CF]">
-              <Bell size={20} />
-            </div>
+          <div className="w7-row flex items-center gap-3 px-4 py-3" style={staggerStyle(4)}>
+            <Bell size={20} className="shrink-0 text-[var(--ds-ink-2)]" />
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-bold text-white">成就通知</p>
+              <p className="text-[15px] font-bold text-white">成就通知</p>
               <p className="mt-0.5 text-xs text-white/50">获得成就时通知</p>
             </div>
             <label className="relative inline-flex cursor-pointer items-center">
@@ -240,15 +224,12 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
 
       {/* 声音和振动 */}
       <div className="mb-4">
-        <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.18em] text-white/45">声音和振动</p>
-        <div className="overflow-hidden rounded-2xl border border-white/15 bg-[#464949]">
-          <div className="flex items-center gap-3 border-b border-white/10 p-4">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#3b3f3f] text-white/76">
-              <Volume2 size={20} />
-            </div>
+        <p className="ds-section">声音和振动</p>
+        <div className="ds-card w7-list ds-stagger overflow-hidden">
+          <div className="w7-row flex items-center gap-3 px-4 py-3" style={staggerStyle(0)}>
+            <Volume2 size={20} className="shrink-0 text-[var(--ds-ink-2)]" />
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-bold text-white">通知声音</p>
-              <p className="mt-0.5 text-xs text-white/50">开启通知提示音</p>
+              <p className="text-[15px] font-bold text-white">通知声音</p>
             </div>
             <label className="relative inline-flex cursor-pointer items-center">
               <input
@@ -261,12 +242,10 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
             </label>
           </div>
 
-          <div className="flex w-full items-center gap-3 p-4 text-left">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#3b3f3f] text-white/76">
-              <Volume2 size={20} />
-            </div>
+          <div className="w7-row flex w-full items-center gap-3 px-4 py-3 text-left" style={staggerStyle(1)}>
+            <Volume2 size={20} className="shrink-0 text-[var(--ds-ink-2)]" />
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-bold text-white">铃声来源</p>
+              <p className="text-[15px] font-bold text-white">铃声来源</p>
               <p className="mt-0.5 text-xs text-white/50">
                 iOS 使用系统默认提示音；关闭通知声音后会静音发送。
               </p>

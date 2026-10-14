@@ -2,17 +2,17 @@
   "limitBytes": 2097152,
   "packages": {
     "main": {
-      "bytes": 1761476,
-      "mib": 1.68,
+      "bytes": 1762352,
+      "mib": 1.681,
       "passes": true
     },
     "study": {
-      "bytes": 985792,
-      "mib": 0.94,
+      "bytes": 986588,
+      "mib": 0.941,
       "passes": true
     },
     "account": {
-      "bytes": 328290,
+      "bytes": 328002,
       "mib": 0.313,
       "passes": true
     },
@@ -52,8 +52,8 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 903863,
-      "mib": 0.862,
+      "bytes": 902860,
+      "mib": 0.861,
       "passes": true
     },
     "jlpt-bank": {
@@ -67,12 +67,12 @@
       "passes": true
     }
   },
-  "totalBytes": 10441195,
+  "totalBytes": 10441576,
   "files": [
     {
       "path": "lazy/tabs.js",
       "package": "lazy",
-      "bytes": 868418
+      "bytes": 867415
     },
     {
       "path": "common.js",
@@ -152,7 +152,7 @@
     {
       "path": "app.wxss",
       "package": "main",
-      "bytes": 216223
+      "bytes": 217099
     },
     {
       "path": "features/content/kanji-variants.js",
@@ -290,14 +290,14 @@
       "bytes": 31633
     },
     {
+      "path": "study/jlpt-practice/index.js",
+      "package": "study",
+      "bytes": 27093
+    },
+    {
       "path": "assets/brand/walk-strip.png",
       "package": "main",
       "bytes": 26547
-    },
-    {
-      "path": "study/jlpt-practice/index.js",
-      "package": "study",
-      "bytes": 26297
     },
     {
       "path": "content-pages/assets/brand/shushugo-cover.png",
@@ -587,7 +587,7 @@
     {
       "path": "account/pro/index.js",
       "package": "account",
-      "bytes": 10470
+      "bytes": 10594
     },
     {
       "path": "lazy/sync-merge.js",
@@ -945,11 +945,6 @@
       "bytes": 5737
     },
     {
-      "path": "account/help/index.js",
-      "package": "account",
-      "bytes": 5598
-    },
-    {
       "path": "account/assets/brand/mood-shocked.png",
       "package": "account",
       "bytes": 5495
@@ -978,6 +973,11 @@
       "path": "content-pages/assets/brand/icon-vocab.png",
       "package": "content-pages",
       "bytes": 5380
+    },
+    {
+      "path": "account/help/index.js",
+      "package": "account",
+      "bytes": 5288
     },
     {
       "path": "assets/brand/tool-favorites-capy.png",
@@ -1120,14 +1120,14 @@
       "bytes": 4352
     },
     {
-      "path": "account/notifications/index.js",
-      "package": "account",
-      "bytes": 4351
-    },
-    {
       "path": "assets/brand/tool-confusion-capy.png",
       "package": "main",
       "bytes": 4252
+    },
+    {
+      "path": "account/notifications/index.js",
+      "package": "account",
+      "bytes": 4249
     },
     {
       "path": "lazy/mascot-skins.js",

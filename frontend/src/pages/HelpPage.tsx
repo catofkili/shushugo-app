@@ -1,10 +1,12 @@
-import { ArrowLeft, ChevronRight, HelpCircle, MessageCircle } from "lucide-react";
-import { useState } from "react";
+import { ArrowLeft, ChevronDown, ChevronRight, HelpCircle, MessageCircle } from "lucide-react";
+import { useState, type CSSProperties } from "react";
 import { Disclosure } from "../components/Disclosure";
 
 interface HelpPageProps {
   onBack: () => void;
 }
+
+const staggerStyle = (index: number) => ({ "--i": index < 8 ? index : 0 }) as CSSProperties;
 
 export function HelpPage({ onBack }: HelpPageProps) {
   const [tutorialOpen, setTutorialOpen] = useState(false);
@@ -46,42 +48,35 @@ export function HelpPage({ onBack }: HelpPageProps) {
 
       {/* 快速帮助 */}
       <div className="mb-4">
-        <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.18em] text-white/45">快速帮助</p>
-        <div className="overflow-hidden rounded-2xl border border-white/15 bg-[#464949]">
-          <button
-            onClick={() => setTutorialOpen((value) => !value)}
-            className="focus-ring flex w-full items-center gap-3 border-b border-white/10 p-4 text-left hover:bg-[#4d5151]"
-          >
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#81D8CF]/20 text-[#81D8CF]">
-              <HelpCircle size={20} />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-bold text-white">使用教程</p>
-              <p className="mt-0.5 text-xs text-white/50">新手快速入门指南</p>
-            </div>
-            <ChevronRight size={17} className="text-white/40" />
-          </button>
-
-          {tutorialOpen && (
-            <div className="border-b border-white/10 bg-[#3c3f3f] px-4 py-3">
+        <p className="ds-section">快速帮助</p>
+        <div className="ds-card w7-list ds-stagger overflow-hidden">
+          <div className="w7-row" style={staggerStyle(0)}>
+            <button
+              onClick={() => setTutorialOpen((value) => !value)}
+              aria-expanded={tutorialOpen}
+              className="focus-ring flex min-h-12 w-full items-center gap-3 px-4 py-3 text-left"
+            >
+              <HelpCircle size={20} className="shrink-0 text-[var(--ds-ink-2)]" />
+              <span className="min-w-0 flex-1 text-[15px] font-bold text-white">使用教程</span>
+              <ChevronRight size={17} className="text-white/40" />
+            </button>
+            {tutorialOpen && (
+              <div className="w7-inset-rule px-0 pb-4 pr-4 pt-3">
               {/* 这三步要对着现在的界面写。上一版说的「在单词学习选 JLPT 等级或学习类型」
                   「到语法用学习/练习切换」都是早就没有的控件 —— 教程写错比没有教程更糟。 */}
-              <ol className="space-y-2 text-sm text-white/68">
-                <li>1. 点「单词学习」直接就是今天的计划：看题、翻面、按记得的程度评分。一天学几个新词在「设置 · 学习强度」里调。</li>
-                <li>2. 点「语法」按等级翻卡；工具条上的「考题」把一个等级洗一遍牌过完，「沉浸学习」连着读。</li>
-                <li>3. 主页的「学习工具」里有选词、疑难辨析、一字多音和收藏；进度概览里点任意一根柱子，直接进那个等级的词库。</li>
-              </ol>
-            </div>
-          )}
+                <ol className="space-y-2 text-sm text-white/68">
+                  <li>1. 点「单词学习」直接就是今天的计划：看题、翻面、按记得的程度评分。一天学几个新词在「设置 · 学习强度」里调。</li>
+                  <li>2. 点「语法」按等级翻卡；工具条上的「考题」把一个等级洗一遍牌过完，「沉浸学习」连着读。</li>
+                  <li>3. 主页的「学习工具」里有选词、疑难辨析、一字多音和收藏；进度概览里点任意一根柱子，直接进那个等级的词库。</li>
+                </ol>
+              </div>
+            )}
+          </div>
 
-          {/* 原来这里是「反馈建议」和「获取支持」两行:同一个图标、同一句话、都不可点。
-              两条并排只会让人以为它们通向不同的地方,合成一条。 */}
-          <div className="flex w-full items-center gap-3 p-4 text-left">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#81D8CF]/20 text-[#81D8CF]">
-              <MessageCircle size={20} />
-            </div>
+          <div className="w7-row flex items-center gap-3 px-4 py-3" style={staggerStyle(1)}>
+            <MessageCircle size={20} className="shrink-0 text-[var(--ds-ink-2)]" />
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-bold text-white">反馈和支持</p>
+              <p className="text-[15px] font-bold text-white">反馈和支持</p>
               <p className="mt-0.5 text-xs text-white/50">请通过 App Store 的应用支持入口提交问题或建议</p>
             </div>
           </div>
@@ -90,35 +85,33 @@ export function HelpPage({ onBack }: HelpPageProps) {
 
       {/* 常见问题 */}
       <div>
-        <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.18em] text-white/45">常见问题</p>
-        <div className="space-y-3">
+        <p className="ds-section">常见问题</p>
+        <div className="ds-card w7-list ds-stagger overflow-hidden">
           {faqs.map((faq, index) => (
-            <Disclosure
-              key={index}
-              className="group overflow-hidden rounded-2xl border border-white/15 bg-[#464949]"
-              summaryClassName="focus-ring flex cursor-pointer items-center gap-3 p-4 hover:bg-[#4d5151]"
-              weappSummaryClassName="help-faq-summary"
-              weappSummary={(open) => (
-                <>
-                  <span className="flex-1 text-sm font-bold text-white">{faq.q}</span>
-                  <span className="help-faq-chevron">{open ? "⌄" : "›"}</span>
-                </>
-              )}
-              indicator="none"
-              summary={(open) => (
-                <>
-                  <span className="flex-1 text-sm font-bold text-white">{faq.q}</span>
-                  <ChevronRight
-                    size={17}
-                    className={`text-white/40 transition-transform ${open ? "rotate-90" : ""}`}
-                  />
-                </>
-              )}
-            >
-              <div className="border-t border-white/10 bg-[#3c3f3f] p-4">
-                <p className="text-sm text-white/70">{faq.a}</p>
-              </div>
-            </Disclosure>
+            <div key={index} className="w7-row w7-row-plain" style={staggerStyle(index)}>
+              <Disclosure
+                className="group w7-faq"
+                summaryClassName="focus-ring flex min-h-12 cursor-pointer items-center gap-3 px-4 py-3 text-left"
+                weappSummaryClassName="w7-faq-summary"
+                weappSummary={(open) => (
+                  <>
+                    <span className="flex-1 text-[15px] font-bold text-white">{faq.q}</span>
+                    <ChevronDown size={17} className={`w7-faq-chevron ${open ? "is-open" : ""}`} />
+                  </>
+                )}
+                indicator="none"
+                summary={(open) => (
+                  <>
+                    <span className="flex-1 text-[15px] font-bold text-white">{faq.q}</span>
+                    <ChevronDown size={17} className={`w7-faq-chevron ${open ? "is-open" : ""}`} />
+                  </>
+                )}
+              >
+                <div className="w7-inset-rule-plain px-4 pb-4 pt-2">
+                  <p className="text-sm text-white/70">{faq.a}</p>
+                </div>
+              </Disclosure>
+            </div>
           ))}
         </div>
       </div>
