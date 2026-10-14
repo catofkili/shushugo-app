@@ -104,3 +104,8 @@
   - 审查时改掉两处：① 完成页「用时」在页面上每秒在走，W4 让它每秒重滚一次、每秒弹一下（原代码注释早就写了「刻意不给用时」）——改成只滚进页那一刻的值，滚完交给实时数；
     ② 主页「先点这个」原来是一个写着「今天还差 603 个」的浮动气泡，和大卡上的「603 项」重复（§1.1b）——改成「开始」按钮自己呼吸一圈光，**`.ds-nudge` 从此只是呼吸光，不是气泡**。
   - 小程序主包这之后约 1.90 MB，超预算，等 W1 合入后重建 reports；push 前必须过。
+- 2026-10-14 W3 合入（`ce8b9d7f` + `c2d25b11`）：`AnswerFeedbackBar`（底部反馈条 + 声 + 震）、`ComboBadge`（连对 ≥3，火苗 + 数字）、`.ds-progress` 回弹进度条，接到 JLPT 刷题、辨析测验、查词汇量、语法考题（只有声震 + 连对，没有反馈条）、混合学习的汉字选择。
+  - 审查 + 亲手点一遍时修掉两处：① 反馈条 `position: fixed` 被困在带 transform 的页面外壳里、压在底栏下面，「继续」点不到——**全屏浮层一律 `createPortal(…, document.body)`**（连胜庆祝也是这样修的；小程序走 react-dom 替身）；
+    ② JLPT 刷题里题目和反馈条同一层都用 `key={question.id}`，重复 key 让 React 换题时没卸掉上一题。Codex 在沙箱里截不了图，这两个都是只看代码 + 跑单测发现不了的——**每份合进来的界面改动，主管都要自己在 375×812 下点一遍**。
+  - 同一件事不说两遍：刷题时解析框不再写「答对了」（反馈条说过了）。
+  - `wechat-miniprogram/src/styles/tokens.wxss` 是从 `design.css` 生成的（带 sha256），改了 `design.css` 要跑 `node wechat-miniprogram/scripts/sync-design-tokens.mjs`，否则小程序 `npm test` 红。W4 合入时漏了，W3 合入时一起补上。
