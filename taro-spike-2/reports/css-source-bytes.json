@@ -13,12 +13,11 @@
   "frontend/src/pages/weekly/film.css": 20749,
   "frontend/src/pages/weekly/star-atlas.css": 16152,
   "frontend/src/skins.css": 10702,
-  "frontend/src/styles.css": 131010,
+  "frontend/src/styles.css": 130664,
   "taro-spike-2/src/account/personal-info/personal-info.weapp.css": 309,
   "taro-spike-2/src/app.css": 1113,
   "taro-spike-2/src/content-pages/favorites/favorites-layout.weapp.css": 582,
   "taro-spike-2/src/content-pages/weekly-report/weekly-layout.weapp.css": 3415,
   "taro-spike-2/src/content-pages/yuzu-shop/yuzu-layout.weapp.css": 304,
-  "taro-spike-2/src/platform/mini-overrides.weapp.css": 8965,
-  "taro-spike-2/src/study/study-modes/study-modes.weapp.css": 955
+  "taro-spike-2/src/platform/mini-overrides.weapp.css": 8965
 }

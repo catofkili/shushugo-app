@@ -10,19 +10,6 @@ module.exports = {
     "study",
     "account"
   ],
-  "bookopentext": [
-    "study"
-  ],
-  "layers3": [
-    "study"
-  ],
-  "lettertext": [
-    "study"
-  ],
-  "repeat2": [
-    "study",
-    "content-pages"
-  ],
   "alarmclock": [
     "study"
   ],
@@ -180,6 +167,9 @@ module.exports = {
     "content-pages"
   ],
   "partypopper": [
+    "content-pages"
+  ],
+  "repeat2": [
     "content-pages"
   ],
   "scissors": [
