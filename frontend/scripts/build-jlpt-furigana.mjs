@@ -17,7 +17,7 @@
  */
 import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { buildTokenizer, tokenizeSentence, loadOverrides, loadReadingFixes, hasKanji } from "./build-furigana.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -45,6 +45,12 @@ const READING_FIXES = [
   { ctx: "三本", base: "本", reading: "ぼん" },
   { ctx: "三日前", base: "三日", reading: "みっか" },
   { ctx: "二日間", base: "二日間", reading: "ふつかかん" },
+  // 2026-10-13 补量后加：二人 kuromoji 读成に・にん；独立选项「十分」是时间；「何時か」读成いつ；十個
+  { ctx: "二人", base: "二人", reading: "ふたり" },
+  { ctx: "十分", base: "十分", reading: "じゅっぷん", whole: true },
+  { ctx: "歩いて　十分", base: "十分", reading: "じゅっぷん" },
+  { ctx: "何時か", base: "何時", reading: "なんじ" },
+  { ctx: "十個", base: "十個", reading: "じゅっこ" },
   { ctx: "水ようび", base: "水", reading: "すい" },
   { ctx: "木ようび", base: "木", reading: "もく" },
   // 一字多音、训读
@@ -108,6 +114,17 @@ export const furiganaFor = (tokenizer, question, problems = []) => {
   return Object.keys(result).length ? result : undefined;
 };
 
+/** 给一个级别的题库对象算注音（原地改）。题库导入器也用它：注音要在校验之前就位。 */
+export const annotateBank = (tokenizer, bank, problems = []) => {
+  for (const question of bank.questions) {
+    const furigana = furiganaFor(tokenizer, question, problems);
+    if (furigana) question.furigana = furigana;
+    else delete question.furigana;
+  }
+  bank.passageFurigana = Object.fromEntries(Object.entries(bank.passages)
+    .map(([id, text]) => [id, annotate(tokenizer, text, problems, `文章 ${id}`)]));
+};
+
 const main = async () => {
   const check = process.argv.includes("--check");
   loadReadingFixes(loadOverrides().readings);
@@ -118,13 +135,7 @@ const main = async () => {
     const file = bankPath(level);
     const bank = JSON.parse(readFileSync(file, "utf8"));
     const before = JSON.stringify(bank);
-    for (const question of bank.questions) {
-      const furigana = furiganaFor(tokenizer, question, problems);
-      if (furigana) question.furigana = furigana;
-      else delete question.furigana;
-    }
-    bank.passageFurigana = Object.fromEntries(Object.entries(bank.passages)
-      .map(([id, text]) => [id, annotate(tokenizer, text, problems, `文章 ${id}`)]));
+    annotateBank(tokenizer, bank, problems);
     const after = JSON.stringify(bank);
     if (after === before) continue;
     stale += 1;
@@ -139,4 +150,4 @@ const main = async () => {
   }
 };
 
-await main();
+if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) await main();

@@ -5,6 +5,8 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { verifyJlptBank } from "./verify-jlpt-bank.mjs";
+import { annotateBank, FURIGANA_LEVELS } from "./build-jlpt-furigana.mjs";
+import { buildTokenizer, loadOverrides, loadReadingFixes } from "./build-furigana.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = resolve(HERE, "../src/data/jlpt");
@@ -162,6 +164,17 @@ function readSources(options) {
       else passages.set(passageId, passage);
     }
 
+    // 审校常按选项文字写错项说明的键（{"としたって": "…"}），入库统一成选项号
+    for (const row of rows) {
+      const { options: opts, distractors } = row.source;
+      if (!Array.isArray(opts) || !distractors || typeof distractors !== "object" || Array.isArray(distractors)) continue;
+      row.source.distractors = Object.fromEntries(Object.entries(distractors).map(([key, value]) => {
+        const at = ["1", "2", "3", "4"].includes(key) ? -1 : opts.indexOf(key);
+        return [at >= 0 ? String(at + 1) : key, value];
+      }));
+      // 排序题的审校常把四个块都写了说明，正解那一块（★ 所在）的不入 distractors
+      if (Array.isArray(row.source.order)) delete row.source.distractors[String(row.source.answer)];
+    }
     const shuffledSources = shuffleAnswers(rows.map((row) => row.source), `${options.setId}-${level}-${section}`);
     for (const [index, { kind, no }] of rows.entries()) {
       const source = shuffledSources[index];
@@ -247,6 +260,16 @@ async function main() {
   for (const level of LEVELS) {
     const file = resolve(DATA_DIR, `${level.toLowerCase()}.json`);
     banks.set(level, mergeLevel(level, readExistingBank(file, level), imported, passages, options));
+  }
+
+  // N5/N4 的注音要在校验前就位（校验会拦没注音的题）
+  const furiganaLevels = [...banks].filter(([level, bank]) => FURIGANA_LEVELS.includes(level.toLowerCase()) && bank.questions.length);
+  if (furiganaLevels.length) {
+    loadReadingFixes(loadOverrides().readings);
+    const tokenizer = await buildTokenizer();
+    const problems = [];
+    for (const [, bank] of furiganaLevels) annotateBank(tokenizer, bank, problems);
+    for (const problem of problems) console.warn(`⚠️ 注音: ${problem}`);
   }
 
   const db = new DatabaseSync(DB_PATH, { readOnly: true });
