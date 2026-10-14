@@ -13,9 +13,10 @@ const mainNames = {
   'mood-fired-up': 96, 'mood-cheer': 68, 'scene-team': 96,
   'scene-stretch': 78, 'scene-music': 78, 'mood-wave': 84, 'mood-ask': 48,
   'mood-shy': 64, 'mood-surprised': 34, 'empty-box': 72,
-  'icon-study-modes': 36, 'icon-grammar': 36, 'icon-vocab': 36,
-  'icon-practice': 36, 'icon-kanji-readings': 36, 'icon-favorites': 36,
-  'icon-stats': 36, 'icon-shop': 36, 'empty-bye': 64,
+  // 2026-10-14 v3：主页学习工具十格 + 组队格换成物件插画（tool-*），水豚 icon-* 只剩柚子商店皮肤预览在用（content-pages）
+  'tool-modes': 44, 'tool-grammar': 44, 'tool-wordlist': 44, 'tool-confusion': 44,
+  'tool-talk': 44, 'tool-jlpt': 44, 'tool-kanji-readings': 44, 'tool-favorites': 44,
+  'tool-vocab-test': 44, 'tool-shop': 44, 'tool-team': 34, 'empty-bye': 64,
   'shushugo-icon': 56, 'shushugo-icon-dark': 56, 'walk-strip': 72
 };
 const mainOneX = new Set(['mood-ask', 'mood-surprised']);

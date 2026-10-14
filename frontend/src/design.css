@@ -886,7 +886,9 @@ button.fin-row:hover { background: var(--ds-inset-2); }
 /* —————————————————— 19. 2026-09-24 那批原画的摆法 —————————————————— */
 /* 首页工具格：新画的「选词 / 一字多音 / 柚子商店」是横版构图（宽高比约 1.8），和旁边的方图同高的话会宽出一截、
    看着比别的格子大一号。按格子宽度收住，高度跟着缩，和方图的视觉分量拉平。 */
-[data-theme] .zoo-quad span > img { max-width: min(100%, 60px); height: auto !important; max-height: 36px; object-fit: contain; }
+/* 2026-10-14 v3：十格换成正方形的物件插画（tool-*），横版问题不再有；细节多，从 36px 放到 44px 才看得清 */
+[data-theme] .zoo-quad span { height: 44px; }
+[data-theme] .zoo-quad span > img { max-width: min(100%, 60px); height: auto !important; max-height: 44px; object-fit: contain; }
 /* 主页「组队」小格：原来一排四个 emoji，现在是组队头图的小图 */
 .zoo-duo-team { flex: none; margin: -4px 2px -4px -2px; }
 

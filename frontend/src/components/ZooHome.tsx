@@ -255,16 +255,16 @@ export function ZooHome({
 
   const weeklyEntryEnabled = Capacitor.getPlatform() !== "wechat" && goals.weeklyReportEnabled;
   const toolItems: { title: string; icon: StickerName; action: () => void }[] = [
-    { title: "学习模式", icon: "icon-study-modes", action: () => onNavigate("study-modes") },
-    { title: "基础语法", icon: "icon-grammar", action: () => onNavigate("grammar-foundation") },
-    { title: "选词", icon: "icon-vocab", action: () => onOpenWordList() },
-    { title: "疑难辨析", icon: "icon-practice", action: () => onNavigate("confusion") },
-    { title: "开口练习", icon: "icon-practice", action: () => onNavigate("talk") },
-    { title: "JLPT 刷题", icon: "icon-grammar", action: () => onNavigate("jlpt-practice") },
-    { title: "一字多音", icon: "icon-kanji-readings", action: () => onNavigate("kanji-readings") },
-    { title: "收藏", icon: "icon-favorites", action: () => onNavigate("favorites") },
-    { title: "查词汇量", icon: "icon-stats", action: () => onNavigate("vocab-test") },
-    { title: "柚子商店", icon: "icon-shop", action: () => onNavigate("yuzu-shop") }
+    { title: "学习模式", icon: "tool-modes", action: () => onNavigate("study-modes") },
+    { title: "基础语法", icon: "tool-grammar", action: () => onNavigate("grammar-foundation") },
+    { title: "选词", icon: "tool-wordlist", action: () => onOpenWordList() },
+    { title: "疑难辨析", icon: "tool-confusion", action: () => onNavigate("confusion") },
+    { title: "开口练习", icon: "tool-talk", action: () => onNavigate("talk") },
+    { title: "JLPT 刷题", icon: "tool-jlpt", action: () => onNavigate("jlpt-practice") },
+    { title: "一字多音", icon: "tool-kanji-readings", action: () => onNavigate("kanji-readings") },
+    { title: "收藏", icon: "tool-favorites", action: () => onNavigate("favorites") },
+    { title: "查词汇量", icon: "tool-vocab-test", action: () => onNavigate("vocab-test") },
+    { title: "柚子商店", icon: "tool-shop", action: () => onNavigate("yuzu-shop") }
   ];
 
   return (
@@ -411,9 +411,9 @@ export function ZooHome({
           <button className="zoo-duo-cell" onClick={() => onNavigate("team")} style={staggerStyle(jlpt ? 1 : 0)}>
             <span className="zoo-duo-kick">组队</span>
             <b>和队友一起学</b>
-            {/* 原来是 🙂🐿️🐼🐧 四个 emoji 排成一排，换成作者画的组队头图（和组队页头图同一张） */}
+            {/* 原来是 emoji 排成一排，后来换成一群水豚的组队头图；v3 一屏只留一只吉祥物（大卡上那只），这里换成三面队旗 */}
             <small className="zoo-duo-avatars">
-              <Sticker name="scene-team" size={34} className="zoo-duo-team" />
+              <Sticker name="tool-team" size={34} className="zoo-duo-team" />
               <em>建队，或凭邀请码加入</em>
             </small>
           </button>
@@ -428,7 +428,7 @@ export function ZooHome({
         <div className="zoo-quad ds-stagger">
           {toolItems.map((item, index) => (
             <button key={item.title} onClick={item.action} style={staggerStyle(index)}>
-              <span aria-hidden="true"><Sticker name={item.icon} size={36} /></span>
+              <span aria-hidden="true"><Sticker name={item.icon} size={44} /></span>
               <b>{item.title}</b>
             </button>
           ))}

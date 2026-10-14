@@ -39,7 +39,11 @@ export type StickerName =
   | "item-repair" | "item-repair-card" | "item-repair-write" | "item-repair-cheer"
   | "item-voice-male" | "item-voice-male-2" | "item-voice-female" | "item-voice-female-2"
   | "item-sound-epiano" | "item-sound-epiano-2" | "item-sound-marimba" | "item-sound-marimba-2"
-  | "roll-frame";
+  | "roll-frame"
+  // 2026-10-14 前端 v3（docs/FRONTEND_V3_PLAN.md §1.1 / §1.3）：功能入口一律用物件插画，不画吉祥物。
+  // 作者放开了生成：这批是 GPT 以上面原图为参考生成的，同一画风、无文字、透明底。
+  | "tool-modes" | "tool-grammar" | "tool-wordlist" | "tool-confusion" | "tool-talk" | "tool-jlpt"
+  | "tool-kanji-readings" | "tool-favorites" | "tool-vocab-test" | "tool-shop" | "tool-team";
 
 /**
  * 吉祥物皮肤（柚子商店 mascot 槽位）。每套皮肤是 `public/brand/sheet-<皮肤>/` 下**同名**的一批贴纸，
