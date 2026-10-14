@@ -123,3 +123,6 @@
     ② JLPT 刷题里题目和反馈条同一层都用 `key={question.id}`，重复 key 让 React 换题时没卸掉上一题。Codex 在沙箱里截不了图，这两个都是只看代码 + 跑单测发现不了的——**每份合进来的界面改动，主管都要自己在 375×812 下点一遍**。
   - 同一件事不说两遍：刷题时解析框不再写「答对了」（反馈条说过了）。
   - `wechat-miniprogram/src/styles/tokens.wxss` 是从 `design.css` 生成的（带 sha256），改了 `design.css` 要跑 `node wechat-miniprogram/scripts/sync-design-tokens.mjs`，否则小程序 `npm test` 红。W4 合入时漏了，W3 合入时一起补上。
+- 2026-10-14 下午：藏水豚变体图（`69c98c97`）、陪伴水豚行为（`99485957`）、主页藏水豚 + 放大开页 + 巧思 1/3/4/5/6 + 去 emoji（`56eff19c`）合入。主包 1,747,754 B（余量约 152 KB）。
+  - ⚠️ 新坑：**被小程序主包页面直接引用的组件不许单独 import CSS**（W5 给 `SquirrelTrail` 拆了一份 CSS，Taro 把整份全局样式另存成 `app-origin.wxss`、按路由拆 CSS 失效，主包白涨 80 KB）。lazy 里的组件（`StudyBuddy`、`ZoomOpen`）单独一份 CSS 没事。
+  - 作者亲手把陪伴水豚压低了存在感（48px、普通作答不动），见 `docs/STUDY_BUDDY_SPEC.md` 末节。
