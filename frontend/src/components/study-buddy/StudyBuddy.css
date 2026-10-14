@@ -1,0 +1,47 @@
+/* Class selectors only for Taro. Base poses are complete without animations. */
+.sbuddy-host { position: relative; min-height: 0; flex: 1; display: flex; flex-direction: column; }
+.sbuddy { position: absolute; right: 6px; bottom: calc(100% + 4px); width: 72px; height: 72px; z-index: 8; pointer-events: none; }
+.sbuddy-host > .sbuddy { right: 14px; bottom: 76px; }
+.sbuddy-button { position: relative; display: block; width: 72px; height: 72px; margin: 0; padding: 0; border: 0; border-radius: 18px; background: transparent; overflow: visible; pointer-events: auto; cursor: pointer; }
+.sbuddy-pose { position: relative; display: block; width: 72px; height: 72px; transform-origin: 50% 88%; }
+.sbuddy-image { display: block; width: 72px !important; object-fit: contain; }
+.sbuddy-bubble { position: absolute; right: 62px; bottom: 42px; width: max-content; max-width: min(220px, calc(100vw - 125px)); padding: 10px 13px; border-radius: 16px 16px 3px 16px; background: var(--ds-surface, #fffaf1); color: var(--ds-ink, #44382d); box-shadow: var(--ds-shadow, 0 3px 12px #44382d18); font-size: 13px; font-weight: 700; line-height: 1.5; text-align: left; animation: sbuddy-appear var(--ds-dur, 220ms) var(--ds-ease-out, ease-out) both; }
+.sbuddy-idle { animation: sbuddy-breathe 3.6s ease-in-out infinite; }
+.sbuddy-sleepy { animation: sbuddy-breathe 5.6s ease-in-out infinite; }
+.sbuddy-happy, .sbuddy-hop { animation: sbuddy-hop 320ms var(--ds-ease-spring, cubic-bezier(.34,1.56,.64,1)) both; }
+.sbuddy-cheer { animation: sbuddy-hop 480ms var(--ds-ease-spring, cubic-bezier(.34,1.56,.64,1)) 2; }
+.sbuddy-worried { animation: sbuddy-worry 900ms var(--ds-ease-out, ease-out) both; }
+.sbuddy-think { animation: sbuddy-think 300ms var(--ds-ease-out, ease-out) both; }
+.sbuddy-surprised { animation: sbuddy-wake 300ms var(--ds-ease-spring, cubic-bezier(.34,1.56,.64,1)) both; }
+.sbuddy-spin { animation: sbuddy-spin 520ms var(--ds-ease-out, ease-out) both; }
+.sbuddy-wave { animation: sbuddy-wave 700ms var(--ds-ease-out, ease-out) both; }
+.sbuddy-glow, .sbuddy-blush, .sbuddy-crumb, .sbuddy-stars { position: absolute; display: none; pointer-events: none; }
+.sbuddy-cheer .sbuddy-glow { display: block; inset: -5px; z-index: -1; border-radius: 50%; background: radial-gradient(circle, #ffc86b66, #ffc86b00 70%); animation: sbuddy-appear var(--ds-dur-slow, 420ms) var(--ds-ease-out, ease-out) both; }
+.sbuddy-shy .sbuddy-blush { display: block; top: 31px; width: 12px; height: 8px; border-radius: 50%; background: #f591a5; opacity: .45; }
+.sbuddy-blush-left { left: 19px; }
+.sbuddy-blush-right { right: 13px; }
+.sbuddy-eat .sbuddy-crumb { display: block; top: 39px; width: 4px; height: 4px; border-radius: 50%; background: #eab24c; opacity: 0; animation: sbuddy-crumb 800ms var(--ds-ease-out, ease-out) both; }
+.sbuddy-crumb-one { left: 20px; }
+.sbuddy-crumb-two { left: 28px; animation-delay: 150ms !important; }
+.sbuddy-dizzy .sbuddy-stars { display: block; inset: 0 0 38px; animation: sbuddy-orbit 1s linear 2; }
+.sbuddy-star { position: absolute; width: 8px; height: 8px; background: #efb345; clip-path: polygon(50% 0,61% 35%,100% 38%,70% 62%,80% 100%,50% 77%,20% 100%,30% 62%,0 38%,39% 35%); }
+.sbuddy-star-one { left: 5px; top: 12px; }
+.sbuddy-star-two { left: 35px; top: 0; }
+.sbuddy-star-three { right: 0; top: 18px; }
+@media (min-width: 640px) { .sbuddy-host > .sbuddy { right: 30px; bottom: 92px; } }
+@keyframes sbuddy-breathe { 50% { transform: scale(1.02); } }
+@keyframes sbuddy-hop { 0%,100% { transform: none; } 18% { transform: scale(1.05,.94); } 48% { transform: translateY(-6px) scale(.97,1.03); } 80% { transform: scale(1.03,.97); } }
+@keyframes sbuddy-worry { 15%,65% { transform: scale(.94) rotate(-5deg); } 40%,80% { transform: scale(.94) rotate(4deg); } }
+@keyframes sbuddy-think { 50% { transform: rotate(-8deg); } }
+@keyframes sbuddy-wake { 40% { transform: scale(1.08); } }
+@keyframes sbuddy-spin { from { transform: rotateY(0); } to { transform: rotateY(360deg); } }
+@keyframes sbuddy-wave { 25%,65% { transform: rotate(-5deg); } 45%,85% { transform: rotate(5deg); } }
+@keyframes sbuddy-orbit { to { transform: rotate(360deg); } }
+@keyframes sbuddy-crumb { 0% { opacity: .9; transform: translateY(0); } 100% { opacity: 0; transform: translate(5px,20px); } }
+@keyframes sbuddy-appear { from { opacity: 0; transform: translateY(4px); } }
+[data-motion="reduced"] .sbuddy-pose, [data-motion="off"] .sbuddy-pose,
+[data-motion="reduced"] .sbuddy-glow, [data-motion="off"] .sbuddy-glow,
+[data-motion="reduced"] .sbuddy-stars, [data-motion="off"] .sbuddy-stars,
+[data-motion="reduced"] .sbuddy-crumb, [data-motion="off"] .sbuddy-crumb,
+[data-motion="reduced"] .sbuddy-bubble, [data-motion="off"] .sbuddy-bubble { animation: none !important; }
+@media (prefers-reduced-motion: reduce) { .sbuddy-pose, .sbuddy-glow, .sbuddy-stars, .sbuddy-crumb, .sbuddy-bubble { animation: none !important; } }

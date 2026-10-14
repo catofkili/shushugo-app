@@ -452,6 +452,22 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
             </label>
           </div>
 
+          <div className="flex items-center gap-3 border-b border-white/10 p-4">
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-bold text-white">背词页陪伴水豚</p>
+            </div>
+            <label className="relative inline-flex cursor-pointer items-center">
+              <input
+                type="checkbox"
+                aria-label="背词页陪伴水豚"
+                checked={preferences.studyBuddy}
+                onChange={(event) => updatePreference({ studyBuddy: event.target.checked })}
+                className="peer sr-only"
+              />
+              <div className="peer h-6 w-11 rounded-full bg-white/20 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-[#81D8CF] peer-checked:after:translate-x-5"></div>
+            </label>
+          </div>
+
 
           <div className="flex items-center gap-3 border-b border-white/10 p-4">
             <div className="min-w-0 flex-1">

@@ -1,3 +1,5 @@
+import { StudyBuddy } from "../components/study-buddy/StudyBuddy";
+import { createStudyBuddy } from "../lib/study-buddy";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type TouchEvent } from "react";
 import { createPortal } from "react-dom";
 import { perfRecord } from "../lib/perf-marks";
@@ -327,6 +329,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
   const swipeArmedRef = useRef<0 | 1 | -1>(0);
   /** 连对了几个。只喂给音高台阶(playKnow),不进任何调度 —— 连胜梯子已经整体删掉了 */
   const correctStreakRef = useRef(0);
+  const [buddySession] = useState(() => createStudyBuddy());
   const [reliefActive, setReliefActive] = useState(false);
   const [reliefLeaving, setReliefLeaving] = useState(false);
   const [dailyReviewActive, setDailyReviewActive] = useState(false);
@@ -459,6 +462,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
    */
   const answerOther = (value: WordAnswer) => {
     if (!other) return;
+    buddySession.send({ type: "answer", correct: value === "know" || value === "known_forever" });
     triggerMemoryHaptic(value);
     if (value === "know" || value === "known_forever") { playKnow(correctStreakRef.current); correctStreakRef.current += 1; }
     else { correctStreakRef.current = 0; playDontKnow(); }
@@ -467,7 +471,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     // 单词那边已经空了：回去问队列 —— 要么下一张别的卡，要么进完成页。
     if (!card) void loadNext(initialMode);
   };
-  const revealOther = () => { setOtherRevealed(true); if (other?.kind === "confusion") playFlip(); };
+  const revealOther = () => { buddySession.send({ type: "reveal" }); setOtherRevealed(true); if (other?.kind === "confusion") playFlip(); };
 
   useEffect(() => {
     // loadNext 还会随偏好设置和父回调更新；这些变化不能把正在看的单词重新发一遍。
@@ -651,7 +655,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
   }, [updateFocusSnapshot]);
 
   useStudyActivity({
-    onInteraction: () => noteActiveInteraction(),
+    onInteraction: () => { noteActiveInteraction(); buddySession.send({ type: "interaction" }); },
     onVisibilityChange: (visible) => {
       if (!visible) {
         void flushActiveStudyTimeRef.current(true, "force");
@@ -773,6 +777,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     // 这里**不要**再为了「让按一下有分量」压一帧 200ms 的 stall:动画是 CSS 的,
     // 本来就能和下一张卡的计算并行播完,而那 200ms 是每次评分都实打实的一顿。
     const good = answer === "know" || answer === "known_forever";
+    buddySession.send({ type: "answer", correct: good });
     // 连对时音高顺着五声音阶往上爬。断掉时的**重置本身就是反馈** ——
     // 所以不需要任何「连击中断」的文案,答错音(柔和下行)后面接一个复位的起点,
     // 语义已经是通的。这个计数只喂声音,不进 FSRS、不进任何调度。
@@ -1029,7 +1034,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
       // 落在同一个同步 tick 里(submitWordAnswer 是同步 SQLite,常见路径没有 await),
       // React 一批处理,中间态从来没渲染过。印章的收尾交给 RATE_BURST_MS 那个计时器。
     }
-  }, [answerFocusedWord, card, dailyReviewActive, dailyReviewIntro, afterWordAnswered, flushActiveStudyTime, flushPendingAnswer, initialMode, loadNext, onDailyModeComplete, phase, reliefActive, sessionOptions, showWordCard, stats, submitting, tailActive, unitKey]);
+  }, [buddySession, answerFocusedWord, card, dailyReviewActive, dailyReviewIntro, afterWordAnswered, flushActiveStudyTime, flushPendingAnswer, initialMode, loadNext, onDailyModeComplete, phase, reliefActive, sessionOptions, showWordCard, stats, submitting, tailActive, unitKey]);
 
   useEffect(() => () => window.clearTimeout(rateBurstTimerRef.current), []);
 
@@ -1103,6 +1108,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     if (!card || loading || revealed || submitting || reliefActive || dailyReviewIntro) return;
     revealedAtRef.current = performance.now();
     revealTappedAtRef.current = revealedAtRef.current;
+    buddySession.send({ type: "reveal" });
     setRevealed(true);
     // 看题那几秒里可能整库落过一次盘（sql.js 重开连接）或结过一次学习时长，预算作废了：
     // 趁用户看答案重算，点评分时就又是现成的。
@@ -1119,7 +1125,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
       setActivePopover(null);
     }
     speakCard(card);
-  }, [card, dailyReviewIntro, loading, previewEligible, reliefActive, revealed, runPreviews, speakCard, submitting]);
+  }, [buddySession, card, dailyReviewIntro, loading, previewEligible, reliefActive, revealed, runPreviews, speakCard, submitting]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -1166,6 +1172,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     // 栈顶是别的卡：撤掉它并重新摆出来；是单词才走下面单词那份。
     if (mixedUndoKind() && mixedUndoKind() !== "word") {
       correctStreakRef.current = 0;
+      buddySession.send({ type: "undo" });
       showOther(undoMixedOther());
       return;
     }
@@ -1182,6 +1189,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
       // 撤销了刚才那次作答,音高台阶也该跟着退回起点(不做精确回退:撤销很少用,
       // 而多爬一级和少爬一级都比「撤销了但还在高音上」说不通)
       correctStreakRef.current = 0;
+      buddySession.send({ type: "undo" });
       // 撤回的是压轴卡的话,压轴队列也要退一格(否则下一张会跳过一个词),
       // 而且要留在压轴模式里 —— 否则撤销一下就掉出压轴、直接看到完成页。
       const undoneTailId = tailUndoIdsRef.current[tailUndoIdsRef.current.length - 1];
@@ -1501,6 +1509,23 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
   const cardRotate = Math.max(-SWIPE_MAX_ROTATE, Math.min(SWIPE_MAX_ROTATE, cardShift / 40));
   const swipeProgress = Math.min(Math.abs(swipeX) / SWIPE_COMMIT_PX, 1);
   const countdownRemaining = remainingPlanWords(stats);
+  const buddyVisible = preferences.studyBuddy && !loading && !dailyPlanFinished
+    && focusSnapshot.status !== "break" && Boolean(card || other);
+  const buddyRemaining = !stats ? 0 : initialMode === "reverse"
+    ? Math.max(0, stats.stage2Total - stats.stage2Completed)
+    : initialMode === "kanji" ? Math.max(0, stats.kanjiTotal - stats.kanjiCompleted)
+    : initialMode === "mistakes" || initialMode === "picked" ? 0
+    : Math.max(0, stats.stage1ProgressTotal - stats.stage1ProgressDone
+      + (initialMode === "mixed" ? stats.grammarRemaining + stats.kanjiCardRemaining + stats.confusionCardRemaining : 0));
+  useEffect(() => {
+    if (!buddyVisible) return;
+    buddySession.send({ type: "start" });
+    buddySession.send({ type: "remaining", n: buddyRemaining });
+  }, [buddyVisible, buddyRemaining, buddySession]);
+  useEffect(() => {
+    if (buddyVisible) buddySession.send({ type: "focus", snapshot: focusSnapshot });
+  }, [buddyVisible, buddySession, focusSnapshot]);
+  const buddy = buddyVisible ? <StudyBuddy session={buddySession} /> : null;
   useEffect(() => {
     if (dailyPlanFinished && focusSnapshot.status === "running") {
       // 持久化结束时的有效专注段后，立刻同步完成页要展示的结算快照。
@@ -1590,11 +1615,14 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
             <RotateCcw size={15} />
           </button>
         </div>
+        <div className="sbuddy-host">
         {kanjiCard ? (
           <KanjiCharCardView card={kanjiCard} revealed={otherRevealed} onReveal={revealOther} onAnswer={answerOther} />
         ) : (
           <ConfusionCardView card={matchCard!} revealed={otherRevealed} onReveal={revealOther} onAnswer={answerOther} />
         )}
+        {buddy}
+        </div>
       </div>
     );
   }
@@ -1628,6 +1656,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
             <RotateCcw size={15} />
           </button>
         </div>
+        <div className="sbuddy-host">
         <GrammarCard
           card={grammarCard}
           revealed={otherRevealed}
@@ -1635,6 +1664,8 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
           onAnswer={answerOther}
           accent={QUIZ_ACCENT_AMBER}
         />
+        {buddy}
+        </div>
       </div>
     );
   }
@@ -1921,12 +1952,15 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
         {loading || preparingSpelling ? (
           <div className="grid min-h-[360px] place-items-center text-center text-sm font-semibold text-white/55"><div><CapybaraWalk size={72} className="mb-3" /><p>正在取下一张…</p></div></div>
         ) : spellingView ? (
+          <div className="sbuddy-host">
           <ScrollArea className="sp-study min-h-0 flex-1">
             <SpellingCardView key={spellingKey} card={spellingView}
               checkInput={(typed) => checkCardInput(spellingView, typed, spellingInputLookup!)}
               onReveal={revealAnswer} voiceId={preferences.voiceId}
               onFinish={(round) => submitAnswer(round.grade, "spelling")} />
           </ScrollArea>
+          {buddy}
+          </div>
         ) : card ? (
           <div
             key={`${card.id}:${unitKey ?? "word"}`}
@@ -2184,6 +2218,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
             </ScrollArea>
 
             <div className="relative h-16 lg:mx-auto lg:w-[min(900px,100%)]">
+              {buddy}
               {reliefActive ? (
                 <div className="daily-relief-auto-state" role="status" aria-live="polite">
                   <span>✓</span>

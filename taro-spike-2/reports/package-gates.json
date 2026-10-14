@@ -2,19 +2,19 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1694509,
+      "bytes": 1699469,
       "passes": true
     },
     "study": {
-      "bytes": 993235,
+      "bytes": 993274,
       "passes": true
     },
     "account": {
-      "bytes": 328101,
+      "bytes": 328888,
       "passes": true
     },
     "content-pages": {
-      "bytes": 1116820,
+      "bytes": 1116845,
       "passes": true
     },
     "features": {
@@ -30,23 +30,23 @@
       "passes": true
     },
     "grammar-advanced": {
-      "bytes": 547379,
+      "bytes": 547381,
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 300094,
+      "bytes": 300122,
       "passes": true
     },
     "core": {
-      "bytes": 279124,
+      "bytes": 279123,
       "passes": true
     },
     "lazy": {
-      "bytes": 892336,
+      "bytes": 900119,
       "passes": true
     },
     "jlpt-bank": {
-      "bytes": 764762,
+      "bytes": 764758,
       "passes": true
     },
     "jlpt-bank-2": {
@@ -1758,11 +1758,11 @@
     },
     {
       "source": "frontend/src/design.css",
-      "bytes": 81874
+      "bytes": 82673
     },
     {
       "source": "taro-spike-2/src/platform/WeappPage.tsx",
-      "bytes": 63753
+      "bytes": 64090
     }
   ],
   "passes": true

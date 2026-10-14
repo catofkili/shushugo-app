@@ -43,6 +43,7 @@ export interface StudyPreferences {
   confusionReviewCap: number;
   /** 答题音效(评分/翻卡/完成的木质提示音)。键名沿用 zooSounds,改了用户存的开关就丢了 */
   zooSounds: boolean;
+  studyBuddy: boolean;
   /**
    * 每周学习回顾（二楼）总开关。关掉之后主页入口、站内提醒、通知排期和
    * 云归档都停下；**已保存的历史不删除、不锁回**，重新打开还能读。
@@ -110,6 +111,7 @@ export const defaultStudyPreferences: StudyPreferences = {
   kanjiReviewCap: 0,
   confusionReviewCap: 0,
   zooSounds: true,
+  studyBuddy: true,
   weeklyReportEnabled: true,
   motionLevel: "full",
   voiceId: "",
@@ -179,6 +181,7 @@ export const normalizeStudyPreferences = (value: Partial<StudyPreferences> = {})
   confusionReviewCap: clampPlanReviewCap(Number(value.confusionReviewCap ?? 0)),
   reviewCap: clampReviewCap(Number(value.reviewCap ?? defaultStudyPreferences.reviewCap)),
   zooSounds: value.zooSounds ?? defaultStudyPreferences.zooSounds,
+  studyBuddy: value.studyBuddy ?? defaultStudyPreferences.studyBuddy,
   weeklyReportEnabled: value.weeklyReportEnabled ?? defaultStudyPreferences.weeklyReportEnabled,
   motionLevel: MOTION_LEVELS.includes(value.motionLevel as MotionLevel)
     ? (value.motionLevel as MotionLevel)

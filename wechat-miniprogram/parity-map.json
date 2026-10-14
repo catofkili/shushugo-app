@@ -19,6 +19,27 @@
   ],
   "pairs": [
     {
+      "web": "frontend/src/components/study-buddy/StudyBuddy.css",
+      "mini": [
+        "frontend/src/components/study-buddy/StudyBuddy.css"
+      ],
+      "reason": "网页和 Taro 背词页直接编译同一份组件与样式；build:weapp 验证双端，无独立页面实现。"
+    },
+    {
+      "web": "frontend/src/components/study-buddy/StudyBuddy.tsx",
+      "mini": [
+        "frontend/src/components/study-buddy/StudyBuddy.tsx"
+      ],
+      "reason": "网页和 Taro 背词页直接编译同一份组件与样式；build:weapp 验证双端，无独立页面实现。"
+    },
+    {
+      "web": "frontend/src/components/SquirrelTrail.tsx",
+      "mini": [
+        "frontend/src/components/SquirrelTrail.tsx"
+      ],
+      "reason": "网页和 Taro 背词页直接编译同一份组件与样式；build:weapp 验证双端，无独立页面实现。"
+    },
+    {
       "web": "frontend/src/components/ComboBadge.tsx",
       "mini": [
         "frontend/src/components/ComboBadge.tsx"

@@ -3,7 +3,7 @@ import { getWordStats } from "../lib/api";
 import { useProgressUpdates } from "../lib/use-progress-updates";
 import type { WordStats } from "../types/vocabulary";
 import type { StudyMode } from "../types/app";
-import { CapybaraWalk } from "./CapybaraMascot";
+import { Brain, Citrus, Languages, Repeat } from "lucide-react";
 
 /**
  * 今日进度的小路 —— 放在首页顶部栏中间那块本来空着的地方。
@@ -46,7 +46,7 @@ export function SquirrelTrail({ mode = null }: Props) {
     return (
       <div className="zoo-trail" title={`错题本:今天攻掉 ${mistakes.answeredToday} 个,长期薄弱词 ${mistakes.poolSize}`}>
         <div className="zoo-trail-line" />
-        <div className="zoo-trail-squirrel" style={{ left: "10px" }}>🧠</div>
+        <div className="zoo-trail-squirrel" style={{ left: "10px" }}><span className="zoo-trail-marker-clip"><Brain size={18} color="var(--ds-primary)" className="zoo-trail-marker" /></span></div>
         <span className="zoo-trail-count">
           错题本 <b>{mistakes.answeredToday}</b> · 薄弱 {mistakes.poolSize}
         </span>
@@ -61,17 +61,17 @@ export function SquirrelTrail({ mode = null }: Props) {
   const otherDone = (stats?.kanjiCardDone ?? 0) + (stats?.confusionCardDone ?? 0);
   const otherPlanned = otherDone + (stats?.kanjiCardRemaining ?? 0) + (stats?.confusionCardRemaining ?? 0);
   const trail = mode === "reverse"
-    ? { total: stats?.stage2Total ?? 0, done: stats?.stage2Completed ?? 0, emoji: "🔁", label: "反向" }
+    ? { total: stats?.stage2Total ?? 0, done: stats?.stage2Completed ?? 0, Icon: Repeat, label: "反向" }
     : mode === "kanji"
-      ? { total: stats?.kanjiTotal ?? 0, done: stats?.kanjiCompleted ?? 0, emoji: "🈶", label: "汉字" }
+      ? { total: stats?.kanjiTotal ?? 0, done: stats?.kanjiCompleted ?? 0, Icon: Languages, label: "汉字" }
       : mode === "mixed"
         ? {
             total: (stats?.stage1ProgressTotal ?? 0) + grammarPlanned + otherPlanned,
             done: (stats?.stage1ProgressDone ?? 0) + (stats?.grammarDone ?? 0) + otherDone,
-            emoji: null,
+            Icon: Citrus,
             label: "混合学习"
           }
-        : { total: stats?.stage1ProgressTotal ?? 0, done: stats?.stage1ProgressDone ?? 0, emoji: null, label: "今日复习" };
+        : { total: stats?.stage1ProgressTotal ?? 0, done: stats?.stage1ProgressDone ?? 0, Icon: Citrus, label: "今日复习" };
 
   const { total, done } = trail;
   // 今天还没排计划就不占位置
@@ -104,7 +104,7 @@ export function SquirrelTrail({ mode = null }: Props) {
         // 松鼠的活动范围要避开右边的计数,否则走到终点会和数字糊在一起
         style={{ left: `calc(10px + (100% - 10px - var(--zoo-trail-tail)) * ${pct / 100})` }}
       >
-        {trail.emoji ?? <CapybaraWalk size={18} />}
+        <span className="zoo-trail-marker-clip"><trail.Icon size={18} color="var(--ds-primary)" className="zoo-trail-marker" /></span>
       </div>
       <span className={`zoo-trail-count ${countdown ? "zoo-trail-countdown" : ""}`}>
         {countdown ? (
