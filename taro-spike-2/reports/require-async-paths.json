@@ -1,7 +1,7 @@
 {
   "expectedTargetCount": 12,
-  "callCount": 19,
-  "resolvedTargetCount": 19,
+  "callCount": 23,
+  "resolvedTargetCount": 23,
   "calls": [
     {
       "caller": "common.js",
@@ -65,8 +65,23 @@
     },
     {
       "caller": "runtime.js",
+      "request": "./lazy/sync-merge.js",
+      "target": "lazy/sync-merge.js"
+    },
+    {
+      "caller": "runtime.js",
       "request": "./lazy/tabs.js",
       "target": "lazy/tabs.js"
+    },
+    {
+      "caller": "runtime.js",
+      "request": "./lazy/profile-sync.js",
+      "target": "lazy/profile-sync.js"
+    },
+    {
+      "caller": "runtime.js",
+      "request": "./lazy/duplicate-merge.js",
+      "target": "lazy/duplicate-merge.js"
     },
     {
       "caller": "runtime.js",
@@ -97,6 +112,11 @@
       "caller": "runtime.js",
       "request": "./jlpt-bank-2/jlpt-n5.js",
       "target": "jlpt-bank-2/jlpt-n5.js"
+    },
+    {
+      "caller": "runtime.js",
+      "request": "./lazy/word-list-import.js",
+      "target": "lazy/word-list-import.js"
     }
   ]
 }

@@ -22,20 +22,27 @@ try {
 .wr-entrance-veil,.vt-timer { display:block }
 .wl-row .yz-card { color:green }
 `);
-  // 异步块样式整份并进 app.wxss（含 @media 包裹，且排在最后），原文件清空
+  // 异步块先并入再拆分；共享样式留 app，路由样式连同嵌套外壳迁走，原文件清空。
   fs.writeFileSync(path.join(scratch, 'dist/lazy/tabs.wxss'), `.zoo-x { color:red }
 @media (max-width:600px) { .sp-page,.theme-dark .sp-card { display:block } }
-.sp-input { color:blue }`);
+.sp-input { color:blue }
+@media (max-width:600px) { .wl-lazy,.shared-lazy { color:purple } }
+.ach-card { padding:4px }`);
   execFileSync(process.execPath, [path.join(scratch, 'scripts/split-route-css.mjs')]);
   const read = (name) => postcss.parse(fs.readFileSync(path.join(scratch, 'dist', name), 'utf8'));
   const app = read('app.wxss');
   const selectors = (css) => { const values = []; css.walkRules((r) => values.push(r.selector.trim())); return values; };
-  assert.deepEqual(selectors(app), ['.ach-card', '.shared', '.wr-entrance-veil,.vt-timer', '.wl-row .yz-card', '.zoo-x', '.sp-page,.theme-dark .sp-card', '.sp-input']);
-  assert.equal(app.last.prev().name, 'media');
+  assert.deepEqual(selectors(app), ['.shared', '.wr-entrance-veil,.vt-timer', '.wl-row .yz-card', '.zoo-x', '.shared-lazy']);
+  assert.equal(app.last.name, 'media');
   assert.equal(fs.readFileSync(path.join(scratch, 'dist/lazy/tabs.wxss'), 'utf8'), '');
-  assert.deepEqual(selectors(read('study/word-list/index.wxss')), ['.wl-row']);
+  assert.deepEqual(selectors(read('study/word-list/index.wxss')), ['.wl-row', '.wl-lazy']);
   assert.deepEqual(selectors(read('study/quick-study/index.wxss')), ['.quick-study-row']);
-  assert.deepEqual(selectors(read('pages/word/index.wxss')), ['.sp-root']);
+  assert.deepEqual(selectors(read('pages/word/index.wxss')), ['.sp-root', '.sp-page,.theme-dark .sp-card', '.sp-input']);
+  assert.equal(read('pages/word/index.wxss').nodes[1].name, 'media');
+  for (const route of ['content-pages/achievements/index.wxss', 'account/personal-info/index.wxss']) {
+    assert.deepEqual(selectors(read(route)), ['.ach-card', '.ach-card']);
+    assert.equal(read(route).last.nodes[0].value, '4px');
+  }
   assert.deepEqual(selectors(read('study/jlpt-practice/index.wxss')), ['.jq-card']);
   const confusion = read('study/confusion/index.wxss');
   const kanji = read('study/kanji-readings/index.wxss');

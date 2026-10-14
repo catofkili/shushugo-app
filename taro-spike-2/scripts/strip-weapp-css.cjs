@@ -4,6 +4,9 @@ const path = require('node:path');
 
 const removed = new Set();
 const sourceBytes = new Map();
+// 小程序使用原生 tabBar 和 WeappPage；AppNavigation 从未进编译图，网页导航条规则在这里没有渲染使用方。
+// app-landscape-main 仍是小程序滚动区的类名，必须保留；只剔除这份未编译组件独占的命名族。
+const webNavigationClass = (value) => /^app-(?:mobile-(?:topbar|tabbar)|landscape-(?:topbar|rail)|tab(?:-|$))/.test(value);
 const unsupportedPseudo = (value) => value === ':has'
   || value === ':where'
   || value === ':host'
@@ -39,6 +42,9 @@ module.exports = () => ({
           });
           selector.walkCombinators((combinator) => {
             if (combinator.value === '~') invalid = true;
+          });
+          selector.walkClasses((node) => {
+            if (webNavigationClass(node.value)) invalid = true;
           });
           if (invalid) {
             unsupported.push(selector.toString());

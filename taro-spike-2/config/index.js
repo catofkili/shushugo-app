@@ -68,6 +68,9 @@ module.exports = {
     'react/jsx-dev-runtime': path.join(root, 'node_modules/react/jsx-dev-runtime.js')
   },
   mini: {
+    // Taro 默认 ascii_only:true，把每个中日文字写成 6 B 的 \uXXXX；UTF-8 原文只需 3 B，值完全相同。
+    // 只覆盖输出编码，保留 ECMA5 和默认压缩 / 混淆；编码语义测试及开发者工具运行一起验收。
+    terser: { config: { output: { ascii_only: false } } },
     optimizeMainPackage: {
       enable: true,
       // Let route-only data helpers move with their subpackage. Keep the DB,

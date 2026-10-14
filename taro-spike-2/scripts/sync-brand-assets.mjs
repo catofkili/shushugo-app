@@ -1,4 +1,5 @@
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -68,6 +69,11 @@ const previousOutputPath = ({ image, subpackage }) => path.join(
   subpackage ? path.join(packageOut, subpackage, 'brand') : out,
   `${image}.webp`
 );
+const sha256 = (buffer) => createHash('sha256').update(buffer).digest('hex');
+// 保留经过逐像素验证的无损重压产物，不让下一次 pngquant 覆盖掉收益。
+// 输入原图、尺寸档位、质量配置或现有输出摘要有任何变化，照常重新生成；不引入构建机上的 Python / zopfli 依赖。
+const previousOutputs = new Map(targets.filter((target) => existsSync(targetPath(target)))
+  .map((target) => [`${target.subpackage ?? 'main'}/${target.image}`, readFileSync(targetPath(target))]));
 const pngDimensions = (buffer) => ({ width: buffer.readUInt32BE(16), height: buffer.readUInt32BE(20) });
 const measureExisting = (filename, legacyFilename, key) => {
   const recorded = previousSizes.get(key);
@@ -96,12 +102,24 @@ try {
     const outputWidth = Math.round(sourceWidth * outputHeight / sourceHeight);
     const destination = targetPath(target);
     mkdirSync(path.dirname(destination), { recursive: true });
-    const resized = path.join(tempDir, `${target.subpackage ?? 'main'}-${target.image}.png`);
-    execFileSync('sips', ['--resampleHeightWidth', String(outputHeight), String(outputWidth), source, '--out', resized], { stdio: 'ignore' });
-    // pngquant applies a 256-color RGBA palette; it keeps the output as PNG, which iOS Mini Program <image> can load locally.
-    // 主包贴纸压到 60-85：主包离 1.9 MB 闸门只剩几 KB（2026-09-27 合 W24+W26 时超了 3 KB），小尺寸贴纸看不出差别。
+    const key = `${target.subpackage ?? 'main'}/${target.image}`;
+    const priorImage = previousSizes.get(key);
+    const priorOutput = previousOutputs.get(key);
+    const sourceSha256 = sha256(original);
     const quality = target.subpackage ? '65-90' : '60-85';
-    execFileSync('pngquant', ['256', '--quality', quality, '--speed', '1', '--force', '--output', destination, resized], { stdio: 'ignore' });
+    const keepLossless = !target.subpackage && priorImage?.losslessOptimized && priorOutput
+      && priorImage.sourceSha256 === sourceSha256 && priorImage.afterSha256 === sha256(priorOutput)
+      && priorImage.outputWidth === outputWidth && priorImage.outputHeight === outputHeight
+      && priorImage.scale === target.scale && priorImage.maxDisplayHeightCss === target.maxDisplayHeightCss
+      && priorImage.quality === quality;
+    const resized = path.join(tempDir, `${target.subpackage ?? 'main'}-${target.image}.png`);
+    if (keepLossless) writeFileSync(destination, priorOutput);
+    else {
+      execFileSync('sips', ['--resampleHeightWidth', String(outputHeight), String(outputWidth), source, '--out', resized], { stdio: 'ignore' });
+      // pngquant applies a 256-color RGBA palette; it keeps the output as PNG, which iOS Mini Program <image> can load locally.
+      // 主包贴纸压到 60-85：主包离 1.9 MB 闸门只剩几 KB（2026-09-27 合 W24+W26 时超了 3 KB），小尺寸贴纸看不出差别。
+      execFileSync('pngquant', ['256', '--quality', quality, '--speed', '1', '--force', '--output', destination, resized], { stdio: 'ignore' });
+    }
     const prior = before.get(`${target.subpackage ?? 'main'}/${target.image}`);
     measurements.push({
       subpackage: target.subpackage ?? 'main',
@@ -115,7 +133,11 @@ try {
       beforeFormat: prior.format,
       beforeBytes: prior.bytes,
       afterFormat: 'png',
-      afterBytes: statSync(destination).size
+      afterBytes: statSync(destination).size,
+      sourceSha256,
+      afterSha256: sha256(readFileSync(destination)),
+      quality,
+      ...(keepLossless ? { losslessOptimized: true } : {})
     });
   }
 
@@ -134,7 +156,7 @@ try {
   writeFileSync(path.join(root, 'src/platform/brand-packages.cjs'), `const contentPackage = 'content-pages';\nmodule.exports = ${JSON.stringify(brandPackages, null, 2).replaceAll('"content-pages"', 'contentPackage')};\n`);
   writeFileSync(reportPath, `${JSON.stringify({
     formatVersion: 2,
-    compression: 'pngquant 256-color palette, quality 65-90',
+    compression: 'pngquant 256-color palette: main quality 60-85, subpackage quality 65-90; verified lossless main outputs retained by source/output SHA256',
     packages,
     images: measurements
   }, null, 2)}\n`);

@@ -75,8 +75,8 @@ const frontendVersion = (file, name) => {
   if (!fs.existsSync(fp)) return 'skipped';
   return fs.readFileSync(fp, 'utf8').match(new RegExp(`${name} = "([^"]+)"`))?.[1];
 };
-const consentInSync = ['skipped', config.match(/termsVersion: '([^']+)'/)?.[1]].includes(frontendVersion('user-agreement-content.ts', 'USER_AGREEMENT_VERSION'))
-  && ['skipped', config.match(/privacyVersion: '([^']+)'/)?.[1]].includes(frontendVersion('privacy-policy-content.ts', 'PRIVACY_POLICY_VERSION'));
+const consentInSync = ['skipped', config.match(/termsVersion: '([^']+)'/)?.[1]].includes(frontendVersion('legal-versions.ts', 'USER_AGREEMENT_VERSION'))
+  && ['skipped', config.match(/privacyVersion: '([^']+)'/)?.[1]].includes(frontendVersion('legal-versions.ts', 'PRIVACY_POLICY_VERSION'));
 
 const checks = [
   ['consent versions match frontend', consentInSync],

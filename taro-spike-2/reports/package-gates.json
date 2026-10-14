@@ -2,23 +2,23 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1898041,
+      "bytes": 1675763,
       "passes": true
     },
     "study": {
-      "bytes": 1111620,
+      "bytes": 988905,
       "passes": true
     },
     "account": {
-      "bytes": 276581,
+      "bytes": 328096,
       "passes": true
     },
     "content-pages": {
-      "bytes": 1204025,
+      "bytes": 1116265,
       "passes": true
     },
     "features": {
-      "bytes": 580408,
+      "bytes": 580345,
       "passes": true
     },
     "content": {
@@ -30,36 +30,36 @@
       "passes": true
     },
     "grammar-advanced": {
-      "bytes": 547381,
+      "bytes": 547379,
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 384902,
+      "bytes": 300102,
       "passes": true
     },
     "core": {
-      "bytes": 279123,
+      "bytes": 279124,
       "passes": true
     },
     "lazy": {
-      "bytes": 1014387,
+      "bytes": 888038,
       "passes": true
     },
     "jlpt-bank": {
-      "bytes": 1303321,
+      "bytes": 764762,
       "passes": true
     },
     "jlpt-bank-2": {
-      "bytes": 881879,
+      "bytes": 585140,
       "passes": true
     }
   },
   "maxUnapprovedPageComponentBytes": 100000,
-  "duplicateSourceModuleCount": 70,
+  "duplicateSourceModuleCount": 88,
   "duplicatedModules": [
     {
       "source": "frontend/src/lib/vocab-test.ts",
-      "bytes": 49987,
+      "bytes": 50023,
       "packages": [
         "grammar-pages",
         "lazy",
@@ -68,7 +68,7 @@
     },
     {
       "source": "frontend/src/lib/conjugation-explanation.ts",
-      "bytes": 42723,
+      "bytes": 42750,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -86,29 +86,29 @@
     },
     {
       "source": "frontend/src/pages/Library.tsx",
-      "bytes": 33448,
+      "bytes": 33484,
       "packages": [
         "grammar-pages",
         "lazy"
       ]
     },
     {
-      "source": "frontend/src/lib/analytics/weekly.ts",
-      "bytes": 32865,
-      "packages": [
-        "content-pages",
-        "lazy"
-      ]
-    },
-    {
       "source": "frontend/src/lib/audio-pack-cache.ts",
-      "bytes": 32850,
+      "bytes": 32940,
       "packages": [
         "account",
         "content-pages",
         "grammar-pages",
         "lazy",
         "study"
+      ]
+    },
+    {
+      "source": "frontend/src/lib/analytics/weekly.ts",
+      "bytes": 32892,
+      "packages": [
+        "content-pages",
+        "lazy"
       ]
     },
     {
@@ -122,16 +122,49 @@
       ]
     },
     {
+      "source": "frontend/src/lib/word-list-import.ts",
+      "bytes": 27824,
+      "packages": [
+        "account",
+        "lazy"
+      ]
+    },
+    {
+      "source": "frontend/src/components/LevelSetup.tsx",
+      "bytes": 24640,
+      "packages": [
+        "lazy",
+        "study"
+      ]
+    },
+    {
+      "source": "frontend/src/components/AuthDialog.weapp.tsx",
+      "bytes": 24462,
+      "packages": [
+        "account",
+        "lazy"
+      ]
+    },
+    {
       "source": "frontend/src/data/grammar-foundation.ts",
-      "bytes": 20760,
+      "bytes": 20769,
       "packages": [
         "content-pages",
         "grammar-pages"
       ]
     },
     {
+      "source": "frontend/src/lib/daily-plan.ts",
+      "bytes": 20140,
+      "packages": [
+        "account",
+        "lazy",
+        "study"
+      ]
+    },
+    {
       "source": "frontend/src/pages/ConfusionPage.tsx",
-      "bytes": 19082,
+      "bytes": 19100,
       "packages": [
         "grammar-pages",
         "study"
@@ -139,7 +172,7 @@
     },
     {
       "source": "frontend/src/lib/study-focus.ts",
-      "bytes": 18606,
+      "bytes": 18633,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -149,7 +182,7 @@
     },
     {
       "source": "frontend/src/lib/audio-pack-platform.weapp.ts",
-      "bytes": 18216,
+      "bytes": 18261,
       "packages": [
         "account",
         "content-pages",
@@ -160,7 +193,7 @@
     },
     {
       "source": "frontend/src/components/DailyPlanPanel.tsx",
-      "bytes": 16533,
+      "bytes": 16569,
       "packages": [
         "account",
         "study"
@@ -168,7 +201,7 @@
     },
     {
       "source": "frontend/src/pages/ImmersiveGrammar.tsx",
-      "bytes": 16048,
+      "bytes": 16057,
       "packages": [
         "grammar-pages",
         "lazy"
@@ -184,7 +217,7 @@
     },
     {
       "source": "frontend/src/pages/FavoritesPage.tsx",
-      "bytes": 15692,
+      "bytes": 15737,
       "packages": [
         "content-pages",
         "grammar-pages"
@@ -192,7 +225,7 @@
     },
     {
       "source": "frontend/src/lib/analytics/weekly-reports.ts",
-      "bytes": 15645,
+      "bytes": 15663,
       "packages": [
         "content-pages",
         "lazy"
@@ -200,7 +233,7 @@
     },
     {
       "source": "frontend/src/pages/GrammarFoundationPage.tsx",
-      "bytes": 14764,
+      "bytes": 14782,
       "packages": [
         "content-pages",
         "grammar-pages"
@@ -208,7 +241,7 @@
     },
     {
       "source": "frontend/src/components/GrammarHighlightProvider.tsx",
-      "bytes": 14740,
+      "bytes": 14767,
       "packages": [
         "content-pages",
         "lazy"
@@ -216,7 +249,7 @@
     },
     {
       "source": "frontend/src/lib/share-canvas.weapp.ts",
-      "bytes": 13191,
+      "bytes": 13227,
       "packages": [
         "content-pages",
         "lazy",
@@ -225,7 +258,7 @@
     },
     {
       "source": "frontend/src/components/DailyPlanRing.weapp.tsx",
-      "bytes": 13050,
+      "bytes": 13059,
       "packages": [
         "account",
         "study"
@@ -233,7 +266,7 @@
     },
     {
       "source": "frontend/src/components/JapaneseRuby.tsx",
-      "bytes": 12878,
+      "bytes": 12914,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -243,7 +276,7 @@
     },
     {
       "source": "frontend/src/lib/token-dictionary.ts",
-      "bytes": 12218,
+      "bytes": 12236,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -253,7 +286,7 @@
     },
     {
       "source": "frontend/src/lib/speech-packs.ts",
-      "bytes": 11782,
+      "bytes": 11809,
       "packages": [
         "account",
         "content-pages",
@@ -264,7 +297,7 @@
     },
     {
       "source": "frontend/src/components/streak/StreakCelebration.tsx",
-      "bytes": 11707,
+      "bytes": 11725,
       "packages": [
         "lazy",
         "study"
@@ -272,7 +305,7 @@
     },
     {
       "source": "frontend/src/components/TokenDictionaryPopover.weapp.tsx",
-      "bytes": 11662,
+      "bytes": 11680,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -281,8 +314,16 @@
       ]
     },
     {
+      "source": "frontend/src/lib/profile-sync.ts",
+      "bytes": 11070,
+      "packages": [
+        "account",
+        "lazy"
+      ]
+    },
+    {
       "source": "frontend/src/components/grammar-term-hint-data.ts",
-      "bytes": 11044,
+      "bytes": 11053,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -292,7 +333,7 @@
     },
     {
       "source": "frontend/src/lib/team-activity.ts",
-      "bytes": 10954,
+      "bytes": 10981,
       "packages": [
         "lazy",
         "study"
@@ -300,7 +341,7 @@
     },
     {
       "source": "frontend/src/features/word-study/word-study-utils.ts",
-      "bytes": 10867,
+      "bytes": 10876,
       "packages": [
         "grammar-pages",
         "lazy",
@@ -308,8 +349,16 @@
       ]
     },
     {
+      "source": "frontend/src/lib/privacy-policy-content.ts",
+      "bytes": 10104,
+      "packages": [
+        "account",
+        "lazy"
+      ]
+    },
+    {
       "source": "frontend/src/components/FloatingDoodlePen.weapp.tsx",
-      "bytes": 10094,
+      "bytes": 10103,
       "packages": [
         "grammar-pages",
         "lazy"
@@ -317,7 +366,7 @@
     },
     {
       "source": "frontend/src/pages/GrammarDetail.tsx",
-      "bytes": 8891,
+      "bytes": 8900,
       "packages": [
         "content-pages",
         "grammar-pages"
@@ -325,7 +374,7 @@
     },
     {
       "source": "frontend/src/components/FavoriteFolderPicker.tsx",
-      "bytes": 7899,
+      "bytes": 7917,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -335,7 +384,7 @@
     },
     {
       "source": "frontend/src/components/streak/StreakMoments.tsx",
-      "bytes": 7467,
+      "bytes": 7485,
       "packages": [
         "lazy",
         "study"
@@ -343,7 +392,7 @@
     },
     {
       "source": "frontend/src/lib/share-image.weapp.ts",
-      "bytes": 7404,
+      "bytes": 7422,
       "packages": [
         "content-pages",
         "lazy",
@@ -351,8 +400,25 @@
       ]
     },
     {
+      "source": "frontend/src/lib/jlpt/status.ts",
+      "bytes": 7283,
+      "packages": [
+        "account",
+        "lazy",
+        "study"
+      ]
+    },
+    {
+      "source": "frontend/src/components/ExamDatePicker.tsx",
+      "bytes": 7198,
+      "packages": [
+        "lazy",
+        "study"
+      ]
+    },
+    {
       "source": "frontend/src/lib/audio-pack-format.ts",
-      "bytes": 6939,
+      "bytes": 6975,
       "packages": [
         "account",
         "content-pages",
@@ -363,7 +429,7 @@
     },
     {
       "source": "frontend/src/lib/speech.weapp.ts",
-      "bytes": 6811,
+      "bytes": 6829,
       "packages": [
         "account",
         "content-pages",
@@ -374,7 +440,7 @@
     },
     {
       "source": "frontend/src/components/ProReadingPreview.tsx",
-      "bytes": 6340,
+      "bytes": 6367,
       "packages": [
         "lazy",
         "study"
@@ -382,7 +448,7 @@
     },
     {
       "source": "frontend/src/lib/distinction-quiz.ts",
-      "bytes": 6302,
+      "bytes": 6320,
       "packages": [
         "grammar-pages",
         "lazy",
@@ -391,7 +457,7 @@
     },
     {
       "source": "frontend/src/lib/grammarProgressPreferences.ts",
-      "bytes": 5120,
+      "bytes": 5138,
       "packages": [
         "grammar-pages",
         "lazy"
@@ -399,7 +465,7 @@
     },
     {
       "source": "frontend/src/lib/speech-audio.ts",
-      "bytes": 4985,
+      "bytes": 5003,
       "packages": [
         "account",
         "content-pages",
@@ -410,7 +476,7 @@
     },
     {
       "source": "frontend/src/components/ShareImageSheet.weapp.tsx",
-      "bytes": 4926,
+      "bytes": 4953,
       "packages": [
         "content-pages",
         "lazy",
@@ -419,7 +485,7 @@
     },
     {
       "source": "frontend/src/lib/team-rules.ts",
-      "bytes": 4899,
+      "bytes": 4908,
       "packages": [
         "lazy",
         "study"
@@ -427,7 +493,7 @@
     },
     {
       "source": "frontend/src/components/GrammarPointPopover.tsx",
-      "bytes": 4896,
+      "bytes": 4905,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -437,10 +503,19 @@
     },
     {
       "source": "frontend/src/components/CrossPlatformImage.weapp.tsx",
-      "bytes": 4846,
+      "bytes": 4873,
       "packages": [
         "account",
         "content-pages",
+        "lazy",
+        "study"
+      ]
+    },
+    {
+      "source": "frontend/src/lib/plan/content-matrix.ts",
+      "bytes": 4385,
+      "packages": [
+        "account",
         "lazy",
         "study"
       ]
@@ -457,7 +532,7 @@
     },
     {
       "source": "frontend/src/components/daily-plan-ring-geometry.ts",
-      "bytes": 3920,
+      "bytes": 3947,
       "packages": [
         "account",
         "study"
@@ -465,7 +540,7 @@
     },
     {
       "source": "frontend/src/components/GrammarTermHint.weapp.tsx",
-      "bytes": 3789,
+      "bytes": 3798,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -475,7 +550,7 @@
     },
     {
       "source": "frontend/src/lib/study-clock.ts",
-      "bytes": 3363,
+      "bytes": 3372,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -495,10 +570,20 @@
     },
     {
       "source": "frontend/src/hooks/useCountUp.ts",
-      "bytes": 2949,
+      "bytes": 2958,
       "packages": [
         "content-pages",
         "lazy"
+      ]
+    },
+    {
+      "source": "frontend/src/lib/grammar-form-target.ts",
+      "bytes": 2775,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy",
+        "study"
       ]
     },
     {
@@ -507,16 +592,6 @@
       "packages": [
         "lazy",
         "main"
-      ]
-    },
-    {
-      "source": "frontend/src/lib/grammar-form-target.ts",
-      "bytes": 2766,
-      "packages": [
-        "content-pages",
-        "grammar-pages",
-        "lazy",
-        "study"
       ]
     },
     {
@@ -530,7 +605,7 @@
     },
     {
       "source": "frontend/src/components/ZooConfetti.tsx",
-      "bytes": 2552,
+      "bytes": 2570,
       "packages": [
         "lazy",
         "study"
@@ -538,7 +613,7 @@
     },
     {
       "source": "frontend/src/lib/grammar-title-furigana.ts",
-      "bytes": 2469,
+      "bytes": 2496,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -547,8 +622,25 @@
       ]
     },
     {
+      "source": "frontend/src/lib/user-agreement-content.ts",
+      "bytes": 2351,
+      "packages": [
+        "account",
+        "lazy"
+      ]
+    },
+    {
+      "source": "frontend/src/lib/plan/load-model.ts",
+      "bytes": 2338,
+      "packages": [
+        "account",
+        "lazy",
+        "study"
+      ]
+    },
+    {
       "source": "frontend/src/components/Disclosure.weapp.tsx",
-      "bytes": 2115,
+      "bytes": 2124,
       "packages": [
         "account",
         "content-pages",
@@ -575,8 +667,19 @@
       ]
     },
     {
+      "source": "frontend/src/components/ScrollArea.weapp.tsx",
+      "bytes": 1968,
+      "packages": [
+        "account",
+        "content-pages",
+        "grammar-pages",
+        "lazy",
+        "study"
+      ]
+    },
+    {
       "source": "taro-spike-2/src/platform/platform-dialogs.weapp.ts",
-      "bytes": 1824,
+      "bytes": 1842,
       "packages": [
         "account",
         "content-pages",
@@ -601,6 +704,17 @@
       ]
     },
     {
+      "source": "frontend/src/components/MascotSay.tsx",
+      "bytes": 1595,
+      "packages": [
+        "account",
+        "content-pages",
+        "grammar-pages",
+        "lazy",
+        "study"
+      ]
+    },
+    {
       "source": "frontend/src/lib/grammar-numbering.ts",
       "bytes": 1355,
       "packages": [
@@ -618,10 +732,27 @@
       ]
     },
     {
+      "source": "frontend/src/components/SelectField.weapp.tsx",
+      "bytes": 1147,
+      "packages": [
+        "account",
+        "lazy",
+        "study"
+      ]
+    },
+    {
       "source": "frontend/src/components/JapaneseWordRuby.tsx",
       "bytes": 1115,
       "packages": [
         "grammar-pages",
+        "lazy",
+        "study"
+      ]
+    },
+    {
+      "source": "frontend/src/lib/level-setup-flow.ts",
+      "bytes": 1099,
+      "packages": [
         "lazy",
         "study"
       ]
@@ -637,6 +768,15 @@
     {
       "source": "frontend/src/lib/yield-to-paint.ts",
       "bytes": 957,
+      "packages": [
+        "account",
+        "lazy",
+        "study"
+      ]
+    },
+    {
+      "source": "frontend/src/components/DailyPlanSlider.weapp.tsx",
+      "bytes": 839,
       "packages": [
         "account",
         "lazy",
@@ -672,6 +812,24 @@
       ]
     },
     {
+      "source": "frontend/src/lib/grammar-events.ts",
+      "bytes": 347,
+      "packages": [
+        "lazy",
+        "main"
+      ]
+    },
+    {
+      "source": "frontend/src/app/AppContext.tsx",
+      "bytes": 327,
+      "packages": [
+        "account",
+        "content-pages",
+        "lazy",
+        "study"
+      ]
+    },
+    {
       "source": "frontend/src/types/grammar.ts",
       "bytes": 149,
       "packages": [
@@ -690,11 +848,11 @@
       ]
     }
   ],
-  "duplicatedCoreModuleCount": 29,
+  "duplicatedCoreModuleCount": 39,
   "duplicatedCoreModules": [
     {
       "source": "frontend/src/lib/vocab-test.ts",
-      "bytes": 49987,
+      "bytes": 50023,
       "packages": [
         "grammar-pages",
         "lazy",
@@ -704,7 +862,7 @@
     },
     {
       "source": "frontend/src/lib/conjugation-explanation.ts",
-      "bytes": 42723,
+      "bytes": 42750,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -714,17 +872,8 @@
       "reason": "Conjugation explanations are derived from static verb-pair hints; the module keeps no user-data cache."
     },
     {
-      "source": "frontend/src/lib/analytics/weekly.ts",
-      "bytes": 32865,
-      "packages": [
-        "content-pages",
-        "lazy"
-      ],
-      "reason": "Weekly metrics are calculated from query results on demand; no user records are cached in the module."
-    },
-    {
       "source": "frontend/src/lib/audio-pack-cache.ts",
-      "bytes": 32850,
+      "bytes": 32940,
       "packages": [
         "account",
         "content-pages",
@@ -735,8 +884,36 @@
       "reason": "The class definition can be duplicated; audio-pack-platform.weapp stores its sole live instance on globalThis for all route bundles."
     },
     {
+      "source": "frontend/src/lib/analytics/weekly.ts",
+      "bytes": 32892,
+      "packages": [
+        "content-pages",
+        "lazy"
+      ],
+      "reason": "Weekly metrics are calculated from query results on demand; no user records are cached in the module."
+    },
+    {
+      "source": "frontend/src/lib/word-list-import.ts",
+      "bytes": 27824,
+      "packages": [
+        "account",
+        "lazy"
+      ],
+      "reason": "The account import page and lazy sync replay use the same deterministic parser/materializer; all writes and cache invalidation go through the shared database and main-package word-library singleton, with no module-local user state."
+    },
+    {
+      "source": "frontend/src/lib/daily-plan.ts",
+      "bytes": 20140,
+      "packages": [
+        "account",
+        "lazy",
+        "study"
+      ],
+      "reason": "The lazy setup panel and account/study plan pages calculate from the shared database and persisted preferences on every call; baseline values live in localStorage, not a module cache."
+    },
+    {
       "source": "frontend/src/lib/study-focus.ts",
-      "bytes": 18606,
+      "bytes": 18633,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -747,7 +924,7 @@
     },
     {
       "source": "frontend/src/lib/audio-pack-platform.weapp.ts",
-      "bytes": 18216,
+      "bytes": 18261,
       "packages": [
         "account",
         "content-pages",
@@ -759,7 +936,7 @@
     },
     {
       "source": "frontend/src/lib/analytics/weekly-reports.ts",
-      "bytes": 15645,
+      "bytes": 15663,
       "packages": [
         "content-pages",
         "lazy"
@@ -768,7 +945,7 @@
     },
     {
       "source": "frontend/src/lib/share-canvas.weapp.ts",
-      "bytes": 13191,
+      "bytes": 13227,
       "packages": [
         "content-pages",
         "lazy",
@@ -778,7 +955,7 @@
     },
     {
       "source": "frontend/src/lib/token-dictionary.ts",
-      "bytes": 12218,
+      "bytes": 12236,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -789,7 +966,7 @@
     },
     {
       "source": "frontend/src/lib/speech-packs.ts",
-      "bytes": 11782,
+      "bytes": 11809,
       "packages": [
         "account",
         "content-pages",
@@ -800,8 +977,17 @@
       "reason": "All catalog/cache/transfer state belongs to the process-wide client. Preferences and voice ownership are read live; plan arrays are not retained."
     },
     {
+      "source": "frontend/src/lib/profile-sync.ts",
+      "bytes": 11070,
+      "packages": [
+        "account",
+        "lazy"
+      ],
+      "reason": "The lazy post-login callback and independent account routes read account-keyed pending flags and avatar signatures from shared Preferences on every call; this module retains no session, profile or retry queue in memory."
+    },
+    {
       "source": "frontend/src/lib/team-activity.ts",
-      "bytes": 10954,
+      "bytes": 10981,
       "packages": [
         "lazy",
         "study"
@@ -809,8 +995,17 @@
       "reason": "Study rows and account-keyed caches are read from SQLite/localStorage on each call; only request coalescing is module-local, and duplicate route requests merge activity idempotently on the Worker."
     },
     {
+      "source": "frontend/src/lib/privacy-policy-content.ts",
+      "bytes": 10104,
+      "packages": [
+        "account",
+        "lazy"
+      ],
+      "reason": "The lazy auth dialog and account legal pages read the same immutable bundled policy text; consent-version constants remain shared in legal-versions.ts and no consent state is stored here."
+    },
+    {
       "source": "frontend/src/lib/share-image.weapp.ts",
-      "bytes": 7404,
+      "bytes": 7422,
       "packages": [
         "content-pages",
         "lazy",
@@ -819,8 +1014,18 @@
       "reason": "Share and save operations use the image passed to each call and retain no mutable user state."
     },
     {
+      "source": "frontend/src/lib/jlpt/status.ts",
+      "bytes": 7283,
+      "packages": [
+        "account",
+        "lazy",
+        "study"
+      ],
+      "reason": "The lazy setup panel and study plan route query current database progress and persisted preferences; this module retains no user data."
+    },
+    {
       "source": "frontend/src/lib/audio-pack-format.ts",
-      "bytes": 6939,
+      "bytes": 6975,
       "packages": [
         "account",
         "content-pages",
@@ -832,7 +1037,7 @@
     },
     {
       "source": "frontend/src/lib/speech.weapp.ts",
-      "bytes": 6811,
+      "bytes": 6829,
       "packages": [
         "account",
         "content-pages",
@@ -844,7 +1049,7 @@
     },
     {
       "source": "frontend/src/lib/distinction-quiz.ts",
-      "bytes": 6302,
+      "bytes": 6320,
       "packages": [
         "grammar-pages",
         "lazy",
@@ -854,7 +1059,7 @@
     },
     {
       "source": "frontend/src/lib/grammarProgressPreferences.ts",
-      "bytes": 5120,
+      "bytes": 5138,
       "packages": [
         "grammar-pages",
         "lazy"
@@ -863,7 +1068,7 @@
     },
     {
       "source": "frontend/src/lib/speech-audio.ts",
-      "bytes": 4985,
+      "bytes": 5003,
       "packages": [
         "account",
         "content-pages",
@@ -875,12 +1080,22 @@
     },
     {
       "source": "frontend/src/lib/team-rules.ts",
-      "bytes": 4899,
+      "bytes": 4908,
       "packages": [
         "lazy",
         "study"
       ],
       "reason": "Team periods, check-in eligibility, and duel scores are pure calculations over supplied values; the module keeps no mutable state."
+    },
+    {
+      "source": "frontend/src/lib/plan/content-matrix.ts",
+      "bytes": 4385,
+      "packages": [
+        "account",
+        "lazy",
+        "study"
+      ],
+      "reason": "Setup previews and plan routes share deterministic matrices over bundled content counts; user input and preview results are passed to each call and never cached."
     },
     {
       "source": "frontend/src/lib/useStudyTimer.ts",
@@ -895,7 +1110,7 @@
     },
     {
       "source": "frontend/src/lib/study-clock.ts",
-      "bytes": 3363,
+      "bytes": 3372,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -903,6 +1118,17 @@
         "study"
       ],
       "reason": "Timer state is passed immutably between calls and belongs to the mounted page, not a module singleton."
+    },
+    {
+      "source": "frontend/src/lib/grammar-form-target.ts",
+      "bytes": 2775,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy",
+        "study"
+      ],
+      "reason": "Grammar form matching is a pure calculation over the supplied grammar point."
     },
     {
       "source": "frontend/src/lib/page-share.weapp.ts",
@@ -914,19 +1140,8 @@
       "reason": "Share cards are stored on the native page instance, not in module state, so the main-package and lazy copies see the same card."
     },
     {
-      "source": "frontend/src/lib/grammar-form-target.ts",
-      "bytes": 2766,
-      "packages": [
-        "content-pages",
-        "grammar-pages",
-        "lazy",
-        "study"
-      ],
-      "reason": "Grammar form matching is a pure calculation over the supplied grammar point."
-    },
-    {
       "source": "frontend/src/lib/grammar-title-furigana.ts",
-      "bytes": 2469,
+      "bytes": 2496,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -934,6 +1149,25 @@
         "study"
       ],
       "reason": "Memoized values are deterministic lookups over bundled title-furigana content, not user data."
+    },
+    {
+      "source": "frontend/src/lib/user-agreement-content.ts",
+      "bytes": 2351,
+      "packages": [
+        "account",
+        "lazy"
+      ],
+      "reason": "The lazy auth dialog and account legal pages read immutable agreement text; consent records and version constants are not cached in this content module."
+    },
+    {
+      "source": "frontend/src/lib/plan/load-model.ts",
+      "bytes": 2338,
+      "packages": [
+        "account",
+        "lazy",
+        "study"
+      ],
+      "reason": "Plan load estimates are pure calculations over supplied quotas and fixed age coefficients, with no module-local user state."
     },
     {
       "source": "frontend/src/lib/grammar-key-points.ts",
@@ -974,6 +1208,15 @@
       "reason": "Haptics call the Mini Program vibration API per invocation and keep no module state."
     },
     {
+      "source": "frontend/src/lib/level-setup-flow.ts",
+      "bytes": 1099,
+      "packages": [
+        "lazy",
+        "study"
+      ],
+      "reason": "Setup completion uses shared database, preferences and progress events on each call; the module owns no session state."
+    },
+    {
       "source": "frontend/src/lib/yield-to-paint.ts",
       "bytes": 957,
       "packages": [
@@ -992,38 +1235,57 @@
         "lazy"
       ],
       "reason": "Notes are read from and written to app-wide localStorage on every call; this module has no in-memory note cache."
+    },
+    {
+      "source": "frontend/src/lib/grammar-events.ts",
+      "bytes": 347,
+      "packages": [
+        "lazy",
+        "main"
+      ],
+      "reason": "Only immutable event-name constants are duplicated; event dispatch/listeners belong to the shared TaroWindow."
     }
   ],
   "coreDuplicateReasons": {
     "frontend/src/lib/vocab-test.ts": "Question selection and scoring are calculated on demand; active sessions live in the shared database, not a module cache.",
     "frontend/src/lib/conjugation-explanation.ts": "Conjugation explanations are derived from static verb-pair hints; the module keeps no user-data cache.",
-    "frontend/src/lib/analytics/weekly.ts": "Weekly metrics are calculated from query results on demand; no user records are cached in the module.",
     "frontend/src/lib/audio-pack-cache.ts": "The class definition can be duplicated; audio-pack-platform.weapp stores its sole live instance on globalThis for all route bundles.",
+    "frontend/src/lib/analytics/weekly.ts": "Weekly metrics are calculated from query results on demand; no user records are cached in the module.",
+    "frontend/src/lib/word-list-import.ts": "The account import page and lazy sync replay use the same deterministic parser/materializer; all writes and cache invalidation go through the shared database and main-package word-library singleton, with no module-local user state.",
+    "frontend/src/lib/daily-plan.ts": "The lazy setup panel and account/study plan pages calculate from the shared database and persisted preferences on every call; baseline values live in localStorage, not a module cache.",
     "frontend/src/lib/study-focus.ts": "Each isolated route package mounts only its own study source; partial baseline windows are persisted on page exit, countdown state is deliberately discarded, and rewards are guarded by unique database ledger keys.",
     "frontend/src/lib/audio-pack-platform.weapp.ts": "globalThis.__shushugoAudioPackClient is shared by every subpackage; only that instance owns the wx file ledger and transfer queue.",
     "frontend/src/lib/analytics/weekly-reports.ts": "Reports are read from and written to the shared database on each call; the module keeps no report snapshot.",
     "frontend/src/lib/share-canvas.weapp.ts": "The canvas and file sequence are temporary rendering state scoped to a page bundle, not persisted user data.",
     "frontend/src/lib/token-dictionary.ts": "Dictionary matches are computed from the supplied database rows; results are not retained in a module cache.",
     "frontend/src/lib/speech-packs.ts": "All catalog/cache/transfer state belongs to the process-wide client. Preferences and voice ownership are read live; plan arrays are not retained.",
+    "frontend/src/lib/profile-sync.ts": "The lazy post-login callback and independent account routes read account-keyed pending flags and avatar signatures from shared Preferences on every call; this module retains no session, profile or retry queue in memory.",
     "frontend/src/lib/team-activity.ts": "Study rows and account-keyed caches are read from SQLite/localStorage on each call; only request coalescing is module-local, and duplicate route requests merge activity idempotently on the Worker.",
+    "frontend/src/lib/privacy-policy-content.ts": "The lazy auth dialog and account legal pages read the same immutable bundled policy text; consent-version constants remain shared in legal-versions.ts and no consent state is stored here.",
     "frontend/src/lib/share-image.weapp.ts": "Share and save operations use the image passed to each call and retain no mutable user state.",
+    "frontend/src/lib/jlpt/status.ts": "The lazy setup panel and study plan route query current database progress and persisted preferences; this module retains no user data.",
     "frontend/src/lib/audio-pack-format.ts": "SAP1 encoding/catalog validation are pure functions; there is no module-level cache.",
     "frontend/src/lib/speech.weapp.ts": "Only public voice-index content and package-local audio handles are cached; user preferences are read live and no study data is cached.",
     "frontend/src/lib/distinction-quiz.ts": "Question groups and results are derived from the shared database on demand; there is no module-level user-data cache.",
     "frontend/src/lib/grammarProgressPreferences.ts": "The WeakSet records only an idempotent legacy-migration marker per DB object; position values remain in the shared database.",
     "frontend/src/lib/speech-audio.ts": "Reading normalization and audio hashes are pure functions with no user state.",
     "frontend/src/lib/team-rules.ts": "Team periods, check-in eligibility, and duel scores are pure calculations over supplied values; the module keeps no mutable state.",
+    "frontend/src/lib/plan/content-matrix.ts": "Setup previews and plan routes share deterministic matrices over bundled content counts; user input and preview results are passed to each call and never cached.",
     "frontend/src/lib/useStudyTimer.ts": "Timer state and intervals belong to each mounted React hook instance; no shared module state is retained.",
     "frontend/src/lib/study-clock.ts": "Timer state is passed immutably between calls and belongs to the mounted page, not a module singleton.",
-    "frontend/src/lib/page-share.weapp.ts": "Share cards are stored on the native page instance, not in module state, so the main-package and lazy copies see the same card.",
     "frontend/src/lib/grammar-form-target.ts": "Grammar form matching is a pure calculation over the supplied grammar point.",
+    "frontend/src/lib/page-share.weapp.ts": "Share cards are stored on the native page instance, not in module state, so the main-package and lazy copies see the same card.",
     "frontend/src/lib/grammar-title-furigana.ts": "Memoized values are deterministic lookups over bundled title-furigana content, not user data.",
+    "frontend/src/lib/user-agreement-content.ts": "The lazy auth dialog and account legal pages read immutable agreement text; consent records and version constants are not cached in this content module.",
+    "frontend/src/lib/plan/load-model.ts": "Plan load estimates are pure calculations over supplied quotas and fixed age coefficients, with no module-local user state.",
     "frontend/src/lib/grammar-key-points.ts": "The module reads bundled grammar key-point content and retains no mutable user state.",
     "frontend/src/lib/study-totals.ts": "Study totals are queried from the shared database on demand; query results are not cached.",
     "frontend/src/lib/grammar-numbering.ts": "Ordinal maps are derived only from bundled grammar records and are safe package-local content caches.",
     "frontend/src/lib/haptics.weapp.ts": "Haptics call the Mini Program vibration API per invocation and keep no module state.",
+    "frontend/src/lib/level-setup-flow.ts": "Setup completion uses shared database, preferences and progress events on each call; the module owns no session state.",
     "frontend/src/lib/yield-to-paint.ts": "The helper schedules a paint yield and retains no state.",
-    "frontend/src/lib/grammarNotes.ts": "Notes are read from and written to app-wide localStorage on every call; this module has no in-memory note cache."
+    "frontend/src/lib/grammarNotes.ts": "Notes are read from and written to app-wide localStorage on every call; this module has no in-memory note cache.",
+    "frontend/src/lib/grammar-events.ts": "Only immutable event-name constants are duplicated; event dispatch/listeners belong to the shared TaroWindow."
   },
   "unapprovedCoreDuplicates": [],
   "staleCoreAllowlist": [],
@@ -1034,7 +1296,7 @@
   "duplicatedPageComponents": [
     {
       "source": "frontend/src/pages/Library.tsx",
-      "bytes": 33448,
+      "bytes": 33484,
       "packages": [
         "grammar-pages",
         "lazy"
@@ -1042,8 +1304,26 @@
       "reason": "The grammar tab and grammar library subpackage each render this route from their isolated package graphs."
     },
     {
+      "source": "frontend/src/components/LevelSetup.tsx",
+      "bytes": 24640,
+      "packages": [
+        "lazy",
+        "study"
+      ],
+      "reason": "The lazy global setup dialog and account plan page each mount their own React state; persisted settings and onboarding completion use the shared database and preferences."
+    },
+    {
+      "source": "frontend/src/components/AuthDialog.weapp.tsx",
+      "bytes": 24462,
+      "packages": [
+        "account",
+        "lazy"
+      ],
+      "reason": "The lazy global auth dialog and standalone account login route have separate mounted form state; authentication and payment runtimes remain pinned in main."
+    },
+    {
       "source": "frontend/src/pages/ConfusionPage.tsx",
-      "bytes": 19082,
+      "bytes": 19100,
       "packages": [
         "grammar-pages",
         "study"
@@ -1052,7 +1332,7 @@
     },
     {
       "source": "frontend/src/components/DailyPlanPanel.tsx",
-      "bytes": 16533,
+      "bytes": 16569,
       "packages": [
         "account",
         "study"
@@ -1061,7 +1341,7 @@
     },
     {
       "source": "frontend/src/pages/ImmersiveGrammar.tsx",
-      "bytes": 16048,
+      "bytes": 16057,
       "packages": [
         "grammar-pages",
         "lazy"
@@ -1079,7 +1359,7 @@
     },
     {
       "source": "frontend/src/pages/FavoritesPage.tsx",
-      "bytes": 15692,
+      "bytes": 15737,
       "packages": [
         "content-pages",
         "grammar-pages"
@@ -1088,7 +1368,7 @@
     },
     {
       "source": "frontend/src/pages/GrammarFoundationPage.tsx",
-      "bytes": 14764,
+      "bytes": 14782,
       "packages": [
         "content-pages",
         "grammar-pages"
@@ -1097,7 +1377,7 @@
     },
     {
       "source": "frontend/src/components/GrammarHighlightProvider.tsx",
-      "bytes": 14740,
+      "bytes": 14767,
       "packages": [
         "content-pages",
         "lazy"
@@ -1106,7 +1386,7 @@
     },
     {
       "source": "frontend/src/components/DailyPlanRing.weapp.tsx",
-      "bytes": 13050,
+      "bytes": 13059,
       "packages": [
         "account",
         "study"
@@ -1115,7 +1395,7 @@
     },
     {
       "source": "frontend/src/components/JapaneseRuby.tsx",
-      "bytes": 12878,
+      "bytes": 12914,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -1126,7 +1406,7 @@
     },
     {
       "source": "frontend/src/components/streak/StreakCelebration.tsx",
-      "bytes": 11707,
+      "bytes": 11725,
       "packages": [
         "lazy",
         "study"
@@ -1135,7 +1415,7 @@
     },
     {
       "source": "frontend/src/components/TokenDictionaryPopover.weapp.tsx",
-      "bytes": 11662,
+      "bytes": 11680,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -1146,7 +1426,7 @@
     },
     {
       "source": "frontend/src/components/grammar-term-hint-data.ts",
-      "bytes": 11044,
+      "bytes": 11053,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -1157,7 +1437,7 @@
     },
     {
       "source": "frontend/src/components/FloatingDoodlePen.weapp.tsx",
-      "bytes": 10094,
+      "bytes": 10103,
       "packages": [
         "grammar-pages",
         "lazy"
@@ -1166,7 +1446,7 @@
     },
     {
       "source": "frontend/src/pages/GrammarDetail.tsx",
-      "bytes": 8891,
+      "bytes": 8900,
       "packages": [
         "content-pages",
         "grammar-pages"
@@ -1175,7 +1455,7 @@
     },
     {
       "source": "frontend/src/components/FavoriteFolderPicker.tsx",
-      "bytes": 7899,
+      "bytes": 7917,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -1186,7 +1466,7 @@
     },
     {
       "source": "frontend/src/components/streak/StreakMoments.tsx",
-      "bytes": 7467,
+      "bytes": 7485,
       "packages": [
         "lazy",
         "study"
@@ -1194,8 +1474,17 @@
       "reason": "Streak celebration gate and spark are mounted by lazy tab pages and study-package pages; the once-per-day flags live in storage, not in module state."
     },
     {
+      "source": "frontend/src/components/ExamDatePicker.tsx",
+      "bytes": 7198,
+      "packages": [
+        "lazy",
+        "study"
+      ],
+      "reason": "The lazy setup panel and account plan route each own their mounted calendar selection; the picker retains no module-level state."
+    },
+    {
       "source": "frontend/src/components/ProReadingPreview.tsx",
-      "bytes": 6340,
+      "bytes": 6367,
       "packages": [
         "lazy",
         "study"
@@ -1204,7 +1493,7 @@
     },
     {
       "source": "frontend/src/components/ShareImageSheet.weapp.tsx",
-      "bytes": 4926,
+      "bytes": 4953,
       "packages": [
         "content-pages",
         "lazy",
@@ -1214,7 +1503,7 @@
     },
     {
       "source": "frontend/src/components/GrammarPointPopover.tsx",
-      "bytes": 4896,
+      "bytes": 4905,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -1225,7 +1514,7 @@
     },
     {
       "source": "frontend/src/components/CrossPlatformImage.weapp.tsx",
-      "bytes": 4846,
+      "bytes": 4873,
       "packages": [
         "account",
         "content-pages",
@@ -1236,7 +1525,7 @@
     },
     {
       "source": "frontend/src/components/daily-plan-ring-geometry.ts",
-      "bytes": 3920,
+      "bytes": 3947,
       "packages": [
         "account",
         "study"
@@ -1245,7 +1534,7 @@
     },
     {
       "source": "frontend/src/components/GrammarTermHint.weapp.tsx",
-      "bytes": 3789,
+      "bytes": 3798,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -1266,7 +1555,7 @@
     },
     {
       "source": "frontend/src/components/ZooConfetti.tsx",
-      "bytes": 2552,
+      "bytes": 2570,
       "packages": [
         "lazy",
         "study"
@@ -1275,7 +1564,7 @@
     },
     {
       "source": "frontend/src/components/Disclosure.weapp.tsx",
-      "bytes": 2115,
+      "bytes": 2124,
       "packages": [
         "account",
         "content-pages",
@@ -1293,6 +1582,40 @@
         "grammar-pages"
       ],
       "reason": "Example sentences are rendered from both content and grammar route packages."
+    },
+    {
+      "source": "frontend/src/components/ScrollArea.weapp.tsx",
+      "bytes": 1968,
+      "packages": [
+        "account",
+        "content-pages",
+        "grammar-pages",
+        "lazy",
+        "study"
+      ],
+      "reason": "The lazy overlays and independent account routes render native ScrollViews; scroll state belongs to the mounted control."
+    },
+    {
+      "source": "frontend/src/components/MascotSay.tsx",
+      "bytes": 1595,
+      "packages": [
+        "account",
+        "content-pages",
+        "grammar-pages",
+        "lazy",
+        "study"
+      ],
+      "reason": "The lazy overlays and account setup page render this stateless presentational wrapper using the shared mascot adapter."
+    },
+    {
+      "source": "frontend/src/components/SelectField.weapp.tsx",
+      "bytes": 1147,
+      "packages": [
+        "account",
+        "lazy",
+        "study"
+      ],
+      "reason": "The lazy setup panel and independent account forms render native Pickers using values/callbacks passed as props; no module cache exists."
     },
     {
       "source": "frontend/src/components/JapaneseWordRuby.tsx",
@@ -1314,6 +1637,16 @@
       "reason": "Review controls appear in the content and grammar route packages."
     },
     {
+      "source": "frontend/src/components/DailyPlanSlider.weapp.tsx",
+      "bytes": 839,
+      "packages": [
+        "account",
+        "lazy",
+        "study"
+      ],
+      "reason": "The lazy setup panel and account/study plan pages render native Sliders; values and commit callbacks are owned by each mounted parent, not this stateless adapter."
+    },
+    {
       "source": "frontend/src/components/JapaneseRubyText.weapp.tsx",
       "bytes": 602,
       "packages": [
@@ -1327,6 +1660,8 @@
   ],
   "pageComponentDuplicateReasons": {
     "frontend/src/pages/Library.tsx": "The grammar tab and grammar library subpackage each render this route from their isolated package graphs.",
+    "frontend/src/components/LevelSetup.tsx": "The lazy global setup dialog and account plan page each mount their own React state; persisted settings and onboarding completion use the shared database and preferences.",
+    "frontend/src/components/AuthDialog.weapp.tsx": "The lazy global auth dialog and standalone account login route have separate mounted form state; authentication and payment runtimes remain pinned in main.",
     "frontend/src/pages/ConfusionPage.tsx": "The study quiz and grammar subpackage include this route in separate package entry graphs.",
     "frontend/src/components/DailyPlanPanel.tsx": "The study tab and account routes render this panel from isolated package graphs.",
     "frontend/src/pages/ImmersiveGrammar.tsx": "The tab bundle and grammar subpackage each contain this independently reachable route.",
@@ -1343,6 +1678,7 @@
     "frontend/src/pages/GrammarDetail.tsx": "Grammar detail is reachable through both content and grammar route packages.",
     "frontend/src/components/FavoriteFolderPicker.tsx": "The folder picker is shared by study, content, grammar, and lazy tab routes.",
     "frontend/src/components/streak/StreakMoments.tsx": "Streak celebration gate and spark are mounted by lazy tab pages and study-package pages; the once-per-day flags live in storage, not in module state.",
+    "frontend/src/components/ExamDatePicker.tsx": "The lazy setup panel and account plan route each own their mounted calendar selection; the picker retains no module-level state.",
     "frontend/src/components/ProReadingPreview.tsx": "The study and lazy tab routes each render the reading preview.",
     "frontend/src/components/ShareImageSheet.weapp.tsx": "The share sheet is rendered by study, content, and lazy tab routes in their own package graphs.",
     "frontend/src/components/GrammarPointPopover.tsx": "Grammar point previews are used by lazy tabs and content/grammar routes.",
@@ -1353,11 +1689,15 @@
     "frontend/src/components/ZooConfetti.tsx": "Confetti state and its timer are scoped to each mounted celebration; it is a visual effect with no shared or persisted user state.",
     "frontend/src/components/Disclosure.weapp.tsx": "Zoo, grammar, account, and study pages render this small disclosure in isolated package graphs; open state belongs to each mounted control and no user data is cached.",
     "frontend/src/components/ExampleSentence.tsx": "Example sentences are rendered from both content and grammar route packages.",
+    "frontend/src/components/ScrollArea.weapp.tsx": "The lazy overlays and independent account routes render native ScrollViews; scroll state belongs to the mounted control.",
+    "frontend/src/components/MascotSay.tsx": "The lazy overlays and account setup page render this stateless presentational wrapper using the shared mascot adapter.",
+    "frontend/src/components/SelectField.weapp.tsx": "The lazy setup panel and independent account forms render native Pickers using values/callbacks passed as props; no module cache exists.",
     "frontend/src/components/JapaneseWordRuby.tsx": "Word ruby rendering is used in the study, grammar, and lazy tab routes.",
     "frontend/src/components/ReviewButton.tsx": "Review controls appear in the content and grammar route packages.",
+    "frontend/src/components/DailyPlanSlider.weapp.tsx": "The lazy setup panel and account/study plan pages render native Sliders; values and commit callbacks are owned by each mounted parent, not this stateless adapter.",
     "frontend/src/components/JapaneseRubyText.weapp.tsx": "Ruby text is used by lazy tabs and independently loaded content/grammar routes."
   },
-  "duplicatedPageComponentBytes": 281864,
+  "duplicatedPageComponentBytes": 344199,
   "unapprovedPageComponents": [],
   "stalePageComponentAllowlist": [],
   "unapprovedPageComponentBytes": 0,
@@ -1367,20 +1707,20 @@
   "webModulePolicy": "error",
   "mainTopModules": [
     {
-      "source": "frontend/src/lib/sync-api.ts",
-      "bytes": 168237
-    },
-    {
       "source": "frontend/src/app.css",
-      "bytes": 146893
+      "bytes": 145929
     },
     {
       "source": "frontend/src/lib/word-api.ts",
-      "bytes": 141975
+      "bytes": 142074
     },
     {
       "source": "frontend/src/styles.css",
-      "bytes": 133879
+      "bytes": 131743
+    },
+    {
+      "source": "frontend/src/lib/sync-api.ts",
+      "bytes": 120060
     },
     {
       "source": "taro-spike-2/node_modules/react-reconciler/cjs/react-reconciler.production.min.js",
@@ -1388,23 +1728,23 @@
     },
     {
       "source": "wechat-miniprogram/src/vendor/sql-wasm.js",
-      "bytes": 91227
+      "bytes": 91308
     },
     {
       "source": "frontend/src/lib/storage.ts",
-      "bytes": 90130
-    },
-    {
-      "source": "taro-spike-2/src/platform/WeappPage.tsx",
-      "bytes": 89479
+      "bytes": 90247
     },
     {
       "source": "frontend/src/lib/study-core.ts",
-      "bytes": 87246
+      "bytes": 87291
     },
     {
       "source": "frontend/src/design.css",
-      "bytes": 75131
+      "bytes": 74439
+    },
+    {
+      "source": "taro-spike-2/src/platform/WeappPage.tsx",
+      "bytes": 63897
     }
   ],
   "passes": true

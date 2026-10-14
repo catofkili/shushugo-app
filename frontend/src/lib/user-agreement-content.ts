@@ -1,6 +1,6 @@
 export const USER_AGREEMENT_TITLE = "收集日用户协议";
 export const USER_AGREEMENT_EFFECTIVE_DATE = "2026 年 9 月 22 日";
-export const USER_AGREEMENT_VERSION = "2026-09-22";
+export { USER_AGREEMENT_VERSION } from "./legal-versions";
 
 export interface UserAgreementSection {
   title: string;

@@ -1,9 +1,12 @@
 {
-  "appWxssBytesBefore": 273292,
-  "appWxssBytesAfter": 216307,
+  "appWxssBytesBefore": 269210,
+  "appWxssBytesAfter": 204515,
   "movedRuleBytesByRoute": {
+    "account/personal-info/index.wxss": 4644,
+    "content-pages/achievements/index.wxss": 4644,
     "content-pages/weekly-report/index.wxss": 161,
     "content-pages/yuzu-shop/index.wxss": 16013,
+    "pages/word/index.wxss": 3066,
     "study/confusion/index.wxss": 8496,
     "study/jlpt-practice/index.wxss": 5375,
     "study/kanji-readings/index.wxss": 12069,
@@ -17,11 +20,14 @@
     "study/word-list/index.wxss": 127,
     "study/team/index.wxss": 118,
     "content-pages/weekly-report/index.wxss": 2,
+    "content-pages/achievements/index.wxss": 53,
+    "account/personal-info/index.wxss": 53,
     "study/quick-study/index.wxss": 92,
     "study/confusion/index.wxss": 79,
     "study/kanji-readings/index.wxss": 113,
     "study/vocab-test/index.wxss": 35,
-    "study/jlpt-practice/index.wxss": 63
+    "study/jlpt-practice/index.wxss": 63,
+    "pages/word/index.wxss": 37
   },
   "routes": {
     "vocabTest": "study/vocab-test/index.wxss",
@@ -33,6 +39,8 @@
     "confusion": "study/confusion/index.wxss",
     "kanjiReadings": "study/kanji-readings/index.wxss",
     "word": "pages/word/index.wxss",
+    "achievements": "content-pages/achievements/index.wxss",
+    "personalInfo": "account/personal-info/index.wxss",
     "talk": "study/talk/index.wxss",
     "jlptPractice": "study/jlpt-practice/index.wxss"
   }

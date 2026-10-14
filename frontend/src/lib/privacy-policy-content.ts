@@ -7,7 +7,7 @@
 
 export const PRIVACY_POLICY_TITLE = "收集日隐私政策";
 export const PRIVACY_POLICY_EFFECTIVE_DATE = "2026 年 10 月 13 日";
-export const PRIVACY_POLICY_VERSION = "2026-09-27";
+export { PRIVACY_POLICY_VERSION } from "./legal-versions";
 export const PRIVACY_POLICY_CONTACT = "请通过 App Store 的应用支持入口联系开发者";
 
 export interface PrivacyPolicySection {

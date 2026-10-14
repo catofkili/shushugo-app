@@ -123,8 +123,8 @@ FROM users WHERE email = ${sqlText(email)};`;
 };
 
 const createSql = async ({ email, password, displayName, days, product, verifyEmail }) => {
-  const terms = readVersion("frontend/src/lib/user-agreement-content.ts", "USER_AGREEMENT_VERSION");
-  const privacy = readVersion("frontend/src/lib/privacy-policy-content.ts", "PRIVACY_POLICY_VERSION");
+  const terms = readVersion("frontend/src/lib/legal-versions.ts", "USER_AGREEMENT_VERSION");
+  const privacy = readVersion("frontend/src/lib/legal-versions.ts", "PRIVACY_POLICY_VERSION");
   const id = randomUUID();
   const salt = randomToken(16);
   const hash = await hashPassword(password, salt);

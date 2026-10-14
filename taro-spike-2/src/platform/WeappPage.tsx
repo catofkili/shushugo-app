@@ -1,4 +1,10 @@
 import './app-polyfills.weapp';
+// 弹层随 lazy 加载，但 createPortal 适配器必须沿用主包 renderer，不能在异步块复制 React reconciler。
+import './react-dom.weapp';
+// 这三份分别保有反馈订阅、支付运行态、可失效词性缓存；异步外壳和分包必须共享同一实例。
+import '../../../frontend/src/lib/feedback';
+import '../../../frontend/src/lib/purchases';
+import '../../../frontend/src/lib/word-library';
 // ⚠️ 标签页界面在 lazy 分包（platform/lazy-route.tsx），被它和别的分包同时用到的模块会各打一份拷贝。
 // 纯函数和出厂内容缓存无所谓；**按数据库缓存用户数据的模块必须只有一份**——在这里静态引用一次，它就进主包，
 // 异步块和各分包都用主包这份。grammarHighlights 的 dbCaches：详情页那份写了新重点，语法页那份缓存不失效就看不到。
@@ -7,7 +13,6 @@ import { Suspense, useEffect, useState, useSyncExternalStore, type ComponentType
 import { ScrollView, Text, View } from '@tarojs/components';
 import Taro, { useDidShow } from '@tarojs/taro';
 import type { AppContextValue, AppNavigationParams } from '../../../frontend/src/app/AppContext';
-import { AppShell, markTrialNoticeRead } from '../../../frontend/src/app/AppShell';
 import { createAppActions } from '../../../frontend/src/app/actions';
 import { getAppState, setAppState, useAppState, type AppState } from '../../../frontend/src/app/app-store';
 import type { Page, StudyMode } from '../../../frontend/src/types/app';
@@ -18,7 +23,6 @@ import { finishStartupTiming, perfRecord, perfTime, perfTimeAsync } from '../../
 import { canUseFeature, type FeatureId } from '../../../frontend/src/lib/entitlements';
 import { getProgressOverview } from '../../../frontend/src/lib/api';
 import { getCloudSession, CLOUD_SYNC_EVENT, CLOUD_AUTH_EVENT, LEVEL_PLAN_TRIAL_EXPIRES_KEY, LEVEL_PLAN_TRIAL_NOTICE_KEY, type CloudSession, type CloudSyncEventDetail } from '../../../frontend/src/lib/sync-api';
-import { syncUserProfileAfterLogin } from '../../../frontend/src/lib/profile-sync';
 import { defaultStudyMode, getStudyMode, saveStudyMode } from '../../../frontend/src/lib/studyMode';
 import { getResolvedTheme, getStudyPreferences, PREFERENCES_EVENT } from '../../../frontend/src/lib/studyPreferences';
 import { equippedItem, YUZU_EVENT } from '../../../frontend/src/lib/yuzu';
@@ -42,6 +46,11 @@ let activeRefreshOverview = () => undefined;
 let globalEventsInstalled = false;
 let levelSetupChecked = false;
 let syncConflictNotice = '';
+// 外壳只含渲染组件；在原有数据载入期并行预加载，不能给每个弹层增加一次点击后的下载等待。
+let shellPromise: Promise<typeof import('../../../frontend/src/app/AppShell')> | null = null;
+const loadShell = () => shellPromise ??= import(
+  /* webpackMode: "lazy", webpackChunkName: "lazy/tabs" */ '../../../frontend/src/app/AppShell'
+).catch((error) => { shellPromise = null; throw error; });
 
 function installGlobalEvents() {
   if (globalEventsInstalled || typeof window === 'undefined') return;
@@ -89,6 +98,7 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
   const entitlements = useEntitlements();
   const ui = useSyncExternalStore(subscribeUiState, getUiState, getUiState);
   const [ready, setReady] = useState(false);
+  const [shell, setShell] = useState<typeof import('../../../frontend/src/app/AppShell') | null>(null);
   const [error, setError] = useState('');
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [skin, setSkin] = useState('');
@@ -102,7 +112,11 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
     let cancelled = false;
     // 计时版里记每个页面从挂载到能用花多久（用户报「单词和语法加载几秒」「进组队页十秒」）；普通构建里 perfRecord 是空操作。
     const openedAt = Date.now();
-    ensureDatabase()
+    Promise.all([ensureDatabase(), loadShell()])
+      .then(([, shell]) => {
+        if (cancelled) return;
+        setShell(shell);
+      })
       .then(() => Promise.all([
         perfTimeAsync('启动 · 汉字和辨析内容就绪', () => readyForKanji()),
         grammarPages.has(page) ? perfTimeAsync(`页面 · ${page} 语法内容`, () => readyForGrammar()) : undefined
@@ -272,7 +286,10 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
     closeAuth: () => { closeAuth(); setAppState({ pendingAccountPage: null }); },
     handleAuthenticated: async (session) => {
       setCloudSession(session);
-      try { await syncUserProfileAfterLogin(session); }
+      try {
+        const { syncUserProfileAfterLogin } = await import(/* webpackMode: "lazy", webpackChunkName: "lazy/profile-sync" */ '../../../frontend/src/lib/profile-sync');
+        await syncUserProfileAfterLogin(session);
+      }
       catch { showNotice('账号已登录；个人资料将在恢复联网后继续同步。', 3200); }
       const pending = getAppState().pendingAccountPage;
       setAppState({ pendingAccountPage: null });
@@ -286,7 +303,8 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
     actions
   };
   if (error) return <View className="theme-light p-4"><Text>{error}</Text></View>;
-  if (!ready) return <View className="theme-light p-4"><Text>正在载入学习数据…</Text></View>;
+  if (!ready || !shell) return <View className="theme-light p-4"><Text>正在载入学习数据…</Text></View>;
+  const { AppShell, markTrialNoticeRead } = shell;
 
   return (
     // Web theme/skin rules are rooted at html[data-theme]/html[data-skin].

@@ -397,7 +397,7 @@ export async function mergeDatabaseBytes(remoteBytes: Uint8Array): Promise<Uint8
     const replayKanaReviews = tableExists(localDb, "kana_reviews")
       ? (await import("../kana-progress")).replayKanaReviews : undefined;
     const materializeCustomWords = tableExists(localDb, "custom_words")
-      ? (await import("../word-list-import")).materializeCustomWords : undefined;
+      ? (await import(/* webpackMode: "lazy", webpackChunkName: "lazy/word-list-import" */ "../word-list-import")).materializeCustomWords : undefined;
     const localState = stateOf(localDb, "local", syncedTables);
     const remoteState = stateOf(remoteDb, "remote", syncedTables);
     const merged = new Map<string, Map<string, VersionedItem>>();

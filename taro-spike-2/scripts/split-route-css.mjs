@@ -21,6 +21,8 @@ const routes = {
   confusion: 'study/confusion/index.wxss',
   kanjiReadings: 'study/kanji-readings/index.wxss',
   word: 'pages/word/index.wxss',
+  achievements: 'content-pages/achievements/index.wxss',
+  personalInfo: 'account/personal-info/index.wxss',
   // 开口练习样式只放在自己的 study 页面，保持主包体积。
   talk: 'study/talk/index.wxss',
   jlptPractice: 'study/jlpt-practice/index.wxss'
@@ -37,7 +39,8 @@ const prefixRoutes = [
   [['wl-'], [routes.wordList]],
   [['quick-'], [routes.quickStudy]],
   [['cf-'], [routes.confusion, routes.kanjiReadings]],
-  [['kr-'], [routes.kanjiReadings]]
+  [['kr-'], [routes.kanjiReadings]],
+  [['ach-'], [routes.achievements, routes.personalInfo]]
 ];
 
 function targetPackages(selector) {
@@ -65,6 +68,17 @@ function appendWrappedRule(sourceRule, rule, route) {
   out.append(child);
   moved.set(route, out);
   byteTotals.set(route, (byteTotals.get(route) ?? 0) + Buffer.byteLength(child.toString()));
+}
+
+// lazy 样式先按原有加载顺序合入，再拆分；只用于分包页的前缀也应经过同一道路由判据。
+// 主包 Tab 的样式仍留 app / 主包页面，不能 @import lazy 分包的私有 wxss。
+const lazyDir = path.join(dist, 'lazy');
+for (const name of fs.existsSync(lazyDir) ? fs.readdirSync(lazyDir) : []) {
+  if (!name.endsWith('.wxss')) continue;
+  const lazyPath = path.join(lazyDir, name);
+  const lazyCss = postcss.parse(fs.readFileSync(lazyPath, 'utf8'), { from: lazyPath });
+  appCss.append(lazyCss.nodes);
+  fs.writeFileSync(lazyPath, '');
 }
 
 appCss.walkRules((rule) => {
@@ -95,18 +109,7 @@ appCss.walkAtRules((rule) => {
   if (!rule.nodes?.length) rule.remove();
 });
 
-// ⚠️ 异步块（lazy/*.js）里只有它自己用到的 CSS，webpack 会抽成同名的 lazy/*.wxss（现在只有 lazy/tabs.wxss：
-// 四个标签页的界面代码，如 ZooHome 的 zoo-post-exam、拼写插播的 sp-）。但没有任何 wxss 引它，运行时的 <link> 在小程序里是空操作，
-// 所以这些规则在真机上全都不生效。lazy 是分包，主包的 app.wxss / 标签页 wxss 不能 @import 分包文件，
-// 所以整份并进 app.wxss（顺序在最后，和 webpack 原本的「异步块样式后加载」一致），原文件留空（runtime.js 还认这个路径）。
-const lazyDir = path.join(dist, 'lazy');
-for (const name of fs.existsSync(lazyDir) ? fs.readdirSync(lazyDir) : []) {
-  if (!name.endsWith('.wxss')) continue;
-  const lazyPath = path.join(lazyDir, name);
-  const lazyCss = postcss.parse(fs.readFileSync(lazyPath, 'utf8'), { from: lazyPath });
-  appCss.append(lazyCss.nodes);
-  fs.writeFileSync(lazyPath, '');
-}
+// 原 lazy wxss 留空：运行时 <link> 是空操作，但 webpack runtime 仍识别这些路径。
 
 for (const [relative, css] of moved) {
   const filename = path.join(dist, relative);

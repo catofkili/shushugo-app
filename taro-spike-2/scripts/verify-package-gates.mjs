@@ -9,6 +9,17 @@ const maxUnapprovedPageComponentBytes = 100_000;
 const coreModule = (source) => /(?:^frontend\/src\/lib\/|\/node_modules\/ts-fsrs\/)/.test(source);
 const pageComponent = (source) => /^frontend\/src\/(?:components|pages)\//.test(source);
 const allowedCoreDuplicates = {
+  // W1: 异步外壳与独立页面共享以下无用户缓存的模块；反馈、支付运行态、词性缓存仍固定在主包。
+  'frontend/src/lib/word-list-import.ts': 'The account import page and lazy sync replay use the same deterministic parser/materializer; all writes and cache invalidation go through the shared database and main-package word-library singleton, with no module-local user state.',
+  'frontend/src/lib/profile-sync.ts': 'The lazy post-login callback and independent account routes read account-keyed pending flags and avatar signatures from shared Preferences on every call; this module retains no session, profile or retry queue in memory.',
+  'frontend/src/lib/daily-plan.ts': 'The lazy setup panel and account/study plan pages calculate from the shared database and persisted preferences on every call; baseline values live in localStorage, not a module cache.',
+  'frontend/src/lib/jlpt/status.ts': 'The lazy setup panel and study plan route query current database progress and persisted preferences; this module retains no user data.',
+  'frontend/src/lib/plan/content-matrix.ts': 'Setup previews and plan routes share deterministic matrices over bundled content counts; user input and preview results are passed to each call and never cached.',
+  'frontend/src/lib/plan/load-model.ts': 'Plan load estimates are pure calculations over supplied quotas and fixed age coefficients, with no module-local user state.',
+  'frontend/src/lib/level-setup-flow.ts': 'Setup completion uses shared database, preferences and progress events on each call; the module owns no session state.',
+  'frontend/src/lib/grammar-events.ts': 'Only immutable event-name constants are duplicated; event dispatch/listeners belong to the shared TaroWindow.',
+  'frontend/src/lib/privacy-policy-content.ts': 'The lazy auth dialog and account legal pages read the same immutable bundled policy text; consent-version constants remain shared in legal-versions.ts and no consent state is stored here.',
+  'frontend/src/lib/user-agreement-content.ts': 'The lazy auth dialog and account legal pages read immutable agreement text; consent records and version constants are not cached in this content module.',
   'frontend/src/lib/vocab-test.ts': 'Question selection and scoring are calculated on demand; active sessions live in the shared database, not a module cache.',
   'frontend/src/lib/conjugation-explanation.ts': 'Conjugation explanations are derived from static verb-pair hints; the module keeps no user-data cache.',
   'frontend/src/lib/analytics/weekly.ts': 'Weekly metrics are calculated from query results on demand; no user records are cached in the module.',
@@ -44,6 +55,14 @@ const allowedCoreDuplicates = {
 // 2026-10-12 拼写并入单词标签页后，DailyPlanSlider.weapp.tsx 已进入主包、不再重复；
 // 24 个核心重复模块未变。改清单仍须对照本次构建，不能按旧 reports 把滑杆加回去。
 const allowedPageComponentDuplicates = {
+  // W1: 全局外壳预加载到 lazy/tabs，登录 / 计划页仍可独立进入；以下控件只保有挂载实例内的 UI 状态。
+  'frontend/src/components/LevelSetup.tsx': 'The lazy global setup dialog and account plan page each mount their own React state; persisted settings and onboarding completion use the shared database and preferences.',
+  'frontend/src/components/AuthDialog.weapp.tsx': 'The lazy global auth dialog and standalone account login route have separate mounted form state; authentication and payment runtimes remain pinned in main.',
+  'frontend/src/components/ExamDatePicker.tsx': 'The lazy setup panel and account plan route each own their mounted calendar selection; the picker retains no module-level state.',
+  'frontend/src/components/ScrollArea.weapp.tsx': 'The lazy overlays and independent account routes render native ScrollViews; scroll state belongs to the mounted control.',
+  'frontend/src/components/MascotSay.tsx': 'The lazy overlays and account setup page render this stateless presentational wrapper using the shared mascot adapter.',
+  'frontend/src/components/SelectField.weapp.tsx': 'The lazy setup panel and independent account forms render native Pickers using values/callbacks passed as props; no module cache exists.',
+  'frontend/src/components/DailyPlanSlider.weapp.tsx': 'The lazy setup panel and account/study plan pages render native Sliders; values and commit callbacks are owned by each mounted parent, not this stateless adapter.',
   'frontend/src/pages/Library.tsx': 'The grammar tab and grammar library subpackage each render this route from their isolated package graphs.',
   'frontend/src/pages/ConfusionPage.tsx': 'The study quiz and grammar subpackage include this route in separate package entry graphs.',
   'frontend/src/components/GrammarTermHint.weapp.tsx': 'Grammar term hints are rendered by both the lazy tab chunk and grammar/content routes (W6 weapp variant).',

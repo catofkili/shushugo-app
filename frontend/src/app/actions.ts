@@ -99,7 +99,7 @@ export function createAppActions(deps: ActionDependencies) {
       /**
        * 合并会删除词条行，先让用户看见范围，再确认；动手前存整库恢复点。
        */
-      const { duplicateMergePlan, mergeDuplicateWords } = await import("../lib/duplicate-merge");
+      const { duplicateMergePlan, mergeDuplicateWords } = await import(/* webpackMode: "lazy", webpackChunkName: "lazy/duplicate-merge" */ "../lib/duplicate-merge");
       const plan = duplicateMergePlan();
       if (!plan.pairs.length) {
         deps.showNotice("没有找到重复录入的词条。", 2600);
