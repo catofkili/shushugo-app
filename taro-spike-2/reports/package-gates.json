@@ -2,11 +2,11 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1897948,
+      "bytes": 1898041,
       "passes": true
     },
     "study": {
-      "bytes": 1111539,
+      "bytes": 1111620,
       "passes": true
     },
     "account": {
@@ -14,7 +14,7 @@
       "passes": true
     },
     "content-pages": {
-      "bytes": 1203406,
+      "bytes": 1204025,
       "passes": true
     },
     "features": {
@@ -42,7 +42,7 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 1014353,
+      "bytes": 1014387,
       "passes": true
     },
     "jlpt-bank": {
@@ -176,7 +176,7 @@
     },
     {
       "source": "frontend/src/components/streak/streak.css",
-      "bytes": 15886,
+      "bytes": 16022,
       "packages": [
         "lazy",
         "main"
@@ -334,18 +334,18 @@
       ]
     },
     {
-      "source": "frontend/src/lib/share-image.weapp.ts",
-      "bytes": 7404,
+      "source": "frontend/src/components/streak/StreakMoments.tsx",
+      "bytes": 7467,
       "packages": [
-        "content-pages",
         "lazy",
         "study"
       ]
     },
     {
-      "source": "frontend/src/components/streak/StreakMoments.tsx",
-      "bytes": 7292,
+      "source": "frontend/src/lib/share-image.weapp.ts",
+      "bytes": 7404,
       "packages": [
+        "content-pages",
         "lazy",
         "study"
       ]
@@ -1070,7 +1070,7 @@
     },
     {
       "source": "frontend/src/components/streak/streak.css",
-      "bytes": 15886,
+      "bytes": 16022,
       "packages": [
         "lazy",
         "main"
@@ -1186,7 +1186,7 @@
     },
     {
       "source": "frontend/src/components/streak/StreakMoments.tsx",
-      "bytes": 7292,
+      "bytes": 7467,
       "packages": [
         "lazy",
         "study"
@@ -1357,7 +1357,7 @@
     "frontend/src/components/ReviewButton.tsx": "Review controls appear in the content and grammar route packages.",
     "frontend/src/components/JapaneseRubyText.weapp.tsx": "Ruby text is used by lazy tabs and independently loaded content/grammar routes."
   },
-  "duplicatedPageComponentBytes": 281553,
+  "duplicatedPageComponentBytes": 281864,
   "unapprovedPageComponents": [],
   "stalePageComponentAllowlist": [],
   "unapprovedPageComponentBytes": 0,

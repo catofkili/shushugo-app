@@ -2,12 +2,12 @@
   "limitBytes": 2097152,
   "packages": {
     "main": {
-      "bytes": 1897948,
+      "bytes": 1898041,
       "mib": 1.81,
       "passes": true
     },
     "study": {
-      "bytes": 1111539,
+      "bytes": 1111620,
       "mib": 1.06,
       "passes": true
     },
@@ -17,7 +17,7 @@
       "passes": true
     },
     "content-pages": {
-      "bytes": 1203406,
+      "bytes": 1204025,
       "mib": 1.148,
       "passes": true
     },
@@ -52,7 +52,7 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 1014353,
+      "bytes": 1014387,
       "mib": 0.967,
       "passes": true
     },
@@ -67,17 +67,17 @@
       "passes": true
     }
   },
-  "totalBytes": 11768760,
+  "totalBytes": 11769587,
   "files": [
     {
       "path": "lazy/tabs.js",
       "package": "lazy",
-      "bytes": 1009416
+      "bytes": 1009450
     },
     {
       "path": "common.js",
       "package": "main",
-      "bytes": 914159
+      "bytes": 914205
     },
     {
       "path": "grammar-foundation/grammar.js",
@@ -152,7 +152,7 @@
     {
       "path": "app.wxss",
       "package": "main",
-      "bytes": 216260
+      "bytes": 216307
     },
     {
       "path": "features/content/kanji-variants.js",
@@ -535,19 +535,19 @@
       "bytes": 12101
     },
     {
-      "path": "account/pro/index.js",
-      "package": "account",
-      "bytes": 12065
-    },
-    {
       "path": "content-pages/sub-common/25b5ccc12b0a03ced83bb2b7f0626c5f.wxss",
       "package": "content-pages",
-      "bytes": 12023
+      "bytes": 12070
     },
     {
       "path": "study/sub-common/25b5ccc12b0a03ced83bb2b7f0626c5f.wxss",
       "package": "study",
-      "bytes": 12023
+      "bytes": 12070
+    },
+    {
+      "path": "account/pro/index.js",
+      "package": "account",
+      "bytes": 12065
     },
     {
       "path": "assets/brand/scene-stretch.png",
@@ -760,6 +760,11 @@
       "bytes": 7706
     },
     {
+      "path": "content-pages/streak/index.js",
+      "package": "content-pages",
+      "bytes": 7548
+    },
+    {
       "path": "content-pages/sub-common/9f2dd295e6b98be995c113658d17908a.js",
       "package": "content-pages",
       "bytes": 7480
@@ -773,11 +778,6 @@
       "path": "study/assets/brand/mood-idea.png",
       "package": "study",
       "bytes": 7372
-    },
-    {
-      "path": "content-pages/streak/index.js",
-      "package": "content-pages",
-      "bytes": 7245
     },
     {
       "path": "study/kanji-readings/index.js",
@@ -955,6 +955,11 @@
       "bytes": 5380
     },
     {
+      "path": "content-pages/streak/index.wxss",
+      "package": "content-pages",
+      "bytes": 5182
+    },
+    {
       "path": "account/sub-common/435c45a743d5b726294e3ff5efece75c.js",
       "package": "account",
       "bytes": 5137
@@ -983,11 +988,6 @@
       "path": "content-pages/achievements/index.js",
       "package": "content-pages",
       "bytes": 4920
-    },
-    {
-      "path": "content-pages/streak/index.wxss",
-      "package": "content-pages",
-      "bytes": 4913
     },
     {
       "path": "account/notifications/index.js",
@@ -1202,7 +1202,7 @@
     {
       "path": "study/sub-common/83b23b1c7ab4dfb4719e28cac5b6987a.js",
       "package": "study",
-      "bytes": 2462
+      "bytes": 2496
     },
     {
       "path": "content-pages/sub-common/b6153f0b29f507f6db941c938026662b.js",
