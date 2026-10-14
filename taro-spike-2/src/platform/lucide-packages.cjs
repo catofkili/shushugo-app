@@ -117,9 +117,6 @@ module.exports = {
   "appwindow": [
     "content-pages"
   ],
-  "citrus": [
-    "content-pages"
-  ],
   "loadercircle": [
     "content-pages"
   ],

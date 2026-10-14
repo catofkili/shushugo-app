@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { Brain, CalendarDays, CheckCircle2, ChevronRight, Clock3, Flame, History, Languages, ListChecks, Minus, Pencil, Plus, Puzzle, Repeat, Share2, Star, Volume2 } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { Brain, CalendarDays, CheckCircle2, ChevronRight, Citrus, Clock3, Flame, History, Languages, ListChecks, Minus, Pencil, Plus, Puzzle, Repeat, Share2, Star, Volume2 } from "lucide-react";
 import { AnalyticsDashboard } from "../../components/AnalyticsDashboard";
 import { useFavoriteFolderPicker } from "../../components/FavoriteFolderPicker";
 import { ScrollArea } from "../../components/ScrollArea";
@@ -17,6 +17,7 @@ import { lookupAccent, pitchPattern, splitMorae, usePitchAccentReady } from "../
 import { lookupTransitivity, useTransitivityReady } from "../../lib/transitivity";
 import { getStudyPreferences } from "../../lib/studyPreferences";
 import { playExample, prefetchExample } from "../../lib/speech";
+import { playComplete } from "../../lib/zoo-sounds";
 import type { WordCard, WordStats } from "../../types/vocabulary";
 import { ENCORE_DEFAULT_COLOR, encoreLimitedColor, MILESTONES, pickEncoreHook } from "./encore-style";
 import { renderShareCard } from "./share-card";
@@ -37,10 +38,11 @@ import { canUseFeature } from "../../lib/entitlements";
 import { useEntitlements } from "../../hooks/useEntitlements";
 import { quizGroups } from "../../lib/distinction-quiz";
 import { STUDY_FOCUS_REWARD_MIN_MS, type StudyFocusSnapshot } from "../../lib/study-focus";
-import { YUZU, yuzuToday } from "../../lib/yuzu";
+import { YUZU, yuzuBalance, yuzuToday } from "../../lib/yuzu";
 import { reportTeamActivity } from "../../lib/team-activity";
 import { readDayStatuses } from "../../lib/streak";
 import { StreakCelebrationGate } from "../../components/streak/StreakMoments";
+import { getYuzuFlight, type YuzuFlightPath } from "./yuzu-flight";
 
 /** 自他标注。直接挂在词自己身上(不是只在配对面板里提),自/他 那个字放大加色,
  *  一眼扫得到 —— 中文「开」一个字通吃 開く/開ける,这一栏是最容易翻车的地方。 */
@@ -270,6 +272,14 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
   const [shareCard, setShareCard] = useState<{ url: string; blob: Blob } | null>(null);
   const [dailyRewardsClaimed, setDailyRewardsClaimed] = useState(false);
   const [dailyRewardsClaimedAmount, setDailyRewardsClaimedAmount] = useState(0);
+  const [initialYuzuBalance] = useState(() => yuzuBalance());
+  const [yuzuBalanceTarget, setYuzuBalanceTarget] = useState(initialYuzuBalance);
+  const [totalBumping, setTotalBumping] = useState(false);
+  const [timeBumping, setTimeBumping] = useState(false);
+  const [checkinBumping, setCheckinBumping] = useState(false);
+  const [yuzuBumping, setYuzuBumping] = useState(false);
+  const [flight, setFlight] = useState<(YuzuFlightPath & { balance: number }) | null>(null);
+  const walletMarkRef = useRef<HTMLSpanElement | null>(null);
   const studyDate = stats?.studyDate ?? currentStudyDate();
   const calendar = monthDays(studyDate);
   const checkins = new Set(stats?.checkins ?? []);
@@ -360,15 +370,39 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
     setSizeOverride(Math.min(Math.max(Math.round(value), 1), encoreMax));
   };
 
-  /**
-   * 结算数字从 0 滚上来。这一页是**唯一**值得这么做的地方:数字在这里是一次性
-   * 出现的大跳变(0 → 今天的成绩),滚的过程本身就是「我干掉了这些」。
-   *
-   * 刻意不给「用时」:那个数在这一页上还在实时走,delta 恒为 1 —— 滚起来不是动画,
-   * 只是给每一次跳动加 320ms 的延迟。同理没给顶栏的松鼠小路(每答一题只 +1)。
-   */
-  const shownTotal = useCountUp(todayTotal);
-  const shownCheckinDays = useCountUp(checkinDays);
+  // 标题先入场；三项统计各自用 700ms 数上去，起步间隔 150ms。
+  // 「用时」在这一页上还在实时走（localSeconds 每秒 +1）：只滚进页那一次的值，滚完就直接显示实时数，
+  // 否则每秒都重滚一遍、每秒弹一下。
+  // 滚到头（含减少动效时直接给终值、进页就是 0）就交给实时数。
+  const [entrySeconds] = useState(totalSeconds);
+  const onTotalCountUpComplete = useCallback(() => setTotalBumping(true), []);
+  const onTimeCountUpComplete = useCallback(() => setTimeBumping(true), []);
+  const onCheckinCountUpComplete = useCallback(() => setCheckinBumping(true), []);
+  const shownTotal = useCountUp(todayTotal, 700, 420, 0, onTotalCountUpComplete);
+  const countedSeconds = useCountUp(entrySeconds, 700, 570, 0, onTimeCountUpComplete);
+  const shownSeconds = countedSeconds === entrySeconds ? totalSeconds : countedSeconds;
+  const shownCheckinDays = useCountUp(checkinDays, 700, 720, 0, onCheckinCountUpComplete);
+  const shownYuzuBalance = useCountUp(yuzuBalanceTarget, 700, 0, initialYuzuBalance);
+
+  const arriveYuzu = (balance: number) => {
+    setFlight(null);
+    setYuzuBalanceTarget(balance);
+    setYuzuBumping(true);
+    window.setTimeout(() => setYuzuBumping(false), 500);
+    playComplete();
+  };
+
+  const claimDailyRewards = (button: HTMLButtonElement) => {
+    if (!pendingDailyRewards) return;
+    const path = walletMarkRef.current ? getYuzuFlight(button, walletMarkRef.current) : null;
+    const earned = onClaimDailyRewards?.() ?? 0;
+    setDailyRewardsClaimedAmount(earned);
+    setDailyRewardsClaimed(true);
+    if (earned <= 0) return;
+    const balance = yuzuBalance();
+    if (path) setFlight({ ...path, balance });
+    else arriveYuzu(balance);
+  };
 
   // 今天真正打过架的那几个词。进这一页才查一次:判据要数今天的流水,
   // 而这一页是今天最后一次结算,查早了数还没记全。
@@ -435,6 +469,12 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
     setShareCard(null);
   };
 
+  let staggerIndex = 0;
+  const nextStaggerStyle = (): CSSProperties | undefined => {
+    const index = staggerIndex++;
+    return index < 8 ? { "--i": index } as CSSProperties : undefined;
+  };
+
   return (
     <>
       {celebrate && <ZooConfetti />}
@@ -443,7 +483,7 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
         <div className="fin-page mx-auto flex min-h-full w-full max-w-2xl flex-col">
           {/* 标题只说一次：原来右上还挂一枚「全部完成」，和「今日单词完成」是同一句话。
               阶段胶囊只在它真有别的信息时才出现（第一阶段 / 错题本 / 自选清单）。 */}
-          <header className="fin-hero">
+          <header className={`fin-hero ds-enter${isDailyPlanComplete ? " has-yuzu-wallet" : ""}`}>
             <Sticker name="mood-cheer" size={68} className="shrink-0" />
             <div className="min-w-0 flex-1">
               {/* 自选清单不是今日计划：它勾的词可能一个都没到期，写「今日单词完成」是假的 */}
@@ -453,29 +493,35 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
                 {phase !== "done" && <span className="ds-pill ds-pill-primary">{compactPhaseLabel}</span>}
               </p>
             </div>
+            {isDailyPlanComplete && (
+              <div
+                className={`fin-yuzu-wallet${yuzuBumping ? " ds-bump" : ""}`}
+                aria-label="柚子余额"
+                onAnimationEnd={(event) => { if (event.animationName === "ds-bump") setYuzuBumping(false); }}
+              >
+                <span ref={walletMarkRef} className="fin-yuzu-mark" aria-hidden="true"><Citrus size={17} /></span>
+                <span aria-live="polite">{shownYuzuBalance}</span>
+              </div>
+            )}
           </header>
 
           {/* 三个数一条带子。今天学了多少是这一页的主角，排第一 */}
-          <div className="fin-stats">
-            <div><b>{shownTotal}<small>项</small></b><span><CalendarDays size={13} aria-hidden="true" />今天学了</span></div>
+          <div className="fin-stats ds-enter">
+            <div><b className={totalBumping ? "ds-bump" : ""} onAnimationEnd={() => setTotalBumping(false)}>{shownTotal}<small>项</small></b><span><CalendarDays size={13} aria-hidden="true" />今天学了</span></div>
             {/* 单位缩小一号：「5小时42分」按 22px 排，三等分的一格放不下，会被截成「5小时4…」 */}
-            <div><b>{formatDuration(totalSeconds).split(/(\d+)/).filter(Boolean).map((part, i) => (/^\d+$/.test(part) ? part : <small key={i}>{part}</small>))}</b><span><Clock3 size={13} aria-hidden="true" />用时</span></div>
-            <div><b>{shownCheckinDays}<small>天</small></b><span><CheckCircle2 size={13} aria-hidden="true" />累计打卡</span></div>
+            <div><b className={timeBumping ? "ds-bump" : ""} onAnimationEnd={() => setTimeBumping(false)}>{formatDuration(shownSeconds).split(/(\d+)/).filter(Boolean).map((part, i) => (/^\d+$/.test(part) ? part : <small key={i}>{part}</small>))}</b><span><Clock3 size={13} aria-hidden="true" />用时</span></div>
+            <div><b className={checkinBumping ? "ds-bump" : ""} onAnimationEnd={() => setCheckinBumping(false)}>{shownCheckinDays}<small>天</small></b><span><CheckCircle2 size={13} aria-hidden="true" />累计打卡</span></div>
           </div>
 
+          <div className="fin-content ds-stagger">
           {isDailyPlanComplete && (
-            <section className="fin-block fin-reward-block">
+            <section className="fin-block fin-reward-block" style={nextStaggerStyle()}>
               <p className="fin-block-title">今日奖励</p>
               <div className="fin-reward-layout">
                 <StudyFocusChest
                   amount={shownDailyRewards}
                   claimed={dailyRewardsClaimed || pendingDailyRewards === 0}
-                  onClaim={() => {
-                    if (!pendingDailyRewards) return;
-                    const earned = onClaimDailyRewards?.() ?? 0;
-                    setDailyRewardsClaimedAmount(earned);
-                    setDailyRewardsClaimed(true);
-                  }}
+                  onClaim={claimDailyRewards}
                   caption={dailyChestCaption}
                 />
                 <div className="fin-reward-details">
@@ -492,7 +538,7 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
             </section>
           )}
 
-          <section className="fin-block">
+          <section className="fin-block" style={nextStaggerStyle()}>
             <div className="fin-cal-head">
               <p className="fin-block-title">{calendar.title}</p>
               <button
@@ -544,7 +590,7 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
           </section>
 
           {stubbornOverload && (
-            <section className="fin-block">
+            <section className="fin-block" style={nextStaggerStyle()}>
               <MascotSay sticker="mood-puzzled" tone="warn" size={52}>
                 今天有 <b>{stubborn.length}</b> 个词跟你打了一架。这种时候再加一批新词，只是把明天的账提前记上。
               </MascotSay>
@@ -560,7 +606,7 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
           )}
 
           {showEncore && encore && (
-            <section className="fin-block">
+            <section className="fin-block" style={nextStaggerStyle()}>
               {encore.fatigued ? (
                 <>
                   <MascotSay sticker="mood-sleep" size={52}>正确率在往下掉，剩下的明天再清吧。</MascotSay>
@@ -656,6 +702,7 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
             <button
               onClick={() => (canUseFeature("stubbornHistory", entitlements) ? setHistoryOpen(true) : setHistoryPaywall(true))}
               className="focus-ring fin-block fin-row"
+              style={nextStaggerStyle()}
             >
               <History size={16} className="shrink-0 text-[#E8971C]" />
               <span className="min-w-0 flex-1">今天没有顽固词<small className="fin-row-sub">翻翻往日跟你打过架的词</small></span>
@@ -663,7 +710,7 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
             </button>
           )}
           {(stubborn.length > 0 || stubbornGrammar.length > 0) && (
-            <section className="fin-block">
+            <section className="fin-block" style={nextStaggerStyle()}>
               <div className="mb-2 flex items-center gap-2">
                 <Flame size={16} className="shrink-0 text-[#E8971C]" />
                 <p className="fin-block-title min-w-0 flex-1 truncate">{stubbornTitle}</p>
@@ -717,7 +764,7 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
           )}
 
           {distinctionGroupCount > 0 && onOpenDistinctionQuiz && (
-            <section className="fin-block fin-row">
+            <section className="fin-block fin-row" style={nextStaggerStyle()}>
               <Puzzle size={16} className="shrink-0 text-[var(--ds-primary-ink)]" />
               <p className="fin-block-title min-w-0 flex-1">今天碰到的易混组 {distinctionGroupCount} 组</p>
               <button type="button" onClick={onOpenDistinctionQuiz} className="focus-ring ds-btn fin-small-btn">
@@ -726,7 +773,7 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
             </section>
           )}
 
-          <div className="fin-tiles">
+          <div className="fin-tiles" style={nextStaggerStyle()}>
             {isDailyPlanComplete && (
               <>
                 <button
@@ -763,11 +810,34 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
 
           {/* 这一页是今天最后一眼，道个别。原来是一枚贴纸 + 一个窄气泡 + 每日一句贴纸挤一行，
               手机上气泡被挤成一行四个字；每日一句那张图上的字直接写进气泡里 */}
-          <MascotSay sticker="empty-bye" size={64} className="fin-bye">
-            再见～明天也要加油！<br />每天收集一点点，未来会不一样。
-          </MascotSay>
+          <div className="fin-bye" style={nextStaggerStyle()}>
+            <MascotSay sticker="empty-bye" size={64}>
+              再见～明天也要加油！<br />每天收集一点点，未来会不一样。
+            </MascotSay>
+          </div>
+          </div>
         </div>
       </ScrollArea>
+
+      {flight && (
+        <span
+          className="fin-yuzu-flight"
+          aria-hidden="true"
+          style={{
+            left: flight.left,
+            top: flight.top,
+            "--fly-x": `${flight.flyX}px`,
+            "--fly-y": `${flight.flyY}px`,
+            "--fly-mid-x": `${flight.midX}px`,
+            "--fly-mid-y": `${flight.midY}px`
+          } as CSSProperties}
+          onAnimationEnd={(event) => {
+            if (event.animationName === "fin-yuzu-fly") arriveYuzu(flight.balance);
+          }}
+        >
+          <Citrus size={20} />
+        </span>
+      )}
 
       {shareCard && (
         <ShareImageSheet

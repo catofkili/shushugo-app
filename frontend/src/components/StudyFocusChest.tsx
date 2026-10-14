@@ -7,14 +7,14 @@ export function StudyFocusChest({
   amount: number;
   claimed: boolean;
   caption: string;
-  onClaim: () => void;
+  onClaim: (button: HTMLButtonElement) => void;
 }) {
   return (
     <div className={`study-focus-chest-claim${claimed ? " is-claimed" : ""}`}>
       <button
         className="study-focus-chest"
         type="button"
-        onClick={onClaim}
+        onClick={(event) => onClaim(event.currentTarget)}
         disabled={claimed}
         aria-label={caption}
       >

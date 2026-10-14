@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { Capacitor } from "@capacitor/core";
 // 图标统一走 lucide（ISC 协议，线性、单色、跟随 currentColor）。
 // 主页问候区使用收集日品牌图标；其它学习状态仍保留线性图标和吉祥物组件。
@@ -74,6 +74,9 @@ type Props = {
 
 const greetingFor = (hour: number) =>
   hour < 5 ? "夜深了" : hour < 11 ? "早上好" : hour < 14 ? "中午好" : hour < 18 ? "下午好" : "晚上好";
+
+const staggerStyle = (index: number): CSSProperties | undefined =>
+  index < 8 ? { "--i": index } as CSSProperties : undefined;
 
 /**
  * 问候旁边那只吉祥物跟着「现在几点」换：早上伸懒腰、中午饿了、下午敲电脑、晚上戴耳机、深夜睡着；
@@ -251,6 +254,18 @@ export function ZooHome({
   const heroCta = activeCount > 0 ? (done > 0 ? "继续" : "开始") : isPlanMode ? "再来一批" : "去看看";
 
   const weeklyEntryEnabled = Capacitor.getPlatform() !== "wechat" && goals.weeklyReportEnabled;
+  const toolItems: { title: string; icon: StickerName; action: () => void }[] = [
+    { title: "学习模式", icon: "icon-study-modes", action: () => onNavigate("study-modes") },
+    { title: "基础语法", icon: "icon-grammar", action: () => onNavigate("grammar-foundation") },
+    { title: "选词", icon: "icon-vocab", action: () => onOpenWordList() },
+    { title: "疑难辨析", icon: "icon-practice", action: () => onNavigate("confusion") },
+    { title: "开口练习", icon: "icon-practice", action: () => onNavigate("talk") },
+    { title: "JLPT 刷题", icon: "icon-grammar", action: () => onNavigate("jlpt-practice") },
+    { title: "一字多音", icon: "icon-kanji-readings", action: () => onNavigate("kanji-readings") },
+    { title: "收藏", icon: "icon-favorites", action: () => onNavigate("favorites") },
+    { title: "查词汇量", icon: "icon-stats", action: () => onNavigate("vocab-test") },
+    { title: "柚子商店", icon: "icon-shop", action: () => onNavigate("yuzu-shop") }
+  ];
 
   return (
     <div className={`zoo-page zoo-home-v2${weeklyEntryEnabled ? " has-weekly-cord" : ""}`}>
@@ -290,6 +305,7 @@ export function ZooHome({
              模式切换从旁边那张 119px 的大卡收进大卡右下角的一枚 chip：
              它是「改设置」，不该和「开始学」抢同一个视觉重量。 */}
       <section className="zoo-tray zoo-tray-today">
+        {activeCount > 0 && <div className="zoo-now-hint"><span className="ds-nudge zoo-now-nudge">今天还差 {activeCount} 个</span></div>}
         <button className="zoo-now" onClick={onStartStudy}>
           <span className="zoo-now-kick">{activeInfo.title}</span>
           <b className="zoo-now-num">{heroNum}</b>
@@ -385,15 +401,15 @@ export function ZooHome({
 
         {/* 今天还要知道的两件事。它们是 T2：描边不填色、字号比大卡小一档，
             并排放在同一个盘子里 —— 各自独立成卡时，视觉重量和大卡是一个量级。 */}
-        <div className="zoo-duo">
+        <div className="zoo-duo ds-stagger">
           {jlpt && (
-            <button className="zoo-duo-cell" onClick={() => onNavigate("jlpt-plan")}>
+            <button className="zoo-duo-cell" onClick={() => onNavigate("jlpt-plan")} style={staggerStyle(0)}>
               <span className="zoo-duo-kick">{jlpt.examKind === "jlpt" ? `${jlpt.target} 备考` : examLabel(jlpt.examKind)}</span>
               <b>{examDateMissing ? "先选考试日期" : jlpt.finished ? "已考完" : `还有 ${jlpt.plan.daysLeft} 天`}</b>
               <small>{examDateMissing ? "选择日期后生成每日计划" : recovery ? recoveryChoice === "usual" ? "已恢复平时学习量，可设置新目标" : `考后轻量期还剩 ${recovery.daysLeft} 天` : jlpt.finished ? "可设置下一场目标" : kanaGatePending() ? "先学五十音，完成后开始新词" : shortfallText(availableShortfall(jlpt.shortfall, entitlements.isPro))}</small>
             </button>
           )}
-          <button className="zoo-duo-cell" onClick={() => onNavigate("team")}>
+          <button className="zoo-duo-cell" onClick={() => onNavigate("team")} style={staggerStyle(jlpt ? 1 : 0)}>
             <span className="zoo-duo-kick">组队</span>
             <b>和队友一起学</b>
             {/* 原来是 🙂🐿️🐼🐧 四个 emoji 排成一排，换成作者画的组队头图（和组队页头图同一张） */}
@@ -410,47 +426,13 @@ export function ZooHome({
              「同音 · 自他 · 近义词对照」第一次有用，第一百次是噪音。 */}
       <section className="zoo-tray">
         <p className="zoo-tray-title">学习工具</p>
-        <div className="zoo-quad">
-          <button onClick={() => onNavigate("study-modes")}>
-            <span aria-hidden="true"><Sticker name="icon-study-modes" size={36} /></span>
-            <b>学习模式</b>
-          </button>
-          <button onClick={() => onNavigate("grammar-foundation")}>
-            <span aria-hidden="true"><Sticker name="icon-grammar" size={36} /></span>
-            <b>基础语法</b>
-          </button>
-          <button onClick={() => onOpenWordList()}>
-            <span aria-hidden="true"><Sticker name="icon-vocab" size={36} /></span>
-            <b>选词</b>
-          </button>
-          <button onClick={() => onNavigate("confusion")}>
-            <span aria-hidden="true"><Sticker name="icon-practice" size={36} /></span>
-            <b>疑难辨析</b>
-          </button>
-          <button onClick={() => onNavigate("talk")}>
-            <span aria-hidden="true"><Sticker name="icon-practice" size={36} /></span>
-            <b>开口练习</b>
-          </button>
-          <button onClick={() => onNavigate("jlpt-practice")}>
-            <span aria-hidden="true"><Sticker name="icon-grammar" size={36} /></span>
-            <b>JLPT 刷题</b>
-          </button>
-          <button onClick={() => onNavigate("kanji-readings")}>
-            <span aria-hidden="true"><Sticker name="icon-kanji-readings" size={36} /></span>
-            <b>一字多音</b>
-          </button>
-          <button onClick={() => onNavigate("favorites")}>
-            <span aria-hidden="true"><Sticker name="icon-favorites" size={36} /></span>
-            <b>收藏</b>
-          </button>
-          <button onClick={() => onNavigate("vocab-test")}>
-            <span aria-hidden="true"><Sticker name="icon-stats" size={36} /></span>
-            <b>查词汇量</b>
-          </button>
-          <button onClick={() => onNavigate("yuzu-shop")}>
-            <span aria-hidden="true"><Sticker name="icon-shop" size={36} /></span>
-            <b>柚子商店</b>
-          </button>
+        <div className="zoo-quad ds-stagger">
+          {toolItems.map((item, index) => (
+            <button key={item.title} onClick={item.action} style={staggerStyle(index)}>
+              <span aria-hidden="true"><Sticker name={item.icon} size={36} /></span>
+              <b>{item.title}</b>
+            </button>
+          ))}
         </div>
       </section>
 

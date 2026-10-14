@@ -59,6 +59,13 @@
   --ds-font-size-chip: 13px;
   --ds-font-size-pill: 12px;
 
+  --ds-dur-fast: 120ms;
+  --ds-dur: 220ms;
+  --ds-dur-slow: 420ms;
+  --ds-ease-spring: cubic-bezier(.34,1.56,.64,1);
+  --ds-ease-out: cubic-bezier(.2,.8,.2,1);
+  --ds-stagger: 60ms;
+
   /* 老变量也指过来：大量组件类（zoo-*、wl-*、cf-*、kr-*…）直接读它们 */
   --zoo-surface: #fff;
   --zoo-ink: #2B241C;
@@ -357,6 +364,44 @@
 .ds-say-onbg .ds-say-bubble { background: var(--ds-surface); box-shadow: var(--ds-shadow); }
 .ds-say-onbg.ds-say-warn .ds-say-bubble { background: var(--ds-warn-tint); box-shadow: none; }
 
+/* —————————————————— 动效基础件 —————————————————— */
+.ds-enter { animation: ds-enter var(--ds-dur-slow) var(--ds-ease-out) both; }
+.ds-stagger > * {
+  animation: ds-stagger-in var(--ds-dur-slow) var(--ds-ease-spring) both;
+  animation-delay: calc(var(--i, 0) * var(--ds-stagger));
+}
+.ds-bump { display: inline-block; transform-origin: center; animation: ds-bump var(--ds-dur-slow) var(--ds-ease-spring) both; }
+.ds-nudge {
+  display: inline-flex; align-items: center; min-height: 28px; padding: 4px 11px;
+  border-radius: 999px; background: var(--ds-surface); color: var(--ds-ink-2);
+  box-shadow: var(--ds-shadow); font-size: 12px; font-weight: 800; line-height: 1.25;
+  animation: ds-nudge 2.4s ease-in-out infinite both;
+}
+.app-tab-icon.ds-tab-bump { animation: ds-tab-pop 200ms var(--ds-ease-spring) both; }
+.fin-yuzu-flight { animation: fin-yuzu-fly 520ms var(--ds-ease-out) both; }
+@keyframes ds-enter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes ds-stagger-in { from { opacity: 0; transform: translateY(10px) scale(.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes ds-bump { 0% { transform: scale(1); } 52% { transform: scale(1.22); } 100% { transform: scale(1); } }
+@keyframes ds-nudge {
+  0%, 100% { transform: translateY(0); box-shadow: var(--ds-shadow); }
+  50% { transform: translateY(-4px); box-shadow: 0 0 0 5px color-mix(in srgb, var(--ds-primary) 13%, transparent), var(--ds-shadow); }
+}
+@keyframes ds-tab-pop { 0% { transform: scale(.9); } 55% { transform: scale(1.12); } 100% { transform: scale(1); } }
+@keyframes fin-yuzu-fly {
+  0% { opacity: 1; transform: translate3d(0, 0, 0) scale(.85); }
+  58% { opacity: 1; transform: translate3d(var(--fly-mid-x), var(--fly-mid-y), 0) scale(1.15); }
+  100% { opacity: 0; transform: translate3d(var(--fly-x), var(--fly-y), 0) scale(.9); }
+}
+[data-motion="reduced"] .ds-enter,
+[data-motion="reduced"] .ds-stagger > *,
+[data-motion="reduced"] .ds-bump,
+[data-motion="reduced"] .ds-nudge,
+[data-motion="reduced"] .app-tab-icon.ds-tab-bump,
+[data-motion="reduced"] .fin-yuzu-flight { animation: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  .ds-enter, .ds-stagger > *, .ds-bump, .ds-nudge, .app-tab-icon.ds-tab-bump, .fin-yuzu-flight { animation: none !important; }
+}
+
 /* —————————————————— 8. 主页 —————————————————— */
 [data-theme] .zoo-home-v2 { gap: 14px; }
 /* 问候：左字右吉祥物。吉祥物按时段 / 今天的进度换表情（ZooHome.greetSticker） */
@@ -394,6 +439,9 @@
 .zoo-now-mascot { position: relative; z-index: 1; grid-row: 1 / 4; grid-column: 2; align-self: center; margin: -8px -6px 0 0; animation: zooHopIdle 3.2s ease-in-out infinite; }
 [data-motion="off"] .zoo-now-mascot { animation: none; }
 [data-theme] .zoo-now-go { grid-row: auto; grid-column: 1 / -1; justify-self: stretch; display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; }
+[data-theme] .zoo-now-hint { display: flex; justify-content: flex-end; margin: 0 16px 6px 0; }
+[data-theme] .zoo-now-nudge { position: relative; background: var(--ds-primary-tint); color: var(--ds-primary-ink); }
+[data-theme] .zoo-now-nudge::after { content: ""; position: absolute; right: 17px; bottom: -4px; width: 8px; height: 8px; transform: rotate(45deg); background: var(--ds-primary-tint); }
 .zoo-now-bar { flex: 1; height: 6px; overflow: hidden; border-radius: 999px; background: rgba(255, 255, 255, .32); }
 [data-theme="dark"] .zoo-now-bar { background: rgba(0, 0, 0, .22); }
 .zoo-now-bar i { display: block; height: 100%; border-radius: inherit; background: currentColor; opacity: .85; }
@@ -421,6 +469,7 @@
 /* 工具格 */
 [data-theme] .zoo-quad button b { color: var(--ds-ink-2); font-weight: 700; }
 [data-theme] .zoo-quad button:active { background: var(--ds-inset); }
+.app-tab-icon.ds-tab-bump { opacity: 1; filter: none; }
 
 /* 进度概览 / 进度维护 */
 [data-theme] .zoo-fold > summary small,
@@ -764,10 +813,17 @@
    原来是一张张带投影的「卡」套在白卡里，外加绿圈加光晕的日历，看着像三层。 */
 .fin-scroll { padding: 4px; text-align: left; }
 .fin-page { gap: 12px; }
-.fin-hero { display: flex; align-items: center; gap: 12px; }
+.fin-hero { position: relative; display: flex; align-items: center; gap: 12px; }
+.fin-hero.has-yuzu-wallet { padding-top: 34px; }
+.fin-yuzu-wallet { position: absolute; top: 0; right: 0; display: inline-flex; align-items: center; gap: 4px; padding: 5px 10px; border-radius: 999px; background: var(--ds-surface); box-shadow: var(--ds-shadow); color: var(--ds-ink); font-size: 13px; font-weight: 900; font-variant-numeric: tabular-nums; }
+.fin-yuzu-mark { display: inline-flex; color: var(--ds-primary-ink); }
 /* 标题不许折行：375px 屏上原来是「今日单词完 / 成」 */
 .fin-title { margin: 0; color: var(--ds-ink); font-size: clamp(22px, 6.4vw, 28px); font-weight: 900; line-height: 1.15; letter-spacing: -.01em; white-space: nowrap; }
 .fin-sub { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 4px 0 0; color: var(--ds-ink-3); font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.fin-stats.ds-enter { animation-delay: var(--ds-dur-slow); }
+.fin-content { display: flex; min-width: 0; flex-direction: column; gap: 12px; }
+.fin-content.ds-stagger > * { animation-delay: calc(var(--ds-dur-slow) + var(--ds-dur-slow) + var(--ds-dur-slow) + var(--ds-dur) + var(--i, 0) * var(--ds-stagger)); }
+.fin-yuzu-flight { position: fixed; z-index: 10004; display: grid; width: 20px; height: 20px; place-items: center; pointer-events: none; color: var(--ds-primary-ink); }
 
 .fin-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-radius: 18px; background: var(--ds-inset); }
 .fin-stats > div { min-width: 0; padding: 12px 10px 11px 14px; }

@@ -263,7 +263,16 @@ export function AppNavigation({
             return (
               <button
                 key={item.page}
-                onClick={() => openNavPage(item.page)}
+                onClick={(event) => {
+                  const icon = event.currentTarget.querySelector<HTMLElement>(".app-tab-icon");
+                  if (icon) {
+                    icon.classList.remove("ds-tab-bump");
+                    void icon.clientWidth;
+                    icon.classList.add("ds-tab-bump");
+                    window.setTimeout(() => icon.classList.remove("ds-tab-bump"), 240);
+                  }
+                  openNavPage(item.page);
+                }}
                 aria-label={item.label}
                 aria-current={active ? "page" : undefined}
                 className={`focus-ring app-tab${active ? " is-active" : ""}`}
