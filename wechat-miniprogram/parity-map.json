@@ -413,8 +413,10 @@
       "mini": [
         "wechat-miniprogram/src/features/weekly/index.js",
         "wechat-miniprogram/src/features/weekly/index.wxml",
-        "wechat-miniprogram/src/features/weekly/index.wxss"
-      ]
+        "wechat-miniprogram/src/features/weekly/index.wxss",
+        "frontend/src/pages/WeeklyReportStory.tsx"
+      ],
+      "reason": "Taro 小程序直接编译同一份周报故事源码和样式。"
     },
     {
       "web": "frontend/src/pages/weekly/FilmStory.tsx",
@@ -455,8 +457,10 @@
     {
       "web": "frontend/src/pages/weekly-report.css",
       "mini": [
-        "wechat-miniprogram/src/features/weekly/index.wxss"
-      ]
+        "wechat-miniprogram/src/features/weekly/index.wxss",
+        "frontend/src/pages/weekly-report.css"
+      ],
+      "reason": "Taro 小程序直接编译同一份周报故事源码和样式。"
     },
     {
       "web": "frontend/src/pages/weekly/mock-report.ts",
@@ -608,6 +612,76 @@
         "taro-spike-2/src/study/team/index.tsx"
       ],
       "reason": "Taro 平台适配器只处理页面级分享上下文和原生按钮数据，不改网页交互、组队规则或奖励。"
+    },
+    {
+      "web": "frontend/src/components/CapybaraMascot.tsx",
+      "mini": [
+        "frontend/src/components/CapybaraMascot.tsx"
+      ],
+      "reason": "Taro 小程序直接编译这份共享源码；不维护第二份页面。"
+    },
+    {
+      "web": "frontend/src/components/MascotSay.tsx",
+      "mini": [
+        "frontend/src/components/MascotSay.tsx"
+      ],
+      "reason": "Taro 小程序直接编译这份共享源码；不维护第二份页面。"
+    },
+    {
+      "web": "frontend/src/components/QuickStudyPanel.tsx",
+      "mini": [
+        "frontend/src/components/QuickStudyPanel.tsx"
+      ],
+      "reason": "Taro 小程序直接编译这份共享源码；不维护第二份页面。"
+    },
+    {
+      "web": "frontend/src/components/ShareImageSheet.tsx",
+      "mini": [
+        "frontend/src/components/ShareImageSheet.weapp.tsx"
+      ],
+      "reason": "Taro 小程序直接编译这份共享源码；不维护第二份页面。"
+    },
+    {
+      "web": "frontend/src/components/ShareImageSheet.weapp.tsx",
+      "mini": [
+        "frontend/src/components/ShareImageSheet.weapp.tsx"
+      ],
+      "reason": "Taro 小程序直接编译这份共享源码；不维护第二份页面。"
+    },
+    {
+      "web": "frontend/src/components/StudyFocusChest.tsx",
+      "mini": [
+        "frontend/src/components/StudyFocusChest.tsx"
+      ],
+      "reason": "Taro 小程序直接编译这份共享源码；不维护第二份页面。"
+    },
+    {
+      "web": "frontend/src/components/ZooConfetti.tsx",
+      "mini": [
+        "frontend/src/components/ZooConfetti.tsx"
+      ],
+      "reason": "Taro 小程序直接编译这份共享源码；不维护第二份页面。"
+    },
+    {
+      "web": "frontend/src/components/ZoomOpen.tsx",
+      "mini": [
+        "frontend/src/components/ZoomOpen.tsx"
+      ],
+      "reason": "Taro 小程序直接编译这份共享源码；不维护第二份页面。"
+    },
+    {
+      "web": "frontend/src/components/ZoomOpen.css",
+      "mini": [
+        "frontend/src/components/ZoomOpen.css"
+      ],
+      "reason": "Taro 小程序直接编译这份共享源码；不维护第二份页面。"
+    },
+    {
+      "web": "frontend/src/components/capy-tool-selection.ts",
+      "mini": [
+        "frontend/src/components/capy-tool-selection.ts"
+      ],
+      "reason": "Taro 小程序直接编译这份共享源码；不维护第二份页面。"
     }
   ]
 }

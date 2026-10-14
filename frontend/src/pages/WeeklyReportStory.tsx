@@ -1,5 +1,5 @@
 import { useState, type CSSProperties } from "react";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Sparkles } from "lucide-react";
 import { Sticker, brandAssetUrl, type StickerName } from "../components/CapybaraMascot";
 import type { WeeklyReport } from "../lib/analytics/weekly";
 import { useCountUp } from "../hooks/useCountUp";
@@ -65,7 +65,7 @@ export function WeeklyReportStory({ report, chapter, onBack, onReviewWords, onSh
   return <article className={`weekly-report-story wr-story-${chapter}`} aria-label={weeklyChapters(report).find(item=>item.id===chapter)?.label}>
     <Dust />
     {chapter === "cover" && <>
-      <div className="wr-cover-orbit" aria-hidden="true"><span /><span /><span /><i className="wr-orbit-star">✦</i></div>
+      <div className="wr-cover-orbit" aria-hidden="true"><span /><span /><span /><Sparkles size={28} className="wr-orbit-star" /></div>
       <div className="wr-scene-copy wr-cover-copy">
         <p className="wr-kicker">SHUSHUGO / 你与日语的这一周</p>
         <h1 className="wr-cover-title"><span>一页一日</span><em>慢慢成林</em><i aria-hidden="true">。</i></h1>
@@ -88,7 +88,7 @@ export function WeeklyReportStory({ report, chapter, onBack, onReviewWords, onSh
       <div className="wr-time-universe">
         <div className="wr-time-ring" aria-hidden="true"><i /><i /><i /></div>
         <div className="wr-time-number"><strong>{metrics.totalSeconds<60 ? "不足 1" : count(metrics.minutes)}</strong><span>分钟 / 这一周</span></div>
-        <span className="wr-time-star" aria-hidden="true">✧</span>
+        <Sparkles size={100} className="wr-time-star" aria-hidden="true" />
       </div>
       <div className="wr-time-bottom">
         <div className="wr-week-wave" role="img" aria-label={metrics.daily.map(day=>`周${weekday(day.date)} ${day.reviews} 次作答`).join("，")+"。周日合并首尾两个半天。"}>
@@ -101,14 +101,14 @@ export function WeeklyReportStory({ report, chapter, onBack, onReviewWords, onSh
       <div className="wr-letter-weather" aria-hidden="true">{["あ","語","の","学","ふ","言","え","文"].map((glyph,i)=><span key={i} style={style(i)}>{glyph}</span>)}</div>
       <div className="wr-scene-copy"><p className="wr-kicker">02 / 字间相遇</p><h2 className="wr-scene-title"><span>{metrics.newWords ? "从陌生" : "从熟悉"}</span><em>到慢慢熟悉。</em></h2></div>
       <div className="wr-new-words"><strong>{count(metrics.newWords)}</strong><span>个单词<br /><b>{metrics.newWords ? "这周，第一次与你相遇。" : "这一周，把时间留给熟悉的词。"}</b></span></div>
-      <div className="wr-mode-collage">{modes.map((mode,i)=><div key={mode.label} style={style(i)}><span className="wr-mode-glyph" aria-hidden="true">{mode.glyph}</span><span>{mode.label}<b>{number(mode.value)}<small> 次作答</small></b></span><i aria-hidden="true">✳</i></div>)}</div>
+      <div className="wr-mode-collage">{modes.map((mode,i)=><div key={mode.label} style={style(i)}><span className="wr-mode-glyph" aria-hidden="true">{mode.glyph}</span><span>{mode.label}<b>{number(mode.value)}<small> 次作答</small></b></span><Sparkles size={22} className="wr-mode-spark" aria-hidden="true" /></div>)}</div>
       <p className="wr-content-note">还有 <b>{number(metrics.reviewCount)}</b> 次再次练习，<br />让相遇，变得更熟悉。</p>
     </>}
     {chapter === "highlight" && highlight && <>
       <div className="wr-memory-rays" aria-hidden="true"><i /><i /><i /></div>
       <div className="wr-scene-copy"><p className="wr-kicker">这一周 / 有一刻想替你记得</p><h2 className="wr-scene-title"><span>这一刻</span><em>留在光里。</em></h2></div>
       <div className="wr-memory-frame">
-        <div className="wr-memory-picture" aria-hidden="true"><span className="wr-memory-sun" /><span className="wr-memory-sea" /><span className="wr-memory-orbit">✦</span><span className="wr-memory-word">日</span></div>
+        <div className="wr-memory-picture" aria-hidden="true"><span className="wr-memory-sun" /><span className="wr-memory-sea" /><Sparkles size={35} className="wr-memory-orbit" /><span className="wr-memory-word">日</span></div>
         <div className="wr-memory-writing"><time dateTime={highlight.date}>{new Date(`${highlight.date}T12:00:00`).getMonth()+1}<i>/</i>{String(new Date(`${highlight.date}T12:00:00`).getDate()).padStart(2,"0")}</time><p>{highlight.text}</p></div>
         <span className="wr-memory-tape" aria-hidden="true" />
       </div>
@@ -119,7 +119,7 @@ export function WeeklyReportStory({ report, chapter, onBack, onReviewWords, onSh
       <WordGarden words={report.revisitWords} onReviewWords={onReviewWords} />
     </>}
     {chapter === "end" && <>
-      <div className="wr-ending-orbit" aria-hidden="true"><i /><i /><span>✦</span></div>
+      <div className="wr-ending-orbit" aria-hidden="true"><i /><i /><Sparkles size={80} className="wr-ending-spark" /></div>
       <div className="wr-scene-copy"><p className="wr-kicker">留一页 / 给下周</p><h2 className="wr-scene-title"><span>这一页收好</span><em>下周，继续长。</em></h2><p className="wr-story-prose">到这周为止，你走过 <b>{number(metrics.cumulativeDays)}</b> 个学习日，<br />与 <b>{number(metrics.cumulativeWords)}</b> 个词，见过第一面。</p></div>
       <div className="wr-ending-book" aria-hidden="true"><i/><i/><div><span>日々</span><b>またね</b><span className="wr-book-leaf"/></div></div>
       <div className="wr-ending-actions"><button className="wr-scene-action" onClick={onShare}>收好这一周 <ArrowUpRight size={16}/></button><button className="wr-inline-action" onClick={onBack}>回到日常</button></div>

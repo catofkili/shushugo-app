@@ -1,4 +1,4 @@
-import { ArrowLeft, BellRing, CalendarDays, ChevronRight, Target } from "lucide-react";
+import { ArrowLeft, BellRing, CalendarDays, Check, ChevronRight, Target } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { getJlptPlanStatus, type JlptPlanStatus } from "../lib/jlpt/status";
 import { availableShortfall, JLPT_TARGETS, shortfallText, type JlptTarget } from "../lib/jlpt/plan";
@@ -63,7 +63,7 @@ const Row = ({
       </div>
       <div className={`ds-bar mt-2 ${left === 0 ? "" : "warn"}`}><i style={{ width: `${pct}%` }} /></div>
       <p className="mt-2 text-xs jp-muted">
-        {need === 0 ? "今天这一项不需要做" : left === 0 ? "已完成 ✓" : `还差 ${left}${hint ? ` · ${hint}` : ""}`}
+        {need === 0 ? "今天这一项不需要做" : left === 0 ? <span className="inline-flex items-center gap-1">已完成 <Check size={14} aria-hidden="true" /></span> : `还差 ${left}${hint ? ` · ${hint}` : ""}`}
       </p>
     </div>
   );

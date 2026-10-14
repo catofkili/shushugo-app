@@ -1,3 +1,5 @@
+import { Sparkles } from "lucide-react";
+
 export function StudyFocusChest({
   amount,
   claimed,
@@ -20,9 +22,9 @@ export function StudyFocusChest({
       >
         <span className="study-focus-chest-art" aria-hidden="true">
           <i className="study-focus-chest-aura" />
-          <i className="study-focus-chest-spark spark-one">✦</i>
-          <i className="study-focus-chest-spark spark-two">✧</i>
-          <i className="study-focus-chest-spark spark-three">✦</i>
+          <Sparkles size={19} className="study-focus-chest-spark spark-one" aria-hidden="true" />
+          <Sparkles size={14} className="study-focus-chest-spark spark-two" aria-hidden="true" />
+          <Sparkles size={16} className="study-focus-chest-spark spark-three" aria-hidden="true" />
           <i className="study-focus-chest-lid" />
           <i className="study-focus-chest-band chest-band-lid" />
           <i className="study-focus-chest-base" />

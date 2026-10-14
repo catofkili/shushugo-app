@@ -278,8 +278,6 @@
 
 /* ===== 问候条 ===== */
 .zoo-greet{display:flex;align-items:center;gap:10px;margin-bottom:14px}
-.zoo-greet-capy{flex:none}
-.zoo-greet-brand{display:block;width:56px;height:56px;object-fit:cover;border-radius:20px;box-shadow:0 7px 14px rgba(90,65,44,.16)}
 .zoo-greet-text{flex:1;min-width:0}
 .zoo-greet-hi{margin:0;font-family:"Hiragino Mincho ProN","Noto Serif JP",serif;font-size:18px;font-weight:800}
 .zoo-greet-sub{margin:2px 0 0;color:var(--zoo-brown-deep);font-size:12px;line-height:1.5}
@@ -713,15 +711,21 @@
 [data-theme="dark"] .zoo-tile-jlpt-gap{color:#8FCBD6}
 [data-theme="dark"] .zoo-maint{background:rgba(48,55,45,.72);border-color:rgba(230,193,155,.32)}
 
-/* ===== 完成时的主题纸屑(柚子瓣/松子/叶子) ===== */
+/* ===== 完成时的主题纸屑 ===== */
 .zoo-confetti{position:fixed;inset:0;z-index:60;pointer-events:none;overflow:hidden}
-/* 必须是直接子选择器:列队里的 span 也在 .zoo-confetti 里面,
-   写成后代选择器会把它们一起绝对定位、叠成一坨并套上飘落动画。 */
-.zoo-confetti > span{position:absolute;top:-8%;line-height:1;animation-name:zooFall;animation-timing-function:linear;animation-fill-mode:forwards}
+.zoo-confetti-piece{position:absolute;top:-8%;display:block;background:var(--zoo-confetti-color);animation-name:zooFall;animation-timing-function:linear;animation-fill-mode:forwards}
+.zoo-confetti-rect{border-radius:2px}
+.zoo-confetti-circle{border-radius:50%}
+.zoo-confetti-strip{border-radius:999px}
+.zoo-confetti-color-0{--zoo-confetti-color:var(--ds-primary)}
+.zoo-confetti-color-1{--zoo-confetti-color:var(--ds-primary-ink)}
+.zoo-confetti-color-2{--zoo-confetti-color:var(--ds-warn-ink)}
+.zoo-confetti-color-3{--zoo-confetti-color:var(--ds-danger)}
+.zoo-confetti-color-4{--zoo-confetti-color:var(--ds-ink-3)}
 @keyframes zooFall{
-  0%{transform:translate3d(0,0,0) rotate(0);opacity:0}
+  0%{transform:translate3d(0,0,0) rotate(var(--zoo-rotation,0deg));opacity:0}
   12%{opacity:1}
-  100%{transform:translate3d(var(--zoo-drift,0),115vh,0) rotate(320deg);opacity:.85}
+  100%{transform:translate3d(var(--zoo-drift,0),115vh,0) rotate(calc(var(--zoo-rotation,0deg) + 320deg));opacity:.85}
 }
 
 /* ======================================================================
@@ -1662,7 +1666,7 @@
 .study-focus-chest-lock{position:absolute;z-index:4;top:54px;left:calc(50% - 12px);display:grid;place-items:center;width:24px;height:25px;border:2px solid #a76b22;border-radius:6px;background:linear-gradient(135deg,#fff0a0,#e3a638);box-shadow:0 2px 3px #542c1b50}
 .study-focus-chest-lock:before{position:absolute;top:-9px;width:10px;height:11px;border:2px solid #f3ce65;border-bottom:0;border-radius:8px 8px 0 0;content:""}
 .study-focus-chest-lock i{z-index:1;width:3px;height:7px;border-radius:3px;background:#795022}
-.study-focus-chest-spark{position:absolute;z-index:4;color:#e5a627;font-size:19px;font-style:normal;text-shadow:0 1px 8px #ffc34f;animation:study-chest-spark 1.4s ease-in-out infinite}
+.study-focus-chest-spark{position:absolute;z-index:4;color:#e5a627;width:19px;height:19px;filter:drop-shadow(0 1px 5px #ffc34f);animation:study-chest-spark 1.4s ease-in-out infinite}
 .spark-one{top:28px;left:2px}.spark-two{top:5px;right:8px;animation-delay:.35s}.spark-three{top:65px;right:1px;font-size:14px;animation-delay:.7s}
 .study-focus-chest-prize{position:absolute;z-index:5;top:10px;left:50%;color:#8c5518;font-size:24px;font-style:normal;font-weight:950;text-shadow:0 1px #fff4bf,0 3px 8px #ffd268;opacity:0;transform:translate(-50%,18px) scale(.55)}
 .study-focus-chest-caption{margin-top:-1px;color:var(--ds-primary-deep,#7a4a20);font-size:13px;font-weight:850}

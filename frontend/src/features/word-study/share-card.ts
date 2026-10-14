@@ -48,7 +48,7 @@ const drawHero = async (ctx: CanvasRenderingContext2D, todayWordCount: number, e
   // 徽章从数字下方向右排:里程碑(稀有,金色)在前,加餐在后
   let chipX = MARGIN + 56;
   if (milestoneReached > 0) chipX += drawChip(ctx, chipX, top + 290, `⚑ 累计破 ${milestoneReached}`, GOLD, GOLD_INK) + 14;
-  if (encoreWords > 0) drawChip(ctx, chipX, top + 290, `✦ 加餐 +${encoreWords}`, PRIMARY, ON_PRIMARY);
+  if (encoreWords > 0) drawChip(ctx, chipX, top + 290, `加餐 +${encoreWords}`, PRIMARY, ON_PRIMARY);
 };
 
 const drawCalendar = (ctx: CanvasRenderingContext2D, input: ShareCardInput, statuses: Map<string, DayStatus>) => {
@@ -65,7 +65,7 @@ const drawCalendar = (ctx: CanvasRenderingContext2D, input: ShareCardInput, stat
   ctx.textAlign = "right";
   ctx.fillStyle = checkedToday ? PRIMARY_DEEP : INK3;
   ctx.font = `700 26px ${FONT_SANS}`;
-  ctx.fillText(checkedToday ? "✓ 今日已打卡" : "今日未打卡", WIDTH - MARGIN - 46, top + 68);
+  ctx.fillText(checkedToday ? "今日已打卡" : "今日未打卡", WIDTH - MARGIN - 46, top + 68);
 
   const gridLeft = MARGIN + 80;
   const gridPitch = (INNER - 160) / 6;

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { ImageDown, Loader2, MessageCircle, Share2, Sparkles, X } from "lucide-react";
+import { Check, ImageDown, Loader2, MessageCircle, Share2, Sparkles, X } from "lucide-react";
 import { Sticker } from "./CapybaraMascot";
 import { ScrollArea } from "./ScrollArea";
 import { isNativeApp, prepareWechatMomentsPost, saveImageToGallery, shareImage, shareMenuCoversMoments } from "../lib/share-image";
@@ -27,6 +27,7 @@ export function ShareImageSheet({ title, url, alt, blob, fileName, shareTitle, o
 }) {
   const [busy, setBusy] = useState<"save" | "share" | "moments" | null>(null);
   const [notice, setNotice] = useState("");
+  const [noticeSaved, setNoticeSaved] = useState(false);
   const native = isNativeApp();
   const dialogRef = useRef<HTMLDivElement>(null);
   const onCloseRef = useRef(onClose);
@@ -69,10 +70,12 @@ export function ShareImageSheet({ title, url, alt, blob, fileName, shareTitle, o
     if (busy) return;
     setBusy(kind);
     setNotice("");
+    setNoticeSaved(false);
     try {
       if (kind === "save") {
         const result = await saveImageToGallery(blob, fileName);
-        setNotice(result === "gallery" ? "已保存到相册 ✓" : "已开始下载 ✓");
+        setNotice(result === "gallery" ? "已保存到相册" : "已开始下载");
+        setNoticeSaved(true);
       } else if (kind === "share") {
         const result = await shareImage(blob, fileName, shareTitle);
         if (result === "unsupported") setNotice("这个浏览器不支持直接分享，先保存图片再发吧");
@@ -98,7 +101,7 @@ export function ShareImageSheet({ title, url, alt, blob, fileName, shareTitle, o
           </button>
         </div>
         <img src={url} alt={alt} className="share-sheet-img" />
-        {notice && <p className="share-sheet-notice" role="status">{notice}</p>}
+        {notice && <p className="share-sheet-notice" role="status">{noticeSaved && <Check size={14} aria-hidden="true" />}<span>{notice}</span></p>}
         {native ? (
           <>
             {shareMenuCoversMoments() ? (

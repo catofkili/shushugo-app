@@ -17,7 +17,7 @@ import { lookupAccent, pitchPattern, splitMorae, usePitchAccentReady } from "../
 import { lookupTransitivity, useTransitivityReady } from "../../lib/transitivity";
 import { getStudyPreferences } from "../../lib/studyPreferences";
 import { playExample, prefetchExample } from "../../lib/speech";
-import { playComplete } from "../../lib/zoo-sounds";
+import { playComplete, playSave } from "../../lib/zoo-sounds";
 import type { WordCard, WordStats } from "../../types/vocabulary";
 import { ENCORE_DEFAULT_COLOR, encoreLimitedColor, MILESTONES, pickEncoreHook } from "./encore-style";
 import { renderShareCard } from "./share-card";
@@ -278,6 +278,7 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
   const [timeBumping, setTimeBumping] = useState(false);
   const [checkinBumping, setCheckinBumping] = useState(false);
   const [yuzuBumping, setYuzuBumping] = useState(false);
+  const [yuzuSpinKey, setYuzuSpinKey] = useState(0);
   const [flight, setFlight] = useState<(YuzuFlightPath & { balance: number }) | null>(null);
   const walletMarkRef = useRef<HTMLSpanElement | null>(null);
   const studyDate = stats?.studyDate ?? currentStudyDate();
@@ -494,14 +495,16 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
               </p>
             </div>
             {isDailyPlanComplete && (
-              <div
-                className={`fin-yuzu-wallet${yuzuBumping ? " ds-bump" : ""}`}
+              <button
+                type="button"
+                className={`focus-ring fin-yuzu-wallet${yuzuBumping ? " ds-bump" : ""}`}
                 aria-label="柚子余额"
+                onClick={() => { setYuzuSpinKey((key) => key + 1); playSave(); }}
                 onAnimationEnd={(event) => { if (event.animationName === "ds-bump") setYuzuBumping(false); }}
               >
-                <span ref={walletMarkRef} className="fin-yuzu-mark" aria-hidden="true"><Citrus size={17} /></span>
+                <span key={yuzuSpinKey} ref={walletMarkRef} className={`fin-yuzu-mark${yuzuSpinKey ? " fin-yuzu-spinning" : ""}`} aria-hidden="true"><Citrus size={17} /></span>
                 <span aria-live="polite">{shownYuzuBalance}</span>
-              </div>
+              </button>
             )}
           </header>
 

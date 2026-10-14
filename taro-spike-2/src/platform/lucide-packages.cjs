@@ -37,10 +37,6 @@ module.exports = {
     "study",
     "content-pages"
   ],
-  "sparkles": [
-    "account",
-    "content-pages"
-  ],
   "ticket": [
     "account"
   ],

@@ -1,0 +1,5 @@
+.zoom-open-blocker { position: fixed; z-index: 10003; inset: 0; }
+.zoom-open { position: absolute; inset: 0; overflow: hidden; background: var(--ds-bg); clip-path: circle(150% at var(--zoom-x) var(--zoom-y)); animation: zoom-open-expand 420ms var(--ds-ease-out) 160ms both; }
+.zoom-open-art { position: absolute; left: var(--zoom-x); top: var(--zoom-y); transform: translate(-50%, -50%) scale(3); opacity: 0; animation: zoom-open-art 420ms var(--ds-ease-out) 160ms both; }
+@keyframes zoom-open-expand { from { clip-path: circle(0 at var(--zoom-x) var(--zoom-y)); } }
+@keyframes zoom-open-art { from { transform: translate(-50%, -50%) scale(1); opacity: 1; } }

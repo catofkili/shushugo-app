@@ -14,7 +14,7 @@ import {
   type CloudTeam,
   type CloudTeamPlazaItem
 } from "../lib/sync-api";
-import { RefreshCw } from "lucide-react";
+import { Check, RefreshCw } from "lucide-react";
 import { CapybaraWalk, Sticker } from "../components/CapybaraMascot";
 import { MascotSay } from "../components/MascotSay";
 import { playKnow, playSave, playStreakChirp } from "../lib/zoo-sounds";
@@ -320,7 +320,7 @@ export function TeamPage({ onBack, onOpenDuel, initialInviteCode = "" }: { onBac
               </>}
               <div className="team-checkin-area">
                 <button className="zoo-tm-primary" disabled={Boolean(busy) || checkedIn || !teamDayPassed(activity.wordCount, activity.activeMinutes)} onClick={checkin}>
-                  {checkedIn ? "今天已打卡 ✓" : "组队打卡 · +20 柚子"}
+                  {checkedIn ? <>今天已打卡 <Check size={14} aria-hidden="true" /></> : "组队打卡 · +20 柚子"}
                 </button>
                 {!checkedIn && !teamDayPassed(activity.wordCount, activity.activeMinutes) && <p className="zoo-tm-progress-note">今天 {activity.wordCount}/30 词 · {activity.activeMinutes}/10 分钟</p>}
                 {team.leaveOpportunity && <button className="ds-btn-soft team-leave-button" disabled={Boolean(busy) || team.leaveOpportunity.used} onClick={takeLeave}>
@@ -347,7 +347,7 @@ export function TeamPage({ onBack, onOpenDuel, initialInviteCode = "" }: { onBac
                       <p>今天 {member.wordCount ?? 0} 词 · {member.activeMinutes ?? 0} 分钟{member.cheersReceived ? " · 收到 " + member.cheersReceived + " 次加油" : ""}</p>
                     </div>
                     {member.isMe ? (
-                      <span className={"zoo-tm-member-state" + (teamDayPassed(member.wordCount, member.activeMinutes) ? " done" : "")}>{teamDayPassed(member.wordCount, member.activeMinutes) ? "过关 ✓" : "学习中"}</span>
+                      <span className={"zoo-tm-member-state" + (teamDayPassed(member.wordCount, member.activeMinutes) ? " done" : "")}>{teamDayPassed(member.wordCount, member.activeMinutes) ? <>过关 <Check size={12} aria-hidden="true" /></> : "学习中"}</span>
                     ) : (
                       <button className={"zoo-tm-cheer" + (member.cheeredByMe ? " sent" : "")} disabled={member.cheeredByMe || Boolean(busy)} onClick={() => cheer(member.memberId)}>
                         {member.cheeredByMe ? "已加油" : "加油"}
@@ -355,7 +355,7 @@ export function TeamPage({ onBack, onOpenDuel, initialInviteCode = "" }: { onBac
                     )}
                     {team.period && <div className="team-period-grid" aria-label={`${member.name}的14天进度`}>
                       {(member.cells ?? []).map((status, index) => <span key={index} className={`team-period-cell ${status}`} title={`${shiftTeamDay(team.period.start, index)} · ${CELL_LABELS[status]}`} aria-label={`第${index + 1}天：${CELL_LABELS[status]}`}>
-                        {status === "leave" ? "请假" : status === "passed" ? "✓" : status === "failed" ? "×" : status === "not-joined" ? "—" : index + 1}
+                        {status === "leave" ? "请假" : status === "passed" ? <Check size={11} aria-hidden="true" /> : status === "failed" ? "×" : status === "not-joined" ? "—" : index + 1}
                       </span>)}
                     </div>}
                   </li>

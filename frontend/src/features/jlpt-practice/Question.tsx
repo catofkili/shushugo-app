@@ -1,4 +1,4 @@
-import { Check, X } from "lucide-react";
+import { Check, Star, X } from "lucide-react";
 import { JapaneseRuby } from "../../components/JapaneseRuby";
 import { MascotSay } from "../../components/MascotSay";
 import { ScrollArea } from "../../components/ScrollArea";
@@ -19,8 +19,8 @@ export function Stem({ text, furigana, activeRef }: { text: string; furigana?: r
       case "text": return <span className="jq-text" key={index}><Ruby text={part.text} start={part.start} furigana={furigana} /></span>;
       case "underline": return <span className="jq-underline" key={index}><Ruby text={part.text} start={part.start} furigana={furigana} /></span>;
       case "blank": return <span className="jq-blank" key={index} aria-label="空欄" />;
-      case "slot": return <span className="jq-slot" key={index} aria-label={part.star ? "★の位置" : "空欄"}>
-        <span className="jq-star">{part.star ? "★" : "\u00a0"}</span><span className="jq-slot-line" />
+      case "slot": return <span className="jq-slot" key={index} aria-label={part.star ? "星の位置" : "空欄"}>
+        <span className="jq-star">{part.star && <Star size={14} aria-hidden="true" />}</span><span className="jq-slot-line" />
       </span>;
       case "ref": return <span className={`jq-ref ${part.n === activeRef ? "jq-ref-active" : ""}`} key={index}>{part.n}</span>;
     }

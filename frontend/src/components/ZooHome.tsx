@@ -1,7 +1,6 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent as ReactMouseEvent } from "react";
 import { Capacitor } from "@capacitor/core";
 // 图标统一走 lucide（ISC 协议，线性、单色、跟随 currentColor）。
-// 主页问候区使用收集日品牌图标；其它学习状态仍保留线性图标和吉祥物组件。
 import { Check, Merge, RefreshCw, SkipForward, SlidersHorizontal, Timer } from "lucide-react";
 import { getWordStats, type ProgressOverview } from "../lib/api";
 import { notifyProgressUpdated } from "../lib/progress-events";
@@ -29,12 +28,16 @@ import { availableShortfall, shortfallText } from "../lib/jlpt/plan";
 import { useEntitlements } from "../hooks/useEntitlements";
 import { useCountUp } from "../hooks/useCountUp";
 import { useMoments } from "../hooks/useMoments";
+import { triggerRevealHaptic } from "../lib/haptics";
+import { playStreakChirp } from "../lib/zoo-sounds";
 import { Sticker, type StickerName } from "./CapybaraMascot";
 import { Disclosure } from "./Disclosure";
 import { MomentPop } from "./MomentPop";
 import { WeeklyReportEntrance } from "./WeeklyReportEntrance";
 import { ZooProgressPanel } from "./ZooProgressPanel";
 import { StudyFocusIntro } from "./StudyFocusIntro";
+import { useZoomOpen } from "./ZoomOpen";
+import { pickCapyTools } from "./capy-tool-selection";
 import { isStudyFocusArmed, setStudyFocusArmed } from "../lib/study-focus";
 import "./ZooHome.css";
 
@@ -78,19 +81,6 @@ const greetingFor = (hour: number) =>
 const staggerStyle = (index: number): CSSProperties | undefined =>
   index < 8 ? { "--i": index } as CSSProperties : undefined;
 
-/**
- * 问候旁边那只吉祥物跟着「现在几点」换：早上伸懒腰、中午饿了、下午敲电脑、晚上戴耳机、深夜睡着；
- * 今天走完了就换成欢呼。主页是一天打开次数最多的一屏，永远同一张 App 图标等于没有表情。
- * ⚠️ 别和下面大卡那只（按进度换：fired-up / book / cheer）撞成同一张。
- */
-const greetSticker = (hour: number, total: number, done: number): StickerName =>
-  total > 0 && done >= total ? "mood-yay"
-    : hour < 5 || hour >= 23 ? "mood-sleep"
-      : hour < 10 ? "scene-stretch"
-        : hour < 14 ? "mood-hungry"
-          : hour < 18 ? "scene-laptop"
-            : "scene-music";
-
 export function ZooHome({
   overview,
   onNavigate,
@@ -118,6 +108,10 @@ export function ZooHome({
   const [weeklyNotice, setWeeklyNotice] = useState<"new" | "read" | "expired" | "none">("none");
   const { moment, leaving: momentLeaving, collect: collectMoments } = useMoments();
   const refreshRef = useRef<() => void>(() => undefined);
+  const [capyTools] = useState(pickCapyTools);
+  const [pokedTool, setPokedTool] = useState<StickerName | null>(null);
+  const [flameJumping, setFlameJumping] = useState(false);
+  const { open, overlay } = useZoomOpen();
 
   useEffect(() => {
     const refreshWeeklyNotice = () => {
@@ -267,6 +261,31 @@ export function ZooHome({
     { title: "柚子商店", icon: "tool-shop", action: () => onNavigate("yuzu-shop") }
   ];
 
+  const openTool = (event: ReactMouseEvent<HTMLButtonElement>, item: typeof toolItems[number]) => {
+    if (!capyTools.has(item.icon)) {
+      item.action();
+      return;
+    }
+    setPokedTool(item.icon);
+    window.setTimeout(() => setPokedTool((current) => current === item.icon ? null : current), 320);
+    if (goals.zooSounds) playStreakChirp();
+    triggerRevealHaptic();
+    open(event, item.action, `${item.icon}-capy` as StickerName);
+  };
+
+  const openTeam = (event: ReactMouseEvent<HTMLButtonElement>) => {
+    const go = () => onNavigate("team");
+    if (!capyTools.has("tool-team")) {
+      go();
+      return;
+    }
+    setPokedTool("tool-team");
+    window.setTimeout(() => setPokedTool((current) => current === "tool-team" ? null : current), 320);
+    if (goals.zooSounds) playStreakChirp();
+    triggerRevealHaptic();
+    open(event, go, "tool-team-capy");
+  };
+
   return (
     <div className={`zoo-page zoo-home-v2${weeklyEntryEnabled ? " has-weekly-cord" : ""}`}>
       {weeklyEntryEnabled && <WeeklyReportEntrance unread={weeklyNotice === "new"} onOpen={onOpenWeeklyReport} />}
@@ -279,11 +298,14 @@ export function ZooHome({
           <p className="zoo-greet-sub">{greetLine}</p>
         </div>
         {streak > 0 && (
-          <button type="button" className="zoo-greet-streak" title={`连续学习 ${streak} 天`} onClick={() => onNavigate("streak")}>
-            <StreakFlame state={flameStateOf(streakSnap?.todayStatus ?? "none")} tier={streakSnap?.tier ?? 1} atRisk={streakSnap?.atRisk} size={18} /><b>{streakCount}</b>
+          <button type="button" className="zoo-greet-streak" title={`连续学习 ${streak} 天`} onClick={(event) => {
+            setFlameJumping(true);
+            window.setTimeout(() => setFlameJumping(false), 240);
+            open(event, () => onNavigate("streak"));
+          }}>
+            <StreakFlame state={flameStateOf(streakSnap?.todayStatus ?? "none")} tier={streakSnap?.tier ?? 1} atRisk={streakSnap?.atRisk} size={18} className={flameJumping ? "zoo-flame-jump" : ""} /><b>{streakCount}</b>
           </button>
         )}
-        <Sticker name={greetSticker(new Date().getHours(), total, done)} size={78} className="zoo-greet-mascot" />
       </div>
 
       {recovery && !recoveryChoice && (
@@ -408,12 +430,12 @@ export function ZooHome({
               <small>{examDateMissing ? "选择日期后生成每日计划" : recovery ? recoveryChoice === "usual" ? "已恢复平时学习量，可设置新目标" : `考后轻量期还剩 ${recovery.daysLeft} 天` : jlpt.finished ? "可设置下一场目标" : kanaGatePending() ? "先学五十音，完成后开始新词" : shortfallText(availableShortfall(jlpt.shortfall, entitlements.isPro))}</small>
             </button>
           )}
-          <button className="zoo-duo-cell" onClick={() => onNavigate("team")} style={staggerStyle(jlpt ? 1 : 0)}>
+          <button className="zoo-duo-cell" onClick={openTeam} style={staggerStyle(jlpt ? 1 : 0)}>
             <span className="zoo-duo-kick">组队</span>
             <b>和队友一起学</b>
             {/* 原来是 emoji 排成一排，后来换成一群水豚的组队头图；v3 一屏只留一只吉祥物（大卡上那只），这里换成三面队旗 */}
             <small className="zoo-duo-avatars">
-              <Sticker name="tool-team" size={34} className="zoo-duo-team" />
+              <Sticker name={capyTools.has("tool-team") ? "tool-team-capy" : "tool-team"} size={34} className={`zoo-duo-team${pokedTool === "tool-team" ? " zoo-tool-capy-poke" : ""}`} />
               <em>建队，或凭邀请码加入</em>
             </small>
           </button>
@@ -427,8 +449,8 @@ export function ZooHome({
         <p className="zoo-tray-title">学习工具</p>
         <div className="zoo-quad ds-stagger">
           {toolItems.map((item, index) => (
-            <button key={item.title} onClick={item.action} style={staggerStyle(index)}>
-              <span aria-hidden="true"><Sticker name={item.icon} size={44} /></span>
+            <button key={item.title} onClick={(event) => openTool(event, item)} style={staggerStyle(index)}>
+              <span className={`zoo-tool-icon${pokedTool === item.icon ? " zoo-tool-capy-poke" : ""}`} aria-hidden="true"><Sticker name={capyTools.has(item.icon) ? `${item.icon}-capy` as StickerName : item.icon} size={44} /></span>
               <b>{item.title}</b>
             </button>
           ))}
@@ -464,6 +486,7 @@ export function ZooHome({
           </button>
         </div>
       </Disclosure>
+      {overlay}
     </div>
   );
 }

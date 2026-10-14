@@ -1,6 +1,6 @@
 import { getStudyPreferences } from "../lib/studyPreferences";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent } from "react";
-import { ChevronDown, Eye, ListChecks, NotebookPen, Send } from "lucide-react";
+import { Check, ChevronDown, Eye, ListChecks, NotebookPen, Send } from "lucide-react";
 import { getQuickStudySession, getQuickStudySessionForWords, submitQuickStudyBatch } from "../lib/api";
 import { clearQuickStudyDraft, loadQuickStudyDraft, saveQuickStudyDraft } from "../lib/quick-study-draft";
 import { studyDate } from "../lib/database/db-utils";
@@ -585,7 +585,7 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
                     onTouchStart={touchEventsEnabled() ? (event) => event.stopPropagation() : undefined}
                     onClick={(event) => { event.stopPropagation(); selection.toggle(card.id); }}
                   >
-                    {selectedIds.has(card.id) ? "✓" : ""}
+                    {selectedIds.has(card.id) && <Check size={14} aria-hidden="true" />}
                   </button>
                 ) : (
                   <span className="quick-study-index">{String(index + 1).padStart(2, "0")}</span>
@@ -635,7 +635,7 @@ export function QuickStudyPanel({ onNavigate, variant = "page", onDailyModeCompl
                               role="menuitem"
                             >
                               <span>{option.label}</span>
-                              {rating === option.value && <span aria-hidden="true">✓</span>}
+                              {rating === option.value && <Check size={14} aria-hidden="true" />}
                             </button>
                           ))}
                         </div>

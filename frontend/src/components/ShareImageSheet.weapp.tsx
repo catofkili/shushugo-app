@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Button, Image, Text, View } from "@tarojs/components";
+import { Check } from "lucide-react";
 import { prepareWechatMomentsPost, saveImageToGallery, shareImage } from "../lib/share-image";
 
 export function ShareImageSheet({ title, url, alt, blob, fileName, shareTitle, onClose }: {
@@ -7,11 +8,12 @@ export function ShareImageSheet({ title, url, alt, blob, fileName, shareTitle, o
 }) {
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
+  const [noticeSaved, setNoticeSaved] = useState(false);
   const run = async (action: "save" | "friend" | "moments") => {
     if (busy) return;
-    setBusy(true); setNotice("");
+    setBusy(true); setNotice(""); setNoticeSaved(false);
     try {
-      if (action === "save") { await saveImageToGallery(blob, fileName); setNotice("已保存到相册。"); }
+      if (action === "save") { await saveImageToGallery(blob, fileName); setNotice("已保存到相册"); setNoticeSaved(true); }
       else if (action === "friend") { const result = await shareImage(blob, fileName, shareTitle); setNotice(result === "unsupported" ? "当前微信不支持发送此图片。" : "已打开微信分享。"); }
       else { await prepareWechatMomentsPost(blob, fileName); setNotice("请在朋友圈里手动选择刚保存的图片。"); }
     } catch (error) { setNotice(error instanceof Error ? error.message : "操作失败，请检查微信权限后重试。"); }
@@ -21,7 +23,7 @@ export function ShareImageSheet({ title, url, alt, blob, fileName, shareTitle, o
     <View className="rounded-t-[28px] bg-[#FBF6EC] p-4 pb-8 text-[#2B241C]">
       <View className="mb-3 flex items-center"><Text className="flex-1 text-base font-bold">{title}</Text><Button onClick={onClose}>关闭</Button></View>
       <Image src={url} mode="widthFix" aria-label={alt} className="max-h-[55vh] w-full rounded-2xl" />
-      {notice && <Text className="my-3 block text-sm">{notice}</Text>}
+      {notice && <Text className="my-3 block text-sm">{noticeSaved && <Check size={14} className="mr-1 inline-block" />}{notice}</Text>}
       <View className="mt-3 grid grid-cols-2 gap-2">
         <Button disabled={busy} onClick={() => void run("friend")}>发给微信好友</Button>
         <Button disabled={busy} onClick={() => void run("save")}>保存到相册</Button>

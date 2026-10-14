@@ -1,4 +1,5 @@
 import { useEffect, useState, type TouchEvent } from "react";
+import { Capacitor } from "@capacitor/core";
 import { ArrowLeft, ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { Sticker, type StickerName, BrandIcon } from "./CapybaraMascot";
 import type { JLPTLevel } from "../types/grammar";
@@ -8,6 +9,7 @@ import { getGrammarTitleFurigana } from "../lib/grammar-title-furigana";
 import { JapaneseRuby } from "./JapaneseRuby";
 import { SquirrelTrail } from "./SquirrelTrail";
 import { mobileTitles } from "../app/navigation-titles";
+import { scrollPageToTop } from "../lib/touch-adapter";
 export { mobileTitles } from "../app/navigation-titles";
 
 // 主页取代了原来的「工具箱」：工具箱的学习模式、收藏、进度概览等入口都挪到了主页。
@@ -265,6 +267,17 @@ export function AppNavigation({
                 key={item.page}
                 onClick={(event) => {
                   const icon = event.currentTarget.querySelector<HTMLElement>(".app-tab-icon");
+                  if (active) {
+                    if (Capacitor.getPlatform() === "wechat") return;
+                    if (icon) {
+                      icon.classList.remove("ds-tab-rock", "ds-tab-bump");
+                      void icon.clientWidth;
+                      icon.classList.add("ds-tab-rock");
+                      window.setTimeout(() => icon.classList.remove("ds-tab-rock"), 360);
+                    }
+                    scrollPageToTop();
+                    return;
+                  }
                   if (icon) {
                     icon.classList.remove("ds-tab-bump");
                     void icon.clientWidth;

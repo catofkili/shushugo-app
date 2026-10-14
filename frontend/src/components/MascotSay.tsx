@@ -1,5 +1,27 @@
-import type { ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Sticker, type StickerName } from "./CapybaraMascot";
+
+function SleepingMascot({ size }: { size: number }) {
+  const [awake, setAwake] = useState(false);
+  const timer = useRef<number | null>(null);
+  useEffect(() => () => {
+    if (timer.current !== null) window.clearTimeout(timer.current);
+  }, []);
+  return (
+    <button
+      type="button"
+      className={`ds-say-sleeper ds-say-mascot${awake ? " is-awake" : ""}`}
+      aria-label="叫醒水豚"
+      onClick={() => {
+        if (awake) return;
+        setAwake(true);
+        timer.current = window.setTimeout(() => { timer.current = null; setAwake(false); }, 600);
+      }}
+    >
+      <Sticker name={awake ? "mood-surprised" : "mood-sleep"} size={size} />
+    </button>
+  );
+}
 
 /**
  * 吉祥物说话：一张表情贴纸 + 一个对话气泡。
@@ -27,7 +49,7 @@ export function MascotSay({
 }) {
   return (
     <div className={`ds-say ds-say-${tone} ${className}`}>
-      <Sticker name={sticker} size={size} className="ds-say-mascot" />
+      {sticker === "mood-sleep" ? <SleepingMascot size={size} /> : <Sticker name={sticker} size={size} className="ds-say-mascot" />}
       <div className="ds-say-bubble">{children}</div>
     </div>
   );
