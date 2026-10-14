@@ -69,11 +69,12 @@ export function Question({ bank, question, chosen, reveal = false, showKind = tr
   </div>;
 }
 
-export function Explanation({ question, chosen }: { question: JlptQuestion; chosen: 0 | OptionNo }) {
+/** heading=false：刷题时底部反馈条已经说了对错，这里不再说一遍 */
+export function Explanation({ question, chosen, heading = true }: { question: JlptQuestion; chosen: 0 | OptionNo; heading?: boolean }) {
   const correct = chosen === question.answer;
   const distractor = chosen ? question.distractors[String(chosen) as `${OptionNo}`] : undefined;
   return <MascotSay sticker={correct ? "mood-yay" : "mood-puzzled"} tone={correct ? "good" : "warn"} className="ds-say-onbg">
-    <p className="jq-feedback-title">{correct ? "答对了" : chosen ? "答错了" : "没答"}</p>
+    {heading && <p className="jq-feedback-title">{correct ? "答对了" : chosen ? "答错了" : "没答"}</p>}
     <p className="jq-explanation">{question.explanation}</p>
     {!correct && distractor && <p className="jq-explanation">你选的第 {chosen} 项：{distractor}</p>}
     {question.order && <p className="jq-explanation">正确顺序：{question.order.map(no => question.options[no - 1]).join(" → ")}</p>}

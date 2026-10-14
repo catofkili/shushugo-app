@@ -67,8 +67,8 @@ export function DrillSession({ bank, questions, mode, sessionId, onDone, onBack 
     <Question key={question.id} bank={bank} question={question} chosen={chosen} reveal={chosen !== 0} showKind={mode === "mistakes"} onChoose={choose} />
     {error && <button type="button" className="ds-btn jq-wide focus-ring" onClick={() => { if (chosen) save(chosen); }}>重试保存</button>}
     {error ? <MascotSay sticker="mood-puzzled" tone="warn" className="ds-say-onbg">作答没存好。再试一次。</MascotSay>
-      : chosen !== 0 && <Explanation question={question} chosen={chosen} />}
-    {chosen !== 0 && !error && <AnswerFeedbackBar key={question.id} correct={chosen === question.answer} answer={question.options[question.answer - 1]} combo={combo} questionNumber={index} onContinue={next} />}
+      : chosen !== 0 && <Explanation question={question} chosen={chosen} heading={false} />}
+    {chosen !== 0 && !error && <AnswerFeedbackBar key={`feedback-${question.id}`} correct={chosen === question.answer} answer={question.options[question.answer - 1]} combo={combo} questionNumber={index} onContinue={next} />}
   </>;
 }
 

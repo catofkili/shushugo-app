@@ -12,6 +12,8 @@ vi.mock("react", async importOriginal => ({
   useRef: (current: unknown) => ({ current }),
   useEffect: (effect: () => void | (() => void)) => { harness.effects.push(effect); }
 }));
+// 反馈条挂到 body（createPortal）；这里没有 DOM，原地渲染
+vi.mock("react-dom", async importOriginal => ({ ...await importOriginal<typeof import("react-dom")>(), createPortal: (node: unknown) => node }));
 vi.mock("../lib/zoo-sounds", () => ({ playKnow: vi.fn(), playDontKnow: vi.fn() }));
 vi.mock("../lib/haptics", () => ({ triggerMemoryHaptic: vi.fn() }));
 vi.mock("../lib/studyPreferences", () => ({ getStudyPreferences: () => ({ zooSounds: harness.sounds }) }));
@@ -24,6 +26,7 @@ beforeEach(() => {
   harness.effects = [];
   harness.sounds = true;
   cleanups = [];
+  vi.stubGlobal("document", { body: {} });
   vi.stubGlobal("window", { addEventListener: vi.fn((_event, listener) => { onKey = listener; }), removeEventListener: vi.fn() });
 });
 afterEach(() => { cleanups.forEach(cleanup => cleanup()); vi.unstubAllGlobals(); });

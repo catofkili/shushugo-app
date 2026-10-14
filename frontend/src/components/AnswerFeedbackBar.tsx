@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { Check, X } from "lucide-react";
 import { triggerMemoryHaptic } from "../lib/haptics";
 import { getStudyPreferences } from "../lib/studyPreferences";
@@ -50,7 +51,8 @@ export function AnswerFeedbackBar({ correct, answer, combo, onContinue, question
 
   return <>
     <div className="answer-feedback-space" aria-hidden="true" />
-    <div className={`answer-feedback ${correct ? "answer-feedback-correct" : "answer-feedback-wrong"}`}>
+    {/* 挂到 body：题目页外壳带 transform（入场动画），fixed 会被困在外壳里、压在底栏下面。小程序走 react-dom 替身挂进页面外壳 */}
+    {createPortal(<div className={`answer-feedback ${correct ? "answer-feedback-correct" : "answer-feedback-wrong"}`}>
       <div className="answer-feedback-inner">
         <div className="answer-feedback-result" role="status" aria-live="polite">
           {/* Taro 按 #FFFFFF 选择白色图标资源，不继承父级 CSS 的 color。 */}
@@ -62,6 +64,6 @@ export function AnswerFeedbackBar({ correct, answer, combo, onContinue, question
         </div>
         <button type="button" className={`ds-btn focus-ring answer-feedback-continue ${correct ? "answer-feedback-primary" : "answer-feedback-amber"}`} onClick={proceed}>继续</button>
       </div>
-    </div>
+    </div>, document.body)}
   </>;
 }
