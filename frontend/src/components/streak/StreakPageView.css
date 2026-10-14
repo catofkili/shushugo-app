@@ -1,59 +1,87 @@
 /* 连胜详情页（docs/STREAK_SPEC.md §5）。
    单独一个文件、前缀 stk-：只有详情页 import 它，小程序里就落在 content-pages 分包，不进主包 app.wxss
    （主包余量只有十来 KB）。前缀不能用 sp-：拼写页已经占了（.sp-card 撞过一次）。
-   规矩同 streak.css：只用 class 选择器。 */
-.stk { display: flex; flex-direction: column; gap: 14px; max-width: 560px; margin: 0 auto; padding-bottom: 24px; }
+   规矩同 streak.css：只用 class 选择器（Taro 只换复合选择器里最后一个标签）；基础样式 = 终态。
+   2026-10-14 第二版：作者嫌第一版「一块卡套一个数」太啰嗦，整页不开卡，信息并成一条流。 */
+.stk { display: flex; flex-direction: column; gap: 22px; max-width: 560px; margin: 0 auto; padding-bottom: 28px; }
 .stk-loading { padding: 48px 0; text-align: center; color: var(--ds-ink-3); font-weight: 700; }
 .stk-backbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .stk-backbar > p { color: var(--ds-ink-2); font-size: 14px; font-weight: 800; }
 .stk-back { display: inline-flex; align-items: center; gap: 6px; padding: 8px; border: 0; background: none; color: var(--ds-ink-2); font-size: 14px; font-weight: 800; }
 
-.stk-hero { position: relative; display: flex; flex-direction: column; align-items: center; padding: 22px 16px 16px; border-radius: 24px; overflow: hidden;
-  background: radial-gradient(circle at 50% 30%, color-mix(in srgb, #FFB547 28%, transparent), transparent 60%), var(--ds-surface); box-shadow: var(--ds-shadow); }
-.stk-hero-gold { background: radial-gradient(circle at 50% 30%, color-mix(in srgb, #FFD45C 34%, transparent), transparent 60%), var(--ds-surface); }
-.stk-hero-off { background: var(--ds-surface); }
-.stk-hero-count { display: flex; align-items: baseline; gap: 4px; margin-top: 6px; color: #E8742A; }
-.stk-hero-gold .stk-hero-count { color: #D08A0C; }
-.stk-hero-off .stk-hero-count { color: var(--ds-ink-3); }
-.stk-hero-count > b { font-size: 56px; font-weight: 900; line-height: 1; font-variant-numeric: tabular-nums; }
-.stk-hero-count > span { font-size: 20px; font-weight: 800; }
-.stk-hero-caption { margin-top: 2px; color: var(--ds-ink-2); font-size: 14px; font-weight: 700; }
+/* ———— 火苗 + 天数 + 一行事实：直接铺在页面底色上，背后一团光 ———— */
+.stk-hero { position: relative; display: flex; flex-direction: column; align-items: center; padding-top: 18px; }
+.stk-hero::before {
+  content: ""; position: absolute; left: 50%; top: -24px; width: 320px; height: 320px; margin-left: -160px; border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, #FFB547 30%, transparent), transparent 62%); pointer-events: none;
+}
+.stk-hero-gold::before { background: radial-gradient(circle, color-mix(in srgb, #FFD45C 38%, transparent), transparent 64%); }
+.stk-hero-off::before { background: radial-gradient(circle, color-mix(in srgb, var(--ds-ink-3) 12%, transparent), transparent 58%); }
+.stk-hero > .sf, .stk-count, .stk-status, .stk-facts { position: relative; }
+.stk-count { display: flex; align-items: baseline; gap: 6px; margin-top: 4px; color: #E8742A; animation: stk-rise 420ms cubic-bezier(.2,.8,.2,1) 120ms both; }
+.stk-hero-gold .stk-count { color: #C2850A; }
+.stk-hero-off .stk-count { color: var(--ds-ink-2); }
+.stk-count > b { font-size: 64px; font-weight: 900; line-height: 1; font-variant-numeric: tabular-nums; }
+.stk-count > span { font-size: 17px; font-weight: 800; }
+.stk-status { margin-top: 8px; color: #D2691E; font-size: 14px; font-weight: 800; animation: stk-rise 420ms cubic-bezier(.2,.8,.2,1) 200ms both; }
+.stk-hero-gold .stk-status { color: #B87A08; }
+.stk-hero-off .stk-status { color: var(--ds-ink-2); }
+.stk-status.is-risk { color: var(--ds-warn-ink, #B5651D); }
+.stk-facts { display: flex; margin: 16px 0 0; padding: 0; list-style: none; animation: stk-rise 420ms cubic-bezier(.2,.8,.2,1) 280ms both; }
+.stk-fact { display: flex; flex-direction: column; align-items: center; min-width: 76px; padding: 0 14px; color: var(--ds-ink-3); font-size: 12px; font-weight: 700; }
+.stk-fact + .stk-fact { border-left: 1px solid var(--ds-line); }
+.stk-fact > b { color: var(--ds-ink); font-size: 20px; font-weight: 900; line-height: 1.25; font-variant-numeric: tabular-nums; }
+.stk-fact.is-gold > b { color: #B87A08; }
+.stk-fact small { color: var(--ds-ink-3); font-size: 12px; font-weight: 800; }
 
-.stk-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.stk-stats > .stk-stat-gold { grid-column: 1 / -1; flex-direction: row; justify-content: center; gap: 10px; background: color-mix(in srgb, #FFD45C 22%, var(--ds-surface)); }
-.stk-stat-gold b { color: #B87A08; }
-.stk-stat-gold small { font-size: 14px; font-weight: 800; color: var(--ds-ink-3); }
-.stk-stats > div { display: flex; flex-direction: column; align-items: center; padding: 12px; border-radius: 18px; background: var(--ds-surface); box-shadow: var(--ds-shadow); }
-.stk-stats b { font-size: 24px; font-weight: 900; color: var(--ds-ink); font-variant-numeric: tabular-nums; }
-.stk-stats span { color: var(--ds-ink-3); font-size: 12px; font-weight: 700; }
+/* ———— 里程碑之路：一条线，九站，火苗骑在上面 ———— */
+.stk-road { position: relative; height: 82px; margin: 0 22px; }
+.stk-road-line { position: absolute; left: 0; right: 0; top: 34px; height: 8px; border-radius: 999px; background: var(--ds-inset); }
+.stk-road-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 999px; background: linear-gradient(90deg, #FFC56B, #FF8A2E); animation: stk-grow 900ms cubic-bezier(.2,.8,.2,1) 300ms both; }
+/* 火苗骑在线的上方，不压站点 */
+.stk-road-me { position: absolute; bottom: 100%; z-index: 2; margin-bottom: 12px; transform: translateX(-50%); animation: stk-ride 900ms cubic-bezier(.2,.8,.2,1) 300ms both; }
+.stk-road-stops { position: absolute; left: 0; right: 0; top: 0; margin: 0; padding: 0; list-style: none; }
+.stk-road-stop {
+  position: absolute; top: 24px; left: calc((var(--i, 0) + 1) * 100% / 9); z-index: 1;
+  display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; margin-left: -14px; border-radius: 50%;
+  background: var(--ds-surface); border: 2px dashed var(--ds-line); color: var(--ds-ink-3); font-size: 9px; font-weight: 900;
+  animation: stk-pop 360ms cubic-bezier(.34,1.56,.64,1) both; animation-delay: calc(400ms + var(--i, 0) * 50ms);
+}
+.stk-road-stop.is-got { border: 2px solid #6B4430; background: radial-gradient(circle at 35% 30%, #FFF3B8, #F5B926 72%); color: #6B4430; }
+.stk-road-stop.is-next { border: 2px solid #FFB547; color: var(--ds-ink); }
+.stk-road-stop.is-next::after { content: ""; position: absolute; inset: -6px; border-radius: 50%; border: 2px solid #FFB547; opacity: 0; animation: stk-ping 2.4s ease-out 1.4s infinite; }
+.stk-road-hint { position: absolute; left: -22px; right: -22px; top: 62px; text-align: center; color: var(--ds-ink-3); font-size: 12px; font-weight: 700; }
 
-.stk-card { padding: 16px; border-radius: 22px; background: var(--ds-surface); box-shadow: var(--ds-shadow); }
-.stk-h { color: var(--ds-ink); font-size: 16px; font-weight: 800; }
-.stk-h > b { color: #E8742A; }
-.stk-bar { position: relative; height: 18px; margin: 10px 0 14px; border-radius: 999px; background: var(--ds-inset); overflow: hidden; }
-.stk-bar > span { position: absolute; inset: 0 auto 0 0; border-radius: 999px; background: linear-gradient(90deg, #FFB547, #FF7A2F); }
-.stk-bar > span::after { content: ""; position: absolute; left: 8px; right: 8px; top: 4px; height: 4px; border-radius: 999px; background: rgba(255,255,255,.45); }
-.stk-bar > em { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--ds-ink); font-size: 11px; font-style: normal; font-weight: 800; }
-.stk-badges { display: grid; grid-template-columns: repeat(9, 1fr); gap: 4px; padding: 0; list-style: none; }
-.stk-badges > li { display: flex; align-items: center; justify-content: center; aspect-ratio: 1; border-radius: 50%; border: 2px dashed var(--ds-line); color: var(--ds-ink-3); font-size: 10px; font-weight: 800; }
-.stk-badges > li.is-got { border: 2px solid #6B4430; background: radial-gradient(circle at 35% 30%, #FFF3B8, #F5B926 70%); color: #6B4430; }
-
+/* ———— 日历：不开卡，铺在页面底色上 ———— */
+.stk-month-block { padding: 0 2px; }
 .stk-month { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.stk-month > h2 { color: var(--ds-ink); font-size: 16px; font-weight: 800; }
 .stk-month-btn { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border: 0; border-radius: 50%; background: var(--ds-inset); color: var(--ds-ink-2); }
 .stk-month-btn:disabled { opacity: .35; }
-.stk-cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.stk-cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px 4px; }
 .stk-cal > small { text-align: center; color: var(--ds-ink-3); font-size: 11px; font-weight: 700; }
-.stk-day { position: relative; display: flex; align-items: center; justify-content: center; aspect-ratio: 1; padding: 0; border: 0; border-radius: 12px; background: none; }
+.stk-day { position: relative; display: flex; align-items: center; justify-content: center; aspect-ratio: 1; padding: 0; border: 0; border-radius: 50%; background: none; }
 .stk-day.is-today { box-shadow: inset 0 0 0 2px #FFB547; }
 .stk-day.is-future { opacity: .35; }
 .stk-day.is-gap { background: var(--ds-inset); }
 .stk-day.is-picked { box-shadow: inset 0 0 0 2px var(--ds-primary); }
 .stk-day-n { color: var(--ds-ink-3); font-size: 13px; font-style: normal; font-weight: 700; }
-.stk-day > em { position: absolute; right: 1px; bottom: 1px; padding: 0 3px; border-radius: 6px; background: var(--ds-surface); color: var(--ds-ink-3); font-size: 9px; font-style: normal; font-weight: 800; line-height: 13px; }
+.stk-day > em { position: absolute; right: 0; bottom: 0; padding: 0 3px; border-radius: 6px; background: var(--ds-surface); color: var(--ds-ink-3); font-size: 9px; font-style: normal; font-weight: 800; line-height: 13px; }
 .stk-day.is-gap > em { background: var(--ds-primary); color: var(--ds-on-primary); }
-.stk-repair { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; padding: 10px 12px; border-radius: 16px; background: var(--ds-inset); }
+.stk-repair { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; padding: 10px 12px; border-radius: 16px; background: var(--ds-inset); animation: stk-rise 220ms cubic-bezier(.2,.8,.2,1) both; }
 .stk-repair > p { color: var(--ds-ink-2); font-size: 14px; font-weight: 700; }
-.stk-repair > .ds-btn { min-height: 40px; flex: none; }
-.stk-legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 12px; color: var(--ds-ink-3); font-size: 12px; font-weight: 700; }
-.stk-legend > span { display: inline-flex; align-items: center; gap: 4px; }
-.stk-legend-gap { padding: 0 4px; border-radius: 6px; background: var(--ds-primary); color: var(--ds-on-primary); font-size: 10px; font-style: normal; line-height: 14px; }
+
+.stk-foot { padding: 0 12px; text-align: center; color: var(--ds-ink-3); font-size: 12px; font-weight: 600; line-height: 1.7; }
+
+@keyframes stk-rise { from { opacity: 0; transform: translateY(8px); } }
+@keyframes stk-grow { from { width: 0; } }
+@keyframes stk-ride { from { left: 0; } }
+@keyframes stk-pop { from { opacity: 0; transform: scale(.4); } }
+@keyframes stk-ping { 0% { opacity: .9; transform: scale(.8); } 70%, 100% { opacity: 0; transform: scale(1.35); } }
+
+[data-motion="reduced"] .stk-count, [data-motion="reduced"] .stk-status, [data-motion="reduced"] .stk-facts,
+[data-motion="reduced"] .stk-road-fill, [data-motion="reduced"] .stk-road-me, [data-motion="reduced"] .stk-road-stop,
+[data-motion="reduced"] .stk-road-stop.is-next::after, [data-motion="reduced"] .stk-repair { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  .stk-count, .stk-status, .stk-facts, .stk-road-fill, .stk-road-me, .stk-road-stop, .stk-road-stop.is-next::after, .stk-repair { animation: none; }
+}
