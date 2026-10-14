@@ -4,7 +4,7 @@
   "packages": {
     "main": {
       "beforeBytes": 165240,
-      "afterBytes": 340576
+      "afterBytes": 354845
     },
     "study": {
       "beforeBytes": 41968,
@@ -25,18 +25,17 @@
       "image": "scene-laptop",
       "sourceWidth": 444,
       "sourceHeight": 307,
-      "maxDisplayHeightCss": 92,
+      "maxDisplayHeightCss": 96,
       "scale": 2,
-      "outputWidth": 266,
-      "outputHeight": 184,
+      "outputWidth": 278,
+      "outputHeight": 192,
       "beforeFormat": "webp",
       "beforeBytes": 10360,
       "afterFormat": "png",
-      "afterBytes": 15312,
+      "afterBytes": 17034,
       "sourceSha256": "5899fb59bb14790a09c1ea177258c9a355a38f8225d0887c8342038d6bc12d2d",
-      "afterSha256": "7e9381eb32a67e15dfab60769dd5d3cf5a3b3eefc6872ff86e166c440114e681",
-      "quality": "60-85",
-      "losslessOptimized": true
+      "afterSha256": "8168e2668be46da8dcdc1714c251c60770927c39b55c795d35a1d5b5a3c536e1",
+      "quality": "60-85"
     },
     {
       "subpackage": "main",
@@ -223,36 +222,34 @@
       "image": "scene-stretch",
       "sourceWidth": 499,
       "sourceHeight": 328,
-      "maxDisplayHeightCss": 78,
+      "maxDisplayHeightCss": 96,
       "scale": 2,
-      "outputWidth": 237,
-      "outputHeight": 156,
+      "outputWidth": 292,
+      "outputHeight": 192,
       "beforeFormat": "webp",
       "beforeBytes": 9920,
       "afterFormat": "png",
-      "afterBytes": 11242,
+      "afterBytes": 17912,
       "sourceSha256": "c344634a1025b432b400b530049b964a5f9822fc55ea9f323b168dc41418512b",
-      "afterSha256": "5b0d57e142bf47ba3db6d1b873f3edeb733b533821cde02814073d5b9db41586",
-      "quality": "60-85",
-      "losslessOptimized": true
+      "afterSha256": "29786f0972ec805a8e185404550189e9e6b4efdc496f6b340ea6f3558d93a207",
+      "quality": "60-85"
     },
     {
       "subpackage": "main",
       "image": "scene-music",
       "sourceWidth": 428,
       "sourceHeight": 322,
-      "maxDisplayHeightCss": 78,
+      "maxDisplayHeightCss": 96,
       "scale": 2,
-      "outputWidth": 207,
-      "outputHeight": 156,
+      "outputWidth": 255,
+      "outputHeight": 192,
       "beforeFormat": "webp",
       "beforeBytes": 8822,
       "afterFormat": "png",
-      "afterBytes": 13004,
+      "afterBytes": 18881,
       "sourceSha256": "6a7d517e19b592f4a4acac7b9c97527edec8a72712386262838696a546640672",
-      "afterSha256": "c1eee21515dd7a16b0a0a8feae17c5cb7293f5ecd01b95acc8bf944cf6dac5e9",
-      "quality": "60-85",
-      "losslessOptimized": true
+      "afterSha256": "9f8197b5ecebc9fd9d09267e688597f1cc97e1dac81d822ecf8538188329809d",
+      "quality": "60-85"
     },
     {
       "subpackage": "main",

@@ -81,6 +81,19 @@ const greetingFor = (hour: number) =>
 const staggerStyle = (index: number): CSSProperties | undefined =>
   index < 8 ? { "--i": index } as CSSProperties : undefined;
 
+/**
+ * 大卡那只吉祥物跟着「现在几点」换：早上伸懒腰、中午饿了、下午敲电脑、晚上戴耳机、深夜睡着；今天走完了换成欢呼。
+ * 主页是一天打开次数最多的一屏，永远同一张等于没有表情。原来这套给问候行旁边的第二只用，大卡那只按进度换
+ * （fired-up / book / cheer）；v3 一屏只留一只后，作者 10-14 定：留大卡、换成这套按时间的（「晚上有晚上的效果，饭点有饭点的效果」）。
+ */
+const nowSticker = (hour: number, total: number, done: number): StickerName =>
+  total > 0 && done >= total ? "mood-yay"
+    : hour < 5 || hour >= 23 ? "mood-sleep"
+      : hour < 10 ? "scene-stretch"
+        : hour < 14 ? "mood-hungry"
+          : hour < 18 ? "scene-laptop"
+            : "scene-music";
+
 export function ZooHome({
   overview,
   onNavigate,
@@ -233,11 +246,7 @@ export function ZooHome({
       : isPlanMode ? "已完成" : "暂无题";
   // 今天走到哪：只有「按今日计划走」的模式才有这条（错题本 / 反向 / 汉字读音各有各的题池）
   const heroPct = isPlanMode && total > 0 ? Math.min(100, Math.round((done / total) * 100)) : null;
-  const heroSticker: StickerName = !stats ? "mood-default"
-    : activeMode === "mistakes" ? "mood-puzzled"
-      : activeCount === 0 ? "mood-cheer"
-        : done === 0 ? "mood-fired-up"
-          : "scene-book";
+  const heroSticker = nowSticker(new Date().getHours(), total, done);
   const heroSub = !stats
     ? "正在读取"
     : activeMode === "mistakes"
