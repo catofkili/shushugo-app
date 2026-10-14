@@ -119,6 +119,22 @@ check / lint / test，应急才用 `SKIP_RELEASE_GATES=1`。
 `css-source-bytes.json`、`require-async-paths.json`、`route-css-split.json`，`src/` 下没有副作用改动）；`scripts/ci-local.sh` 加了 `taro-spike-2` 的 `npm test`（只读 reports，约 3 秒）。
 本次重建后主包 1,888,184 B（上限 1,900,000，余量约 11.8 KB——下一次往主包加东西要先腾地方），`jlpt-bank` 分包 1,015,758 B。
 
+### 2026-10-14 增补：连胜那次主包超了 13 KB，怎么腾出来的
+
+连胜（`docs/STREAK_SPEC.md`）第一次 `build:weapp` 主包 1,913,032 B，超 1,900,000 上限。账是这样算的：
+
+- **主包 JS 几乎不涨**：四个标签页的界面代码在 `lazy/tabs.js`（lazy 分包）。涨的是 CSS —— lazy 块抽出来的 `lazy/tabs.wxss` 在小程序里没人引，
+  `split-route-css.mjs` 把它**整份并进 `app.wxss`**（而且是在按前缀拆分**之后**并的，前缀路由管不到它）。所以主页 / 单词页组件 import 的 CSS 全额算主包。
+  另外 `lib/streak.ts` 被 `yuzu.ts` 用，进了 `common.js`（约 8 KB）。
+- 腾法：① 详情页样式拆成单独的 `StreakPageView.css`（只有 content-pages 里的页面 import，落在分包）；
+  ② 删掉 `app.css` / `styles.css` 里全仓库零引用的旧样式（`zoo-hero*`、`zoo-rates`、`zoo-mini`、`zoo-bento`、`zoo-today-grid`、`zoo-tools`、`zoo-answer`、
+  `zoo-chips`、`zoo-study-head`、`zoo-card-face`、`glass-jelly*`、`card-glass`、`btn-glass`、`btn-primary`、`btn-secondary`、`stat-card`、`stat-value`、`progress-bar`、`glass-frosted`，约 12 KB 源码）。
+  判据：类名在 `frontend/src/**/*.ts(x)`、`taro-spike-2/src`、`index.html` 里一次都不出现，也没有 `前缀-${` / `"前缀-" +` 这种拼接。
+  找的时候注意误报：`h5-*` 是 Taro 生成的标签类、Tailwind 的转义类名在源码里写法不同、`quick-study-rating-*` / `ds-say-*` / `rate-*` / `vocab-fb-*` 是拼出来的。
+- 结果主包 1,897,803 B，**余量只剩约 2.2 KB**。下一次往主页 / 单词页加带 CSS 的东西，先在这里找地方。
+- 同时新增四条页面组件重复许可（`verify-package-gates.mjs`：`streak/` 下三个组件 + `streak.css`），理由写在清单里。
+- `build:weapp` 第一步 `verify-shim-exports` 拦过一次：`zoo-sounds.ts` 加了 `playStreakIgnite` / `playStreakGold`，替身 `wechat-miniprogram/scripts/shared/shims/zoo-sounds.js` 要一起加。
+
 ## ⚠️ 后端已从 Cloudflare 搬到阿里云（2026-10-11）
 
 **现状**：Worker 本体（`cloudflare-sync/src/index.ts`，一行没改）跑在阿里云武汉轻量服务器 `8.148.68.155`，
@@ -157,3 +173,16 @@ CF 上旧 Worker 留下的 secret（RESEND 等）和 D1/KV/R2 数据还在，确
 它的旧「account/study 各一份」说明因此失效，随构建证据移除该过期允许项，而非扩大分包/重复代码限额。
 用户本次明确要求验收后还原 `taro-spike-2/reports`，因此保留的是基线报告；下一次提交/发布前必须重新构建，
 不能拿还原后的旧报告代替这次源码的构建证明。Doctor panic 时只跳过 Doctor，后面的所有脚本仍按 package.json 顺序执行。
+
+### 2026-10-13 审核账号改成一次性密码（不再进密钥库）
+
+背景：原来审核登录靠 `REVIEW_LOGIN_PASSWORD`（密钥）+ `REVIEW_LOGIN_UNTIL`（截止日），密码要进服务器密钥文件、自动审查会拦，截止日一到审核员就登不进去。
+现在：`review_passwords` 表（迁移 0019）只存 SHA-256 摘要；账号固定 `review@shushugo.com`（小程序登录页自动填好），密码一次性、每个用一份。
+
+- 第一次登录起算 7 天（`expires_at`），过期作废；一直没用的到 `use_by` 也作废。权益和会话都不超过该密码自己的 `expires_at`，重复登录不会往后推。
+- 表里没有任何有效密码时 `/api/auth/config` 的 `reviewLoginOpen` 为 false，登录页入口消失。
+- 生成：`node cloudflare-sync/scripts/mint-review-passwords.mjs <个数> <use_by YYYY-MM-DD> <明文输出文件>`，标准输出的 SQL 用 `sudo sqlite3` 灌进服务器库。
+  **明文输出文件放在仓库外面**（仓库是公开的）；明文只给提审的人。
+- 撤销某个密码：删那一行或把 `expires_at` 改成过去。
+- 一次提审只用一个；被驳回要重提就换下一个（没用过的不占时间）。
+- 旧的 `REVIEW_LOGIN_PASSWORD` / `REVIEW_LOGIN_UNTIL` 已从代码里删除，服务器 `worker.env` 里残留的两行无害，可以删。

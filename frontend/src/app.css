@@ -4,68 +4,31 @@
 .zoo-home{font-family:Inter,"Noto Sans SC","Noto Sans JP",system-ui,sans-serif;color:var(--zoo-ink);display:flex;flex-direction:column;gap:18px;max-width:960px;margin:0 auto}
 
 /* 顶部问候 + 水豚 */
-.zoo-hero{position:relative;display:flex;align-items:center;justify-content:space-between;gap:14px;overflow:hidden;border:1.5px solid rgba(126,190,79,.30);border-radius:24px;padding:22px 24px;background:linear-gradient(135deg,#FBF5E9 0%,#F3E7CE 55%,#DEEDC6 100%);box-shadow:var(--jelly-shadow-md)}
-.zoo-hero::after{content:"";position:absolute;right:-40px;bottom:-46px;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,rgba(126,190,79,.16),transparent 70%);pointer-events:none}
 .zoo-eyebrow{color:var(--zoo-primary-deep);font-family:"Noto Sans JP";font-size:12px;font-weight:800;letter-spacing:1.3px}
-.zoo-hero-text h1{margin:5px 0 4px;font-family:"Hiragino Mincho ProN","Noto Serif JP",serif;font-size:28px;font-weight:800;color:var(--zoo-ink)}
-.zoo-hero-sub{color:var(--zoo-brown-deep);font-size:13px;line-height:1.6;max-width:22em}
 .zoo-streak{display:inline-flex;align-items:center;gap:5px;margin-top:12px;border-radius:20px;background:var(--zoo-orange-soft);padding:6px 13px;color:#B4740A;font-size:13px;font-weight:800;border:1px solid rgba(245,166,35,.35)}
-.zoo-hero-mascot{position:relative;flex-shrink:0;display:grid;place-items:center;filter:drop-shadow(0 8px 14px rgba(150,110,55,.22))}
-.zoo-hero-pond{position:absolute;bottom:2px;width:96px;height:20px;border-radius:50%;background:radial-gradient(ellipse,rgba(143,203,94,.35),transparent 72%)}
 
 /* 通用卡片 */
 .zoo-card{border:1.5px solid var(--ds-line);border-radius:24px;background:var(--zoo-surface);box-shadow:var(--jelly-shadow-sm);padding:20px}
 
 /* 今日单词卡 */
-.zoo-study-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
 .zoo-kicker{color:var(--zoo-primary-deep);font-size:12px;font-weight:800;letter-spacing:1.2px}
-.zoo-study-head h2{margin-top:3px;font-family:"Hiragino Mincho ProN","Noto Serif JP",serif;font-size:20px;font-weight:800;color:var(--zoo-ink)}
 .zoo-mode{flex-shrink:0;border:1px solid color-mix(in srgb, var(--ds-primary) 45%, transparent);border-radius:12px;background:var(--zoo-primary-soft);color:var(--zoo-primary-deep);font-size:13px;font-weight:800;padding:8px 14px;white-space:nowrap}
 .zoo-mode:hover{background:#C4E2A2}
 .zoo-studybar{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
-.zoo-chips{display:flex;gap:8px}
-.zoo-chips span{border:1px solid color-mix(in srgb, var(--ds-primary) 45%, transparent);border-radius:12px;background:var(--zoo-primary-soft);color:var(--zoo-primary-deep);font-size:12px;font-weight:700;padding:6px 10px}
-.zoo-tools{display:flex;align-items:center;gap:8px}
-.zoo-tools b{color:var(--zoo-brown);font-size:13px;font-weight:800}
-.zoo-tools button{height:38px;width:38px;border:1px solid var(--ds-line);border-radius:12px;background:#fff;color:var(--zoo-brown);font-size:16px}
-.zoo-tools button.saved{background:var(--zoo-orange-soft);border-color:rgba(245,166,35,.5);color:#B4740A}
-
-.zoo-card-face{margin-top:16px;border:1px dashed var(--ds-line-2);border-radius:20px;background:linear-gradient(160deg,#FBF5E8,#F3E7CD);padding:40px 22px;text-align:center}
 .zoo-face-label{color:var(--zoo-muted,#9A8A78);font-size:11px;font-weight:800;letter-spacing:1.4px}
 .zoo-prompt{margin:12px 0;font-family:"Hiragino Mincho ProN","Noto Serif JP",serif;font-size:28px;font-weight:800;color:var(--zoo-ink);line-height:1.3}
-.zoo-answer b{display:block;color:var(--zoo-primary-deep);font-family:"Hiragino Mincho ProN","Noto Serif JP",serif;font-size:36px;font-weight:800}
-.zoo-answer span{display:block;margin-top:4px;color:var(--zoo-brown-deep);font-size:16px}
-.zoo-answer small{display:block;margin-top:10px;color:var(--zoo-brown);font-size:13px}
 .zoo-hidden{margin:22px 0;color:#A99A86;font-size:14px;font-weight:600}
 .zoo-hidden small{display:block;margin-top:5px;font-size:12px;font-weight:500}
 .zoo-reveal{margin-top:22px;border:0;border-radius:16px;background:var(--zoo-primary);padding:13px 26px;color:var(--zoo-on-primary);font-size:14px;font-weight:800;box-shadow:0 6px 16px rgba(111,168,62,.24)}
 .zoo-reveal:hover{background:#8AC85C}
 .zoo-reveal:active{transform:translateY(1px)}
 
-.zoo-rates{margin-top:18px;border-top:1px solid var(--ds-line);padding-top:16px;text-align:center}
-.zoo-rates p{color:var(--zoo-brown-deep);font-size:13px}
-.zoo-rates div{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:12px}
-.zoo-rates button{border:1px solid var(--ds-line);border-radius:12px;background:#fff;padding:11px 6px;color:var(--zoo-ink);font-weight:700;font-size:13px}
-.zoo-rates button small{display:block;margin-top:3px;color:var(--zoo-muted,#9A8A78);font-size:11px;font-weight:600}
-.zoo-rates button:hover{border-color:color-mix(in srgb, var(--ds-primary) 45%, transparent);background:#FBFDF4}
-.zoo-rates .strong{border-color:var(--zoo-primary-dark);background:var(--zoo-primary);color:var(--zoo-on-primary)}
-.zoo-rates .strong small{color:#3B5220}
-
 /* 底部两栏 */
 .zoo-bottom{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.zoo-mini h2{font-family:"Hiragino Mincho ProN","Noto Serif JP",serif;font-size:16px;font-weight:800;color:var(--zoo-ink)}
-.zoo-mini p{min-height:44px;margin-top:8px;color:var(--zoo-brown-deep);font-size:13px;line-height:1.7}
-.zoo-mini p b{color:var(--zoo-primary-deep);font-size:16px}
-.zoo-mini button{margin-top:12px;border:0;background:transparent;color:var(--zoo-primary-deep);font-size:13px;font-weight:800}
-.zoo-mini button:hover{color:var(--zoo-primary-dark)}
 
 @media(max-width:640px){
-  .zoo-hero{padding:18px}
-  .zoo-hero-text h1{font-size:24px}
-  .zoo-hero-mascot :where(svg){width:88px;height:88px}
   .zoo-bottom{grid-template-columns:1fr}
   .zoo-prompt{font-size:24px}
-  .zoo-rates div{grid-template-columns:1fr 1fr}
 }
 
 /* ====================================================================
@@ -320,22 +283,14 @@
 .zoo-greet-text{flex:1;min-width:0}
 .zoo-greet-hi{margin:0;font-family:"Hiragino Mincho ProN","Noto Serif JP",serif;font-size:18px;font-weight:800}
 .zoo-greet-sub{margin:2px 0 0;color:var(--zoo-brown-deep);font-size:12px;line-height:1.5}
-.zoo-greet-streak{flex:none;display:flex;flex-direction:column;align-items:center;font-size:13px}
+.zoo-greet-streak{border:0;background:none;font:inherit;cursor:pointer;flex:none;display:flex;flex-direction:column;align-items:center;font-size:13px}
 .zoo-greet-streak>svg{color:var(--zoo-orange)}
 .zoo-greet-streak b{font-size:18px;color:var(--zoo-orange)}
 
 /* ===== 便当网格 ===== */
 /* 分区小标题:把 9 个入口分成「今天 / 我的动物园 / 学习工具 / 进度」几组,而不是一片格子 */
 .zoo-sec{margin:20px 2px 8px;font-size:12px;font-weight:800;letter-spacing:.6px;color:var(--zoo-brown-deep)}
-.zoo-bento{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.zoo-bento + .zoo-bento{margin-top:10px}
 .zoo-tile{position:relative;overflow:hidden;text-align:left;border:1.5px solid var(--ds-line);border-radius:20px;background:var(--zoo-surface);padding:14px;box-shadow:0 6px 18px rgba(160,120,60,.1);color:var(--zoo-ink);display:flex;flex-direction:column;gap:3px;-webkit-tap-highlight-color:transparent;transition:transform .16s cubic-bezier(.34,1.7,.5,1),box-shadow .22s ease;animation:zooRateIn .34s cubic-bezier(.34,1.56,.64,1) backwards}
-.zoo-bento .zoo-tile:nth-child(1){animation-delay:.02s}
-.zoo-bento .zoo-tile:nth-child(2){animation-delay:.06s}
-.zoo-bento .zoo-tile:nth-child(3){animation-delay:.10s}
-.zoo-bento .zoo-tile:nth-child(4){animation-delay:.14s}
-.zoo-bento .zoo-tile:nth-child(5){animation-delay:.18s}
-.zoo-bento .zoo-tile:nth-child(6){animation-delay:.22s}
 .zoo-tile:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(160,120,60,.16)}
 .zoo-tile:active{transform:translateY(1px) scale(.97);transition-duration:.07s}
 .zoo-tile b{font-size:14px;font-weight:800}
@@ -391,16 +346,11 @@
 /* ===== 快速学习入口 =====
    外框沿用原来的主页宽度；顶部只把原「今日复习」这一行按 4:1 分成两块。
    不给入口额外设置最小高度，让它和第一张图的今日复习卡片保持同高。 */
-.zoo-today-grid{grid-template-columns:minmax(0,4fr) minmax(140px,1fr)}
-.zoo-today-grid .zoo-tile-hero{grid-column:auto}
-.zoo-today-grid .zoo-tile-quick{justify-content:flex-start;gap:7px;background:linear-gradient(120deg,#E4F4D2,#D5EBC0);border-color:color-mix(in srgb, var(--ds-primary) 45%, transparent)}
 .zoo-tile-quick-emoji{flex:none;font-size:24px;line-height:1;color:var(--zoo-primary-deep);display:inline-flex}
 .zoo-tile-quick-title{min-width:0;flex:1;overflow:hidden;color:var(--zoo-primary-deep);font-family:"Hiragino Mincho ProN","Noto Serif JP",serif;font-size:18px;font-weight:800;white-space:nowrap}
 .zoo-tile-quick-arrow{flex:none;color:var(--zoo-primary-deep);font-size:18px;font-weight:800;line-height:1}
-.zoo-today-grid .zoo-tile-mistakes{grid-column:1 / -1;min-height:58px;flex-direction:row;align-items:center;gap:10px;background:linear-gradient(120deg,#FFF2D9,#FFE6BC);border-color:rgba(232,151,28,.42)}
 
 /* ===== 学习方式:大入口旁边的小入口 + 展开的模式表 ===== */
-.zoo-today-grid .zoo-tile-modes{justify-content:center;gap:6px;background:linear-gradient(120deg,#FFF2D9,#FFE6BC);border-color:rgba(232,151,28,.42)}
 .zoo-tile-modes-emoji{font-size:24px;line-height:1}
 .zoo-tile-modes-copy{display:flex;flex-direction:column;align-items:center;gap:1px;min-width:0}
 .zoo-tile-modes-copy small{color:var(--zoo-brown-deep);font-size:11px;font-weight:800;letter-spacing:.06em}
@@ -420,11 +370,9 @@
 .zoo-tile-mistakes-copy b{color:var(--zoo-ink);font-family:"Hiragino Mincho ProN","Noto Serif JP",serif;font-size:18px;font-weight:800}
 .zoo-tile-mistakes-copy small{color:var(--zoo-brown-deep);font-size:11px;font-weight:700}
 .zoo-tile-mistakes-arrow{flex:none;color:#B4740A;font-size:18px;font-weight:800;line-height:1}
-.zoo-today-grid .zoo-tile-team{grid-column:1 / -1}
 
 /* ===== 备考计划卡 =====
    通栏、冷色,和旁边暖色的队伍/模式卡分开——它报的是倒计时和欠账,不是一个可逛的入口。 */
-.zoo-today-grid .zoo-tile-jlpt{grid-column:1 / -1;background:linear-gradient(120deg,#E2F1F4,#CDE6EC);border-color:rgba(58,140,158,.42)}
 .zoo-tile-jlpt-days{color:var(--zoo-ink);font-family:"Hiragino Mincho ProN","Noto Serif JP",serif;font-size:24px;font-weight:800;line-height:1.15}
 .zoo-tile-jlpt-gap{margin-top:2px;color:#1F6274;font-size:12px;font-weight:700}
 
@@ -522,8 +470,6 @@
 .quick-study-confirm-ok{border:1px solid var(--zoo-primary-dark);background:var(--zoo-primary);color:var(--zoo-on-primary);box-shadow:0 3px 8px rgba(111,168,62,.2)}
 
 @media(max-width:760px){
-  .zoo-today-grid{grid-template-columns:1fr}
-  .zoo-today-grid .zoo-tile-hero{min-height:0}
   .quick-study-page-shell .quick-study-list{column-count:1}
 }
 
@@ -759,15 +705,7 @@
 
 /* 深色模式：动物园新版页面原先写了不少浅色插画底色。
    这里保留绿色、木头和柚子作为点缀，但把大面积底色换成低亮度森林夜色。 */
-[data-theme="dark"] .zoo-hero{background:linear-gradient(135deg,#353F31 0%,#303A2D 55%,#415038 100%);border-color:rgba(167,215,125,.35)}
-[data-theme="dark"] .zoo-card-face{background:linear-gradient(160deg,#30382E,#293128);border-color:rgba(230,193,155,.3)}
-[data-theme="dark"] .zoo-tools button,
-[data-theme="dark"] .zoo-rates button{background:#3B4338;color:var(--zoo-ink);border-color:rgba(230,193,155,.32)}
-[data-theme="dark"] .zoo-rates button:hover{background:#465140;border-color:rgba(167,215,125,.6)}
 [data-theme="dark"] .zoo-tile-hero{background:linear-gradient(120deg,#3B5132,#35452E);border-color:rgba(167,215,125,.42)}
-[data-theme="dark"] .zoo-today-grid .zoo-tile-quick{background:linear-gradient(120deg,#344A35,#2F4230);border-color:rgba(167,215,125,.42)}
-[data-theme="dark"] .zoo-today-grid .zoo-tile-mistakes{background:linear-gradient(120deg,#4A3E2A,#423523);border-color:rgba(240,179,78,.45)}
-[data-theme="dark"] .zoo-today-grid .zoo-tile-modes{background:linear-gradient(120deg,#4A3E2A,#423523);border-color:rgba(240,179,78,.45)}
 [data-theme="dark"] .zoo-modes-sheet{border-color:rgba(240,179,78,.45)}
 [data-theme="dark"] .zoo-tile-team{background:linear-gradient(120deg,#4A3E2A,#3E3426);border-color:rgba(240,179,78,.45)}
 [data-theme="dark"] .zoo-tile-team-avatars i{background:#3B4338;border-color:var(--zoo-surface)}

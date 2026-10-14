@@ -59,6 +59,7 @@ import { useStudyActivity, useStudyBreakTabBar } from "../hooks/useStudyActivity
 import { SpellingCardView } from "../features/spelling/SpellingCardView";
 import { checkCardInput, spellingCard, spellingLookup } from "../lib/spelling/session";
 import { shouldSpellWord } from "../lib/spelling/study";
+import { StreakSpark } from "../components/streak/StreakMoments";
 
 interface WordStudyProps {
   initialMode?: StudyMode;
@@ -1066,20 +1067,27 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     const run = ++previewRunRef.current;
     const checkDailyReview = isPlanMode(initialMode) && phase === "stage1" && !dailyReviewTriggeredRef.current;
     void (async () => {
-      await afterPaint();
-      if (run !== previewRunRef.current || pendingAnswerRef.current) return;
-      const previews = startAnswerPreviews(cardId);
-      previewsRef.current = previews;
-      for (const answer of ["know", "forgot"] as const) {
-        if (answer !== "know") await new Promise((resolve) => setTimeout(resolve, 0));
-        if (run !== previewRunRef.current) return;
-        addAnswerPreview(previews, answer, sessionOptions, checkDailyReview);
-        if (answer === "know" && spellingCandidate) {
-          const spell = shouldSpellWord(cardId, previews.byAnswer.know?.graduatedForDay === true, true, phase);
-          setSpellingDecision((current) => current?.key === spellingKey ? current : { key: spellingKey, spell });
+      // 预算一旦抛错，spellingDecision 就永远不写入，开了拼写的页面会一直停在「正在取下一张…」（2026-10-13 交工前对照 R3）；
+      // 出错就让这张卡按普通作答，别卡死。
+      try {
+        await afterPaint();
+        if (run !== previewRunRef.current || pendingAnswerRef.current) return;
+        const previews = startAnswerPreviews(cardId);
+        previewsRef.current = previews;
+        for (const answer of ["know", "forgot"] as const) {
+          if (answer !== "know") await new Promise((resolve) => setTimeout(resolve, 0));
+          if (run !== previewRunRef.current) return;
+          addAnswerPreview(previews, answer, sessionOptions, checkDailyReview);
+          if (answer === "know" && spellingCandidate) {
+            const spell = shouldSpellWord(cardId, previews.byAnswer.know?.graduatedForDay === true, true, phase);
+            setSpellingDecision((current) => current?.key === spellingKey ? current : { key: spellingKey, spell });
+          }
+          const nextCard = previews.byAnswer[answer]?.card;
+          if (nextCard) void prefetchPronunciation(nextCard.kanji, nextCard.kana, preferences.voiceId);
         }
-        const nextCard = previews.byAnswer[answer]?.card;
-        if (nextCard) void prefetchPronunciation(nextCard.kanji, nextCard.kana, preferences.voiceId);
+      } catch (error) {
+        console.warn("[spelling] 答前预算失败，这张卡按普通作答：", error);
+        if (spellingCandidate) setSpellingDecision((current) => current?.key === spellingKey ? current : { key: spellingKey, spell: false });
       }
     })();
   }, [initialMode, phase, preferences.voiceId, sessionOptions, spellingCandidate, spellingKey]);
@@ -1643,6 +1651,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
         transition: dragging ? "transform 80ms linear" : "transform 420ms cubic-bezier(0.2, 0.9, 0.2, 1)"
       }}
     >
+      <StreakSpark />
       <section
         className={`dictionary-card relative flex h-full min-h-0 flex-col rounded-2xl ${showStudyToolbar ? "px-3 pb-2 pt-3 sm:p-8 lg:p-7" : "px-3 pb-2 pt-3 sm:p-5"}${reliefActive ? " daily-relief-card" : ""}${reliefLeaving ? " daily-relief-card-leaving" : ""}${dailyReviewActive ? " daily-review-card" : ""}`}
         style={{

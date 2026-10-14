@@ -19,6 +19,14 @@
   ],
   "pairs": [
     {
+      "web": "frontend/src/pages/StreakPage.tsx",
+      "mini": [
+        "frontend/src/pages/StreakPage.tsx",
+        "taro-spike-2/src/content-pages/streak/index.tsx"
+      ],
+      "reason": "Taro 入口直接编译同一份连续学习页面；连胜判据共用 frontend/src/lib/streak.ts。"
+    },
+    {
       "web": "frontend/src/pages/SpellingPage.tsx",
       "mini": [
         "frontend/src/pages/SpellingPage.tsx",

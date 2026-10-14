@@ -11,6 +11,7 @@ import {
   mistakeQuestions, mockParts, pickDrillQuestions,
   type JlptAnswer, type JlptBank, type JlptKind, type JlptLevel, type JlptMockPart, type JlptQuestion
 } from "../lib/jlpt-practice";
+import { StreakCelebrationGate, StreakSpark } from "../components/streak/StreakMoments";
 
 type Session =
   | { mode: "drill"; kind: JlptKind; questions: JlptQuestion[]; id: string }
@@ -82,6 +83,7 @@ export function JlptPracticePage() {
   const mistakes = stats.reduce((sum, stat) => sum + stat.mistakes, 0);
 
   return <div className="jq-page">
+    {result ? <StreakCelebrationGate /> : <StreakSpark />}
     {session && activeBank ? <>
       {error ? <>
         <MascotSay sticker="mood-puzzled" tone="warn" className="ds-say-onbg">{error}</MascotSay>

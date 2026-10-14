@@ -706,66 +706,6 @@ body.is-scrolling {
 
 /* ========== 浅色果冻玻璃风格 ========== */
 
-/* 磨砂玻璃效果 - 用于导航栏等固定元素 */
-.glass-frosted {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid var(--ds-line);
-  box-shadow: var(--jelly-shadow-md);
-}
-
-/* 透明果冻效果 - 用于卡片 */
-.glass-jelly {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.9) 0%,
-    rgba(230, 242, 235, 0.85) 100%
-  );
-  border: 1px solid var(--ds-line);
-  box-shadow: var(--jelly-shadow-sm);
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.glass-jelly-hover:hover {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.95) 0%,
-    rgba(230, 242, 235, 0.9) 100%
-  );
-  box-shadow: var(--jelly-shadow-md);
-  transform: translateY(-2px) scale(1.01);
-}
-
-.glass-jelly-hover:active {
-  transform: translateY(0) scale(0.99);
-  box-shadow: var(--jelly-shadow-sm);
-}
-
-/* 新绿果冻效果 */
-.glass-jelly-accent {
-  background: linear-gradient(
-    135deg,
-    rgba(143, 203, 94, 0.15) 0%,
-    rgba(212, 236, 190, 0.2) 100%
-  );
-  border: 1px solid color-mix(in srgb, var(--ds-primary) 45%, transparent);
-  box-shadow: 0 8px 24px rgba(143, 203, 94, 0.15),
-              inset 0 1px 0 rgba(255, 255, 255, 0.9);
-}
-
-/* 深色透明果冻 */
-.glass-jelly-dark {
-  background: linear-gradient(
-    135deg,
-    rgba(26, 77, 62, 0.85) 0%,
-    rgba(107, 90, 72, 0.8) 100%
-  );
-  border: 1px solid color-mix(in srgb, var(--ds-primary) 45%, transparent);
-  box-shadow: 0 8px 24px rgba(26, 77, 62, 0.2),
-              inset 0 1px 0 rgba(143, 203, 94, 0.3);
-}
-
 /* 大圆角 */
 .round-xl {
   border-radius: 20px;
@@ -777,114 +717,6 @@ body.is-scrolling {
 
 .round-3xl {
   border-radius: 32px;
-}
-
-/* 卡片统一样式 - 果冻玻璃 */
-.card-glass {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.95) 0%,
-    rgba(230, 242, 235, 0.9) 50%,
-    rgba(242, 250, 247, 0.85) 100%
-  );
-  border: 1.5px solid var(--ds-line);
-  border-radius: 24px;
-  box-shadow: var(--jelly-shadow-md);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  position: relative;
-  overflow: hidden;
-}
-
-/* 卡片内光效果 */
-.card-glass::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(143, 203, 94, 0.5) 50%,
-    transparent 100%
-  );
-  opacity: 0.8;
-}
-
-.card-glass:hover {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.98) 0%,
-    rgba(230, 242, 235, 0.95) 50%,
-    rgba(242, 250, 247, 0.9) 100%
-  );
-  transform: translateY(-4px) scale(1.01);
-  box-shadow: var(--jelly-shadow-lg);
-  border-color: color-mix(in srgb, var(--ds-primary) 45%, transparent);
-}
-
-.card-glass:active {
-  transform: translateY(-2px) scale(0.99);
-  box-shadow: var(--jelly-shadow-sm);
-}
-
-/* 按钮果冻效果 */
-.btn-glass {
-  background: linear-gradient(
-    135deg,
-    rgba(143, 203, 94, 0.95) 0%,
-    rgba(111, 168, 62, 0.9) 100%
-  );
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  border-radius: 20px;
-  box-shadow: 0 6px 20px rgba(143, 203, 94, 0.25),
-              inset 0 1px 0 rgba(255, 255, 255, 0.6);
-  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-  position: relative;
-  overflow: hidden;
-}
-
-/* 按钮光泽效果 */
-.btn-glass::after {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(
-    45deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.3) 50%,
-    transparent 100%
-  );
-  transform: rotate(45deg);
-  transition: all 0.3s;
-  opacity: 0;
-}
-
-.btn-glass:hover {
-  background: linear-gradient(
-    135deg,
-    rgba(143, 203, 94, 1) 0%,
-    rgba(111, 168, 62, 0.95) 100%
-  );
-  transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 8px 28px rgba(143, 203, 94, 0.35),
-              inset 0 1px 0 rgba(255, 255, 255, 0.7);
-}
-
-.btn-glass:hover::after {
-  opacity: 1;
-}
-
-.btn-glass:active {
-  transform: translateY(0) scale(0.98);
-  box-shadow: 0 4px 12px rgba(143, 203, 94, 0.2),
-              inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 /* 禁用文字选择（卡片操作区域） */
@@ -962,59 +794,6 @@ main .kanji-variant-mark {
 .btn:active::before {
   width: 300px;
   height: 300px;
-}
-
-.btn-primary {
-  background: linear-gradient(
-    135deg,
-    rgba(143, 203, 94, 0.95) 0%,
-    rgba(111, 168, 62, 0.9) 100%
-  );
-  color: white;
-  box-shadow: 0 4px 16px rgba(143, 203, 94, 0.3),
-              inset 0 1px 0 rgba(255, 255, 255, 0.5);
-}
-
-.btn-primary:hover {
-  background: linear-gradient(
-    135deg,
-    rgba(143, 203, 94, 1) 0%,
-    rgba(111, 168, 62, 0.95) 100%
-  );
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 6px 20px rgba(143, 203, 94, 0.4),
-              inset 0 1px 0 rgba(255, 255, 255, 0.6);
-}
-
-.btn-primary:active {
-  transform: translateY(0) scale(0.98);
-  box-shadow: 0 2px 8px rgba(143, 203, 94, 0.25);
-}
-
-.btn-secondary {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.9) 0%,
-    rgba(230, 242, 235, 0.85) 100%
-  );
-  color: var(--color-text-primary);
-  border: 1px solid var(--ds-line);
-  box-shadow: var(--jelly-shadow-sm);
-}
-
-.btn-secondary:hover {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.95) 0%,
-    rgba(230, 242, 235, 0.9) 100%
-  );
-  transform: translateY(-2px);
-  box-shadow: var(--jelly-shadow-md);
-}
-
-.btn-secondary:active {
-  transform: translateY(0) scale(0.98);
-  background: rgba(230, 242, 235, 0.95);
 }
 
 /* 文本类表单控件。旧规则直接命中所有 input，导致 checkbox/range 也变成
@@ -1541,34 +1320,6 @@ main .kanji-variant-mark {
 }
 
 /* 进度条 - 果冻效果 */
-.progress-bar {
-  height: 10px;
-  background: linear-gradient(
-    90deg,
-    rgba(230, 242, 235, 0.8) 0%,
-    rgba(242, 250, 247, 0.7) 100%
-  );
-  border-radius: 20px;
-  overflow: hidden;
-  border: 1px solid var(--ds-line);
-  box-shadow: inset 0 2px 4px rgba(143, 203, 94, 0.1);
-  position: relative;
-}
-
-.progress-bar::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.8) 50%,
-    transparent 100%
-  );
-}
 
 .progress-fill {
   height: 100%;
@@ -2043,40 +1794,6 @@ select {
               inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
-/* 统计卡片 - 果冻玻璃效果 */
-.stat-card {
-  text-align: center;
-  padding: 1.5rem;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.9) 0%,
-    rgba(212, 236, 190, 0.3) 100%
-  );
-  border-radius: 20px;
-  border: 1.5px solid var(--ds-line);
-  box-shadow: var(--jelly-shadow-sm);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  position: relative;
-  overflow: hidden;
-}
-
-.stat-card::after {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(
-    circle,
-    rgba(143, 203, 94, 0.1) 0%,
-    transparent 70%
-  );
-  animation: rotate 10s linear infinite;
-}
-
 @keyframes rotate {
   from {
     transform: rotate(0deg);
@@ -2084,28 +1801,6 @@ select {
   to {
     transform: rotate(360deg);
   }
-}
-
-.stat-card:hover {
-  transform: translateY(-3px) scale(1.02);
-  box-shadow: var(--jelly-shadow-md);
-  border-color: color-mix(in srgb, var(--ds-primary) 45%, transparent);
-}
-
-.stat-value {
-  font-size: 2rem;
-  font-weight: 700;
-  background: linear-gradient(
-    135deg,
-    var(--color-accent-dark) 0%,
-    var(--color-accent-light) 100%
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: 0.25rem;
-  position: relative;
-  z-index: 1;
 }
 
 .stat-label {

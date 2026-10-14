@@ -364,7 +364,7 @@
 [data-theme] .zoo-home-v2 .zoo-greet-hi { font-family: inherit; font-size: 26px; font-weight: 800; letter-spacing: -.01em; color: var(--ds-ink); }
 [data-theme] .zoo-home-v2 .zoo-greet-sub { margin-top: 2px; color: var(--ds-ink-2); font-size: 14px; }
 .zoo-greet-mascot { flex: none; order: 3; margin: -6px -4px -10px 0; }
-[data-theme] .zoo-greet-streak { order: 2; flex-direction: row; gap: 3px; align-self: flex-start; margin-top: 4px; padding: 4px 10px; border-radius: 999px; background: var(--ds-warn-tint); color: var(--ds-warn-ink); font-size: 13px; }
+[data-theme] .zoo-greet-streak { border: 0; font: inherit; cursor: pointer; order: 2; flex-direction: row; gap: 3px; align-self: flex-start; margin-top: 4px; padding: 4px 10px; border-radius: 999px; background: var(--ds-warn-tint); color: var(--ds-warn-ink); font-size: 13px; }
 [data-theme] .zoo-greet-streak b { font-size: 14px; color: inherit; }
 [data-theme] .has-weekly-cord .zoo-greet { padding-right: 56px; }
 

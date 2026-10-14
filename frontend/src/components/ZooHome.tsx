@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Capacitor } from "@capacitor/core";
 // 图标统一走 lucide（ISC 协议，线性、单色、跟随 currentColor）。
 // 主页问候区使用收集日品牌图标；其它学习状态仍保留线性图标和吉祥物组件。
-import { Check, Flame, Merge, RefreshCw, SkipForward, SlidersHorizontal, Timer } from "lucide-react";
+import { Check, Merge, RefreshCw, SkipForward, SlidersHorizontal, Timer } from "lucide-react";
 import { getWordStats, type ProgressOverview } from "../lib/api";
 import { notifyProgressUpdated } from "../lib/progress-events";
 import { useProgressUpdates } from "../lib/use-progress-updates";
@@ -15,7 +15,9 @@ import { scheduleSave } from "../lib/storage";
 import { refreshTodayWordPlan } from "../lib/word-api";
 import { refreshMixedCardTasks } from "../lib/mixed-cards";
 import { getDatabase } from "../lib/database";
-import { computeStreak } from "../lib/zoo-streak";
+import { streakSnapshot } from "../lib/streak";
+import { StreakFlame, flameStateOf } from "./streak/StreakFlame";
+import { StreakCelebrationGate } from "./streak/StreakMoments";
 import type { WordStats } from "../types/vocabulary";
 import type { Page, StudyMode } from "../types/app";
 import type { JLPTLevel } from "../types/grammar";
@@ -181,7 +183,9 @@ export function ZooHome({
   const total = stats?.stage1ProgressTotal ?? 0;
   const done = stats?.stage1ProgressDone ?? 0;
   const remaining = Math.max(0, total - done);
-  const streak = stats ? computeStreak(stats.checkins, stats.studyDate) : 0;
+  // streakSnapshot 扫全表：只在 stats 变了（答题 / 进度更新）时重算，不跟着每次渲染
+  const streakSnap = useMemo(() => (stats ? streakSnapshot() : null), [stats]);
+  const streak = streakSnap?.streak ?? 0;
   const streakCount = useCountUp(streak);
   const examDateMissing = Boolean(jlpt && !parseExamDate(goals.jlptExamDate) && !suggestedExamDate(jlpt.examKind));
 
@@ -209,7 +213,9 @@ export function ZooHome({
       ? "今天还没排计划"
       : remaining === 0
         ? "今天学完了，歇会儿吧"
-        : streak > 0
+        : streakSnap?.atRisk
+          ? `连续 ${streak} 天，今天还没点火`
+          : streak > 0
           ? "今天也接着来" // 连续天数右边火苗那枚已经写着，这里不再说一遍
           : "今天的计划排好了";
 
@@ -249,6 +255,7 @@ export function ZooHome({
   return (
     <div className={`zoo-page zoo-home-v2${weeklyEntryEnabled ? " has-weekly-cord" : ""}`}>
       {weeklyEntryEnabled && <WeeklyReportEntrance unread={weeklyNotice === "new"} onOpen={onOpenWeeklyReport} />}
+      <StreakCelebrationGate />
       {/* 问候条。**不再重复「今天还有 N 个词」** —— 顶栏的进度条和下面的大卡各说了一遍，
           第一屏说三遍是这一页显得吵的主要原因之一。这里只说别处没有的：连击和今天的状态。 */}
       <div className="zoo-greet">
@@ -257,9 +264,9 @@ export function ZooHome({
           <p className="zoo-greet-sub">{greetLine}</p>
         </div>
         {streak > 0 && (
-          <div className="zoo-greet-streak" title={`连续学习 ${streak} 天`}>
-            <Flame size={14} aria-hidden="true" /><b>{streakCount}</b>
-          </div>
+          <button type="button" className="zoo-greet-streak" title={`连续学习 ${streak} 天`} onClick={() => onNavigate("streak")}>
+            <StreakFlame state={flameStateOf(streakSnap?.todayStatus ?? "none")} tier={streakSnap?.tier ?? 1} atRisk={streakSnap?.atRisk} size={18} /><b>{streakCount}</b>
+          </button>
         )}
         <Sticker name={greetSticker(new Date().getHours(), total, done)} size={78} className="zoo-greet-mascot" />
       </div>

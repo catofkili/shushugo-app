@@ -69,7 +69,12 @@ const allowedPageComponentDuplicates = {
   'frontend/src/components/Disclosure.weapp.tsx': 'Zoo, grammar, account, and study pages render this small disclosure in isolated package graphs; open state belongs to each mounted control and no user data is cached.',
   'frontend/src/components/JapaneseRubyText.weapp.tsx': 'Ruby text is used by lazy tabs and independently loaded content/grammar routes.',
   'frontend/src/components/CrossPlatformImage.weapp.tsx': 'Brand images are used by the account, content shop, and lazy route graphs; this small adapter enables WebP and sets native image dimensions.',
-  'frontend/src/components/ZooConfetti.tsx': 'Confetti state and its timer are scoped to each mounted celebration; it is a visual effect with no shared or persisted user state.'
+  'frontend/src/components/ZooConfetti.tsx': 'Confetti state and its timer are scoped to each mounted celebration; it is a visual effect with no shared or persisted user state.',
+  // 2026-10-14 连胜（docs/STREAK_SPEC.md）：主页 / 单词标签页在 lazy，语法考题、JLPT、开口、辨析、快速复习在 study，详情页在 content-pages。
+  'frontend/src/components/streak/StreakFlame.tsx': 'The streak flame is drawn by the home chip (lazy tabs), study celebrations and the streak detail page (content-pages); pure CSS markup with no state.',
+  'frontend/src/components/streak/StreakMoments.tsx': 'Streak celebration gate and spark are mounted by lazy tab pages and study-package pages; the once-per-day flags live in storage, not in module state.',
+  'frontend/src/components/streak/StreakCelebration.tsx': 'The full-screen streak celebration is rendered by the gate in lazy tab pages and study-package finish screens; component-local state only.',
+  'frontend/src/components/streak/streak.css': 'Flame and celebration styles: the lazy tab copy is merged into app.wxss by split-route-css (no runtime link for lazy wxss), so stats list both; page styles live in StreakPageView.css.'
 };
 const packages = JSON.parse(fs.readFileSync(path.join(root, 'reports/package-sizes.json'), 'utf8'));
 const stats = JSON.parse(fs.readFileSync(path.join(root, 'reports/webpack-stats.json'), 'utf8'));

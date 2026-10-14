@@ -18,6 +18,9 @@ const expected = [
   './grammar-advanced/grammar.js',
   './core/index.js'
 ];
+// 干净克隆（ci-local.sh 的 npm test）里没有 dist，它是 build:weapp 的产物：没构建就跳过，别把整个 ci-local 判红。
+// build:weapp 里这一步跑在 taro build 之后，dist 一定在，检查不受影响。（2026-10-13）
+if (!fs.existsSync(dist)) { console.log('verify-async-content：没有 dist（先 npm run build:weapp），跳过。'); process.exit(0); }
 const calls = [];
 
 function visit(directory) {

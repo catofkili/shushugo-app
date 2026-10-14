@@ -4,6 +4,7 @@ import {
   FONT_SANS, GOLD, GOLD_INK, INK, INK3, INNER, loadImage, MARGIN, ON_PRIMARY, PRIMARY, PRIMARY_DEEP, PRIMARY_TINT, toPngBlob, WIDTH
 } from "../../lib/share-canvas";
 import { brandIconUrl, stickerUrl } from "../../components/CapybaraMascot";
+import { readDayStatuses, summarizeStreak, type DayStatus } from "../../lib/streak";
 
 // 打卡分享图:1080×1500,和 App 同一张浅纸 + 吉祥物(当天欢呼,破里程碑得意)。
 // 纯 canvas 绘制,贴纸和图标是 public/brand 下的本地文件,离线可用。底座在 lib/share-canvas。
@@ -12,7 +13,6 @@ export interface ShareCardInput {
   studyDate: string;
   todayWordCount: number;
   totalSeconds: number;
-  checkins: Set<string>;
   /** 今日加餐词数,>0 时在主数字旁加一枚星徽 */
   encoreWords?: number;
   /** 今天冲破的累计里程碑(如 1000),破千当天的高光徽章 */
@@ -28,25 +28,6 @@ const QUOTES = [
   { jp: "好きこそ物の上手なれ", zh: "唯有热爱,方能精进。" },
   { jp: "初心忘るべからず", zh: "莫忘初心。" }
 ];
-
-const shiftDate = (date: string, days: number) => {
-  const base = new Date(`${date}T00:00:00`);
-  base.setDate(base.getDate() + days);
-  const month = String(base.getMonth() + 1).padStart(2, "0");
-  const day = String(base.getDate()).padStart(2, "0");
-  return `${base.getFullYear()}-${month}-${day}`;
-};
-
-// 以学习日为终点的连续打卡天数;当天没打卡就从昨天往回数。
-export const streakDays = (checkins: Set<string>, studyDate: string) => {
-  let cursor = checkins.has(studyDate) ? studyDate : shiftDate(studyDate, -1);
-  let streak = 0;
-  while (checkins.has(cursor)) {
-    streak += 1;
-    cursor = shiftDate(cursor, -1);
-  }
-  return streak;
-};
 
 /** 顶上那块浅绿大卡：今天背了几个词 + 徽章 + 右下角一只吉祥物 */
 const drawHero = async (ctx: CanvasRenderingContext2D, todayWordCount: number, encoreWords: number, milestoneReached: number) => {
@@ -70,7 +51,7 @@ const drawHero = async (ctx: CanvasRenderingContext2D, todayWordCount: number, e
   if (encoreWords > 0) drawChip(ctx, chipX, top + 290, `✦ 加餐 +${encoreWords}`, PRIMARY, ON_PRIMARY);
 };
 
-const drawCalendar = (ctx: CanvasRenderingContext2D, input: ShareCardInput) => {
+const drawCalendar = (ctx: CanvasRenderingContext2D, input: ShareCardInput, statuses: Map<string, DayStatus>) => {
   const calendar = monthDays(input.studyDate);
   const top = 818;
   drawCard(ctx, MARGIN, top, INNER, 500);
@@ -80,7 +61,7 @@ const drawCalendar = (ctx: CanvasRenderingContext2D, input: ShareCardInput) => {
   ctx.font = `800 36px ${FONT_SANS}`;
   ctx.fillText(calendar.title, MARGIN + 46, top + 70);
 
-  const checkedToday = input.checkins.has(input.studyDate);
+  const checkedToday = (statuses.get(input.studyDate) ?? "none") !== "none";
   ctx.textAlign = "right";
   ctx.fillStyle = checkedToday ? PRIMARY_DEEP : INK3;
   ctx.font = `700 26px ${FONT_SANS}`;
@@ -101,7 +82,7 @@ const drawCalendar = (ctx: CanvasRenderingContext2D, input: ShareCardInput) => {
     if (!cell) return;
     const cx = gridLeft + (index % 7) * gridPitch;
     const cy = firstRowY + Math.floor(index / 7) * rowPitch;
-    const checked = input.checkins.has(cell.date);
+    const checked = (statuses.get(cell.date) ?? "none") !== "none";
     if (checked) {
       ctx.beginPath();
       ctx.arc(cx, cy, 24, 0, Math.PI * 2);
@@ -122,6 +103,8 @@ const drawCalendar = (ctx: CanvasRenderingContext2D, input: ShareCardInput) => {
 };
 
 export const renderShareCard = async (input: ShareCardInput): Promise<Blob> => {
+  const statuses = readDayStatuses();
+  const snapshot = summarizeStreak(statuses, input.studyDate, 0, 0, 0);
   const { canvas, ctx } = createShareCanvas();
   const quote = QUOTES[new Date(`${input.studyDate}T00:00:00`).getDate() % QUOTES.length];
 
@@ -130,10 +113,10 @@ export const renderShareCard = async (input: ShareCardInput): Promise<Blob> => {
   await drawHero(ctx, input.todayWordCount, input.encoreWords ?? 0, input.milestoneReached ?? 0);
   drawStatCards(ctx, 640, [
     { label: "背词用时", value: formatDuration(input.totalSeconds) },
-    { label: "连续打卡", value: `${streakDays(input.checkins, input.studyDate)} 天` },
-    { label: "累计打卡", value: `${input.checkins.size} 天` }
+    { label: "连续打卡", value: `${snapshot.streak} 天` },
+    { label: "累计打卡", value: `${snapshot.litDays} 天` }
   ]);
-  drawCalendar(ctx, input);
+  drawCalendar(ctx, input, statuses);
   drawFooter(ctx, `「${quote.jp}」`, quote.zh, "今天也把日语往前推了一点。");
 
   return toPngBlob(canvas);

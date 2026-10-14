@@ -1,6 +1,6 @@
 {
-  "appWxssBytesBefore": 283637,
-  "appWxssBytesAfter": 214607,
+  "appWxssBytesBefore": 273292,
+  "appWxssBytesAfter": 216260,
   "movedRuleBytesByRoute": {
     "content-pages/weekly-report/index.wxss": 161,
     "content-pages/yuzu-shop/index.wxss": 16013,

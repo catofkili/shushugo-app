@@ -17,6 +17,7 @@ import {
   type GrammarQuizSession
 } from "../lib/grammar-quiz";
 import { prefetchExamples } from "../lib/speech";
+import { StreakCelebrationGate, StreakSpark } from "../components/streak/StreakMoments";
 
 interface GrammarQuizProps {
   /** 进来时用哪个等级。列表页选「全部等级」时给 null，由这里自己挑一个并把选择器亮出来。 */
@@ -78,6 +79,7 @@ export const GrammarQuiz = ({ initialLevel, onBack }: GrammarQuizProps) => {
 
   return (
     <div className="word-study-shell mx-auto flex max-w-4xl flex-col justify-center lg:max-w-[1200px]">
+      {card ? <StreakSpark /> : session && <StreakCelebrationGate />}
       <div className="mb-2 flex min-w-0 items-center gap-2 lg:mb-3">
         <button
           onClick={onBack}

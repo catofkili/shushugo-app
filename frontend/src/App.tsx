@@ -328,7 +328,13 @@ export default function App() {
 
   const navigateToPage = useCallback((newPage: Page, studyModeOverride?: StudyMode) => {
     // 顽固词名单是一次性的；普通入口进入快速学习时回到今日默认列表。
-    if (newPage === "quick-study") setAppState({ stubbornQuickIds: null });
+    // ⚠️ 名单由完成页（word）/ 周报（weekly-report）先放好再跳过来，从这两页来的不能清 ——
+    // 2026-10-14 之前无条件清，完成页点「快速复习」打开的一直是已学完的今日快速学习。
+    // 判据和小程序 taro-spike-2/src/platform/WeappPage.tsx 的 navigate 同一条。
+    const before = getAppState();
+    if (newPage === "quick-study" && before.stubbornQuickIds && before.page !== "word" && before.page !== "weekly-report") {
+      setAppState({ stubbornQuickIds: null });
+    }
     if (accountProtectedPages.has(newPage) && !cloudSession.token) {
       setAppState({ pendingAccountPage: newPage });
       setAuthOpen(true);

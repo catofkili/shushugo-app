@@ -31,6 +31,8 @@ const packageNames = {
     'empty-box': 88, 'empty-search': 96, 'mood-proud': 64,
     // WeeklyReportStory's chapter lookup is dynamic; all three must be in this package.
     'mood-idea': 84, 'mood-love': 84, 'mood-fight': 84,
+    // 连胜详情页：快断了的那只（StreakPageView）。
+    'mood-shocked': 64,
     // 收藏页页头。
     'mood-heart': 60,
     'icon-study-modes': 36, 'icon-grammar': 36, 'icon-vocab': 36,

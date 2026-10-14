@@ -11,7 +11,8 @@ import { getDatabase } from "./database";
 import { firstValue, persistSoon, rowsFor, getState, setState, studyDate, today } from "./database/db-utils";
 import { stage1ProgressCounts } from "./word-api/stage1";
 import { readEncoreLog } from "./review-budget";
-import { computeStreak, shiftDay } from "./zoo-streak";
+import { shiftDay } from "./zoo-streak";
+import { repairableStreakDays, streakSnapshot, todayStreakStatus } from "./streak";
 import { setSoundTimbre, type SoundTimbre } from "./zoo-sounds";
 import { setMascotSkin } from "../components/CapybaraMascot";
 import { getEntitlements } from "./entitlements";
@@ -164,9 +165,12 @@ export const settleYuzu = (): number => {
   const words = firstValue<number>(
     "SELECT COUNT(DISTINCT word_id) FROM reviews WHERE reviewed_on = ? AND direction = 'forward'", [day], 0);
   if (words >= YUZU.studyWords && book("study", day, YUZU.study)) earned += YUZU.study;
-  const checkins = rowsFor("SELECT checked_on FROM checkins").map((row) => String(row.checked_on));
-  const streak = computeStreak(checkins, day);
-  if (checkins.includes(day) && streak > 0 && streak % 7 === 0 && book("streak", day, YUZU.streak7)) earned += YUZU.streak7;
+  // settleYuzu 每次落盘都会调用，streakSnapshot 要扫全表：先用只查今天的判据挡掉没亮的时候
+  // ponytail: 亮了之后非 7 倍数的日子每次落盘仍扫一次全表，嫌慢就按学习日缓存（补签时清）
+  if (todayStreakStatus() !== "none") {
+    const { streak } = streakSnapshot();
+    if (streak > 0 && streak % 7 === 0 && book("streak", day, YUZU.streak7)) earned += YUZU.streak7;
+  }
   if (readEncoreLog(day).dayWords > 0 && book("encore", day, YUZU.encore)) earned += YUZU.encore;
   rowsFor("SELECT id FROM achievements WHERE id NOT IN (SELECT key FROM yuzu_ledger WHERE kind = 'achievement')")
     .forEach((row) => { if (book("achievement", String(row.id), YUZU.achievement)) earned += YUZU.achievement; });
@@ -206,19 +210,8 @@ export const repairPrice = (): number => {
   return YUZU.repair[Math.min(used, YUZU.repair.length - 1)];
 };
 
-/** 最近 7 天里断掉的日子(不含今天),最近的在前。第一次打卡之前的日子不算洞 */
-export const repairableDays = (): string[] => {
-  const day = today();
-  const set = new Set(rowsFor("SELECT checked_on FROM checkins").map((row) => String(row.checked_on)));
-  const first = [...set].sort()[0];
-  if (!first) return [];
-  const out: string[] = [];
-  for (let i = 1; i <= YUZU.repairWindowDays; i++) {
-    const d = shiftDay(day, -i);
-    if (d > first && !set.has(d)) out.push(d);
-  }
-  return out;
-};
+/** 最近 7 天里没亮的日子(不含今天),最近的在前。第一次亮之前的日子不算洞。 */
+export const repairableDays = (): string[] => repairableStreakDays();
 
 /** 补签卡记 `card` 或付费购买 `card_buy`；使用时记 `repair_card`。 */
 export const repairCards = (): number => Math.max(0,

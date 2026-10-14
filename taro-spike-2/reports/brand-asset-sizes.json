@@ -16,7 +16,7 @@
     },
     "content-pages": {
       "beforeBytes": 147298,
-      "afterBytes": 562928
+      "afterBytes": 571506
     }
   },
   "images": [
@@ -663,6 +663,20 @@
       "beforeBytes": 0,
       "afterFormat": "png",
       "afterBytes": 11219
+    },
+    {
+      "subpackage": "content-pages",
+      "image": "mood-shocked",
+      "sourceWidth": 414,
+      "sourceHeight": 332,
+      "maxDisplayHeightCss": 64,
+      "scale": 2,
+      "outputWidth": 160,
+      "outputHeight": 128,
+      "beforeFormat": "none",
+      "beforeBytes": 0,
+      "afterFormat": "png",
+      "afterBytes": 8578
     },
     {
       "subpackage": "content-pages",

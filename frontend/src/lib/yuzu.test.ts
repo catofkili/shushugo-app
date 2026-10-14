@@ -16,7 +16,7 @@ vi.mock("./word-api/stage1", () => ({ stage1ProgressCounts: () => plan }));
 vi.mock("./review-budget", () => ({ readEncoreLog: () => ({ dayWords: encoreWords }) }));
 
 import { buyItem, claimDailyPlanYuzu, equippedItem, grantRepairCard, ownsItem, repairableDays, repairCards, repairDay, repairDayWithCard, repairPrice, settleYuzu, yuzuBalance, YUZU } from "./yuzu";
-import { computeStreak } from "./zoo-streak";
+import { streakSnapshot } from "./streak";
 import { itemById } from "./yuzu-catalog";
 
 const checkin = (...days: string[]) => days.forEach((d) => db.run("INSERT OR IGNORE INTO checkins (checked_on) VALUES (?)", [d]));
@@ -29,6 +29,9 @@ beforeEach(async () => {
   db = new SQL.Database();
   db.run("CREATE TABLE reviews (id INTEGER PRIMARY KEY AUTOINCREMENT, word_id INTEGER, reviewed_on TEXT, direction TEXT)");
   db.run("CREATE TABLE checkins (checked_on TEXT PRIMARY KEY)");
+  db.run("CREATE TABLE grammar_reviews (reviewed_on TEXT)");
+  db.run("CREATE TABLE kanji_unit_reviews (reviewed_on TEXT)");
+  db.run("CREATE TABLE word_study_time (studied_on TEXT PRIMARY KEY, seconds INTEGER)");
   db.run("CREATE TABLE achievements (id TEXT PRIMARY KEY, unlocked_on TEXT NOT NULL)");
   db.run("CREATE TABLE app_state (key TEXT PRIMARY KEY, value TEXT)");
   // 新装的库:账本已经是 ×10 之后的面额。不写这个标记的话,第一次读余额会把 fund() 直接写进去的行当旧账本再乘 10
@@ -66,10 +69,27 @@ describe("收入", () => {
     expect(claimDailyPlanYuzu()).toBe(0);
   });
 
-  it("连击 8 天不发;今天还没打卡也不发(streak 数的是昨天的)", () => {
+  it("连击 8 天不发;今天还没亮也不发(streak 数的是昨天的)", () => {
     checkin("2026-09-12", "2026-09-13", "2026-09-14", "2026-09-15", "2026-09-16", "2026-09-17", "2026-09-18");
     expect(settleYuzu()).toBe(0);
     checkin(TODAY);
+    expect(settleYuzu()).toBe(0);
+  });
+
+  it("20 次作答点亮第七天，不必清完计划，连击奖励只发一次", () => {
+    checkin("2026-09-13", "2026-09-14", "2026-09-15", "2026-09-16", "2026-09-17", "2026-09-18");
+    answers(19);
+    expect(settleYuzu()).toBe(0);
+    answers(1);
+    expect(settleYuzu()).toBe(YUZU.streak7);
+    expect(settleYuzu()).toBe(0);
+  });
+
+  it("300 秒也能点亮第七天，补签天接入连续亮天数", () => {
+    checkin("2026-09-13", "2026-09-14", "2026-09-15", "2026-09-16", "2026-09-17", "2026-09-18");
+    db.run("INSERT INTO yuzu_ledger VALUES ('repair_card', '2026-09-16', 0, ?)", [TODAY]);
+    db.run("INSERT INTO word_study_time VALUES (?, 300)", [TODAY]);
+    expect(settleYuzu()).toBe(YUZU.streak7);
     expect(settleYuzu()).toBe(0);
   });
 });
@@ -90,7 +110,7 @@ describe("消费", () => {
     expect(buyItem("theme-matcha")).toBe(false);
   });
 
-  it("补签:只补 7 天内、首次打卡之后的洞;30 天内 500/1000/2000 递增;补完连击接上", () => {
+  it("补签:只补 7 天内、首次亮之后的洞;30 天内 500/1000/2000 递增;补完连击接上", () => {
     checkin("2026-09-10", "2026-09-11", "2026-09-14", "2026-09-17", TODAY);
     // 窗口是今天 −1..−7 = 09-12..09-18,09-09 在外面
     expect(repairableDays()).toEqual(["2026-09-18", "2026-09-16", "2026-09-15", "2026-09-13", "2026-09-12"]);
@@ -103,8 +123,17 @@ describe("消费", () => {
     expect(repairPrice()).toBe(2000);
     expect(repairDay("2026-09-15")).toBe(false); // 没钱了
     expect(yuzuBalance()).toBe(0);
-    const days = db.exec("SELECT checked_on FROM checkins")[0].values.map((r) => String(r[0]));
-    expect(computeStreak(days, TODAY)).toBe(4); // 16,17,18,19
+    expect(streakSnapshot().streak).toBe(4); // 16,17,18,19
+  });
+
+  it("第一次亮可以来自学习时长；已亮未打卡的日子不卖补签", () => {
+    db.run("INSERT INTO word_study_time VALUES ('2026-09-15', 300)");
+    answers(20, "2026-09-17");
+    expect(repairableDays()).toEqual(["2026-09-18", "2026-09-16"]);
+    fund(2000);
+    expect(repairDay("2026-09-17")).toBe(false);
+    expect(repairDay("2026-09-14")).toBe(false);
+    expect(repairDay("2026-09-18")).toBe(true);
   });
 
   it("补签卡:最多存一张,多发不折算柚子;同一来源只发一次;用卡不抬补签价", () => {

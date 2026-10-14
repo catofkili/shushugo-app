@@ -15,6 +15,7 @@ import { listen as listenForSpeech, speechInputAvailable } from "../lib/talk/spe
 import { talkDoneImage, talkHeroImage, talkImageSrc, createTalkSceneImages, talkSceneImageFallback } from "../lib/talk/image-src";
 import { canPlayTalkAudio, playTalkAudio, stopTalkAudio } from "../lib/talk/audio";
 import "./talk.css";
+import { StreakSpark } from "../components/streak/StreakMoments";
 
 function TalkRuby({ sentence }: { sentence: string }) {
   const annotations = talkFurigana(sentence);
@@ -430,6 +431,7 @@ export function TalkPage() {
   const retry = () => { setError(""); setLoading(true); setAttempt((value) => value + 1); };
 
   return <div className="talk-page">
+    <StreakSpark />
     {!loading && session && <div className="talk-top">
       <button type="button" className="ds-chip focus-ring talk-back" onClick={home}>← 场景</button>
       <span className="talk-session-title">{sceneId ? scenes.find((scene) => scene.id === sceneId)?.title : "复习"}</span>
