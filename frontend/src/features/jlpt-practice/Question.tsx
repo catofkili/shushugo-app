@@ -58,7 +58,7 @@ export function Question({ bank, question, chosen, reveal = false, showKind = tr
         const correct = reveal && no === question.answer;
         const wrong = reveal && chosen === no && !correct;
         return <button type="button" key={no} disabled={reveal || disabled} aria-pressed={chosen === no}
-          className={`ds-choice jq-choice focus-ring ${correct ? "is-correct" : wrong ? "is-wrong" : chosen === no ? "jq-choice-selected" : ""}`}
+          className={`ds-choice answer-choice jq-choice focus-ring ${correct ? "is-correct" : wrong ? "is-wrong" : chosen === no ? "jq-choice-selected" : ""}`}
           onClick={() => onChoose(no)}>
           <span className="ds-choice-key">{no}</span><span className="jq-option"><Ruby text={option} furigana={question.furigana?.options?.[index]} /></span>
           {correct && <Check size={16} className="jq-icon" />}

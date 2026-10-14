@@ -24,6 +24,7 @@ import { ShareImageSheet } from "../components/ShareImageSheet";
 import { usePageShare } from "../lib/page-share";
 import { useStudyTimer } from "../lib/useStudyTimer";
 import { TimerRing } from "../components/TimerRing";
+import { ComboBadge } from "../components/ComboBadge";
 import { QuestionCard } from "../features/vocab-test/QuestionCard";
 
 type View = "intro" | "quiz" | "result";
@@ -594,18 +595,21 @@ export function VocabTestPage() {
   // 拿它当分母，进度条会在第 20 题冲到 100% 然后倒回去。
   const progress = Math.round((session.responses.length / session.plannedTotal) * 100);
   const said = feedback ? FEEDBACK[feedback.state] : null;
+  const combo = session.responses.reduce((count, response) => response.answerState === "correct" ? count + 1 : 0, 0);
   return (
     <div className="mx-auto w-full max-w-2xl">
       <div className="vt-quiz-top">
         <div className="min-w-0 flex-1">
           <p className="vt-count"><b>{session.responses.length}</b> / {session.plannedTotal}</p>
-          <div className="ds-bar mt-1.5"><i style={{ width: `${progress}%` }} /></div>
+          <div className="ds-progress-row"><div className="ds-progress" role="progressbar" aria-label="答题进度" aria-valuemin={0} aria-valuemax={session.plannedTotal} aria-valuenow={session.responses.length}><div className="ds-progress-fill" style={{ width: `${progress}%` }} /></div><ComboBadge combo={combo} /></div>
         </div>
         <TimerRing remaining={remaining} total={shownQuestion ? secondsForQuestion(shownQuestion) : 0} paused={paused} />
         <button type="button" onClick={stop} className="ds-chip focus-ring">提前交卷</button>
       </div>
       <QuestionCard
         question={shownQuestion}
+        combo={combo}
+        questionNumber={Math.max(0, session.responses.length - (feedback ? 1 : 0))}
         disabled={Boolean(feedback) || paused}
         onChoose={choose}
         feedback={feedback ? { state: feedback.state, selected: feedback.selected } : null}
@@ -614,9 +618,9 @@ export function VocabTestPage() {
       {paused && (
         <MascotSay sticker="mood-sleep" size={52} className="ds-say-onbg mt-3">切走了，计时先停着。回到这页就接着算。</MascotSay>
       )}
-      {feedback && said && (
+      {feedback && said && (feedback.state === "unknown" || feedback.state === "timeout") && (
         <MascotSay sticker={said.sticker} tone={said.tone} size={56} className="ds-say-onbg mt-3">
-          <b>{said.label}</b>{feedback.state !== "correct" && <> 答案是「<b>{feedback.question.answer}</b>」。</>}
+          <b>{said.label}</b><> 答案是「<b>{feedback.question.answer}</b>」。</>
         </MascotSay>
       )}
     </div>

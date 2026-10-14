@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, Check, RotateCcw, X } from "lucide-react";
+import { ArrowLeft, Check, RotateCcw } from "lucide-react";
+import { AnswerFeedbackBar } from "../components/AnswerFeedbackBar";
+import { ComboBadge } from "../components/ComboBadge";
 import { Sticker } from "../components/CapybaraMascot";
 import { buildQuestions, quizGroups, settleGroup, type DistinctionQuestion, type QuizScope } from "../lib/distinction-quiz";
 import { StreakSpark } from "../components/streak/StreakMoments";
@@ -25,10 +27,10 @@ const scopeTitle = (scope: QuizScope): string => {
 };
 
 const optionClass = (optionId: number, question: DistinctionQuestion, feedback: Feedback | null): string => {
-  const base = "focus-ring flex min-h-14 items-center rounded-2xl border px-4 text-left text-base font-bold transition-colors";
+  const base = "ds-choice answer-choice focus-ring flex min-h-14 items-center rounded-2xl border px-4 text-left text-base font-bold transition-colors";
   if (!feedback) return `${base} border-white/15 bg-white/8 hover:bg-white/14`;
-  if (optionId === question.answerId) return `${base} border-emerald-300/70 bg-emerald-400/25 text-emerald-50`;
-  if (optionId === feedback.selected) return `${base} border-rose-300/70 bg-rose-400/25 text-rose-50`;
+  if (optionId === question.answerId) return `${base} is-correct`;
+  if (optionId === feedback.selected) return `${base} is-wrong`;
   return `${base} border-white/10 bg-white/5 text-white/45`;
 };
 
@@ -47,6 +49,8 @@ export const DistinctionQuizPage = ({ scope: initialScope, onBackToConfusion }: 
 const DistinctionQuizSession = ({ scope, onBackToConfusion, onRetryGroup }: DistinctionQuizSessionProps) => {
   const questions = useMemo(() => buildQuestions(quizGroups(scope)), [scope]);
   const [index, setIndex] = useState(0);
+  const [combo, setCombo] = useState(0);
+  const locked = useRef(false);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [groupCorrect, setGroupCorrect] = useState<Map<string, boolean>>(new Map());
   const [done, setDone] = useState(false);
@@ -60,9 +64,11 @@ const DistinctionQuizSession = ({ scope, onBackToConfusion, onRetryGroup }: Dist
   }, [done, groupCorrect]);
 
   const choose = (selected: number) => {
-    if (!question || feedback) return;
+    if (!question || feedback || locked.current) return;
+    locked.current = true;
     const correct = selected === question.answerId;
     setFeedback({ selected, correct });
+    setCombo(value => correct ? value + 1 : 0);
     setGroupCorrect((current) => {
       const next = new Map(current);
       next.set(question.groupKey, (next.get(question.groupKey) ?? true) && correct);
@@ -76,6 +82,7 @@ const DistinctionQuizSession = ({ scope, onBackToConfusion, onRetryGroup }: Dist
     else {
       setIndex((value) => value + 1);
       setFeedback(null);
+      locked.current = false;
     }
   };
 
@@ -135,9 +142,9 @@ const DistinctionQuizSession = ({ scope, onBackToConfusion, onRetryGroup }: Dist
         </div>
         <span className="text-xs font-semibold text-white/50">{index + 1} / {questions.length}</span>
       </div>
-      <div className="mb-4 h-1.5 overflow-hidden rounded-full bg-white/10">
-        <div className="h-full rounded-full bg-[#81D8CF] transition-[width]" style={{ width: `${((index + 1) / questions.length) * 100}%` }} />
-      </div>
+      <div className="ds-progress-row"><div className="ds-progress" role="progressbar" aria-label="答题进度" aria-valuemin={0} aria-valuemax={questions.length} aria-valuenow={index + 1}>
+        <div className="ds-progress-fill" style={{ width: `${((index + 1) / questions.length) * 100}%` }} />
+      </div><ComboBadge combo={combo} /></div>
       {question && (
         <>
           <div className="rounded-3xl border border-white/10 bg-[#3f4343] p-6 text-center">
@@ -145,11 +152,7 @@ const DistinctionQuizSession = ({ scope, onBackToConfusion, onRetryGroup }: Dist
             <p className="mt-3 text-2xl font-extrabold text-white">{question.prompt}</p>
           </div>
           {feedback && (
-            <div className={`mt-4 rounded-2xl border p-4 ${feedback.correct ? "border-emerald-300/35 bg-emerald-400/10" : "border-rose-300/35 bg-rose-400/10"}`}>
-              <p className="flex items-center gap-2 font-extrabold text-white">
-                {feedback.correct ? <Check size={17} /> : <X size={17} />}
-                {feedback.correct ? "答对了" : "答错了"}
-              </p>
+            <div className="mt-4 rounded-2xl bg-[var(--ds-inset)] p-4">
               <p className="mt-2 text-sm leading-6 text-white/80">{question.summary}</p>
               <div className="mt-3 space-y-2 border-t border-white/10 pt-3">
                 <p className="text-xs font-bold text-white/50">各词辨析与例句</p>
@@ -165,9 +168,6 @@ const DistinctionQuizSession = ({ scope, onBackToConfusion, onRetryGroup }: Dist
                   );
                 })}
               </div>
-              <button type="button" onClick={next} className="focus-ring mt-4 w-full rounded-xl bg-white/12 px-3 py-2.5 text-sm font-bold text-white hover:bg-white/18">
-                {index + 1 >= questions.length ? "查看结果" : "下一题"}
-              </button>
             </div>
           )}
           <div className="mt-4 grid gap-2 sm:grid-cols-2">
@@ -186,6 +186,7 @@ const DistinctionQuizSession = ({ scope, onBackToConfusion, onRetryGroup }: Dist
               </button>
             ))}
           </div>
+          {feedback && <AnswerFeedbackBar key={index} correct={feedback.correct} answer={question.options.find(option => option.id === question.answerId)?.surface ?? ""} combo={combo} questionNumber={index} onContinue={next} />}
         </>
       )}
     </section>

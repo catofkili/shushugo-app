@@ -977,3 +977,40 @@ button.fin-row:hover { background: var(--ds-inset-2); }
 .jq-answer-line { margin: 0; font-size: 14px; line-height: 1.8; overflow-wrap: anywhere; }
 .jq-correct { color: var(--ds-primary-ink); }
 .jq-wrong { color: var(--ds-danger); }
+
+/* ======================================================================
+   25. 作答反馈、连对与回弹进度（基础样式为终态，Taro 只用 class）
+   ====================================================================== */
+.ds-progress-row { display: flex; align-items: center; gap: 10px; margin: 8px 0 16px; min-height: 26px; }
+.ds-progress { flex: 1; min-width: 0; height: 10px; overflow: hidden; border-radius: 999px; background: var(--ds-inset); }
+.ds-progress-fill { position: relative; height: 100%; border-radius: 999px; background: var(--ds-primary); transition: width var(--ds-dur-slow, 420ms) var(--ds-ease-spring, cubic-bezier(.34,1.56,.64,1)); }
+.ds-progress-fill::after { content: ""; position: absolute; top: 2px; left: 4px; right: 4px; height: 2px; border-radius: 999px; background: rgb(255 255 255 / 35%); }
+.answer-feedback-space { height: calc(168px + env(safe-area-inset-bottom, 0px)); }
+.answer-feedback { position: fixed; z-index: 10001; inset: auto 0 0; padding: 18px 20px calc(18px + env(safe-area-inset-bottom, 0px)); color: var(--ds-ink); background: color-mix(in srgb, var(--ds-primary) 18%, var(--ds-surface)); box-shadow: 0 -4px 24px rgb(0 0 0 / 8%); transform: translateY(0); animation: answer-feedback-slide var(--ds-dur, 220ms) var(--ds-ease-spring, cubic-bezier(.34,1.56,.64,1)) both; }
+.answer-feedback-wrong { background: color-mix(in srgb, var(--zoo-orange, #E8971C) 18%, var(--ds-surface)); }
+.answer-feedback-inner { display: flex; flex-direction: column; gap: 16px; max-width: 720px; margin: 0 auto; }
+.answer-feedback-result { display: flex; align-items: center; gap: 12px; }
+.answer-feedback-icon { display: flex; flex: none; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: var(--ds-primary); color: #fff; transform: scale(1); animation: answer-feedback-pop var(--ds-dur, 220ms) var(--ds-ease-spring, cubic-bezier(.34,1.56,.64,1)) calc(var(--ds-dur, 220ms) + var(--ds-dur-fast, 120ms)) both; }
+.answer-feedback-wrong .answer-feedback-icon { background: var(--zoo-orange, #E8971C); animation: none; }
+.answer-feedback-copy { flex: 1; min-width: 0; }
+.answer-feedback-title { margin: 0; font-size: 18px; font-weight: 800; }
+.answer-feedback-answer { margin: 4px 0 0; font-size: 16px; font-weight: 800; line-height: 1.5; overflow-wrap: anywhere; }
+.answer-feedback-continue { width: 100%; }
+.answer-feedback-amber { background: var(--zoo-orange, #E8971C); color: #33200A; }
+.combo-badge { display: inline-flex; flex: none; color: var(--ds-primary-ink); font-size: 13px; font-weight: 800; opacity: 1; }
+.combo-badge-content { display: inline-flex; align-items: center; gap: 4px; padding: 3px 7px; border-radius: 999px; }
+.combo-badge-number { display: inline-block; transform: scale(1); animation: combo-number-pop var(--ds-dur, 220ms) var(--ds-ease-spring, cubic-bezier(.34,1.56,.64,1)) both; }
+.combo-badge-milestone { animation: combo-glow var(--ds-dur-slow, 420ms) var(--ds-ease-out, cubic-bezier(.2,.8,.2,1)) both; }
+.combo-badge-leaving { opacity: 0; transition: opacity var(--ds-dur, 220ms) var(--ds-ease-out, cubic-bezier(.2,.8,.2,1)); }
+.answer-choice:active { transform: translateY(2px) scale(.98); }
+@keyframes answer-feedback-slide { from { transform: translateY(100%); } to { transform: translateY(0); } }
+@keyframes answer-feedback-pop { from { transform: scale(.6); } 65% { transform: scale(1.1); } to { transform: scale(1); } }
+@keyframes combo-number-pop { from { transform: scale(1); } 55% { transform: scale(1.25); } to { transform: scale(1); } }
+@keyframes combo-glow { from { box-shadow: 0 0 0 0 transparent; } 45% { box-shadow: 0 0 0 5px color-mix(in srgb, var(--zoo-orange, #E8971C) 35%, transparent); } to { box-shadow: 0 0 0 8px transparent; } }
+[data-motion="reduced"] .answer-feedback, [data-motion="reduced"] .answer-feedback-icon,
+[data-motion="reduced"] .combo-badge-number, [data-motion="reduced"] .combo-badge-milestone { animation: none; }
+[data-motion="reduced"] .ds-progress-fill, [data-motion="reduced"] .combo-badge-leaving { transition: none; }
+@media (prefers-reduced-motion: reduce) {
+  .answer-feedback, .answer-feedback-icon, .combo-badge-number, .combo-badge-milestone { animation: none; }
+  .ds-progress-fill, .combo-badge-leaving { transition: none; }
+}

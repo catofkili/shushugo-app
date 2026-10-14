@@ -1,4 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
+import { ComboBadge } from "../components/ComboBadge";
+import { playKnow, playDontKnow } from "../lib/zoo-sounds";
+import { triggerMemoryHaptic } from "../lib/haptics";
+import { getStudyPreferences } from "../lib/studyPreferences";
 import { ArrowLeft, ListOrdered, Plus, Undo2 } from "lucide-react";
 import type { JLPTLevel } from "../types/grammar";
 import { GrammarCard } from "../features/grammar-quiz/GrammarCard";
@@ -40,6 +44,8 @@ export const GrammarQuiz = ({ initialLevel, onBack }: GrammarQuizProps) => {
   const [level, setLevel] = useState<JLPTLevel>(initialLevel ?? "N5");
   const [session, setSession] = useState<GrammarQuizSession | null>(null);
   const [revealed, setRevealed] = useState(false);
+  const [combos, setCombos] = useState<number[]>([0]);
+  const combo = combos[combos.length - 1];
   const [showRanking, setShowRanking] = useState(false);
 
   useEffect(() => {
@@ -47,13 +53,21 @@ export const GrammarQuiz = ({ initialLevel, onBack }: GrammarQuizProps) => {
     void prefetchExamples(grammarAudioPlan(level));
     setRevealed(false);
     setShowRanking(false);
+    setCombos([0]);
   }, [level]);
 
   const answer = useCallback((value: GrammarQuizAnswer) => {
     if (!session?.card) return;
     setSession(submitGrammarQuizAnswer(level, session.card.id, value));
+    const good = value === "know" || value === "known_forever";
+    triggerMemoryHaptic(value);
+    if (getStudyPreferences().zooSounds) {
+      if (good) playKnow(combo);
+      else playDontKnow();
+    }
+    setCombos(previous => [...previous, good ? combo + 1 : 0]);
     setRevealed(false);
-  }, [level, session]);
+  }, [combo, level, session]);
 
   const encore = useCallback(() => {
     setSession(extendGrammarQuizPlan(level));
@@ -65,6 +79,7 @@ export const GrammarQuiz = ({ initialLevel, onBack }: GrammarQuizProps) => {
   const undo = useCallback(() => {
     if (!session?.canUndo) return;
     setSession(undoLastGrammarQuizAnswer(level));
+    setCombos(previous => previous.length > 1 ? previous.slice(0, -1) : previous);
     setRevealed(false);
     setShowRanking(false);
   }, [level, session?.canUndo]);
@@ -137,9 +152,9 @@ export const GrammarQuiz = ({ initialLevel, onBack }: GrammarQuizProps) => {
           <span>今天 {done} / {total}</span>
           <span>新学 {session?.newDone ?? 0} / {session?.newQuota ?? 0}</span>
         </div>
-        <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-white/10">
-          <div className="h-full rounded-full bg-[#81D8CF] transition-[width] duration-300" style={{ width: `${percent}%` }} />
-        </div>
+        <div className="ds-progress-row"><div className="ds-progress" role="progressbar" aria-label="今日进度" aria-valuemin={0} aria-valuemax={total} aria-valuenow={done}>
+          <div className="ds-progress-fill" style={{ width: `${percent}%` }} />
+        </div><ComboBadge combo={combo} /></div>
       </div>
 
       {showRanking ? (

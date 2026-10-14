@@ -1,3 +1,4 @@
+import { AnswerFeedbackBar } from "../../components/AnswerFeedbackBar";
 import { Check, X } from "lucide-react";
 import type { VocabTestAnswerState, VocabTestQuestion } from "../../lib/vocab-test";
 
@@ -6,13 +7,17 @@ export const QuestionCard = ({
   disabled,
   onChoose,
   feedback,
-  next
+  next,
+  combo = 0,
+  questionNumber = 0
 }: {
   question: VocabTestQuestion;
   disabled: boolean;
   onChoose: (index: number | null) => void;
   feedback: { state: VocabTestAnswerState; selected: number | null } | null;
-  /** 答完之后「不认识」那一格换成「下一题」：拇指不用挪，手机上也不会被推到底栏下面 */
+  combo?: number;
+  questionNumber?: number;
+  /** 继续固定在屏幕底部，避免长反馈把按钮推到底栏下面；调用方仍负责原有推进/出分流程。 */
   next: { label: string; onClick: () => void };
 }) => (
   <div className="ds-card vt-card">
@@ -39,7 +44,7 @@ export const QuestionCard = ({
             type="button"
             disabled={disabled}
             onClick={() => onChoose(index)}
-            className={`ds-choice focus-ring ${isCorrect ? "is-correct" : isSelected ? "is-wrong" : ""}`}
+            className={`ds-choice answer-choice focus-ring ${isCorrect ? "is-correct" : isSelected ? "is-wrong" : ""}`}
           >
             <span className="ds-choice-key">{index + 1}</span>
             <span className="min-w-0 flex-1">{option}</span>
@@ -50,7 +55,7 @@ export const QuestionCard = ({
       })}
     </div>
     {feedback ? (
-      <button type="button" onClick={next.onClick} className="ds-btn focus-ring mt-2.5 w-full">{next.label} →</button>
+      <AnswerFeedbackBar key={questionNumber} correct={feedback.state === "correct"} answer={question.answer} combo={combo} questionNumber={questionNumber} onContinue={next.onClick} />
     ) : (
       <button type="button" disabled={disabled} onClick={() => onChoose(null)} className="vt-unknown focus-ring">不认识</button>
     )}

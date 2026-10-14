@@ -1,4 +1,6 @@
 import { useEffect, type CSSProperties } from "react";
+import { playFlip } from "../../lib/zoo-sounds";
+import { triggerRevealHaptic } from "../../lib/haptics";
 import { Eye } from "lucide-react";
 import { ScrollArea } from "../../components/ScrollArea";
 import { JapaneseRuby } from "../../components/JapaneseRuby";
@@ -89,6 +91,7 @@ interface GrammarCardProps {
 }
 
 export const GrammarCard = ({ card, revealed, onReveal, onAnswer, accent = QUIZ_ACCENT_TEAL }: GrammarCardProps) => {
+  const reveal = () => { playFlip(); triggerRevealHaptic(); onReveal(); };
   // 键盘：任意普通键翻面，翻面后 V/B/N/M 评分。和单词学习一致。
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -98,6 +101,8 @@ export const GrammarCard = ({ card, revealed, onReveal, onAnswer, accent = QUIZ_
       if (!revealed) {
         if (event.key.length === 1 || event.key === "Enter" || event.key === " ") {
           event.preventDefault();
+          playFlip();
+          triggerRevealHaptic();
           onReveal();
         }
         return;
@@ -121,7 +126,7 @@ export const GrammarCard = ({ card, revealed, onReveal, onAnswer, accent = QUIZ_
       className="zoo-enter dictionary-card flex h-full min-h-0 flex-col gap-2 rounded-2xl px-3 pb-2 pt-3 sm:gap-3 sm:p-6"
     >
       <div
-        onClick={() => !revealed && onReveal()}
+        onClick={() => !revealed && reveal()}
         className={`grid min-h-0 place-items-center rounded-2xl px-3 py-4 text-center sm:p-6 lg:mx-auto lg:w-[min(900px,100%)] ${
           revealed ? "shrink-0 rounded-none border-b border-white/15 sm:min-h-32" : "flex-1 cursor-pointer"
         }`}
@@ -199,7 +204,7 @@ export const GrammarCard = ({ card, revealed, onReveal, onAnswer, accent = QUIZ_
       <div className="shrink-0 lg:mx-auto lg:w-[min(900px,100%)]">
         {!revealed ? (
           <button
-            onClick={onReveal}
+            onClick={reveal}
             style={{ background: "var(--quiz-accent)" }}
             className="focus-ring zoo-pop zoo-gloss inline-flex h-16 w-full items-center justify-center gap-2 rounded-2xl px-4 text-base font-bold !text-[#2f3333]"
           >

@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Timer, X } from "lucide-react";
+import { AnswerFeedbackBar } from "../../components/AnswerFeedbackBar";
+import { ComboBadge } from "../../components/ComboBadge";
 import { MascotSay } from "../../components/MascotSay";
 import {
   KIND_LABEL, SECTION_LABEL, recordJlptAnswers,
@@ -18,6 +20,7 @@ export function DrillSession({ bank, questions, mode, sessionId, onDone, onBack 
 }) {
   const [index, setIndex] = useState(0);
   const [chosen, setChosen] = useState<0 | OptionNo>(0);
+  const [combo, setCombo] = useState(0);
   const [error, setError] = useState(false);
   const answers = useRef<JlptAnswer[]>([]);
   const locked = useRef(false);
@@ -39,6 +42,7 @@ export function DrillSession({ bank, questions, mode, sessionId, onDone, onBack 
     if (locked.current) return;
     locked.current = true;
     setChosen(choice);
+    setCombo(value => choice === question.answer ? value + 1 : 0);
     save(choice);
   };
   const next = () => {
@@ -57,16 +61,14 @@ export function DrillSession({ bank, questions, mode, sessionId, onDone, onBack 
       <span className="jq-top-label">{mode === "mistakes" ? "错题本" : KIND_LABEL[question.kind]}</span>
       <button type="button" className="ds-btn-soft jq-small-button focus-ring" onClick={onBack}>回到列表</button>
     </div>
-    <div className="jq-progress" role="progressbar" aria-label="答题进度" aria-valuemin={0} aria-valuemax={questions.length} aria-valuenow={index + 1}>
-      <div className="jq-progress-fill" style={{ width: `${(index + 1) / questions.length * 100}%` }} />
-    </div>
+    <div className="ds-progress-row"><div className="ds-progress" role="progressbar" aria-label="答题进度" aria-valuemin={0} aria-valuemax={questions.length} aria-valuenow={index + 1}>
+      <div className="ds-progress-fill" style={{ width: `${(index + 1) / questions.length * 100}%` }} />
+    </div><ComboBadge combo={combo} /></div>
     <Question key={question.id} bank={bank} question={question} chosen={chosen} reveal={chosen !== 0} showKind={mode === "mistakes"} onChoose={choose} />
-    {/* 按钮紧跟在选项下面：解析放在后面，答完不用滚屏就能点下一题 */}
-    {chosen !== 0 && <button type="button" className="ds-btn jq-wide focus-ring" onClick={error ? () => save(chosen) : next}>
-      {error ? "重试保存" : index === questions.length - 1 ? "看小结" : "下一题"}
-    </button>}
+    {error && <button type="button" className="ds-btn jq-wide focus-ring" onClick={() => { if (chosen) save(chosen); }}>重试保存</button>}
     {error ? <MascotSay sticker="mood-puzzled" tone="warn" className="ds-say-onbg">作答没存好。再试一次。</MascotSay>
       : chosen !== 0 && <Explanation question={question} chosen={chosen} />}
+    {chosen !== 0 && !error && <AnswerFeedbackBar key={question.id} correct={chosen === question.answer} answer={question.options[question.answer - 1]} combo={combo} questionNumber={index} onContinue={next} />}
   </>;
 }
 
@@ -155,6 +157,9 @@ export function MockSession({ bank, parts, sessionId, onDone, onBack }: {
       </div>
     </>}
     <div className="jq-meta"><span>第 {index + 1} 题</span><span>已答 {answered} / 共 {part.questions.length}</span></div>
+    <div className="ds-progress-row"><div className="ds-progress" role="progressbar" aria-label="答题进度" aria-valuemin={0} aria-valuemax={part.questions.length} aria-valuenow={answered}>
+      <div className="ds-progress-fill" style={{ width: `${answered / part.questions.length * 100}%` }} />
+    </div></div>
     <Question key={question.id} bank={bank} question={question} chosen={choices[question.id] ?? 0} disabled={error} onChoose={choose} />
     <div className="ds-card jq-card jq-stack">
       <div className="jq-actions">

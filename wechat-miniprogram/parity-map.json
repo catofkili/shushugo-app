@@ -19,6 +19,20 @@
   ],
   "pairs": [
     {
+      "web": "frontend/src/components/ComboBadge.tsx",
+      "mini": [
+        "frontend/src/components/ComboBadge.tsx"
+      ],
+      "reason": "网页与 Taro 题型直接 import 同一份组件；build:weapp 验证共享源码编译，不维护第二份界面。"
+    },
+    {
+      "web": "frontend/src/components/AnswerFeedbackBar.tsx",
+      "mini": [
+        "frontend/src/components/AnswerFeedbackBar.tsx"
+      ],
+      "reason": "网页与 Taro 题型直接 import 同一份组件；build:weapp 验证共享源码编译，不维护第二份界面。"
+    },
+    {
       "web": "frontend/src/pages/StreakPage.tsx",
       "mini": [
         "frontend/src/pages/StreakPage.tsx",
@@ -172,10 +186,10 @@
     {
       "web": "frontend/src/pages/DistinctionQuizPage.tsx",
       "mini": [
-        "wechat-miniprogram/src/content/distinction-quiz/index.js",
-        "wechat-miniprogram/src/content/distinction-quiz/index.wxml",
-        "wechat-miniprogram/src/content/distinction-quiz/index.wxss"
-      ]
+        "frontend/src/pages/DistinctionQuizPage.tsx",
+        "taro-spike-2/src/study/distinction-quiz/index.tsx"
+      ],
+      "reason": "现行 Taro 辨析测验入口直接编译同一份页面，原生 WXML 已退场；反馈条与连对组件也由此共享。"
     },
     {
       "web": "frontend/src/pages/DuelPage.tsx",

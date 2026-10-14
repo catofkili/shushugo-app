@@ -1,5 +1,5 @@
 /* Generated from frontend/src/design.css. Run node wechat-miniprogram/scripts/sync-design-tokens.mjs. */
-/* source sha256: f528458d73b0bd0fb198abb7ab891ee3d4c143991819046d91780ade1bd24e28 */
+/* source sha256: a122782b21e811755347a396c7dc20c080698f6d913582d59a0a4baf228957e9 */
 /* WXSS does not support color-mix(); those values stay on the existing native fallback. */
 page {
   --ds-surface: #fff;
@@ -27,6 +27,12 @@ page {
   --ds-font-size-button: 30rpx;
   --ds-font-size-chip: 26rpx;
   --ds-font-size-pill: 24rpx;
+  --ds-dur-fast: 120ms;
+  --ds-dur: 220ms;
+  --ds-dur-slow: 420ms;
+  --ds-ease-spring: cubic-bezier(.34,1.56,.64,1);
+  --ds-ease-out: cubic-bezier(.2,.8,.2,1);
+  --ds-stagger: 60ms;
   --zoo-surface: #fff;
   --zoo-ink: #2B241C;
   --zoo-muted: #978C7E;
