@@ -2,19 +2,19 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1699469,
+      "bytes": 1747754,
       "passes": true
     },
     "study": {
-      "bytes": 993274,
+      "bytes": 994607,
       "passes": true
     },
     "account": {
-      "bytes": 328888,
+      "bytes": 328281,
       "passes": true
     },
     "content-pages": {
-      "bytes": 1116845,
+      "bytes": 1116413,
       "passes": true
     },
     "features": {
@@ -34,7 +34,7 @@
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 300122,
+      "bytes": 300693,
       "passes": true
     },
     "core": {
@@ -42,7 +42,7 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 900119,
+      "bytes": 903707,
       "passes": true
     },
     "jlpt-bank": {
@@ -456,6 +456,15 @@
       ]
     },
     {
+      "source": "frontend/src/components/ShareImageSheet.weapp.tsx",
+      "bytes": 5301,
+      "packages": [
+        "content-pages",
+        "lazy",
+        "study"
+      ]
+    },
+    {
       "source": "frontend/src/lib/grammarProgressPreferences.ts",
       "bytes": 5120,
       "packages": [
@@ -470,15 +479,6 @@
         "account",
         "content-pages",
         "grammar-pages",
-        "lazy",
-        "study"
-      ]
-    },
-    {
-      "source": "frontend/src/components/ShareImageSheet.weapp.tsx",
-      "bytes": 4926,
-      "packages": [
-        "content-pages",
         "lazy",
         "study"
       ]
@@ -577,6 +577,25 @@
       ]
     },
     {
+      "source": "frontend/src/components/ZooConfetti.tsx",
+      "bytes": 2899,
+      "packages": [
+        "lazy",
+        "study"
+      ]
+    },
+    {
+      "source": "frontend/src/components/MascotSay.tsx",
+      "bytes": 2771,
+      "packages": [
+        "account",
+        "content-pages",
+        "grammar-pages",
+        "lazy",
+        "study"
+      ]
+    },
+    {
       "source": "frontend/src/lib/page-share.weapp.ts",
       "bytes": 2770,
       "packages": [
@@ -599,14 +618,6 @@
       "bytes": 2653,
       "packages": [
         "content-pages",
-        "lazy",
-        "study"
-      ]
-    },
-    {
-      "source": "frontend/src/components/ZooConfetti.tsx",
-      "bytes": 2552,
-      "packages": [
         "lazy",
         "study"
       ]
@@ -700,17 +711,6 @@
       "bytes": 1614,
       "packages": [
         "content-pages",
-        "study"
-      ]
-    },
-    {
-      "source": "frontend/src/components/MascotSay.tsx",
-      "bytes": 1595,
-      "packages": [
-        "account",
-        "content-pages",
-        "grammar-pages",
-        "lazy",
         "study"
       ]
     },
@@ -1501,7 +1501,7 @@
     },
     {
       "source": "frontend/src/components/ShareImageSheet.weapp.tsx",
-      "bytes": 4926,
+      "bytes": 5301,
       "packages": [
         "content-pages",
         "lazy",
@@ -1552,6 +1552,27 @@
       "reason": "Grammar term hints are rendered by both the lazy tab chunk and grammar/content routes (W6 weapp variant)."
     },
     {
+      "source": "frontend/src/components/ZooConfetti.tsx",
+      "bytes": 2899,
+      "packages": [
+        "lazy",
+        "study"
+      ],
+      "reason": "Confetti state and its timer are scoped to each mounted celebration; it is a visual effect with no shared or persisted user state."
+    },
+    {
+      "source": "frontend/src/components/MascotSay.tsx",
+      "bytes": 2771,
+      "packages": [
+        "account",
+        "content-pages",
+        "grammar-pages",
+        "lazy",
+        "study"
+      ],
+      "reason": "The lazy overlays and account setup page render this stateless presentational wrapper using the shared mascot adapter."
+    },
+    {
       "source": "frontend/src/components/streak/StreakFlame.tsx",
       "bytes": 2653,
       "packages": [
@@ -1560,15 +1581,6 @@
         "study"
       ],
       "reason": "The streak flame is drawn by the home chip (lazy tabs), study celebrations and the streak detail page (content-pages); pure CSS markup with no state."
-    },
-    {
-      "source": "frontend/src/components/ZooConfetti.tsx",
-      "bytes": 2552,
-      "packages": [
-        "lazy",
-        "study"
-      ],
-      "reason": "Confetti state and its timer are scoped to each mounted celebration; it is a visual effect with no shared or persisted user state."
     },
     {
       "source": "frontend/src/components/Disclosure.weapp.tsx",
@@ -1602,18 +1614,6 @@
         "study"
       ],
       "reason": "The lazy overlays and independent account routes render native ScrollViews; scroll state belongs to the mounted control."
-    },
-    {
-      "source": "frontend/src/components/MascotSay.tsx",
-      "bytes": 1595,
-      "packages": [
-        "account",
-        "content-pages",
-        "grammar-pages",
-        "lazy",
-        "study"
-      ],
-      "reason": "The lazy overlays and account setup page render this stateless presentational wrapper using the shared mascot adapter."
     },
     {
       "source": "frontend/src/components/ComboBadge.tsx",
@@ -1702,12 +1702,12 @@
     "frontend/src/components/CrossPlatformImage.weapp.tsx": "Brand images are used by the account, content shop, and lazy route graphs; this small adapter enables WebP and sets native image dimensions.",
     "frontend/src/components/daily-plan-ring-geometry.ts": "Ring geometry shared by the Canvas ring; duplicated alongside it.",
     "frontend/src/components/GrammarTermHint.weapp.tsx": "Grammar term hints are rendered by both the lazy tab chunk and grammar/content routes (W6 weapp variant).",
-    "frontend/src/components/streak/StreakFlame.tsx": "The streak flame is drawn by the home chip (lazy tabs), study celebrations and the streak detail page (content-pages); pure CSS markup with no state.",
     "frontend/src/components/ZooConfetti.tsx": "Confetti state and its timer are scoped to each mounted celebration; it is a visual effect with no shared or persisted user state.",
+    "frontend/src/components/MascotSay.tsx": "The lazy overlays and account setup page render this stateless presentational wrapper using the shared mascot adapter.",
+    "frontend/src/components/streak/StreakFlame.tsx": "The streak flame is drawn by the home chip (lazy tabs), study celebrations and the streak detail page (content-pages); pure CSS markup with no state.",
     "frontend/src/components/Disclosure.weapp.tsx": "Zoo, grammar, account, and study pages render this small disclosure in isolated package graphs; open state belongs to each mounted control and no user data is cached.",
     "frontend/src/components/ExampleSentence.tsx": "Example sentences are rendered from both content and grammar route packages.",
     "frontend/src/components/ScrollArea.weapp.tsx": "The lazy overlays and independent account routes render native ScrollViews; scroll state belongs to the mounted control.",
-    "frontend/src/components/MascotSay.tsx": "The lazy overlays and account setup page render this stateless presentational wrapper using the shared mascot adapter.",
     "frontend/src/components/ComboBadge.tsx": "The grammar/JLPT/vocabulary/distinction study routes and mixed-study lazy tab render the same badge; only transient display state belongs to each mounted instance.",
     "frontend/src/components/SelectField.weapp.tsx": "The lazy setup panel and independent account forms render native Pickers using values/callbacks passed as props; no module cache exists.",
     "frontend/src/components/JapaneseWordRuby.tsx": "Word ruby rendering is used in the study, grammar, and lazy tab routes.",
@@ -1715,7 +1715,7 @@
     "frontend/src/components/DailyPlanSlider.weapp.tsx": "The lazy setup panel and account/study plan pages render native Sliders; values and commit callbacks are owned by each mounted parent, not this stateless adapter.",
     "frontend/src/components/JapaneseRubyText.weapp.tsx": "Ruby text is used by lazy tabs and independently loaded content/grammar routes."
   },
-  "duplicatedPageComponentBytes": 345101,
+  "duplicatedPageComponentBytes": 346999,
   "unapprovedPageComponents": [],
   "stalePageComponentAllowlist": [],
   "unapprovedPageComponentBytes": 0,
@@ -1726,7 +1726,7 @@
   "mainTopModules": [
     {
       "source": "frontend/src/app.css",
-      "bytes": 145929
+      "bytes": 146063
     },
     {
       "source": "frontend/src/lib/word-api.ts",
@@ -1758,7 +1758,7 @@
     },
     {
       "source": "frontend/src/design.css",
-      "bytes": 82673
+      "bytes": 84005
     },
     {
       "source": "taro-spike-2/src/platform/WeappPage.tsx",

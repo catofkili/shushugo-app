@@ -16,7 +16,11 @@ const mainNames = {
   // 2026-10-14 v3：主页学习工具十格 + 组队格换成物件插画（tool-*），水豚 icon-* 只剩柚子商店皮肤预览在用（content-pages）
   'tool-modes': 44, 'tool-grammar': 44, 'tool-wordlist': 44, 'tool-confusion': 44,
   'tool-talk': 44, 'tool-jlpt': 44, 'tool-kanji-readings': 44, 'tool-favorites': 44,
-  'tool-vocab-test': 44, 'tool-shop': 44, 'tool-team': 34, 'empty-bye': 64,
+  'tool-vocab-test': 44, 'tool-shop': 44, 'tool-team': 34,
+  // 同一批图「藏着水豚」的版本（v3 §1.6 巧思 1：每次进主页随机 0–2 格换成它）
+  'tool-modes-capy': 44, 'tool-grammar-capy': 44, 'tool-wordlist-capy': 44, 'tool-confusion-capy': 44,
+  'tool-talk-capy': 44, 'tool-jlpt-capy': 44, 'tool-kanji-readings-capy': 44, 'tool-favorites-capy': 44,
+  'tool-vocab-test-capy': 44, 'tool-shop-capy': 44, 'tool-team-capy': 34, 'empty-bye': 64,
   'shushugo-icon': 56, 'shushugo-icon-dark': 56, 'walk-strip': 72
 };
 const mainOneX = new Set(['mood-ask', 'mood-surprised']);

@@ -1,6 +1,6 @@
 {
-  "appWxssBytesBefore": 274677,
-  "appWxssBytesAfter": 214374,
+  "appWxssBytesBefore": 276216,
+  "appWxssBytesAfter": 216519,
   "movedRuleBytesByRoute": {
     "account/personal-info/index.wxss": 4644,
     "content-pages/achievements/index.wxss": 4644,
@@ -8,7 +8,7 @@
     "content-pages/yuzu-shop/index.wxss": 16013,
     "pages/word/index.wxss": 3066,
     "study/confusion/index.wxss": 8496,
-    "study/jlpt-practice/index.wxss": 5375,
+    "study/jlpt-practice/index.wxss": 5361,
     "study/kanji-readings/index.wxss": 12069,
     "study/quick-study/index.wxss": 11262,
     "study/team/index.wxss": 11736,
