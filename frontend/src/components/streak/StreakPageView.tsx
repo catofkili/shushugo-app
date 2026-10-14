@@ -4,7 +4,7 @@ import {
   dayStatusesBetween, repairableStreakDays, streakSnapshot, STREAK_LIT, STREAK_MILESTONES,
   type DayStatus, type StreakSnapshot
 } from "../../lib/streak";
-import { repairCards, repairDay, repairDayWithCard, repairPrice, yuzuBalance, YUZU_EVENT } from "../../lib/yuzu";
+import { repairCards, repairDay, repairDayWithCard, repairPrice, yuzuBalance, YUZU, YUZU_EVENT } from "../../lib/yuzu";
 import { useProgressUpdates } from "../../lib/use-progress-updates";
 import { MascotSay } from "../MascotSay";
 import { StreakFlame, flameStateOf } from "./StreakFlame";
@@ -108,12 +108,13 @@ export function StreakPageView({ onBack }: { onBack: () => void }) {
         tone={state === "off" && snap.atRisk ? "warn" : "good"}
         className="ds-say-onbg stk-say"
       >
-        {state === "off" ? todayHint(snap) : state === "gold" ? "今天是金的。" : "今天亮了。清完计划，它会变金。"}
+        {state === "off" ? todayHint(snap) : state === "gold" ? "今天是大火苗。" : "小火苗点着了，连胜保住。清完计划变大火苗。"}
       </MascotSay>
 
       <section className="stk-stats">
         <div><b>{snap.longest}</b><span>最长连续</span></div>
         <div><b>{snap.litDays}</b><span>累计学习天数</span></div>
+        <div className="stk-stat-gold"><b>{snap.goldInStreak % 7}<small>/7</small></b><span>大火苗 · 满 7 得 {YUZU.streak7} 柚子</span></div>
       </section>
 
       <section className="stk-card">
@@ -166,7 +167,7 @@ export function StreakPageView({ onBack }: { onBack: () => void }) {
       </section>
 
       <MascotSay sticker="mood-idea" className="ds-say-onbg stk-say">
-        答满 {STREAK_LIT.answers} 题或学满 {STREAK_LIT.seconds / 60} 分钟，火苗就亮；清完当天计划，它会变金。连着亮，它会慢慢长大。
+        答满 {STREAK_LIT.answers} 题或学满 {STREAK_LIT.seconds / 60} 分钟点亮小火苗，连胜不断；清完当天计划变成大火苗，攒满 7 个得 {YUZU.streak7} 柚子。
       </MascotSay>
     </div>
   );
