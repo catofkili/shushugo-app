@@ -3,7 +3,7 @@ import { createStudyBuddy } from "../lib/study-buddy";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type TouchEvent } from "react";
 import { createPortal } from "react-dom";
 import { perfRecord } from "../lib/perf-marks";
-import { AlertCircle, ChevronRight, Eye, GitCompareArrows, Pencil, RotateCcw, Shuffle, Star, StickyNote, Timer, X } from "lucide-react";
+import { AlertCircle, Check, ChevronRight, Eye, GitCompareArrows, Pencil, RotateCcw, Shuffle, Sparkles, Star, StickyNote, Timer, X } from "lucide-react";
 import { WordAnswer, WordCard, WordSessionResponse, WordStats } from "../types/vocabulary";
 import { addFavorite, addWordStudySeconds, advanceDailyRelief, advanceDailyTail, rewindDailyTail, continueKanjiStudy, continueStage2Study, continueTodayPlanStudy, getDailyReliefNext, getDailyTailNext, getWordSession, getWordStats, hasDailyReviewTriggered, jumpToSimilarWord, markDailyReviewTriggered, markTodayWordCheckin, pickDailyReviewNext, shouldStartDailyReview, startEncore as startEncoreSession, submitKanjiUnitAnswer, submitWordAnswer, toggleFavorite, undoLastWordAnswer, questionMeaningRivals, updateWordNote, updateWordQuestionMeaning, addAnswerPreview, answerPreviewsFresh, startAnswerPreviews, submitWordAnswerWithPreview, takeAnswerPreview, type AnswerPreviews } from "../lib/api";
 import { getStudyPreferences, PREFERENCES_EVENT, StudyPreferences } from "../lib/studyPreferences";
@@ -1928,7 +1928,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
 
         {reliefActive && stats?.dailyRelief && (
           <div className="daily-relief-banner" role="status" aria-live="polite">
-            <span className="daily-relief-banner-spark">✦</span>
+            <Sparkles size={20} className="daily-relief-banner-spark" aria-hidden="true" />
             <strong>昨日表现很棒，今日减负（{stats.dailyRelief.total}）个！</strong>
           </div>
         )}
@@ -2221,7 +2221,8 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
               {buddy}
               {reliefActive ? (
                 <div className="daily-relief-auto-state" role="status" aria-live="polite">
-                  <span>✓</span>
+                  {/* Taro 按 #FFFFFF 选白色图标资源，不继承父级 color */}
+                  <span><Check size={16} color="#FFFFFF" aria-hidden="true" /></span>
                   <strong>认识</strong>
                   <small>系统已快速收好这张卡</small>
                 </div>
