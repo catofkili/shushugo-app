@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import type { CSSProperties } from "react";
 import { History, ListChecks, Play } from "lucide-react";
 import { CapybaraWalk, Sticker } from "../components/CapybaraMascot";
 import { MascotSay } from "../components/MascotSay";
@@ -19,6 +20,7 @@ type Session =
   | { mode: "mock"; setId: string; parts: JlptMockPart[]; questions: JlptQuestion[]; id: string };
 
 const newSessionId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const staggerStyle = (index: number) => ({ "--i": index < 8 ? index : 0 }) as CSSProperties;
 
 export function JlptPracticePage() {
   const [level, setLevel] = useState<JlptLevel>(() => getStudyPreferences().jlptTarget || "N3");
@@ -82,7 +84,7 @@ export function JlptPracticePage() {
   const stats = activeBank && !session ? jlptKindStats(activeBank) : [];
   const mistakes = stats.reduce((sum, stat) => sum + stat.mistakes, 0);
 
-  return <div className="jq-page">
+  return <div className="jq-page ds-enter">
     {result ? <StreakCelebrationGate /> : <StreakSpark />}
     {session && activeBank ? <>
       {error ? <>
@@ -101,25 +103,43 @@ export function JlptPracticePage() {
           <MascotSay sticker="mood-puzzled" tone="warn" className="ds-say-onbg">{error}</MascotSay>
           <button type="button" className="ds-btn jq-wide focus-ring" onClick={() => { setError(""); setLoading(true); setReload(reload + 1); }}>重试</button>
         </> : activeBank && (activeBank.questions.length === 0 ? <div className="jq-empty"><Sticker name="empty-box" size={72} /><span>这一级还没有题</span></div> : <>
-          <section className="ds-card jq-card jq-stack">
-            <h2 className="jq-heading"><ListChecks size={18} />按题型练</h2>
-            {stats.map(stat => <button type="button" key={stat.kind} className="jq-list-row focus-ring" onClick={() => start("drill", stat.kind)}>
-              <span className="jq-row-title">{KIND_LABEL[stat.kind]}</span>
-              <span className="jq-row-meta"><span>答过 {stat.done} / 共 {stat.total}</span><span>正确率 {stat.done ? `${Math.round(stat.correct / stat.done * 100)}%` : "—"}</span></span>
-            </button>)}
-          </section>
-          {mistakes > 0 && <button type="button" className="ds-btn-soft jq-mistakes focus-ring" onClick={() => start("mistakes")}><History size={18} /><span className="jq-grow">错题本</span><span>{mistakes} 题</span></button>}
-          <section className="ds-card jq-card jq-stack">
-            <h2 className="jq-heading"><Play size={18} />模拟卷</h2>
-            {activeBank.sets.filter(set => !set.drillOnly).map(set => {
-              const parts = mockParts(activeBank, set.id);
-              const count = parts.reduce((sum, part) => sum + part.questions.length, 0);
-              const minutes = parts.reduce((sum, part) => sum + part.minutes, 0);
-              return <button type="button" key={set.id} disabled={count === 0} className="jq-list-row focus-ring" onClick={() => start("mock", undefined, set.id)}>
-                <span className="jq-row-title">{set.title}</span><span className="jq-row-meta">{count} 题 · 建议 {minutes} 分钟</span>
-              </button>;
-            })}
-          </section>
+          <div className="flex flex-col gap-3 ds-stagger">
+            <section className="ds-card jq-card" style={staggerStyle(0)}>
+              <h2 className="jq-heading mb-1"><ListChecks size={18} />按题型练</h2>
+              <div className="w7-list ds-stagger">
+                {stats.map((stat, index) => {
+                  const progress = stat.total ? Math.min(100, Math.round(stat.done / stat.total * 100)) : 0;
+                  const accuracy = stat.done ? `${Math.round(stat.correct / stat.done * 100)}%` : "—";
+                  return <button type="button" key={stat.kind} className="w7-row w7-row-plain w7-jlpt-row focus-ring" style={staggerStyle(index)} onClick={() => start("drill", stat.kind)}>
+                    <span className="flex min-w-0 items-center justify-between gap-2">
+                      <span className="jq-row-title">{KIND_LABEL[stat.kind]}</span>
+                      <span className="jq-row-meta shrink-0">{stat.done}/{stat.total} · 正确率 {accuracy}</span>
+                    </span>
+                    {stat.done > 0 && <div className="ds-progress mt-2" role="progressbar" aria-label={`${KIND_LABEL[stat.kind]}已答进度`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress} style={{ height: 4 }}>
+                      <div className="ds-progress-fill" style={{ width: `${progress}%` }} />
+                    </div>}
+                  </button>;
+                })}
+              </div>
+            </section>
+            {mistakes > 0 && <button type="button" className="ds-btn-soft jq-mistakes focus-ring" style={staggerStyle(1)} onClick={() => start("mistakes")}><History size={18} /><span className="jq-grow">错题本</span><span>{mistakes} 题</span></button>}
+            <section className="ds-card jq-card" style={staggerStyle(mistakes > 0 ? 2 : 1)}>
+              <h2 className="jq-heading mb-1"><Play size={18} />模拟卷</h2>
+              <div className="w7-list ds-stagger">
+                {activeBank.sets.filter(set => !set.drillOnly).map((set, index) => {
+                  const parts = mockParts(activeBank, set.id);
+                  const count = parts.reduce((sum, part) => sum + part.questions.length, 0);
+                  const minutes = parts.reduce((sum, part) => sum + part.minutes, 0);
+                  return <button type="button" key={set.id} disabled={count === 0} className="w7-row w7-row-plain w7-jlpt-row focus-ring" style={staggerStyle(index)} onClick={() => start("mock", undefined, set.id)}>
+                    <span className="flex min-w-0 items-center justify-between gap-3">
+                      <span className="jq-row-title">{set.title}</span>
+                      <span className="jq-row-meta shrink-0">{count} 题 · {minutes} 分钟</span>
+                    </span>
+                  </button>;
+                })}
+              </div>
+            </section>
+          </div>
         </>)}
     </>}
   </div>;

@@ -1034,3 +1034,24 @@ button.fin-row:hover { background: var(--ds-inset-2); }
   .answer-feedback, .answer-feedback-icon, .combo-badge-number, .combo-badge-milestone { animation: none; }
   .ds-progress-fill, .combo-badge-leaving { transition: none; }
 }
+
+/* —————————————————— W7：逐页抛光（共用发丝线与行控件） —————————————————— */
+.w7-list > .w7-row { position: relative; min-height: 48px; }
+.w7-list > .w7-row + .w7-row::before { content: ""; position: absolute; top: 0; left: 48px; right: 0; height: 1px; background: var(--ds-line); }
+.w7-list > .w7-row.w7-row-plain + .w7-row.w7-row-plain::before { left: 16px; }
+.w7-profile-stats { border-top: 1px solid var(--ds-line); }
+.w7-profile-stats > * + * { border-left: 1px solid var(--ds-line); }
+.w7-pro-benefits { display: grid; gap: 14px; }
+.w7-small-button { min-height: 36px; height: 36px; padding: 0 12px; font-size: 12px; }
+.w7-time-chip { width: 86px; min-height: 36px; height: 36px; padding: 0 8px; font-size: 13px; }
+.w7-faq-summary { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 12px 16px; list-style: none; }
+.w7-faq > summary { list-style: none; }
+.w7-faq > summary::-webkit-details-marker { display: none; }
+.w7-faq-chevron { flex: none; color: var(--ds-ink-3); transition: transform var(--ds-dur-fast); }
+.w7-faq-chevron.is-open { transform: rotate(180deg); }
+.w7-inset-rule { margin-left: 48px; border-top: 1px solid var(--ds-line); }
+.w7-inset-rule-plain { margin-left: 16px; border-top: 1px solid var(--ds-line); }
+.w7-jlpt-row { display: flex; flex-direction: column; align-items: stretch; gap: 0; width: 100%; min-height: 48px; padding: 10px 0; border: 0; border-radius: 0; background: transparent; color: var(--ds-ink); text-align: left; }
+.w7-jlpt-row:disabled { opacity: .55; }
+[data-motion="reduced"] .w7-faq-chevron { transition: none; }
+@media (prefers-reduced-motion: reduce) { .w7-faq-chevron { transition: none; } }

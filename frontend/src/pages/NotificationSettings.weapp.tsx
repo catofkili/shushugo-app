@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { ArrowLeft, Bell } from "lucide-react";
+import type { CSSProperties } from "react";
 import { defaultReminderSettings, loadReminderSettings, saveReminderSettings, checkReminderPermission, syncReminderNotifications, type ReminderSettings } from "../lib/notifications";
+
+const staggerStyle = (index: number) => ({ "--i": index < 8 ? index : 0 }) as CSSProperties;
 
 export function NotificationSettings({ onBack }: { onBack: () => void }) {
   const [settings, setSettings] = useState(defaultReminderSettings);
@@ -44,14 +47,14 @@ export function NotificationSettings({ onBack }: { onBack: () => void }) {
       <button onClick={onBack} className="inline-flex items-center gap-2 rounded-2xl px-2 py-2 text-sm font-bold text-white/78"><ArrowLeft size={17} />返回</button>
       <p className="min-w-0 truncate px-2 text-sm font-bold text-white/70">学习提醒</p>
     </div>
-    <div className="overflow-hidden rounded-2xl border border-white/15 bg-[#464949]">
-      <div className="flex items-center gap-3 border-b border-white/10 p-4">
-        <div className="grid h-10 w-10 place-items-center rounded-2xl bg-[#81D8CF]/20 text-[#81D8CF]"><Bell size={20} /></div>
-        <div className="min-w-0 flex-1"><p className="text-sm font-bold text-white">学习提醒</p><p className="mt-1 text-xs text-white/50">通过微信一次性订阅消息积累额度；不是每日离线排期。</p></div>
-        <button onClick={() => void toggle()} disabled={busy || !available} className={`rounded-2xl px-3 py-2 text-xs font-bold disabled:opacity-45 ${settings.studyReminder ? "bg-[#81D8CF] text-[#2f3333]" : "border border-white/20 text-white"}`}>{busy ? "处理中" : !available ? "暂不可用" : settings.studyReminder ? "已开启" : "开启"}</button>
+    <div className="ds-card w7-list ds-stagger overflow-hidden">
+      <div className="w7-row flex items-center gap-3 px-4 py-3" style={staggerStyle(0)}>
+        <Bell size={20} className="shrink-0 text-[var(--ds-ink-2)]" />
+        <div className="min-w-0 flex-1"><p className="text-[15px] font-bold text-white">学习提醒</p><p className="mt-1 text-xs text-white/50">通过微信一次性订阅消息积累额度；不是每日离线排期。</p></div>
+        <button onClick={() => void toggle()} disabled={busy || !available} className="ds-btn-soft w7-small-button disabled:opacity-45">{busy ? "处理中" : !available ? "暂不可用" : settings.studyReminder ? "已开启" : "开启"}</button>
       </div>
-      <p className="p-4 text-sm leading-6 text-white/65">{message}{credits ? ` 当前可用额度：${credits}。` : ""}</p>
-      <p className="border-t border-white/10 px-4 pb-4 text-xs leading-5 text-white/45">成就、周报和 JLPT 提醒在小程序中隐藏。</p>
+      <p className="w7-inset-rule-plain px-4 pb-3 pt-3 text-sm leading-6 text-white/65" style={staggerStyle(1)}>{message}{credits ? ` 当前可用额度：${credits}。` : ""}</p>
+      <p className="w7-inset-rule-plain px-4 pb-4 pt-3 text-xs leading-5 text-white/45" style={staggerStyle(2)}>成就、周报和 JLPT 提醒在小程序中隐藏。</p>
     </div>
   </div>;
 }

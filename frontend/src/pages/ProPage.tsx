@@ -1,8 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { Capacitor } from "@capacitor/core";
-import { ArrowLeft, CheckCircle2, ChevronRight, Clock3, Crown, RotateCcw, ShieldCheck, Sparkles, Ticket } from "lucide-react";
+import { ArrowLeft, Check, ChevronRight, Crown, RotateCcw, ShieldCheck, Sparkles, Ticket } from "lucide-react";
 import { entitlementExpiryLabel, EntitlementState, productLabel, type LaunchGiftAvailability } from "../lib/entitlements";
-import { MascotSay } from "../components/MascotSay";
 import { Sticker } from "../components/CapybaraMascot";
 import { initializePurchases, isLaunchGiftOnlyRelease, redeemOfferCode, restorePurchases } from "../lib/purchases";
 import { claimLaunchGift, refreshLaunchGiftAvailability } from "../lib/sync-api";
@@ -37,6 +36,8 @@ const rows = [
   // 会员页上摆没做出来的权益，审核按虚假宣传算，用户也会当成已经买到的东西。做出来再加回。
 ];
 
+const staggerStyle = (index: number) => ({ "--i": index < 8 ? index : 0 }) as CSSProperties;
+
 export function ProPage({ entitlements, isAuthenticated, onRequireAuth, onBack, onOpenPaywall, onOpenPrivacy }: ProPageProps) {
   const isWechatMini = Capacitor.getPlatform() === "wechat";
   const giftOnly = isWechatMini && isLaunchGiftOnlyRelease();
@@ -45,6 +46,10 @@ export function ProPage({ entitlements, isAuthenticated, onRequireAuth, onBack, 
   const [gift, setGift] = useState<LaunchGiftAvailability | undefined>(entitlements.launchGift);
   const [giftLoading, setGiftLoading] = useState(giftOnly);
   const [claiming, setClaiming] = useState(false);
+  const giftStatus = entitlements.isPro
+    ? entitlementExpiryLabel(entitlements)
+    : gift?.open ? isAuthenticated ? "领取首月会员" : "登录领取首月会员"
+    : gift?.open === false ? "赠送窗口已关闭" : giftLoading ? "正在查询首月赠送活动…" : "暂时无法查询首月赠送活动，请稍后重试。";
 
   useEffect(() => {
     if (giftOnly) {
@@ -97,8 +102,8 @@ export function ProPage({ entitlements, isAuthenticated, onRequireAuth, onBack, 
         <p className="min-w-0 truncate px-2 text-sm font-bold text-white/70">{giftOnly ? "首月赠送会员" : "收集日 Pro"}</p>
       </div>
 
-      <section className="ds-card p-5">
-        <div className="flex items-center gap-3">
+      <section className="ds-card ds-stagger p-5">
+        <div className="flex items-center gap-3" style={staggerStyle(0)}>
           <div className="min-w-0 flex-1">
             <span className="ds-pill ds-pill-primary"><Crown size={13} /> 会员</span>
             <h1 className="mt-2 text-2xl font-black text-white">{giftOnly ? entitlements.isPro ? "首月会员已启用" : "首月赠送会员" : entitlements.isPro ? "收集日 Pro 已启用" : "升级收集日 Pro"}</h1>
@@ -114,56 +119,54 @@ export function ProPage({ entitlements, isAuthenticated, onRequireAuth, onBack, 
           </div>
           <Sticker name={entitlements.isPro ? "mood-proud" : "mood-heart"} size={92} className="-mr-2 shrink-0" />
         </div>
-        <div className="mt-4 grid gap-2 sm:grid-cols-2">
-          {rows.map((row) => (
-            <div
-              key={row.label}
-              className={`rounded-2xl border p-3 ${
-                row.live ? "border-white/12 bg-[#81D8CF]/10" : "border-white/10 bg-white/5"
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                {row.live
-                  ? <CheckCircle2 size={16} className="shrink-0 text-[#81D8CF]" />
-                  : <Clock3 size={16} className="shrink-0 text-white/40" />}
-                <p className={`text-sm font-bold ${row.live ? "text-white" : "text-white/70"}`}>{row.label}</p>
-                {!row.live && (
-                  <span className="ml-auto shrink-0 rounded-full border border-white/15 px-2 py-0.5 text-[11px] font-bold text-white/45">
-                    开发中
-                  </span>
-                )}
+        <div className="w7-pro-benefits mt-4 ds-stagger" style={staggerStyle(1)}>
+          {rows.map((row, index) => (
+            <div key={row.label} className="flex items-start gap-2" style={staggerStyle(index)}>
+              <Check size={20} className="mt-0.5 shrink-0 text-[var(--ds-primary)]" />
+              <div className="min-w-0">
+                <p className="text-[15px] font-bold text-white">{row.label}</p>
+                <p className="mt-0.5 text-xs leading-5 text-white/50">{row.detail}</p>
               </div>
-              <p className="mt-1 text-xs leading-5 text-white/50">{row.detail}</p>
             </div>
           ))}
         </div>
       </section>
 
-      <div className="mt-4 overflow-hidden rounded-2xl border border-white/15 bg-[#464949]">
+      <div className="ds-card w7-list ds-stagger mt-4 overflow-hidden">
         {giftOnly ? (
-          <div className="border-b border-white/10 p-4">
+          <div className="w7-row flex items-center gap-3 px-4 py-3" style={staggerStyle(0)}>
             {entitlements.isPro ? (
-              <p className="text-sm font-bold text-white">{entitlements.productId === "shushugo_pro_launch_gift" ? "首月会员已领取" : "会员权益已启用"} · {entitlementExpiryLabel(entitlements)}</p>
-            ) : gift?.open ? (
               <>
-                <button className="ds-btn w-full" onClick={() => void claimGift()} disabled={claiming}>
+                <Crown size={20} className="shrink-0 text-[var(--ds-warn-ink)]" />
+                <p className="flex-1 text-[15px] font-bold text-white">{entitlements.productId === "shushugo_pro_launch_gift" ? "首月会员已领取" : "会员权益已启用"}</p>
+                <span className="text-xs text-white/45">{giftStatus}</span>
+              </>
+            ) : gift?.open ? (
+              <div className="flex w-full items-center gap-3">
+                <Crown size={20} className="shrink-0 text-[var(--ds-warn-ink)]" />
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[15px] font-bold text-white">首月赠送会员</span>
+                  <span className="mt-1 block text-xs text-white/50">免费领取，无需绑定支付方式。</span>
+                </span>
+                <button className="ds-btn w7-small-button" onClick={() => void claimGift()} disabled={claiming}>
                   {claiming ? "领取中…" : isAuthenticated ? "领取首月会员" : "登录领取首月会员"}
                 </button>
-                <p className="mt-2 text-center text-xs text-white/55">免费领取，无需绑定支付方式。</p>
-              </>
+              </div>
             ) : (
-              <p className="text-sm font-bold text-white">{gift?.open === false ? "首月赠送活动已结束" : giftLoading ? "正在查询首月赠送活动…" : "暂时无法查询首月赠送活动，请稍后重试。"}</p>
+              <>
+                <Crown size={20} className="shrink-0 text-[var(--ds-warn-ink)]" />
+                <p className="flex-1 text-[15px] font-bold text-white">{gift?.open === false ? "首月赠送活动已结束" : giftLoading ? "正在查询首月赠送活动…" : "暂时无法查询首月赠送活动，请稍后重试。"}</p>
+              </>
             )}
           </div>
         ) : <button
           onClick={onOpenPaywall}
-          className="focus-ring flex w-full items-center gap-3 border-b border-white/10 p-4 text-left hover:bg-[#4d5151]"
+          className="w7-row focus-ring flex w-full items-center gap-3 px-4 py-3 text-left"
+          style={staggerStyle(0)}
         >
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#81D8CF]/20 text-[#81D8CF]">
-            <Sparkles size={20} />
-          </span>
+          <Sparkles size={20} className="shrink-0 text-[var(--ds-primary)]" />
           <span className="min-w-0 flex-1">
-            <span className="block text-sm font-bold text-white">{entitlements.isPro ? "查看 Pro 方案" : "选择 Pro 方案"}</span>
+            <span className="block text-[15px] font-bold text-white">{entitlements.isPro ? "查看 Pro 方案" : "选择 Pro 方案"}</span>
             <span className="mt-0.5 block text-xs text-white/50">{isWechatMini ? "微信支付尚未开放时不会显示购买入口" : "月度、年度或永久买断"}</span>
           </span>
           <ChevronRight size={17} className="text-white/40" />
@@ -172,13 +175,12 @@ export function ProPage({ entitlements, isAuthenticated, onRequireAuth, onBack, 
         {!isWechatMini && <button
           onClick={restore}
           disabled={restoring}
-          className="focus-ring flex w-full items-center gap-3 border-b border-white/10 p-4 text-left hover:bg-[#4d5151] disabled:opacity-60"
+          className="w7-row focus-ring flex w-full items-center gap-3 px-4 py-3 text-left disabled:opacity-60"
+          style={staggerStyle(1)}
         >
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#3b3f3f] text-white/76">
-            <RotateCcw size={20} />
-          </span>
+          <RotateCcw size={20} className="shrink-0 text-[var(--ds-ink-2)]" />
           <span className="min-w-0 flex-1">
-            <span className="block text-sm font-bold text-white">{restoring ? "正在恢复" : "恢复购买"}</span>
+            <span className="block text-[15px] font-bold text-white">{restoring ? "正在恢复" : "恢复购买"}</span>
             <span className="mt-0.5 block text-xs text-white/50">换机或重装后从 App Store 恢复权益</span>
           </span>
           <ChevronRight size={17} className="text-white/40" />
@@ -186,13 +188,12 @@ export function ProPage({ entitlements, isAuthenticated, onRequireAuth, onBack, 
 
         {!isWechatMini && <button
           onClick={async () => setMessage((await redeemOfferCode()).message)}
-          className="focus-ring flex w-full items-center gap-3 border-b border-white/10 p-4 text-left hover:bg-[#4d5151]"
+          className="w7-row focus-ring flex w-full items-center gap-3 px-4 py-3 text-left"
+          style={staggerStyle(2)}
         >
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#3b3f3f] text-white/76">
-            <Ticket size={20} />
-          </span>
+          <Ticket size={20} className="shrink-0 text-[var(--ds-ink-2)]" />
           <span className="min-w-0 flex-1">
-            <span className="block text-sm font-bold text-white">兑换码</span>
+            <span className="block text-[15px] font-bold text-white">兑换码</span>
             <span className="mt-0.5 block text-xs text-white/50">在 App Store 兑换页输入活动或赠送的兑换码</span>
           </span>
           <ChevronRight size={17} className="text-white/40" />
@@ -200,23 +201,22 @@ export function ProPage({ entitlements, isAuthenticated, onRequireAuth, onBack, 
 
         <button
           onClick={onOpenPrivacy}
-          className="focus-ring flex w-full items-center gap-3 p-4 text-left hover:bg-[#4d5151]"
+          className="w7-row focus-ring flex w-full items-center gap-3 px-4 py-3 text-left"
+          style={staggerStyle(isWechatMini ? 1 : 3)}
         >
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#3b3f3f] text-white/76">
-            <ShieldCheck size={20} />
-          </span>
+          <ShieldCheck size={20} className="shrink-0 text-[var(--ds-ink-2)]" />
           <span className="min-w-0 flex-1">
-            <span className="block text-sm font-bold text-white">{giftOnly ? "隐私政策" : "隐私政策和购买说明"}</span>
+            <span className="block text-[15px] font-bold text-white">{giftOnly ? "隐私政策" : "隐私政策和购买说明"}</span>
             <span className="mt-0.5 block text-xs text-white/50">{giftOnly ? "数据收集与账号权益说明" : "数据收集、订阅与退款说明"}</span>
           </span>
           <ChevronRight size={17} className="text-white/40" />
         </button>
       </div>
 
-      <MascotSay sticker="scene-laptop" size={52} className="ds-say-onbg mt-4">{message}</MascotSay>
+      <p className="ds-enter mt-4 text-xs leading-5 text-[var(--ds-ink-3)]">{message}</p>
 
-      {!isWechatMini && <div className="mt-4 rounded-2xl border border-white/12 bg-[#464949] p-3 text-xs leading-6 text-white/50">
-        <p>
+      {!isWechatMini && <div className="ds-card ds-stagger mt-4 p-3 text-xs leading-6 text-white/50">
+        <p style={staggerStyle(0)}>
           月度 / 年度 Pro 为自动续订订阅：除非在当前订阅期结束前至少 24 小时关闭自动续订，
           订阅会自动续订并从 Apple 账户扣费。可随时在系统「设置 → Apple 账户 → 订阅」中管理或取消。
           永久 Pro 为一次性买断。购买适用
