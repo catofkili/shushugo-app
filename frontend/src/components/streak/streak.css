@@ -1,0 +1,268 @@
+/* ======================================================================
+   连胜火苗 + 全屏庆祝（docs/STREAK_SPEC.md §3 §4）
+
+   ⚠️ 两条全局规矩，改这里之前先看：
+   1. 基础样式 = 终态。动画只负责「从起点走到终态」（fill-mode: both）。
+      动效 off / 系统减少动态效果时 app.css 把时长压成 0.01ms，停在 to；
+      reduced 档这里自己把动画拿掉，停在基础样式。两种情况下画面都必须完整。
+   2. 只用 class 选择器。Taro 编译复合选择器只换最后一个标签（`p > b` 会整条失效），:has() 会被整条删掉。
+   ====================================================================== */
+
+/* —————————————— 火苗 —————————————— */
+.sf {
+  --sf-line: #6B4430;
+  --sf-a: #FFB547; --sf-b: #FF8A2E; --sf-c: #EF5A2A;
+  --sf-core-a: #FFF7C8; --sf-core-b: #FFD15C;
+  --sf-out-a: #FFD685; --sf-out-b: #FFA04A;
+  --sf-s: calc(var(--sf) * .6);
+  position: relative; display: inline-block; flex: none; vertical-align: middle;
+  width: var(--sf); height: calc(var(--sf) * 1.12);
+}
+.sf-gold {
+  --sf-a: #FFF1A6; --sf-b: #FFC83A; --sf-c: #E39410;
+  --sf-core-a: #FFFFFF; --sf-core-b: #FFF0A0;
+  --sf-out-a: #FFF4BC; --sf-out-b: #FFD45C;
+}
+.sf-off {
+  --sf-line: #8E8174;
+  --sf-a: #EBE5DC; --sf-b: #D4CBBF; --sf-c: #B9AFA2;
+  --sf-core-a: #F7F4EF; --sf-core-b: #E4DDD3;
+  --sf-out-a: #EEE9E2; --sf-out-b: #D9D1C6;
+}
+/* 进化 3 级起内芯变蓝（睡着的火苗不变） */
+.sf-lit.sf-t3, .sf-lit.sf-t4, .sf-lit.sf-t5,
+.sf-gold.sf-t3, .sf-gold.sf-t4, .sf-gold.sf-t5 { --sf-core-a: #F4FBFF; --sf-core-b: #86CCFF; }
+
+.sf-body, .sf-tongue, .sf-core, .sf-outer, .sf-aura, .sf-face, .sf-sparks, .sf-crown, .sf-sheen { position: absolute; display: block; }
+
+/* 水滴：右上角是尖，整体转 -45° 让尖朝上。渐变 45deg = 从火苗底部到尖 */
+.sf-body {
+  width: var(--sf-s); height: var(--sf-s);
+  left: calc(50% - var(--sf-s) / 2); bottom: calc(var(--sf) * .1);
+  border: max(1.5px, calc(var(--sf) * .04)) solid var(--sf-line);
+  border-radius: 50% 0 50% 50%;
+  background: linear-gradient(45deg, var(--sf-a) 0%, var(--sf-b) 52%, var(--sf-c) 100%);
+  transform: scale(.94, 1.08) rotate(-45deg);
+  overflow: hidden;
+  z-index: 2;
+}
+/* 两条侧火舌：轮廓有三个尖才读得出是火，不然是一滴水。藏在身体后面，接缝被身体的描边盖住 */
+.sf-tongue {
+  --sf-g: calc(var(--sf) * .3);
+  width: var(--sf-g); height: var(--sf-g); bottom: calc(var(--sf) * .36);
+  border: max(1.2px, calc(var(--sf) * .035)) solid var(--sf-line);
+  border-radius: 50% 0 50% 50%;
+  background: linear-gradient(45deg, var(--sf-b), var(--sf-c));
+  z-index: 1;
+}
+.sf-tongue-l { left: calc(50% - var(--sf) * .3); transform: rotate(-72deg); }
+.sf-tongue-r { left: calc(50% + var(--sf) * .02); bottom: calc(var(--sf) * .3); transform: rotate(-20deg) scale(.85); }
+.sf-core {
+  --sf-k: calc(var(--sf) * .3);
+  width: var(--sf-k); height: var(--sf-k);
+  left: calc(50% - var(--sf-k) / 2); bottom: calc(var(--sf) * .15);
+  border-radius: 50% 0 50% 50%;
+  background: linear-gradient(45deg, var(--sf-core-a) 10%, var(--sf-core-b) 100%);
+  transform: rotate(-45deg);
+  z-index: 3;
+}
+.sf-outer {
+  --sf-o: calc(var(--sf) * .76);
+  width: var(--sf-o); height: var(--sf-o);
+  left: calc(50% - var(--sf-o) / 2); bottom: calc(var(--sf) * .05);
+  border-radius: 50% 0 50% 50%;
+  background: linear-gradient(45deg, var(--sf-out-a), var(--sf-out-b));
+  opacity: .62;
+  transform: rotate(-45deg);
+  z-index: 1;
+}
+/* 金色那道扫光：静止时停在火苗外面 */
+.sf-sheen { display: none; inset: -40%; background: linear-gradient(90deg, transparent 38%, rgba(255,255,255,.85) 50%, transparent 62%); transform: translateX(130%); }
+.sf-gold .sf-sheen { display: block; animation: sf-sheen 2.6s ease-in-out .4s infinite both; }
+
+/* 脸：醒着是两颗豆豆眼 + 腮红，睡着是两条线 */
+.sf-face {
+  z-index: 4; display: flex; justify-content: space-between;
+  width: calc(var(--sf) * .26); height: calc(var(--sf) * .08);
+  left: calc(50% - var(--sf) * .13); bottom: calc(var(--sf) * .25);
+}
+.sf-face > i { display: block; width: calc(var(--sf) * .06); height: calc(var(--sf) * .08); border-radius: 50%; background: var(--sf-line); }
+.sf-off .sf-face > i { height: max(1.5px, calc(var(--sf) * .022)); margin-top: calc(var(--sf) * .04); border-radius: 2px; }
+.sf-face::before, .sf-face::after {
+  content: ""; position: absolute; top: calc(var(--sf) * .085);
+  width: calc(var(--sf) * .07); height: calc(var(--sf) * .04); border-radius: 50%;
+  background: #FF7E7E; opacity: .5;
+}
+.sf-face::before { left: calc(var(--sf) * -.05); }
+.sf-face::after { right: calc(var(--sf) * -.05); }
+.sf-off .sf-face::before, .sf-off .sf-face::after { opacity: 0; }
+
+/* 火星：静止时是看不见的（飘完的终态） */
+.sf-sparks { inset: 0; z-index: 0; }
+.sf-sparks > i {
+  position: absolute; display: block; bottom: 52%;
+  width: calc(var(--sf) * .055); height: calc(var(--sf) * .055); border-radius: 50%;
+  background: var(--sf-b); opacity: 0;
+  animation: sf-spark 1.9s ease-out infinite both;
+}
+.sf-sparks > i:nth-child(1) { left: 22%; animation-delay: .2s; }
+.sf-sparks > i:nth-child(2) { left: 70%; animation-delay: .85s; }
+.sf-sparks > i:nth-child(3) { left: 48%; animation-delay: 1.4s; }
+
+/* 100 天起：外圈一圈慢慢转的虚线光环 */
+.sf-aura {
+  --sf-r: calc(var(--sf) * 1.04);
+  width: var(--sf-r); height: var(--sf-r);
+  left: calc(50% - var(--sf-r) / 2); bottom: calc(var(--sf) * -.02);
+  border-radius: 50%;
+  border: max(1.5px, calc(var(--sf) * .025)) dashed color-mix(in srgb, var(--sf-b) 70%, transparent);
+  background: radial-gradient(circle, color-mix(in srgb, var(--sf-out-a) 45%, transparent) 30%, transparent 70%);
+  animation: sf-spin 14s linear infinite;
+  z-index: 0;
+}
+.sf-crown { z-index: 5; left: 50%; top: calc(var(--sf) * -.1); font-size: calc(var(--sf) * .28); line-height: 1; transform: translateX(-50%) rotate(10deg); font-style: normal; }
+
+/* 跳动：醒着的火苗身体和外焰错拍伸缩 */
+.sf-lit .sf-body, .sf-gold .sf-body { animation: sf-flick 1.7s ease-in-out infinite both; }
+.sf-lit .sf-tongue-l, .sf-gold .sf-tongue-l { animation: sf-tongue-l 1.3s ease-in-out infinite both; }
+.sf-lit .sf-tongue-r, .sf-gold .sf-tongue-r { animation: sf-tongue-r 1.5s ease-in-out -.6s infinite both; }
+.sf-lit .sf-outer, .sf-gold .sf-outer { animation: sf-flick-out 2.1s ease-in-out -.9s infinite both; }
+/* 快断了：每三秒晃一下 */
+.sf-risk { transform-origin: 50% 92%; animation: sf-wobble 3s ease-in-out 1s infinite both; }
+
+@keyframes sf-flick { 0%, 100% { transform: scale(.94, 1.08) rotate(-45deg); } 50% { transform: scale(.9, 1.14) rotate(-45deg); } }
+@keyframes sf-tongue-l { 0%, 100% { transform: rotate(-72deg); } 50% { transform: rotate(-62deg) translateY(-6%); } }
+@keyframes sf-tongue-r { 0%, 100% { transform: rotate(-20deg) scale(.85); } 50% { transform: rotate(-30deg) scale(.9); } }
+@keyframes sf-flick-out { 0%, 100% { transform: scale(1, 1) rotate(-45deg); } 50% { transform: scale(1.05, .95) rotate(-45deg); } }
+@keyframes sf-sheen { 0% { transform: translateX(-130%); } 45%, 100% { transform: translateX(130%); } }
+@keyframes sf-spark {
+  0% { opacity: 0; transform: translate(0, 0) scale(1); }
+  15% { opacity: 1; }
+  100% { opacity: 0; transform: translate(calc(var(--sf) * .06), calc(var(--sf) * -.55)) scale(.4); }
+}
+@keyframes sf-spin { to { transform: rotate(360deg); } }
+@keyframes sf-wobble {
+  0%, 70%, 100% { transform: rotate(0); }
+  76% { transform: rotate(-10deg); } 82% { transform: rotate(8deg); }
+  88% { transform: rotate(-5deg); } 94% { transform: rotate(2deg); }
+}
+
+/* —————————————— 全屏庆祝 —————————————— */
+.sc {
+  position: fixed; inset: 0; z-index: 10003;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 6px; padding: 24px 16px calc(24px + env(safe-area-inset-bottom));
+  overflow: hidden;
+  color: var(--ds-ink);
+  background:
+    radial-gradient(circle at 50% 34%, color-mix(in srgb, #FFB547 26%, transparent), transparent 46%),
+    var(--ds-bg);
+  animation: sc-fade 220ms ease-out both;
+}
+.sc-is-gold { background: radial-gradient(circle at 50% 34%, color-mix(in srgb, #FFD45C 30%, transparent), transparent 48%), var(--ds-bg); }
+
+.sc-stage { position: relative; display: flex; align-items: center; justify-content: center; width: 240px; height: 210px; }
+.sc-glow {
+  position: absolute; display: block; left: 50%; top: 50%; width: 190px; height: 190px; margin: -95px 0 0 -95px; border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, #FFC86B 40%, transparent), transparent 66%);
+  animation: sc-breathe 2.4s ease-in-out infinite both;
+}
+.sc-rays {
+  position: absolute; display: block; left: 50%; top: 50%; width: 360px; height: 360px; margin: -180px 0 0 -180px; border-radius: 50%;
+  background: repeating-conic-gradient(color-mix(in srgb, #FFC24A 34%, transparent) 0deg 9deg, transparent 9deg 24deg);
+  -webkit-mask-image: radial-gradient(circle, #000 18%, transparent 68%);
+  mask-image: radial-gradient(circle, #000 18%, transparent 68%);
+  animation: sc-rays-in 600ms ease-out both, sf-spin 18s linear infinite;
+}
+
+/* 外观层叠：同一个格子里叠着，靠 grid 叠，不用 absolute（尺寸由内容撑开） */
+.sc-stack { position: relative; display: inline-grid; place-items: center; }
+.sc-stack > .sc-look-out { grid-area: 1 / 1; display: inline-flex; }
+.sc-stack > .sc-burst { grid-area: 1 / 1; }
+.sc-look-out.is-gone { opacity: 0; animation: sc-look-out 180ms ease-in both; }
+.sc-look-in { display: inline-flex; animation: sc-look-in 520ms cubic-bezier(.34, 1.56, .64, 1) both; }
+.sc-look-in.is-first { animation: none; }
+.sc-burst {
+  display: block; width: 70%; height: 70%; min-width: 18px; min-height: 18px; border-radius: 50%;
+  border: 3px solid #FFB547; opacity: 0; pointer-events: none;
+  animation: sc-burst 700ms ease-out both;
+}
+.sc-burst-gold { border-color: #FFD24A; box-shadow: 0 0 18px #FFE58A; }
+.sc-flame { z-index: 1; }
+
+.sc-badge {
+  position: absolute; right: 2px; top: 10px; z-index: 2;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  width: 72px; height: 72px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #FFF3B8, #F5B926 70%);
+  border: 3px solid #6B4430; color: #6B4430;
+  font-size: 12px; font-weight: 800; line-height: 1; transform: rotate(-12deg);
+  box-shadow: 0 4px 0 #C98A12;
+  animation: sc-stamp 420ms cubic-bezier(.2, 1.4, .5, 1) both;
+}
+.sc-badge > b { font-size: 24px; }
+
+.sc-count { display: flex; align-items: baseline; gap: 4px; color: #E8742A; }
+.sc-is-gold .sc-count { color: #D08A0C; }
+.sc-num { position: relative; display: inline-grid; overflow: hidden; font-size: 64px; font-weight: 900; line-height: 1.05; font-variant-numeric: tabular-nums; }
+.sc-num > span { grid-area: 1 / 1; text-align: center; }
+.sc-num-old { opacity: 0; transform: translateY(-70%); animation: sc-num-out 300ms ease-in both; }
+.sc-num-new { animation: sc-num-in 460ms cubic-bezier(.34, 1.56, .64, 1) both; }
+.sc-unit { font-size: 22px; font-weight: 800; }
+.sc-caption { margin: -2px 0 10px; color: var(--ds-ink-2); font-size: 14px; font-weight: 700; }
+
+.sc-week { display: flex; gap: 6px; margin: 0 0 14px; padding: 10px 12px; list-style: none; border-radius: 20px; background: var(--ds-surface); box-shadow: var(--ds-shadow); }
+.sc-week > li { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 34px; animation: sc-cell-pop 360ms cubic-bezier(.34, 1.56, .64, 1) both; }
+.sc-cell { position: relative; display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; background: var(--ds-inset); }
+.sc-week > li.is-today .sc-cell { box-shadow: 0 0 0 2px #FFB547; }
+.sc-is-gold .sc-week > li.is-today .sc-cell { box-shadow: 0 0 0 2px #F5B926; }
+.sc-cell-empty { display: block; width: 12px; height: 12px; border-radius: 50%; border: 2px dashed var(--ds-line-strong, rgba(0,0,0,.18)); }
+.sc-cell > em { position: absolute; right: -4px; bottom: -4px; padding: 0 3px; border-radius: 6px; background: var(--ds-surface); color: var(--ds-ink-3); font-size: 10px; font-style: normal; font-weight: 800; line-height: 14px; }
+.sc-week small { color: var(--ds-ink-3); font-size: 11px; font-weight: 700; }
+.sc-week > li.is-today small { color: var(--ds-ink); }
+
+.sc-say { width: min(100%, 340px); animation: sc-rise 380ms ease-out both; }
+.sc-yuzu { display: block; margin-top: 2px; color: #D08A0C; font-weight: 800; }
+.sc-actions { display: flex; flex-direction: column; gap: 8px; width: min(100%, 340px); margin-top: 14px; animation: sc-rise 380ms ease-out both; }
+.sc-continue, .sc-repair { width: 100%; }
+
+@keyframes sc-fade { from { opacity: 0; } }
+@keyframes sc-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+@keyframes sc-rays-in { from { opacity: 0; transform: scale(.5); } }
+@keyframes sc-look-in { from { opacity: 0; transform: scale(.3); } }
+@keyframes sc-look-out { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(.8); } }
+@keyframes sc-burst { from { opacity: .95; transform: scale(.5); } to { opacity: 0; transform: scale(2.3); } }
+@keyframes sc-stamp { from { opacity: 0; transform: rotate(-12deg) scale(2.6); } }
+@keyframes sc-num-out { from { opacity: 1; transform: translateY(0); } }
+@keyframes sc-num-in { from { opacity: 0; transform: translateY(70%); } }
+@keyframes sc-cell-pop { from { transform: scale(.6); opacity: .4; } }
+@keyframes sc-rise { from { opacity: 0; transform: translateY(16px); } }
+
+/* —————————————— 学习中冒一下的小胶囊（规格 §4.1） —————————————— */
+.sc-toast {
+  position: fixed; left: 50%; top: calc(10px + env(safe-area-inset-top)); z-index: 10002;
+  display: flex; align-items: center; gap: 6px; padding: 6px 14px 6px 8px;
+  border-radius: 999px; background: var(--ds-surface); box-shadow: var(--ds-shadow);
+  color: var(--ds-ink); font-size: 14px; font-weight: 800; white-space: nowrap;
+  pointer-events: none;
+  opacity: 0; transform: translate(-50%, -140%);
+  animation: sc-toast 1.8s ease-in-out both;
+}
+@keyframes sc-toast {
+  0% { opacity: 0; transform: translate(-50%, -140%); }
+  14%, 82% { opacity: 1; transform: translate(-50%, 0); }
+  100% { opacity: 0; transform: translate(-50%, -140%); }
+}
+
+/* —————————————— 省电档：拿掉循环和入场，停在基础样式（= 终态） —————————————— */
+[data-motion="reduced"] .sf-body, [data-motion="reduced"] .sf-tongue, [data-motion="reduced"] .sf-outer, [data-motion="reduced"] .sf-sheen,
+[data-motion="reduced"] .sf-sparks > i, [data-motion="reduced"] .sf-aura, [data-motion="reduced"] .sf-risk,
+[data-motion="reduced"] .sc, [data-motion="reduced"] .sc-glow, [data-motion="reduced"] .sc-rays,
+[data-motion="reduced"] .sc-look-out, [data-motion="reduced"] .sc-look-in, [data-motion="reduced"] .sc-burst,
+[data-motion="reduced"] .sc-badge, [data-motion="reduced"] .sc-num-old, [data-motion="reduced"] .sc-num-new,
+[data-motion="reduced"] .sc-week > li, [data-motion="reduced"] .sc-say, [data-motion="reduced"] .sc-actions {
+  animation: none !important;
+}
+/* 小胶囊整段是动画，拿掉动画就该消失 */
+[data-motion="reduced"] .sc-toast, [data-motion="off"] .sc-toast { display: none; }
+@media (prefers-reduced-motion: reduce) { .sc-toast { display: none; } }

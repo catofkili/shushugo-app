@@ -1,0 +1,56 @@
+/* 连胜详情页（docs/STREAK_SPEC.md §5）。
+   单独一个文件、前缀 stk-：只有详情页 import 它，小程序里就落在 content-pages 分包，不进主包 app.wxss
+   （主包余量只有十来 KB）。前缀不能用 sp-：拼写页已经占了（.sp-card 撞过一次）。
+   规矩同 streak.css：只用 class 选择器。 */
+.stk { display: flex; flex-direction: column; gap: 14px; max-width: 560px; margin: 0 auto; padding-bottom: 24px; }
+.stk-loading { padding: 48px 0; text-align: center; color: var(--ds-ink-3); font-weight: 700; }
+.stk-backbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.stk-backbar > p { color: var(--ds-ink-2); font-size: 14px; font-weight: 800; }
+.stk-back { display: inline-flex; align-items: center; gap: 6px; padding: 8px; border: 0; background: none; color: var(--ds-ink-2); font-size: 14px; font-weight: 800; }
+
+.stk-hero { position: relative; display: flex; flex-direction: column; align-items: center; padding: 22px 16px 16px; border-radius: 24px; overflow: hidden;
+  background: radial-gradient(circle at 50% 30%, color-mix(in srgb, #FFB547 28%, transparent), transparent 60%), var(--ds-surface); box-shadow: var(--ds-shadow); }
+.stk-hero-gold { background: radial-gradient(circle at 50% 30%, color-mix(in srgb, #FFD45C 34%, transparent), transparent 60%), var(--ds-surface); }
+.stk-hero-off { background: var(--ds-surface); }
+.stk-hero-count { display: flex; align-items: baseline; gap: 4px; margin-top: 6px; color: #E8742A; }
+.stk-hero-gold .stk-hero-count { color: #D08A0C; }
+.stk-hero-off .stk-hero-count { color: var(--ds-ink-3); }
+.stk-hero-count > b { font-size: 56px; font-weight: 900; line-height: 1; font-variant-numeric: tabular-nums; }
+.stk-hero-count > span { font-size: 20px; font-weight: 800; }
+.stk-hero-caption { margin-top: 2px; color: var(--ds-ink-2); font-size: 14px; font-weight: 700; }
+
+.stk-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.stk-stats > div { display: flex; flex-direction: column; align-items: center; padding: 12px; border-radius: 18px; background: var(--ds-surface); box-shadow: var(--ds-shadow); }
+.stk-stats b { font-size: 24px; font-weight: 900; color: var(--ds-ink); font-variant-numeric: tabular-nums; }
+.stk-stats span { color: var(--ds-ink-3); font-size: 12px; font-weight: 700; }
+
+.stk-card { padding: 16px; border-radius: 22px; background: var(--ds-surface); box-shadow: var(--ds-shadow); }
+.stk-h { color: var(--ds-ink); font-size: 16px; font-weight: 800; }
+.stk-h > b { color: #E8742A; }
+.stk-bar { position: relative; height: 18px; margin: 10px 0 14px; border-radius: 999px; background: var(--ds-inset); overflow: hidden; }
+.stk-bar > span { position: absolute; inset: 0 auto 0 0; border-radius: 999px; background: linear-gradient(90deg, #FFB547, #FF7A2F); }
+.stk-bar > span::after { content: ""; position: absolute; left: 8px; right: 8px; top: 4px; height: 4px; border-radius: 999px; background: rgba(255,255,255,.45); }
+.stk-bar > em { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--ds-ink); font-size: 11px; font-style: normal; font-weight: 800; }
+.stk-badges { display: grid; grid-template-columns: repeat(9, 1fr); gap: 4px; padding: 0; list-style: none; }
+.stk-badges > li { display: flex; align-items: center; justify-content: center; aspect-ratio: 1; border-radius: 50%; border: 2px dashed var(--ds-line); color: var(--ds-ink-3); font-size: 10px; font-weight: 800; }
+.stk-badges > li.is-got { border: 2px solid #6B4430; background: radial-gradient(circle at 35% 30%, #FFF3B8, #F5B926 70%); color: #6B4430; }
+
+.stk-month { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.stk-month-btn { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border: 0; border-radius: 50%; background: var(--ds-inset); color: var(--ds-ink-2); }
+.stk-month-btn:disabled { opacity: .35; }
+.stk-cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.stk-cal > small { text-align: center; color: var(--ds-ink-3); font-size: 11px; font-weight: 700; }
+.stk-day { position: relative; display: flex; align-items: center; justify-content: center; aspect-ratio: 1; padding: 0; border: 0; border-radius: 12px; background: none; }
+.stk-day.is-today { box-shadow: inset 0 0 0 2px #FFB547; }
+.stk-day.is-future { opacity: .35; }
+.stk-day.is-gap { background: var(--ds-inset); }
+.stk-day.is-picked { box-shadow: inset 0 0 0 2px var(--ds-primary); }
+.stk-day-n { color: var(--ds-ink-3); font-size: 13px; font-style: normal; font-weight: 700; }
+.stk-day > em { position: absolute; right: 1px; bottom: 1px; padding: 0 3px; border-radius: 6px; background: var(--ds-surface); color: var(--ds-ink-3); font-size: 9px; font-style: normal; font-weight: 800; line-height: 13px; }
+.stk-day.is-gap > em { background: var(--ds-primary); color: var(--ds-on-primary); }
+.stk-repair { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; padding: 10px 12px; border-radius: 16px; background: var(--ds-inset); }
+.stk-repair > p { color: var(--ds-ink-2); font-size: 14px; font-weight: 700; }
+.stk-repair > .ds-btn { min-height: 40px; flex: none; }
+.stk-legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 12px; color: var(--ds-ink-3); font-size: 12px; font-weight: 700; }
+.stk-legend > span { display: inline-flex; align-items: center; gap: 4px; }
+.stk-legend-gap { padding: 0 4px; border-radius: 6px; background: var(--ds-primary); color: var(--ds-on-primary); font-size: 10px; font-style: normal; line-height: 14px; }

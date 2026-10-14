@@ -30,6 +30,7 @@ const definitions = [
   ['weekly-report', 'content-pages/weekly-report/index', false, 'content-pages'],
   ['yuzu-shop', 'content-pages/yuzu-shop/index', false, 'content-pages'],
   ['achievements', 'content-pages/achievements/index', false, 'content-pages'],
+  ['streak', 'content-pages/streak/index', false, 'content-pages'],
   ['about', 'content-pages/about/index', false, 'content-pages'],
   ['talk', 'study/talk/index', false, 'study'],
   ['jlpt-practice', 'study/jlpt-practice/index', false, 'study']

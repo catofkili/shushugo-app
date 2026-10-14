@@ -3,6 +3,7 @@ import type { Page } from "../types/app";
 import { AboutRoute } from "./about";
 import { AccountRoute } from "./account";
 import { AchievementsRoute } from "./achievements";
+import { StreakRoute } from "./streak";
 import { ConfusionRoute } from "./confusion";
 import { DetailRoute } from "./detail";
 import { DistinctionQuizRoute } from "./distinction-quiz";
@@ -63,5 +64,6 @@ export const ROUTES: Record<Page, ComponentType> = {
   "user-agreement": UserAgreementRoute,
   help: HelpRoute,
   achievements: AchievementsRoute,
+  streak: StreakRoute,
   about: AboutRoute
 };

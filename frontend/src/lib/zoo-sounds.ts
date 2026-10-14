@@ -239,6 +239,22 @@ export const playReliefDeal = () =>
     pluck(N.C6, 0.055, 0.14, 0.11);
   });
 
+/** 火苗点着:三音上行,比「一场完成」低一个八度起步,像火「呼」地蹿起来 */
+export const playStreakIgnite = () =>
+  guard(() => {
+    pluck(N.G4, 0, 0.14, 0.16);
+    pluck(N.C5, 0.07, 0.16, 0.18);
+    pluck(N.G5, 0.14, 0.32, 0.2);
+  });
+
+/** 火苗变金:高音区三下亮闪 */
+export const playStreakGold = () =>
+  guard(() => {
+    pluck(N.E5, 0, 0.1, 0.12);
+    pluck(N.G5, 0.06, 0.12, 0.13);
+    pluck(N.C6, 0.12, 0.38, 0.15);
+  });
+
 /** 连击里程碑:远处一声鸟叫(快速音高抖动) */
 export const playStreakChirp = () =>
   guard(() => {

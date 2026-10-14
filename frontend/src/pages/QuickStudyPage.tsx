@@ -1,5 +1,6 @@
 import { QuickStudyPanel } from "../components/QuickStudyPanel";
 import type { Page } from "../types/app";
+import { StreakSpark } from "../components/streak/StreakMoments";
 
 type Props = {
   onNavigate: (page: Page) => void;
@@ -12,6 +13,7 @@ type Props = {
 export function QuickStudyPage({ onNavigate, onDailyModeComplete, wordIds, heading }: Props) {
   return (
     <div className="quick-study-page-shell">
+      <StreakSpark />
       <QuickStudyPanel
         variant="page"
         onNavigate={onNavigate}

@@ -44,6 +44,8 @@ function score(name) {
   // 网页这两声是正弦振荡器扫频 / 抖频；这里拆成几段定频正弦，听感一样短、一样轻。
   if (name === 'save') return [note(1046.5, 0, 0.07, 0.16, true), note(880, 0.06, 0.07, 0.14, true), note(783.99, 0.12, 0.1, 0.12, true)];
   if (name === 'chirp') return [note(880, 0, 0.05, 0.1, true), note(1046.5, 0.05, 0.05, 0.1, true), note(880, 0.1, 0.05, 0.1, true), note(1046.5, 0.15, 0.08, 0.1, true)];
+  if (name === 'ignite') return [note(392, 0, 0.14, 0.16), note(523.25, 0.07, 0.16, 0.18), note(783.99, 0.14, 0.32, 0.2)];
+  if (name === 'gold') return [note(659.25, 0, 0.1, 0.12), note(783.99, 0.06, 0.12, 0.13), note(1046.5, 0.12, 0.38, 0.15)];
   return [];
 }
 
@@ -99,6 +101,8 @@ module.exports = {
   playReliefDeal: () => play('relief'),
   playSave: () => play('save'),
   playStreakChirp: () => play('chirp'),
+  playStreakIgnite: () => play('ignite'),
+  playStreakGold: () => play('gold'),
   soundAvailable: () => typeof wx !== 'undefined' && !!(wx.createInnerAudioContext && wx.getFileSystemManager && wx.env?.USER_DATA_PATH),
   previewTimbre(next) { const previous = timbre; setSoundTimbre(next); play('know-0'); timbre = previous; }
 };

@@ -3,6 +3,9 @@ import { LocalNotifications, type PermissionStatus } from "@capacitor/local-noti
 import { Preferences } from "@capacitor/preferences";
 import { generateLatestWeeklyReport } from "./analytics/weekly-reports";
 import { getWeekWindow, getWeeklyMetrics, passesThreshold } from "./analytics/weekly";
+import { streakSnapshot } from "./streak";
+import { today } from "./database/db-utils";
+import { shiftDay } from "./zoo-streak";
 
 export interface ReminderSettings {
   studyReminder: boolean;
@@ -27,7 +30,8 @@ export interface ReminderSyncResult {
 }
 
 const SETTINGS_KEY = "mn_notification_settings";
-const STUDY_NOTIFICATION_ID = 9101;
+// 9101 是改成一天一条之前那条 repeats 的学习提醒，老用户机器上还排着，每次都要一起 cancel
+const LEGACY_STUDY_NOTIFICATION_ID = 9101;
 const REVIEW_NOTIFICATION_ID = 9102;
 // ⚠️ 成就通知的 id 是 base + Date.now() % 100,占 9200–9299 这一段,**不许再放宽**:
 // 原来是 % 1000,范围 9200–10199,把测试通知(9301)和备考提醒(9400–9413)整段吃掉了 ——
@@ -35,7 +39,40 @@ const REVIEW_NOTIFICATION_ID = 9102;
 const ACHIEVEMENT_NOTIFICATION_BASE_ID = 9200;
 const ACHIEVEMENT_NOTIFICATION_SLOTS = 100;
 const TEST_STUDY_NOTIFICATION_ID = 9301;
-const REMINDER_IDS = [{ id: STUDY_NOTIFICATION_ID }, { id: REVIEW_NOTIFICATION_ID }];
+
+/**
+ * 学习提醒占 9600 起的一段，一天一个 id（2026-10-14 连胜规格 §6 起）。
+ *
+ * 理由和备考提醒一样：正文要带连续天数，而且「今天火苗已经亮了」那天不该再发 ——
+ * `repeats: true` 那条正文写死、也跳不过某一天，只能一天排一条，每次打开 App、
+ * 以及学习中火苗刚亮的那一刻（StreakSpark）重排。
+ * ponytail: 连着 28 天不打开 App，之后就不再提醒；要不停就得回到 repeats（丢掉天数和跳过今天）。
+ * ⚠️ iOS 最多挂 64 条待发通知：这 28 + 备考 14 + 复习 1 + 周报 1 = 44，再加新的一段先算账。
+ */
+const STUDY_NOTIFICATION_BASE_ID = 9600;
+const STUDY_NOTIFICATION_DAYS = 28;
+const REMINDER_IDS = [
+  { id: LEGACY_STUDY_NOTIFICATION_ID },
+  { id: REVIEW_NOTIFICATION_ID },
+  ...Array.from({ length: STUDY_NOTIFICATION_DAYS }, (_, index) => ({ id: STUDY_NOTIFICATION_BASE_ID + index }))
+];
+
+/** 排程那一刻的连胜；库没就位就当没有连胜（下次打开再重排） */
+const streakForReminder = () => {
+  try {
+    const snap = streakSnapshot();
+    return { day: snap.today, streak: snap.streak, litToday: snap.todayStatus !== "none" };
+  } catch {
+    return { day: today(), streak: 0, litToday: false };
+  }
+};
+
+/** 学习日 rel（0 今天 / 1 明天 / 2 更远）那条学习提醒的正文。只有今天和明天的天数是排程时就确定的 */
+const studyReminderBody = (offset: number, streak: number, litToday: boolean): string => {
+  if (offset === 0 && streak > 0) return `连续 ${streak} 天，今天还没点火。`;
+  if (offset === 1 && litToday && streak > 0) return `连续 ${streak} 天，今天也来点火。`;
+  return "今天也来学一点日语吧，几分钟就够。";
+};
 
 /**
  * 备考提醒占 9400 起的一段,一天一个 id。
@@ -126,15 +163,27 @@ export async function syncReminderNotifications(settings: ReminderSettings, requ
     const notifications = [];
     if (settings.studyReminder) {
       const { hour, minute } = parseTime(settings.studyTime);
-      notifications.push({
-        id: STUDY_NOTIFICATION_ID,
-        title: "收集日",
-        body: "今天也来学一点日语吧，几分钟就够。",
-        schedule: { on: { hour, minute }, repeats: true },
-        sound: settings.soundEnabled ? "" : undefined,
-        threadIdentifier: "daily-study",
-        extra: { target: "word" }
-      });
+      const { day, streak, litToday } = streakForReminder();
+      const now = new Date();
+      for (let offset = 0; offset < STUDY_NOTIFICATION_DAYS; offset += 1) {
+        const at = new Date(now);
+        at.setDate(at.getDate() + offset);
+        at.setHours(hour, minute, 0, 0);
+        if (at.getTime() <= now.getTime()) continue;     // 今天这个点已经过了
+        // 按学习日（凌晨 4 点切）算它是「今天」还是「明天」：0–4 点排的 9:00 已经是下一个学习日
+        const studyDay = today(at);
+        const rel = studyDay === day ? 0 : studyDay === shiftDay(day, 1) ? 1 : 2;
+        if (rel === 0 && litToday) continue;             // 今天火苗已经亮了，不打扰
+        notifications.push({
+          id: STUDY_NOTIFICATION_BASE_ID + offset,
+          title: "收集日",
+          body: studyReminderBody(rel, streak, litToday),
+          schedule: { at },
+          sound: settings.soundEnabled ? "" : undefined,
+          threadIdentifier: "daily-study",
+          extra: { target: "word" }
+        });
+      }
     }
     if (settings.reviewReminder) {
       const { hour, minute } = parseTime(settings.reviewTime);

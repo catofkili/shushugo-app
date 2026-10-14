@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, Check, RotateCcw, X } from "lucide-react";
 import { Sticker } from "../components/CapybaraMascot";
 import { buildQuestions, quizGroups, settleGroup, type DistinctionQuestion, type QuizScope } from "../lib/distinction-quiz";
+import { StreakSpark } from "../components/streak/StreakMoments";
 
 interface DistinctionQuizPageProps {
   scope: QuizScope;
@@ -127,6 +128,7 @@ const DistinctionQuizSession = ({ scope, onBackToConfusion, onRetryGroup }: Dist
 
   return (
     <section className="mx-auto w-full max-w-3xl">
+      <StreakSpark />
       <div className="mb-4 flex items-end justify-between gap-3">
         <div>
           <h1 className="mt-1 text-2xl font-extrabold text-white">{scopeTitle(scope)}</h1>

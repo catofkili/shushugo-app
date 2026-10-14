@@ -46,7 +46,6 @@
   ".yz-repair-days::-webkit-scrollbar",
   ".yz-tabs::-webkit-scrollbar",
   ".zoo-fold summary::-webkit-details-marker",
-  ".zoo-hero-mascot :where(svg)",
   ".zoo-home-v2 .zoo-maint>summary>:first-child",
   ".zoo-maint>summary::-webkit-details-marker",
   ":-moz-focusring",

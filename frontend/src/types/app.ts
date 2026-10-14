@@ -30,6 +30,7 @@ export type Page =
   | "user-agreement"
   | "help"
   | "achievements"
+  | "streak"
   | "about";
 
 export type GrammarMode = "learn" | "immersive" | "quiz";

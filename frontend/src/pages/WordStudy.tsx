@@ -59,6 +59,7 @@ import { useStudyActivity, useStudyBreakTabBar } from "../hooks/useStudyActivity
 import { SpellingCardView } from "../features/spelling/SpellingCardView";
 import { checkCardInput, spellingCard, spellingLookup } from "../lib/spelling/session";
 import { shouldSpellWord } from "../lib/spelling/study";
+import { StreakSpark } from "../components/streak/StreakMoments";
 
 interface WordStudyProps {
   initialMode?: StudyMode;
@@ -1650,6 +1651,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
         transition: dragging ? "transform 80ms linear" : "transform 420ms cubic-bezier(0.2, 0.9, 0.2, 1)"
       }}
     >
+      <StreakSpark />
       <section
         className={`dictionary-card relative flex h-full min-h-0 flex-col rounded-2xl ${showStudyToolbar ? "px-3 pb-2 pt-3 sm:p-8 lg:p-7" : "px-3 pb-2 pt-3 sm:p-5"}${reliefActive ? " daily-relief-card" : ""}${reliefLeaving ? " daily-relief-card-leaving" : ""}${dailyReviewActive ? " daily-review-card" : ""}`}
         style={{

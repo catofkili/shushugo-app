@@ -119,6 +119,22 @@ check / lint / test，应急才用 `SKIP_RELEASE_GATES=1`。
 `css-source-bytes.json`、`require-async-paths.json`、`route-css-split.json`，`src/` 下没有副作用改动）；`scripts/ci-local.sh` 加了 `taro-spike-2` 的 `npm test`（只读 reports，约 3 秒）。
 本次重建后主包 1,888,184 B（上限 1,900,000，余量约 11.8 KB——下一次往主包加东西要先腾地方），`jlpt-bank` 分包 1,015,758 B。
 
+### 2026-10-14 增补：连胜那次主包超了 13 KB，怎么腾出来的
+
+连胜（`docs/STREAK_SPEC.md`）第一次 `build:weapp` 主包 1,913,032 B，超 1,900,000 上限。账是这样算的：
+
+- **主包 JS 几乎不涨**：四个标签页的界面代码在 `lazy/tabs.js`（lazy 分包）。涨的是 CSS —— lazy 块抽出来的 `lazy/tabs.wxss` 在小程序里没人引，
+  `split-route-css.mjs` 把它**整份并进 `app.wxss`**（而且是在按前缀拆分**之后**并的，前缀路由管不到它）。所以主页 / 单词页组件 import 的 CSS 全额算主包。
+  另外 `lib/streak.ts` 被 `yuzu.ts` 用，进了 `common.js`（约 8 KB）。
+- 腾法：① 详情页样式拆成单独的 `StreakPageView.css`（只有 content-pages 里的页面 import，落在分包）；
+  ② 删掉 `app.css` / `styles.css` 里全仓库零引用的旧样式（`zoo-hero*`、`zoo-rates`、`zoo-mini`、`zoo-bento`、`zoo-today-grid`、`zoo-tools`、`zoo-answer`、
+  `zoo-chips`、`zoo-study-head`、`zoo-card-face`、`glass-jelly*`、`card-glass`、`btn-glass`、`btn-primary`、`btn-secondary`、`stat-card`、`stat-value`、`progress-bar`、`glass-frosted`，约 12 KB 源码）。
+  判据：类名在 `frontend/src/**/*.ts(x)`、`taro-spike-2/src`、`index.html` 里一次都不出现，也没有 `前缀-${` / `"前缀-" +` 这种拼接。
+  找的时候注意误报：`h5-*` 是 Taro 生成的标签类、Tailwind 的转义类名在源码里写法不同、`quick-study-rating-*` / `ds-say-*` / `rate-*` / `vocab-fb-*` 是拼出来的。
+- 结果主包 1,897,803 B，**余量只剩约 2.2 KB**。下一次往主页 / 单词页加带 CSS 的东西，先在这里找地方。
+- 同时新增四条页面组件重复许可（`verify-package-gates.mjs`：`streak/` 下三个组件 + `streak.css`），理由写在清单里。
+- `build:weapp` 第一步 `verify-shim-exports` 拦过一次：`zoo-sounds.ts` 加了 `playStreakIgnite` / `playStreakGold`，替身 `wechat-miniprogram/scripts/shared/shims/zoo-sounds.js` 要一起加。
+
 ## ⚠️ 后端已从 Cloudflare 搬到阿里云（2026-10-11）
 
 **现状**：Worker 本体（`cloudflare-sync/src/index.ts`，一行没改）跑在阿里云武汉轻量服务器 `8.148.68.155`，

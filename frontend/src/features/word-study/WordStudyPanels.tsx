@@ -39,6 +39,8 @@ import { quizGroups } from "../../lib/distinction-quiz";
 import { STUDY_FOCUS_REWARD_MIN_MS, type StudyFocusSnapshot } from "../../lib/study-focus";
 import { YUZU, yuzuToday } from "../../lib/yuzu";
 import { reportTeamActivity } from "../../lib/team-activity";
+import { readDayStatuses } from "../../lib/streak";
+import { StreakCelebrationGate } from "../../components/streak/StreakMoments";
 
 /** 自他标注。直接挂在词自己身上(不是只在配对面板里提),自/他 那个字放大加色,
  *  一眼扫得到 —— 中文「开」一个字通吃 開く/開ける,这一栏是最容易翻车的地方。 */
@@ -271,6 +273,7 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
   const studyDate = stats?.studyDate ?? currentStudyDate();
   const calendar = monthDays(studyDate);
   const checkins = new Set(stats?.checkins ?? []);
+  const dayStatuses = readDayStatuses();
   const dailyStats = new Map((stats?.dailyStudyStats ?? []).map((item) => [item.date, item]));
   const totalSeconds = (stats?.wordStudySecondsToday ?? 0) + localSeconds;
   const todayStats = dailyStats.get(studyDate);
@@ -420,7 +423,6 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
       studyDate,
       todayWordCount,
       totalSeconds,
-      checkins,
       encoreWords: encore?.todayEncoreWords ?? 0,
       milestoneReached
     });
@@ -436,6 +438,7 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
   return (
     <>
       {celebrate && <ZooConfetti />}
+      <StreakCelebrationGate />
       <ScrollArea className="fin-scroll min-h-0 flex-1">
         <div className="fin-page mx-auto flex min-h-full w-full max-w-2xl flex-col">
           {/* 标题只说一次：原来右上还挂一枚「全部完成」，和「今日单词完成」是同一句话。
@@ -507,7 +510,8 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
               ))}
               {calendar.cells.map((cell, index) => {
                 if (!cell) return <span key={`empty-${index}`} />;
-                const checked = checkins.has(cell.date);
+                const status = dayStatuses.get(cell.date) ?? "none";
+                const checked = status !== "none";
                 const isToday = cell.date === studyDate;
                 const dayStats = dailyStats.get(cell.date);
                 const daySeconds = (dayStats?.seconds ?? 0) + (isToday ? localSeconds : 0);
@@ -523,7 +527,7 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
                     tabIndex={0}
                     aria-label={`${cell.date}，学习时间 ${formatDuration(daySeconds)}，学习 ${total} 项${breakdown ? `（${breakdown}）` : ""}`}
                   >
-                    <span className={`fin-day${checked ? " is-checked" : hasActivity ? " is-active" : ""}${isToday ? " is-today" : ""}`}>
+                    <span data-status={status} className={`fin-day${checked ? " is-checked" : hasActivity ? " is-active" : ""}${isToday ? " is-today" : ""}`}>
                       {cell.day}
                     </span>
                     <span className="study-calendar-tooltip pointer-events-none absolute left-1/2 top-full z-20 mt-2 hidden w-44 -translate-x-1/2 rounded-2xl p-3 text-left group-hover:block group-focus:block">

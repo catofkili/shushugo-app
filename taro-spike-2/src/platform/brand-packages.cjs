@@ -23,7 +23,8 @@ module.exports = {
   ],
   "mood-shocked": [
     "study",
-    "account"
+    "account",
+    contentPackage
   ],
   "mood-heart": [
     "account",
