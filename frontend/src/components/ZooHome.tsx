@@ -39,6 +39,7 @@ import { StudyFocusIntro } from "./StudyFocusIntro";
 import { useZoomOpen } from "./ZoomOpen";
 import { pickCapyTools } from "./capy-tool-selection";
 import { isStudyFocusArmed, setStudyFocusArmed } from "../lib/study-focus";
+import { scrollPageToTop } from "../lib/touch-adapter";
 import "./ZooHome.css";
 
 /**
@@ -258,7 +259,8 @@ export function ZooHome({
 
   const weeklyEntryEnabled = Capacitor.getPlatform() !== "wechat" && goals.weeklyReportEnabled;
   const toolItems: { title: string; icon: StickerName; action: () => void }[] = [
-    { title: "学习模式", icon: "tool-modes", action: () => onNavigate("study-modes") },
+    // 2026-10-14 v3 §1.1b：「学习模式」页和大卡上的「学习方式」下拉是同一份清单，页删了，这一格改成回到顶上展开下拉
+    { title: "学习模式", icon: "tool-modes", action: () => { scrollPageToTop(); setModeSheetOpen(true); } },
     { title: "基础语法", icon: "tool-grammar", action: () => onNavigate("grammar-foundation") },
     { title: "选词", icon: "tool-wordlist", action: () => onOpenWordList() },
     { title: "疑难辨析", icon: "tool-confusion", action: () => onNavigate("confusion") },

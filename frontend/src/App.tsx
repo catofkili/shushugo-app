@@ -358,7 +358,7 @@ export default function App() {
       }
       patch = { ...patch, selectedStudyMode: currentMode, launchStudyMode: currentMode, wordStudyRevision: current.wordStudyRevision + 1 };
     }
-    if (newPage === "home" || newPage === "study-modes") {
+    if (newPage === "home") {
       const currentMode = getStudyMode();
       patch = { ...patch, selectedStudyMode: currentMode, launchStudyMode: currentMode };
     }

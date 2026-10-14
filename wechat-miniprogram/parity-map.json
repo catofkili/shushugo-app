@@ -366,13 +366,6 @@
       "reason": "路线 A：Taro 直接编译同一份学习偏好与模式设置页面，拼写共用 studyPreferences 设备偏好。"
     },
     {
-      "web": "frontend/src/pages/StudyModesPage.tsx",
-      "mini": [
-        "frontend/src/pages/StudyModesPage.tsx"
-      ],
-      "reason": "路线 A：Taro 直接编译同一份学习偏好与模式设置页面，拼写共用 studyPreferences 设备偏好。"
-    },
-    {
       "web": "frontend/src/pages/TeamPage.tsx",
       "mini": [
         "wechat-miniprogram/src/pages/team/index.js",

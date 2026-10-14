@@ -183,7 +183,7 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
       patch.launchStudyMode = mode;
       patch.wordStudyRevision = current.wordStudyRevision + 1;
     }
-    if (target === 'home' || target === 'study-modes') {
+    if (target === 'home') {
       const mode = getStudyMode();
       patch.selectedStudyMode = mode;
       patch.launchStudyMode = mode;

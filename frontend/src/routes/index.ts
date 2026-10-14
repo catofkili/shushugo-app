@@ -22,7 +22,6 @@ import { ProfileRoute } from "./profile";
 import { ProRoute } from "./pro";
 import { QuickStudyRoute } from "./quick-study";
 import { SettingsRoute } from "./settings";
-import { StudyModesRoute } from "./study-modes";
 import { TeamRoute } from "./team";
 import { DuelRoute } from "./duel";
 import { UserAgreementRoute } from "./user-agreement";
@@ -54,7 +53,6 @@ export const ROUTES: Record<Page, ComponentType> = {
   confusion: ConfusionRoute,
   "distinction-quiz": DistinctionQuizRoute,
   "jlpt-plan": JlptPlanRoute,
-  "study-modes": StudyModesRoute,
   account: AccountRoute,
   "personal-info": PersonalInfoRoute,
   notifications: NotificationsRoute,

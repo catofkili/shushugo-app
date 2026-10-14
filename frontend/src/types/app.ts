@@ -11,7 +11,6 @@ export type Page =
   | "grammar"
   | "grammar-foundation"
   | "detail"
-  | "study-modes"
   | "favorites"
   | "yuzu-shop"
   | "confusion"
