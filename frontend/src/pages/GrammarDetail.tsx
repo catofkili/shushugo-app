@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { ArrowLeft, StickyNote, X } from "lucide-react";
 import { ExampleSentence } from "../components/ExampleSentence";
 import { GrammarTermHint } from "../components/GrammarTermHint";
@@ -41,12 +41,12 @@ export const GrammarDetail = ({
     setNoteDraft(getGrammarNote(point.id));
   }, [point.id]);
   return (
-    <div className="space-y-6">
-      <button onClick={onBack} className="page-backbar focus-ring inline-flex items-center gap-2 rounded-2xl px-2 py-1 text-sm font-semibold text-[#f9faf7] hover:text-[#343838] dark:text-zinc-400 dark:hover:text-zinc-50">
+    <div className="space-y-6 ds-stagger">
+      <button onClick={onBack} style={{ "--i": 0 } as CSSProperties} className="page-backbar focus-ring inline-flex items-center gap-2 rounded-2xl px-2 py-1 text-sm font-semibold text-[#f9faf7] hover:text-[#343838] dark:text-zinc-400 dark:hover:text-zinc-50">
         <ArrowLeft size={16} />
         返回语法辞典
       </button>
-      <section data-grammar-point-id={point.id} className="dictionary-card rounded-2xl p-6">
+      <section data-grammar-point-id={point.id} style={{ "--i": 1 } as CSSProperties} className="dictionary-card rounded-2xl p-6">
         <div className="flex flex-col justify-between gap-5 md:flex-row">
           <div>
             <p className="text-xs font-bold text-[#81D8CF]">{grammarSequence(point).label} · {MASTERY_LABEL[mastery]}</p>
@@ -121,7 +121,7 @@ export const GrammarDetail = ({
         </div>
       </section>
 
-      <section>
+      <section style={{ "--i": 2 } as CSSProperties}>
         <h2 className="jp mb-4 text-lg font-semibold text-[#343838] dark:text-zinc-50">例句</h2>
         <div className="grid gap-4 lg:grid-cols-2">
           {point.examples.map((example, exampleIndex) => (

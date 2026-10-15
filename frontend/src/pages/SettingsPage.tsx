@@ -1,5 +1,5 @@
 import { AlertTriangle, Check, ChevronRight, Download, Moon, RotateCcw, Smartphone, Sun, Upload, Volume2 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { Capacitor } from "@capacitor/core";
 import { DailyPlanPanel } from "../components/DailyPlanPanel";
 import { SelectField } from "../components/SelectField";
@@ -52,6 +52,7 @@ const themeOptions: { value: ThemePreference; label: string; icon: typeof Moon }
 ];
 
 const CLEAR_CONFIRM_TEXT = "清除所有数据";
+const staggerStyle = (index: number) => ({ "--i": index < 8 ? index : 0 }) as CSSProperties;
 
 export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPageProps) {
   const isWechatMini = Capacitor.getPlatform() === "wechat";
@@ -304,9 +305,9 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
   const totalStorage = storageInfo && storageInfo.database + storageInfo.local;
 
   return (
-    <div className="mx-auto max-w-3xl pb-4">
+    <div className="mx-auto max-w-3xl pb-4 ds-stagger">
       {import.meta.env.DEV && (
-        <div className="mb-4 flex items-center justify-between gap-3 rounded-2xl border border-yellow-500/30 bg-yellow-500/10 p-4">
+        <div className="mb-4 flex items-center justify-between gap-3 rounded-2xl border border-yellow-500/30 bg-yellow-500/10 p-4" style={staggerStyle(0)}>
           <div>
             <p className="text-sm font-bold text-white">开发环境常开 Pro</p>
             <p className="mt-0.5 text-xs text-white/60">仅本地生效；云端免费状态不会关闭此开关。</p>
@@ -324,7 +325,7 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
         </div>
       )}
 
-      <div className="mb-4">
+      <div className="mb-4" style={staggerStyle(1)}>
         <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.18em] text-white/45">外观</p>
         <div className="overflow-hidden rounded-2xl border border-white/15 bg-[#464949]">
           <div className="p-4">
@@ -352,7 +353,7 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
         </div>
       </div>
 
-      <div className="mb-4">
+      <div className="mb-4" style={staggerStyle(2)}>
         <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.18em] text-white/45">反馈与诊断</p>
         <div className="rounded-2xl border border-white/15 bg-[#464949] p-4">
           <label className="flex cursor-pointer items-center justify-between gap-4">
@@ -378,7 +379,7 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
         </div>
       </div>
 
-      <div className="mb-4">
+      <div className="mb-4" style={staggerStyle(3)}>
         <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.18em] text-white/45">每日学习量</p>
         {/* 圆环 / 数字表单 / 备考一键都在 DailyPlanPanel 里，和主页是同一个组件、同一份状态。
             别再往这一节插开关：它只装「今天给我多少题」这一类的量。 */}
@@ -390,7 +391,7 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
         </div>
       </div>
 
-      <div className="mb-4">
+      <div className="mb-4" style={staggerStyle(4)}>
         <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.18em] text-white/45">学习偏好</p>
         <div className="overflow-hidden rounded-2xl border border-white/15 bg-[#464949]">
           <div className="flex items-center gap-3 border-b border-white/10 p-4">
@@ -558,7 +559,7 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
         </div>
       </div>
 
-      <div className="mb-4">
+      <div className="mb-4" style={staggerStyle(5)}>
         <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.18em] text-white/45">数据管理</p>
         <div className="overflow-hidden rounded-2xl border border-white/15 bg-[#464949]">
           <div className="border-b border-white/10 p-4">
@@ -773,12 +774,12 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
       </div>
 
       {message && (
-        <div className="mb-4 rounded-2xl border border-[#81D8CF]/25 bg-[#81D8CF]/18 p-3 text-sm font-bold text-white">
+        <div className="mb-4 rounded-2xl border border-[#81D8CF]/25 bg-[#81D8CF]/18 p-3 text-sm font-bold text-white" style={staggerStyle(6)}>
           {message}
         </div>
       )}
 
-      <div className="rounded-2xl border border-white/15 bg-[#464949] p-4">
+      <div className="rounded-2xl border border-white/15 bg-[#464949] p-4" style={staggerStyle(7)}>
         <div className="flex items-center justify-between gap-3">
           <p className="text-sm font-bold text-white">存储空间</p>
           <button onClick={refreshStorageInfo} className="focus-ring rounded-xl border border-white/15 px-2 py-1 text-xs font-bold text-white/60">

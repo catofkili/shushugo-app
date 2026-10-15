@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { ArrowLeft, Heart, Check } from "lucide-react";
 import { brandAssetUrl } from "../components/CapybaraMascot";
 import { CrossPlatformImage } from "../components/CrossPlatformImage";
@@ -8,8 +9,8 @@ interface AboutPageProps {
 
 export function AboutPage({ onBack }: AboutPageProps) {
   return (
-    <div className="mx-auto max-w-3xl pb-4">
-      <div className="page-backbar mb-4 flex items-center justify-between gap-3 rounded-2xl border border-white/15 bg-[#474a4a] p-2">
+    <div className="mx-auto max-w-3xl pb-4 ds-stagger">
+      <div className="page-backbar mb-4 flex items-center justify-between gap-3 rounded-2xl border border-white/15 bg-[#474a4a] p-2" style={{ "--i": 0 } as CSSProperties}>
         <button
           onClick={onBack}
           className="focus-ring inline-flex items-center gap-2 rounded-2xl px-2 py-2 text-sm font-bold text-white/78 hover:bg-white/8 hover:text-white"
@@ -21,7 +22,7 @@ export function AboutPage({ onBack }: AboutPageProps) {
       </div>
 
       {/* 应用信息 */}
-      <div className="mb-4 rounded-2xl border border-white/15 bg-[#464949] p-6 text-center">
+      <div className="mb-4 rounded-2xl border border-white/15 bg-[#464949] p-6 text-center" style={{ "--i": 1 } as CSSProperties}>
         <CrossPlatformImage src={brandAssetUrl("shushugo-icon.png")} alt="" className="brand-icon mx-auto h-24 w-24 rounded-3xl shadow-lg" weappWidth={96} weappHeight={96} />
         <h1 className="jp-serif mt-4 text-2xl font-semibold text-white">收集日</h1>
         <p className="mt-2 text-sm text-white/60">收集每一个更好的自己</p>
@@ -29,7 +30,7 @@ export function AboutPage({ onBack }: AboutPageProps) {
       </div>
 
       {/* 应用介绍 */}
-      <div className="mb-4 rounded-2xl border border-white/15 bg-[#464949] p-4">
+      <div className="mb-4 rounded-2xl border border-white/15 bg-[#464949] p-4" style={{ "--i": 2 } as CSSProperties}>
         <h2 className="mb-3 text-sm font-bold text-white">应用介绍</h2>
         <p className="text-sm leading-relaxed text-white/70">
           收集日是一款日语学习应用，内置 N5–N1 的 JLPT 词条、固定搭配与固定表达，以及语法点。
@@ -38,7 +39,7 @@ export function AboutPage({ onBack }: AboutPageProps) {
       </div>
 
       {/* 功能特性 */}
-      <div className="mb-4">
+      <div className="mb-4" style={{ "--i": 3 } as CSSProperties}>
         <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.18em] text-white/45">功能特性</p>
         <div className="space-y-2 rounded-2xl border border-white/15 bg-[#464949] p-4">
           <div className="flex items-start gap-2">
@@ -65,7 +66,7 @@ export function AboutPage({ onBack }: AboutPageProps) {
       </div>
 
       {/* 数据来源 */}
-      <div className="mb-4">
+      <div className="mb-4" style={{ "--i": 4 } as CSSProperties}>
         <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.18em] text-white/45">数据来源</p>
         <div className="rounded-2xl border border-white/15 bg-[#464949] p-4">
           <p className="text-sm leading-relaxed text-white/70">
@@ -77,7 +78,7 @@ export function AboutPage({ onBack }: AboutPageProps) {
         </div>
       </div>
 
-      <div className="mb-4">
+      <div className="mb-4" style={{ "--i": 5 } as CSSProperties}>
         <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.18em] text-white/45">音频鸣谢</p>
         <div className="rounded-2xl border border-white/15 bg-[#464949] p-4">
           <p className="text-sm leading-relaxed text-white/70">
@@ -87,7 +88,7 @@ export function AboutPage({ onBack }: AboutPageProps) {
       </div>
 
       {/* 技术栈 */}
-      <div className="mb-4">
+      <div className="mb-4" style={{ "--i": 6 } as CSSProperties}>
         <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.18em] text-white/45">技术栈</p>
         <div className="rounded-2xl border border-white/15 bg-[#464949] p-4">
           <div className="grid grid-cols-2 gap-3 text-xs">
@@ -109,7 +110,7 @@ export function AboutPage({ onBack }: AboutPageProps) {
       </div>
 
       {/* 致谢 */}
-      <div className="rounded-2xl border border-white/15 bg-[#464949] p-4 text-center">
+      <div className="rounded-2xl border border-white/15 bg-[#464949] p-4 text-center" style={{ "--i": 7 } as CSSProperties}>
         <Heart size={24} className="mx-auto text-[#81D8CF]" />
         <p className="mt-3 text-sm text-white/70">
           感谢所有为日语学习资源贡献的开发者和社区

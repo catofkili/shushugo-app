@@ -148,7 +148,7 @@ export function JlptPlanPage({ onBack, onStartWords, onStartGrammar }: Props) {
 
   return (
     <div className="mx-auto max-w-3xl pb-6">
-      <div className="page-backbar mb-4 flex items-center justify-between gap-3 rounded-2xl jp-card p-2">
+      <div className="page-backbar mb-4 flex items-center justify-between gap-3 rounded-2xl jp-card p-2 ds-enter" style={{ animationDelay: "0ms" }}>
         <button
           onClick={onBack}
           className="focus-ring inline-flex items-center gap-2 rounded-2xl px-2 py-2 text-sm font-bold jp-ink"
@@ -164,7 +164,7 @@ export function JlptPlanPage({ onBack, onStartWords, onStartGrammar }: Props) {
       {status && (
         <>
           {/* ① 今天先做什么 —— 首屏第一件事（首次设定保存后直接落到这里） */}
-          <div className="ds-card mb-3 p-5">
+          <div className="ds-card mb-3 p-5 ds-enter" style={{ animationDelay: "60ms" }}>
             <p className="ds-kicker">下一步 · 今天先做</p>
             <p className="mt-1 text-xl font-black jp-ink">{kanaPending ? "从五十音开始" : noDate ? "先选择考试日期" : shortfallText(available!)}</p>
             {kanaPending ? <p className="mt-2 text-sm ds-ink2">从下方第一个假名开始选读音，学完再进入新词。</p> : !noDate && !available!.clear && <div className="mt-4 flex flex-wrap gap-2">
@@ -175,7 +175,7 @@ export function JlptPlanPage({ onBack, onStartWords, onStartGrammar }: Props) {
           {kanaPending && <KanaPrimer />}
 
           {/* ② 倒计时：大数字 + 阶段，右边一只按「来不来得及」换表情的吉祥物 */}
-          <div className="ds-card relative mb-3 overflow-hidden p-5">
+          <div className="ds-card relative mb-3 overflow-hidden p-5 ds-enter" style={{ animationDelay: "120ms" }}>
             <div className="flex items-center gap-3">
               <div className="min-w-0 flex-1">
                 <span className="ds-pill ds-pill-primary">{status.examKind === "jlpt" ? status.target : examLabel(status.examKind)} · {noDate ? "日期待选" : formatExamDateHuman(status.examDate)}</span>
@@ -199,7 +199,7 @@ export function JlptPlanPage({ onBack, onStartWords, onStartGrammar }: Props) {
               />
             </div>
           </div>
-          <button onClick={() => navigate("jlpt-practice")} className="ds-card focus-ring mb-3 flex w-full items-center gap-3 p-4 text-left">
+          <button onClick={() => navigate("jlpt-practice")} style={{ animationDelay: "180ms" }} className="ds-card focus-ring mb-3 flex w-full items-center gap-3 p-4 text-left ds-enter">
             <span className="min-w-0 flex-1">
               <span className="block text-base font-black jp-ink">JLPT 刷题</span>
               <span className="mt-0.5 block text-sm ds-ink2">按题型练 · 模拟卷</span>
@@ -208,7 +208,7 @@ export function JlptPlanPage({ onBack, onStartWords, onStartGrammar }: Props) {
           </button>
 
           {/* ③ 吉祥物说：起点估算、来不及、额度不够、没开会员 —— 以前是四块橙描边的干巴巴色块 */}
-          <div className="mb-2 space-y-3">
+          <div className="mb-2 space-y-3 ds-enter" style={{ animationDelay: "240ms" }}>
             {estimate && (
               <MascotSay sticker="mood-ask" className="ds-say-onbg">
                 按你选的起点，还剩约 {estimate.intakeDays} 天可以进新，
@@ -243,8 +243,8 @@ export function JlptPlanPage({ onBack, onStartWords, onStartGrammar }: Props) {
 
           {/* 每日学习量：圆环 / 数字表单 / 备考一键（DailyPlanPanel，和设置页同一个组件、同一份状态）。
               「下次考 N几」就是下面「目标级别」那一个，面板不再有第二个选择框。 */}
-          <p className="ds-section">每日学习量</p>
-          <div className="mb-4"><DailyPlanPanel /></div>
+          <p className="ds-section ds-enter" style={{ animationDelay: "300ms" }}>每日学习量</p>
+          <div className="mb-4 ds-enter" style={{ animationDelay: "360ms" }}><DailyPlanPanel /></div>
           <LoadCurve />
 
           <p className="ds-section">今天最少要做</p>

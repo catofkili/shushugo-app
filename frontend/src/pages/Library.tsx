@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useState, type CSSProperties } from "react";
 import { CheckCircle2, ChevronDown, Layers, PenLine, Search, Star, StickyNote, X, XCircle } from "lucide-react";
 import { FloatingDoodlePen } from "../components/FloatingDoodlePen";
 import { GrammarTermHint } from "../components/GrammarTermHint";
@@ -360,10 +360,10 @@ export const Library = ({
     <>
       <FloatingDoodlePen resetKey={selectedLevel} surfaceSelector='[data-doodle-surface="grammar-page"]' />
       <div data-doodle-surface="grammar-page" className="relative grid gap-5 twopane:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
-        <section className="min-w-0 space-y-4">
+        <section className="min-w-0 space-y-4 ds-stagger">
         {/* 工具条：搜索是一条 inset 实底，下面一排胶囊。以前是「浅绿渐变 + 绿描边 + 内高光」的果冻按钮，
             和卡片、和彼此都分不开（用户截图原话「丑得吓人」）。条数挪进搜索框尾巴上。 */}
-        <div className="ds-card p-3">
+        <div className="ds-card p-3" style={{ "--i": 0 } as CSSProperties}>
           <label className="focus-ring control-cyan control-cyan-search min-w-0 rounded-full px-4 py-3">
             <Search className="control-cyan-icon shrink-0" size={17} />
             <input
@@ -410,7 +410,7 @@ export const Library = ({
           </div>
         </div>
 
-        <div className="grid gap-3">
+        <div className="grid gap-3" style={{ "--i": 1 } as CSSProperties}>
           {visiblePoints.map((point) => {
             const mastery = getMastery(point.id);
             const active = point.id === selected.id;

@@ -78,7 +78,7 @@ export const KanjiReadingUsagePage = () => {
 
   return (
     <section className="cf-page">
-      <header className="cf-head">
+      <header className="cf-head ds-enter" style={{ animationDelay: "0ms" }}>
         <div>
           <h1 className="cf-title">一字多音</h1>
         </div>
@@ -104,7 +104,7 @@ export const KanjiReadingUsagePage = () => {
         </MascotSay>
       </Disclosure>
 
-      <div className="kr-bar">
+      <div className="kr-bar ds-enter" style={{ animationDelay: "60ms" }}>
         <input
           className="kr-search"
           value={query}
@@ -131,9 +131,9 @@ export const KanjiReadingUsagePage = () => {
       </div>
 
       {shown.length === 0 ? (
-        <p className="cf-loading"><Sticker name="empty-search" size={96} />没有找到相关的字，换个关键词试试吧</p>
+        <p className="cf-loading ds-enter" style={{ animationDelay: "120ms" }}><Sticker name="empty-search" size={96} />没有找到相关的字，换个关键词试试吧</p>
       ) : (
-        <div className="kr-grid">
+        <div className="kr-grid ds-enter" style={{ animationDelay: "120ms" }}>
           {visibleEntries.map((entry) => (
             <button key={entry.char} className="kr-card" onClick={() => setOpenChar(entry.char)}>
               <b className="jp-serif kr-card-char">{entry.char}</b>

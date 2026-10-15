@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { ExternalLink, Search } from "lucide-react";
 import { Sticker } from "../components/CapybaraMascot";
 import { Disclosure } from "../components/Disclosure";
@@ -69,8 +69,8 @@ export function GrammarFoundationPage({ onOpenGrammar, focusRuleId }: GrammarFou
   const visibleRules = useProgressiveList(shownRules, shownRules, 8);
 
   return (
-    <div className="space-y-5">
-      <section className="dictionary-card space-y-3 rounded-3xl p-4 sm:p-5">
+    <div className="space-y-5 ds-stagger">
+      <section className="dictionary-card space-y-3 rounded-3xl p-4 sm:p-5" style={{ "--i": 0 } as CSSProperties}>
         <div className="flex items-end justify-between gap-3">
           <div>
             <h1 className="jp-serif text-2xl font-semibold text-[#343838] dark:text-[#f4efe4]">基础语法框架</h1>
@@ -132,7 +132,7 @@ export function GrammarFoundationPage({ onOpenGrammar, focusRuleId }: GrammarFou
 
       {/* 小红书式瀑布流：CSS columns 一行搞定，卡片各自按内容长高，不再被 grid 拉成一样高留一大片空。
           代价是顺序按列走（先填满左列再右列）——浏览用的清单，无所谓。 */}
-      <div className="columns-2 gap-3 lg:columns-3">
+      <div className="columns-2 gap-3 lg:columns-3" style={{ "--i": 1 } as CSSProperties}>
         {visibleRules.map((rule) => {
           const related = rule.relatedGrammarIds
             .map((id) => points.get(id))
@@ -211,7 +211,7 @@ export function GrammarFoundationPage({ onOpenGrammar, focusRuleId }: GrammarFou
       </div>
 
       {!shownRules.length && (
-        <div className="dictionary-card rounded-3xl p-8 text-center text-sm text-[#f9faf7] dark:text-zinc-300">
+        <div className="dictionary-card rounded-3xl p-8 text-center text-sm text-[#f9faf7] dark:text-zinc-300" style={{ "--i": 1 } as CSSProperties}>
           <Sticker name="empty-search" size={96} className="mx-auto mb-3" />
           {level !== "All" && !query && section === "all"
             ? `${level} 没有新增底层规则，看“全部等级”。`
@@ -219,7 +219,7 @@ export function GrammarFoundationPage({ onOpenGrammar, focusRuleId }: GrammarFou
         </div>
       )}
 
-      <footer className="dictionary-card rounded-3xl p-5 text-sm leading-7 text-[#f9faf7] dark:text-zinc-300">
+      <footer className="dictionary-card rounded-3xl p-5 text-sm leading-7 text-[#f9faf7] dark:text-zinc-300" style={{ "--i": 2 } as CSSProperties}>
         <p className="flex flex-wrap items-center gap-x-3 gap-y-1">分类参考
           <a className="inline-flex items-center gap-1 text-[#81D8CF] underline" href="https://www.jpf.go.jp/j/kansai/clip/ca/grammar_ppt.pdf" target="_blank" rel="noreferrer">日本国际交流基金 · 语法课程结构 <ExternalLink size={13} /></a>
         </p>

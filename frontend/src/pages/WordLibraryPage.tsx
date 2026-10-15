@@ -388,7 +388,7 @@ export function WordLibraryPage({ initialLevel = "all", onStudyPicked }: WordLib
 
   return (
     <section className="wl-page" ref={pageRef}>
-      <header className="wl-head">
+      <header className="wl-head ds-enter" style={{ animationDelay: "0ms" }}>
         <div className="flex items-center gap-2">
           <Sticker name="scene-book" size={52} className="-my-2 shrink-0" />
           <h1 className="wl-title">
@@ -400,7 +400,7 @@ export function WordLibraryPage({ initialLevel = "all", onStudyPicked }: WordLib
         </p>
       </header>
 
-      <label className="wl-search">
+      <label className="wl-search ds-enter" style={{ animationDelay: "60ms" }}>
         <Search size={15} />
         <input
           value={searchInput}
@@ -415,7 +415,7 @@ export function WordLibraryPage({ initialLevel = "all", onStudyPicked }: WordLib
         )}
       </label>
 
-      <div className="wl-chips">
+      <div className="wl-chips ds-enter" style={{ animationDelay: "120ms" }}>
         {LEVELS.map((level) => (
           <button
             key={level.id}
@@ -428,10 +428,10 @@ export function WordLibraryPage({ initialLevel = "all", onStudyPicked }: WordLib
       </div>
 
       {/* 分布带：当前筛选下各记忆档的比例，点色块=只看这一档 */}
-      <p className="wl-dist-cap">
+      <p className="wl-dist-cap ds-enter" style={{ animationDelay: "180ms" }}>
         已学 <b>{studiedTotal}</b> 词的记忆分布
       </p>
-      <div className="wl-dist" role="group" aria-label="记忆程度分布">
+      <div className="wl-dist ds-enter" role="group" aria-label="记忆程度分布" style={{ animationDelay: "240ms" }}>
         {studiedLegend.map((item) => (
           <button
             key={item.id}
@@ -444,7 +444,7 @@ export function WordLibraryPage({ initialLevel = "all", onStudyPicked }: WordLib
           />
         ))}
       </div>
-      <div className="wl-legend">
+      <div className="wl-legend ds-enter" style={{ animationDelay: "300ms" }}>
         {bandLegend.map((item) => (
           <button
             key={item.id}
@@ -474,7 +474,7 @@ export function WordLibraryPage({ initialLevel = "all", onStudyPicked }: WordLib
         </button>
       </div>
 
-      <div className="wl-tools">
+      <div className="wl-tools ds-enter" style={{ animationDelay: "360ms" }}>
         <button
           className="wl-select"
           onClick={() => (picking ? exitPicking() : selection.restore(true, []))}
@@ -525,7 +525,7 @@ export function WordLibraryPage({ initialLevel = "all", onStudyPicked }: WordLib
         </div>
       )}
 
-      <ul className="wl-list">
+      <ul className={`wl-list${rows.length ? " ds-enter" : ""}`} style={rows.length ? { animationDelay: "420ms" } : undefined}>
         {rows.map((row) => {
           const checked = selected.has(row.id);
           const forms = wordForms(row);
@@ -591,7 +591,7 @@ export function WordLibraryPage({ initialLevel = "all", onStudyPicked }: WordLib
         })}
       </ul>
 
-      {rows.length === 0 && <p className="wl-empty">这个筛选下没有词</p>}
+      {rows.length === 0 && <p className="wl-empty ds-enter" style={{ animationDelay: "420ms" }}>这个筛选下没有词</p>}
 
       {/* 「正在加载…」本身是个按钮：看着是状态，不是分页器，但万一某个 WebView 里
           滚动事件静默失效，点一下还能把列表推下去，不至于卡死在这一行。 */}

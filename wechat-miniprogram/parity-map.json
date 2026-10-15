@@ -139,8 +139,10 @@
       "mini": [
         "wechat-miniprogram/src/features/about/index.js",
         "wechat-miniprogram/src/features/about/index.wxml",
-        "wechat-miniprogram/src/features/about/index.wxss"
-      ]
+        "wechat-miniprogram/src/features/about/index.wxss",
+        "frontend/src/pages/AboutPage.tsx"
+      ],
+      "reason": "Taro 的 about 路由直接编译这份 TSX；原生 about 页面已停止维护。"
     },
     {
       "web": "frontend/src/pages/AccountSecurity.tsx",
@@ -155,16 +157,20 @@
       "mini": [
         "wechat-miniprogram/src/pages/achievements/index.js",
         "wechat-miniprogram/src/pages/achievements/index.wxml",
-        "wechat-miniprogram/src/pages/achievements/index.wxss"
-      ]
+        "wechat-miniprogram/src/pages/achievements/index.wxss",
+        "frontend/src/pages/AchievementsPage.tsx"
+      ],
+      "reason": "Taro 的 achievements 路由直接编译这份 TSX；原生 achievements 页面已停止维护。"
     },
     {
       "web": "frontend/src/pages/ConfusionPage.tsx",
       "mini": [
         "wechat-miniprogram/src/pages/confusion/index.js",
         "wechat-miniprogram/src/pages/confusion/index.wxml",
-        "wechat-miniprogram/src/pages/confusion/index.wxss"
-      ]
+        "wechat-miniprogram/src/pages/confusion/index.wxss",
+        "frontend/src/pages/ConfusionPage.tsx"
+      ],
+      "reason": "Taro 的 confusion 路由直接编译这份 TSX；原生 confusion 页面已停止维护。"
     },
     {
       "web": "frontend/src/components/DailyPlanPanel.tsx",
@@ -225,24 +231,30 @@
       "mini": [
         "wechat-miniprogram/src/features/favorites/index.js",
         "wechat-miniprogram/src/features/favorites/index.wxml",
-        "wechat-miniprogram/src/features/favorites/index.wxss"
-      ]
+        "wechat-miniprogram/src/features/favorites/index.wxss",
+        "frontend/src/pages/FavoritesPage.tsx"
+      ],
+      "reason": "Taro 的 favorites 路由直接编译这份 TSX；原生 favorites 页面已停止维护。"
     },
     {
       "web": "frontend/src/pages/GrammarDetail.tsx",
       "mini": [
         "wechat-miniprogram/src/pages/grammar/index.js",
         "wechat-miniprogram/src/pages/grammar/index.wxml",
-        "wechat-miniprogram/src/pages/grammar/index.wxss"
-      ]
+        "wechat-miniprogram/src/pages/grammar/index.wxss",
+        "frontend/src/pages/GrammarDetail.tsx"
+      ],
+      "reason": "Taro 的 detail 路由直接编译这份 TSX；原生 grammar 页面已停止维护。"
     },
     {
       "web": "frontend/src/pages/GrammarFoundationPage.tsx",
       "mini": [
         "wechat-miniprogram/src/features/grammar-foundation/index.js",
         "wechat-miniprogram/src/features/grammar-foundation/index.wxml",
-        "wechat-miniprogram/src/features/grammar-foundation/index.wxss"
-      ]
+        "wechat-miniprogram/src/features/grammar-foundation/index.wxss",
+        "frontend/src/pages/GrammarFoundationPage.tsx"
+      ],
+      "reason": "Taro 的 grammar-foundation 路由直接编译这份 TSX；原生页面已停止维护。"
     },
     {
       "web": "frontend/src/pages/GrammarQuiz.tsx",
@@ -277,16 +289,20 @@
       "mini": [
         "wechat-miniprogram/src/content/kanji-readings/index.js",
         "wechat-miniprogram/src/content/kanji-readings/index.wxml",
-        "wechat-miniprogram/src/content/kanji-readings/index.wxss"
-      ]
+        "wechat-miniprogram/src/content/kanji-readings/index.wxss",
+        "frontend/src/pages/KanjiReadingUsagePage.tsx"
+      ],
+      "reason": "Taro 的 kanji-readings 路由直接编译这份 TSX；原生页面已停止维护。"
     },
     {
       "web": "frontend/src/pages/Library.tsx",
       "mini": [
         "wechat-miniprogram/src/pages/library/index.js",
         "wechat-miniprogram/src/pages/library/index.wxml",
-        "wechat-miniprogram/src/pages/library/index.wxss"
-      ]
+        "wechat-miniprogram/src/pages/library/index.wxss",
+        "frontend/src/pages/Library.tsx"
+      ],
+      "reason": "Taro 的 grammar 路由直接编译这份 TSX；原生 library 页面已停止维护。"
     },
     {
       "web": "frontend/src/components/LevelSetup.tsx",
@@ -481,8 +497,10 @@
       "mini": [
         "wechat-miniprogram/src/pages/library/index.js",
         "wechat-miniprogram/src/pages/library/index.wxml",
-        "wechat-miniprogram/src/pages/library/index.wxss"
-      ]
+        "wechat-miniprogram/src/pages/library/index.wxss",
+        "frontend/src/pages/WordLibraryPage.tsx"
+      ],
+      "reason": "Taro 的 word-list 路由直接编译这份 TSX；原生 library 页面已停止维护。"
     },
     {
       "web": "frontend/src/features/mixed-study/KanjiCharCardView.tsx",

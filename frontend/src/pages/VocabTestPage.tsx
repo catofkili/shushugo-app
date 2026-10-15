@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { History, ListChecks, Play, RotateCcw, Share2, ShieldCheck, Timer } from "lucide-react";
 import { Sticker, type StickerName } from "../components/CapybaraMascot";
 import {
@@ -171,8 +171,8 @@ const VocabTestHome = ({
   const stale = resumeIdleMs >= STALE_RESUME_MS;
 
   return (
-    <div className="mx-auto w-full max-w-2xl space-y-3">
-      <section className="ds-card vt-hero">
+    <div className="mx-auto w-full max-w-2xl space-y-3 ds-stagger">
+      <section className="ds-card vt-hero" style={{ "--i": 0 } as CSSProperties}>
         <div className="vt-hero-row">
           <div className="min-w-0 flex-1">
             {latest ? (
@@ -238,7 +238,7 @@ const VocabTestHome = ({
         </div>
       </section>
 
-      <section className="ds-card p-4 sm:p-5">
+      <section className="ds-card p-4 sm:p-5" style={{ "--i": 1 } as CSSProperties}>
         <h3 className="vt-h3"><History size={16} />过去的成绩</h3>
         {history.length ? (
           <ul className="mt-2">
@@ -273,7 +273,7 @@ const VocabTestHome = ({
         )}
       </section>
 
-      <section className="ds-card p-4 sm:p-5">
+      <section className="ds-card p-4 sm:p-5" style={{ "--i": 2 } as CSSProperties}>
         <div className="flex items-center gap-3">
           <Sticker name="mood-ask" size={52} className="shrink-0" />
           <div>
