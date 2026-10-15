@@ -368,9 +368,12 @@
 .ds-say-onbg.ds-say-warn .ds-say-bubble { background: var(--ds-warn-tint); box-shadow: none; }
 
 /* —————————————————— 动效基础件 —————————————————— */
-.ds-enter { animation: ds-enter var(--ds-dur-slow) var(--ds-ease-out) both; }
+/* ⚠️ 填充用 backwards 不用 both（2026-10-15）：both 会让播完的元素一直挂着 transform: translateY(0)，
+   非 none 的 transform 会成为里面 position: fixed 弹层 / 底部面板的定位容器，把它们困在这一块里
+   （v3 W3 底部反馈条被页面外壳的 transform 困在底栏下面就是同一个坑）。终态本来就等于元素自身样式，backwards 看起来一样。 */
+.ds-enter { animation: ds-enter var(--ds-dur-slow) var(--ds-ease-out) backwards; }
 .ds-stagger > * {
-  animation: ds-stagger-in var(--ds-dur-slow) var(--ds-ease-spring) both;
+  animation: ds-stagger-in var(--ds-dur-slow) var(--ds-ease-spring) backwards;
   animation-delay: calc(var(--i, 0) * var(--ds-stagger));
 }
 .ds-bump { display: inline-block; transform-origin: center; animation: ds-bump var(--ds-dur-slow) var(--ds-ease-spring) both; }

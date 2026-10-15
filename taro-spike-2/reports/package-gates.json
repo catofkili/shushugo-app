@@ -2,19 +2,19 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1774090,
+      "bytes": 1774095,
       "passes": true
     },
     "study": {
-      "bytes": 1011063,
+      "bytes": 1012595,
       "passes": true
     },
     "account": {
-      "bytes": 327987,
+      "bytes": 328115,
       "passes": true
     },
     "content-pages": {
-      "bytes": 1120616,
+      "bytes": 1121142,
       "passes": true
     },
     "features": {
@@ -34,7 +34,7 @@
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 300695,
+      "bytes": 301176,
       "passes": true
     },
     "core": {
@@ -42,7 +42,7 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 902963,
+      "bytes": 903006,
       "passes": true
     },
     "jlpt-bank": {
@@ -86,7 +86,7 @@
     },
     {
       "source": "frontend/src/pages/Library.tsx",
-      "bytes": 33448,
+      "bytes": 33565,
       "packages": [
         "grammar-pages",
         "lazy"
@@ -164,7 +164,7 @@
     },
     {
       "source": "frontend/src/pages/ConfusionPage.tsx",
-      "bytes": 19082,
+      "bytes": 19495,
       "packages": [
         "grammar-pages",
         "study"
@@ -217,7 +217,7 @@
     },
     {
       "source": "frontend/src/pages/FavoritesPage.tsx",
-      "bytes": 15692,
+      "bytes": 15826,
       "packages": [
         "content-pages",
         "grammar-pages"
@@ -233,7 +233,7 @@
     },
     {
       "source": "frontend/src/pages/GrammarFoundationPage.tsx",
-      "bytes": 14764,
+      "bytes": 14939,
       "packages": [
         "content-pages",
         "grammar-pages"
@@ -366,7 +366,7 @@
     },
     {
       "source": "frontend/src/pages/GrammarDetail.tsx",
-      "bytes": 8891,
+      "bytes": 9025,
       "packages": [
         "content-pages",
         "grammar-pages"
@@ -1304,7 +1304,7 @@
   "duplicatedPageComponents": [
     {
       "source": "frontend/src/pages/Library.tsx",
-      "bytes": 33448,
+      "bytes": 33565,
       "packages": [
         "grammar-pages",
         "lazy"
@@ -1331,7 +1331,7 @@
     },
     {
       "source": "frontend/src/pages/ConfusionPage.tsx",
-      "bytes": 19082,
+      "bytes": 19495,
       "packages": [
         "grammar-pages",
         "study"
@@ -1367,7 +1367,7 @@
     },
     {
       "source": "frontend/src/pages/FavoritesPage.tsx",
-      "bytes": 15692,
+      "bytes": 15826,
       "packages": [
         "content-pages",
         "grammar-pages"
@@ -1376,7 +1376,7 @@
     },
     {
       "source": "frontend/src/pages/GrammarFoundationPage.tsx",
-      "bytes": 14764,
+      "bytes": 14939,
       "packages": [
         "content-pages",
         "grammar-pages"
@@ -1454,7 +1454,7 @@
     },
     {
       "source": "frontend/src/pages/GrammarDetail.tsx",
-      "bytes": 8891,
+      "bytes": 9025,
       "packages": [
         "content-pages",
         "grammar-pages"
@@ -1715,7 +1715,7 @@
     "frontend/src/components/DailyPlanSlider.weapp.tsx": "The lazy setup panel and account/study plan pages render native Sliders; values and commit callbacks are owned by each mounted parent, not this stateless adapter.",
     "frontend/src/components/JapaneseRubyText.weapp.tsx": "Ruby text is used by lazy tabs and independently loaded content/grammar routes."
   },
-  "duplicatedPageComponentBytes": 347113,
+  "duplicatedPageComponentBytes": 348086,
   "unapprovedPageComponents": [],
   "stalePageComponentAllowlist": [],
   "unapprovedPageComponentBytes": 0,
@@ -1758,7 +1758,7 @@
     },
     {
       "source": "frontend/src/design.css",
-      "bytes": 85374
+      "bytes": 85804
     },
     {
       "source": "taro-spike-2/src/platform/WeappPage.tsx",

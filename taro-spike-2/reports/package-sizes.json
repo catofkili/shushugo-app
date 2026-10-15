@@ -2,22 +2,22 @@
   "limitBytes": 2097152,
   "packages": {
     "main": {
-      "bytes": 1774090,
+      "bytes": 1774095,
       "mib": 1.692,
       "passes": true
     },
     "study": {
-      "bytes": 1011063,
-      "mib": 0.964,
+      "bytes": 1012595,
+      "mib": 0.966,
       "passes": true
     },
     "account": {
-      "bytes": 327987,
+      "bytes": 328115,
       "mib": 0.313,
       "passes": true
     },
     "content-pages": {
-      "bytes": 1120616,
+      "bytes": 1121142,
       "mib": 1.069,
       "passes": true
     },
@@ -42,7 +42,7 @@
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 300695,
+      "bytes": 301176,
       "mib": 0.287,
       "passes": true
     },
@@ -52,7 +52,7 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 902963,
+      "bytes": 903006,
       "mib": 0.861,
       "passes": true
     },
@@ -67,12 +67,12 @@
       "passes": true
     }
   },
-  "totalBytes": 10482080,
+  "totalBytes": 10484795,
   "files": [
     {
       "path": "lazy/tabs.js",
       "package": "lazy",
-      "bytes": 867518
+      "bytes": 867561
     },
     {
       "path": "common.js",
@@ -137,7 +137,7 @@
     {
       "path": "study/talk/index.js",
       "package": "study",
-      "bytes": 249483
+      "bytes": 249734
     },
     {
       "path": "jlpt-bank-2/jlpt-n5.js",
@@ -152,7 +152,7 @@
     {
       "path": "app.wxss",
       "package": "main",
-      "bytes": 217058
+      "bytes": 217063
     },
     {
       "path": "features/content/kanji-variants.js",
@@ -252,7 +252,7 @@
     {
       "path": "account/settings/index.js",
       "package": "account",
-      "bytes": 36218
+      "bytes": 36346
     },
     {
       "path": "content-pages/assets/brand/item-sound-marimba-2.png",
@@ -317,12 +317,12 @@
     {
       "path": "study/team/index.js",
       "package": "study",
-      "bytes": 23987
+      "bytes": 24134
     },
     {
       "path": "study/vocab-test/index.js",
       "package": "study",
-      "bytes": 22721
+      "bytes": 22780
     },
     {
       "path": "study/quick-study/index.js",
@@ -347,7 +347,7 @@
     {
       "path": "study/jlpt-plan/index.js",
       "package": "study",
-      "bytes": 21063
+      "bytes": 21340
     },
     {
       "path": "study/assets/brand/mood-shocked.png",
@@ -380,14 +380,14 @@
       "bytes": 17872
     },
     {
+      "path": "study/word-list/index.js",
+      "package": "study",
+      "bytes": 17444
+    },
+    {
       "path": "study/duel/index.js",
       "package": "study",
       "bytes": 17116
-    },
-    {
-      "path": "study/word-list/index.js",
-      "package": "study",
-      "bytes": 17048
     },
     {
       "path": "assets/brand/scene-laptop.png",
@@ -445,14 +445,14 @@
       "bytes": 15727
     },
     {
+      "path": "grammar-pages/sub-common/8aad4c1c4eaa8d23998e11ef9d77a9db.js",
+      "package": "grammar-pages",
+      "bytes": 15617
+    },
+    {
       "path": "content-pages/assets/brand/empty-box.png",
       "package": "content-pages",
       "bytes": 15607
-    },
-    {
-      "path": "grammar-pages/sub-common/8aad4c1c4eaa8d23998e11ef9d77a9db.js",
-      "package": "grammar-pages",
-      "bytes": 15574
     },
     {
       "path": "content-pages/assets/brand/empty-search.png",
@@ -687,22 +687,22 @@
     {
       "path": "content-pages/sub-common/b06a5d44453a773a21814de1c3a86328.js",
       "package": "content-pages",
-      "bytes": 8086
+      "bytes": 8161
     },
     {
       "path": "grammar-pages/sub-common/b06a5d44453a773a21814de1c3a86328.js",
       "package": "grammar-pages",
-      "bytes": 8086
+      "bytes": 8161
     },
     {
       "path": "grammar-pages/sub-common/fb00c7b2e75e4e1196bef3e4b30131c9.js",
       "package": "grammar-pages",
-      "bytes": 7900
+      "bytes": 8145
     },
     {
       "path": "study/sub-common/fb00c7b2e75e4e1196bef3e4b30131c9.js",
       "package": "study",
-      "bytes": 7900
+      "bytes": 8145
     },
     {
       "path": "content-pages/sub-common/5aca36310b0438a2f4330e66eaf2040f.js",
@@ -740,24 +740,29 @@
       "bytes": 7468
     },
     {
+      "path": "content-pages/sub-common/6d0e15fc76284a95e6643a648f23911f.js",
+      "package": "content-pages",
+      "bytes": 7373
+    },
+    {
+      "path": "grammar-pages/sub-common/6d0e15fc76284a95e6643a648f23911f.js",
+      "package": "grammar-pages",
+      "bytes": 7373
+    },
+    {
       "path": "study/assets/brand/mood-idea.png",
       "package": "study",
       "bytes": 7372
     },
     {
-      "path": "content-pages/sub-common/6d0e15fc76284a95e6643a648f23911f.js",
-      "package": "content-pages",
-      "bytes": 7314
-    },
-    {
-      "path": "grammar-pages/sub-common/6d0e15fc76284a95e6643a648f23911f.js",
-      "package": "grammar-pages",
-      "bytes": 7314
-    },
-    {
       "path": "assets/brand/mood-shy.png",
       "package": "main",
       "bytes": 7031
+    },
+    {
+      "path": "study/kanji-readings/index.js",
+      "package": "study",
+      "bytes": 6923
     },
     {
       "path": "study/sub-vendors.wxss",
@@ -785,19 +790,14 @@
       "bytes": 6870
     },
     {
+      "path": "content-pages/about/index.js",
+      "package": "content-pages",
+      "bytes": 6869
+    },
+    {
       "path": "study/talk/index.wxss",
       "package": "study",
       "bytes": 6792
-    },
-    {
-      "path": "study/kanji-readings/index.js",
-      "package": "study",
-      "bytes": 6766
-    },
-    {
-      "path": "content-pages/about/index.js",
-      "package": "content-pages",
-      "bytes": 6730
     },
     {
       "path": "content-pages/streak/index.js",
@@ -985,6 +985,11 @@
       "bytes": 5092
     },
     {
+      "path": "content-pages/achievements/index.js",
+      "package": "content-pages",
+      "bytes": 5089
+    },
+    {
       "path": "grammar-pages/sub-common/88f509ac9f9eed205a2d7ef746fb47fb.js",
       "package": "grammar-pages",
       "bytes": 5087
@@ -1000,11 +1005,6 @@
       "bytes": 5044
     },
     {
-      "path": "content-pages/achievements/index.js",
-      "package": "content-pages",
-      "bytes": 4895
-    },
-    {
       "path": "assets/brand/mood-puzzled.png",
       "package": "main",
       "bytes": 4886
@@ -1015,6 +1015,16 @@
       "bytes": 4823
     },
     {
+      "path": "content-pages/sub-common/07d7a963e92afff743cbc74ca0a3be28.js",
+      "package": "content-pages",
+      "bytes": 4762
+    },
+    {
+      "path": "grammar-pages/sub-common/07d7a963e92afff743cbc74ca0a3be28.js",
+      "package": "grammar-pages",
+      "bytes": 4762
+    },
+    {
       "path": "account/personal-info/index.wxss",
       "package": "account",
       "bytes": 4708
@@ -1023,16 +1033,6 @@
       "path": "study/sub-common/2a2db07552507ae6982c486beaeecac6.js",
       "package": "study",
       "bytes": 4705
-    },
-    {
-      "path": "content-pages/sub-common/07d7a963e92afff743cbc74ca0a3be28.js",
-      "package": "content-pages",
-      "bytes": 4703
-    },
-    {
-      "path": "grammar-pages/sub-common/07d7a963e92afff743cbc74ca0a3be28.js",
-      "package": "grammar-pages",
-      "bytes": 4703
     },
     {
       "path": "grammar-pages/sub-common/3a07fb7c71128d21625f31d15eefff9e.js",
