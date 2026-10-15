@@ -1,5 +1,5 @@
 /* Generated from frontend/src/design.css. Run node wechat-miniprogram/scripts/sync-design-tokens.mjs. */
-/* source sha256: ac1e825c340e9086650378a86d0166e880050f4971e816aa216547aabfb7f6ea */
+/* source sha256: b33dfa54106935d962ba1cc3bba54c52c160513301fb15ca764fe507c855f587 */
 /* WXSS does not support color-mix(); those values stay on the existing native fallback. */
 page {
   --ds-surface: #fff;
@@ -50,11 +50,11 @@ page {
 }
 
 .theme-dark {
-  --ds-line: rgba(255, 255, 255, 0.07);
-  --ds-line-2: rgba(255, 255, 255, 0.14);
+  --ds-line: rgba(255, 255, 255, 0.12);
+  --ds-line-2: rgba(255, 255, 255, 0.30);
   --ds-ink: #F2EFE8;
-  --ds-ink-2: #C9C2B6;
-  --ds-ink-3: #8F887D;
+  --ds-ink-2: #DCD5C9;
+  --ds-ink-3: #C2BAAD;
   --ds-primary: var(--zoo-primary, #69a840);
   --ds-primary-ink: var(--zoo-primary-deep, #5C8F32);
   --ds-on-primary: var(--zoo-on-primary, #ffffff);
@@ -75,8 +75,9 @@ page {
   --ds-font-size-chip: 26rpx;
   --ds-font-size-pill: 24rpx;
   --zoo-ink: #F2EFE8;
-  --color-border-light: rgba(255, 255, 255, 0.07);
-  --color-border: rgba(255, 255, 255, 0.14);
+  --zoo-muted: var(--ds-ink-3);
+  --color-border-light: var(--ds-line);
+  --color-border: var(--ds-line-2);
   --form-control-border: transparent;
   --form-control-shadow: none;
   --form-control-text: var(--ds-ink);

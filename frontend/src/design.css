@@ -90,11 +90,13 @@
   --ds-surface: color-mix(in srgb, var(--zoo-cream) 92%, #fff);
   --ds-inset: var(--zoo-cream);
   --ds-inset-2: color-mix(in srgb, var(--zoo-cream) 84%, #fff);
-  --ds-line: rgba(255, 255, 255, 0.07);
-  --ds-line-2: rgba(255, 255, 255, 0.14);
+  /* W12（2026-10-16）：原来 .07 / .14 在深底上几乎看不见；Codex 按 3:1 提到 .18 / .42，主管看图觉得选项和列表白边太抢，收到 .12 / .30。 */
+  --ds-line: rgba(255, 255, 255, 0.12);
+  --ds-line-2: rgba(255, 255, 255, 0.30);
   --ds-ink: #F2EFE8;
-  --ds-ink-2: #C9C2B6;
-  --ds-ink-3: #8F887D;
+  /* ink-3 原来 #8F887D，在卡面上只有 3.3:1；提到 #C2BAAD（卡面 6.0、inset-2 4.6）。ink-2 跟着提一档，不然两级字分不出来。 */
+  --ds-ink-2: #DCD5C9;
+  --ds-ink-3: #C2BAAD;
   --ds-primary: var(--zoo-primary);
   --ds-primary-ink: var(--zoo-primary-deep);
   --ds-primary-tint: color-mix(in srgb, var(--zoo-primary) 16%, var(--zoo-cream));
@@ -122,8 +124,8 @@
      都是白底配浅字。styles.css 的深色段也定过它，但 design.css 后加载、:root 同权重，被覆盖了。深色皮肤的选择器更具体，不受影响。 */
   --zoo-surface: var(--ds-surface);
   --zoo-muted: var(--ds-ink-3);
-  --color-border-light: rgba(255, 255, 255, 0.07);
-  --color-border: rgba(255, 255, 255, 0.14);
+  --color-border-light: var(--ds-line);
+  --color-border: var(--ds-line-2);
   --form-control-bg: var(--ds-inset);
   --form-control-bg-focus: var(--ds-inset-2);
   --form-control-border: transparent;
@@ -1089,3 +1091,118 @@ button.fin-row:hover { background: var(--ds-inset-2); }
 @media (prefers-reduced-motion: reduce) {
   .ds-q-in { animation: none !important; }
 }
+
+/* —————————————————— W12 深色 —————————————————— */
+/* 只在深色覆写；浅色保留原值。次要文字也须在 surface / inset-2 上达到 4.5:1。 */
+
+[data-theme="dark"] .text-white\/30,
+[data-theme="dark"] .text-white\/35,
+[data-theme="dark"] .text-white\/38,
+[data-theme="dark"] .text-white\/40,
+[data-theme="dark"] .text-white\/42,
+[data-theme="dark"] .text-white\/45,
+[data-theme="dark"] .text-white\/48,
+[data-theme="dark"] .text-white\/50,
+[data-theme="dark"] .text-white\/52,
+[data-theme="dark"] .text-white\/55 { color: var(--ds-ink-2) !important; }
+/* Tailwind 的 dark: 变体未必随 data-theme 切换；把旧浅色字显式接回设计变量。 */
+[data-theme="dark"] .text-\[\#343838\],
+[data-theme="dark"] .text-\[\#f9faf7\],
+[data-theme="dark"] .text-stone-800 { color: var(--ds-ink) !important; }
+[data-theme="dark"] .jp-ruby rt { color: var(--ds-primary-ink) !important; }
+[data-theme="dark"] .wd-entry-go,
+[data-theme="dark"] .ach-summary-kick,
+[data-theme="dark"] .ach-desc,
+[data-theme="dark"] .ach-progress b,
+[data-theme="dark"] .ach-card.is-locked .ach-name { color: var(--ds-ink-2); }
+[data-theme="dark"] .ach-date { color: var(--ds-primary-ink); }
+[data-theme="dark"] .ach-card { background: var(--ds-surface); }
+[data-theme="dark"] .ach-card.is-locked { background: var(--ds-inset); }
+
+/* WXSS 构建会丢弃组合器后的 :is()，这里逐项列出选择器，确保两端均生效。 */
+/* 输入、选择圈、未填进度：用内描边保留原尺寸，不让低明度差吞掉控件。 */
+[data-theme="dark"] .control-cyan,
+[data-theme="dark"] .control-cyan-search,
+[data-theme="dark"] .cf-search,
+[data-theme="dark"] .kr-search,
+[data-theme="dark"] .wl-search,
+[data-theme="dark"] .ds-progress,
+[data-theme="dark"] .jp-track,
+[data-theme="dark"] .zoo-focus-box,
+[data-theme="dark"] .ds-choice,
+[data-theme="dark"] .ach-summary-bar {
+  box-shadow: inset 0 0 0 1px var(--ds-line-2) !important;
+}
+[data-theme="dark"] .ach-progress::before { box-shadow: inset 0 0 0 1px var(--ds-line-2); }
+[data-theme="dark"] input:not([type="range"]):not([type="checkbox"]):not([type="radio"]),
+[data-theme="dark"] textarea,
+[data-theme="dark"] select {
+  border-color: var(--ds-line-2);
+}
+[data-theme="dark"] .zoo-now-cta,
+[data-theme="dark"] .moment-pop { background: var(--ds-surface); color: var(--ds-ink); }
+[data-theme="dark"] .zoo-panel,
+[data-theme="dark"] .zoo-tile,
+[data-theme="dark"] .zoo-modes-sheet,
+[data-theme="dark"] .moment-pop { box-shadow: var(--ds-shadow); }
+[data-theme="dark"] .answer-feedback-icon,
+[data-theme="dark"] .zoo-post-exam-badge,
+[data-theme="dark"] .zoo-post-exam-primary { color: var(--ds-on-primary); }
+
+/* 快速复习：行内评分、批量评分、提交摘要共用同一套深底语义色。 */
+[data-theme="dark"] .quick-study-rating-fuzzy { background: var(--ds-warn-tint); color: var(--ds-warn-ink); border-color: var(--ds-warn-ink); }
+[data-theme="dark"] .quick-study-rating-forgot { background: #482B29; color: var(--ds-danger); border-color: var(--ds-danger); }
+[data-theme="dark"] .quick-study-rating-known_forever { background: #263A52; color: #A9CFFF; border-color: #A9CFFF; }
+[data-theme="dark"] .quick-study-panel,
+[data-theme="dark"] .quick-study-rating-popover,
+[data-theme="dark"] .quick-study-confirm { box-shadow: var(--ds-shadow-lg); }
+[data-theme="dark"] .quick-study-select-circle { border-color: var(--ds-line-2); color: var(--ds-on-primary); }
+[data-theme="dark"] .quick-study-select-circle.selected { border-color: var(--ds-primary); box-shadow: none; }
+[data-theme="dark"] .quick-study-error { color: var(--ds-danger); }
+
+/* 记忆强度的含义、顺序不变，只提高深色下的亮度。 */
+[data-theme="dark"] [data-band="d0"] { --band: #FF9B93; }
+[data-theme="dark"] [data-band="d1"] { --band: #FFB078; }
+[data-theme="dark"] [data-band="d4"] { --band: #A7D78A; }
+[data-theme="dark"] [data-band="d5"] { --band: #85D6A3; }
+[data-theme="dark"] [data-band="mastered"] { --band: #79D5BA; }
+[data-theme="dark"] [data-band="unseen"] { --band: var(--ds-ink-3); }
+
+/* 日历与记忆弹窗仍有独立浅色常量，限定在各自容器，不误改 Apple 标识和商品缩略图。 */
+[data-theme="dark"] .bg-white\/80 { background: var(--ds-surface); color: var(--ds-ink); border-color: var(--ds-line); }
+[data-theme="dark"] .bg-white\/80 .text-\[\#746250\],
+[data-theme="dark"] .bg-white\/80  .text-\[\#62584b\],
+[data-theme="dark"] .bg-white\/80  .text-\[\#8b8173\] { color: var(--ds-ink-2); }
+[data-theme="dark"] .bg-white\/80 .text-\[\#497333\] { color: var(--ds-primary-ink); }
+[data-theme="dark"] .bg-white\/80 .bg-\[\#e8f2dc\],
+[data-theme="dark"] .bg-white\/80  .bg-\[\#f5f1e9\],
+[data-theme="dark"] .bg-white\/80  .bg-white { background: var(--ds-inset); color: var(--ds-ink); }
+[data-theme="dark"] .bg-white\/80 button[aria-pressed="true"] { background: var(--ds-primary); color: var(--ds-on-primary); }
+[data-theme="dark"] .bg-white\/80 .border-\[\#e6dcca\],
+[data-theme="dark"] .bg-white\/80  .border-\[\#d5c9b7\] { border-color: var(--ds-line-2); }
+[data-theme="dark"] .memory-bubble { color: var(--ds-ink); }
+[data-theme="dark"] .memory-bubble .text-\[\#163f35\],
+[data-theme="dark"] .memory-bubble  .text-\[\#1e6a5f\],
+[data-theme="dark"] .memory-bubble  .text-\[\#2d6b56\] { color: var(--ds-primary-ink); }
+[data-theme="dark"] .memory-bubble .text-\[\#4d8378\],
+[data-theme="dark"] .memory-bubble  .text-\[\#4d706b\],
+[data-theme="dark"] .memory-bubble  .text-\[\#5a837b\] { color: var(--ds-ink-2); }
+[data-theme="dark"] .memory-bubble .bg-white\/70,
+[data-theme="dark"] .memory-bubble  .bg-white\/78 { background: var(--ds-inset); }
+
+[data-theme="dark"] .paywall-popover-actions p,
+[data-theme="dark"] .paywall-popover-legal { color: var(--ds-ink-2); }
+
+[data-theme="dark"] input,
+[data-theme="dark"] textarea,
+[data-theme="dark"] select { color-scheme: dark; }
+[data-theme="dark"] .auth-dialog { background: var(--ds-surface); border-color: var(--ds-line); box-shadow: var(--ds-shadow-lg); }
+[data-theme="dark"] .voice-badge-tail { color: #20311D; }
+[data-theme="dark"] .study-focus-chest-caption { color: var(--ds-primary-ink); }
+[data-theme="dark"] .memory-bubble .bg-\[\#d7eee9\] { background: var(--ds-inset-2); box-shadow: inset 0 0 0 1px var(--ds-line-2); }
+/* 实心主色按钮里的旧字色仍需用 on-primary；不能被正文和脚注的深色映射盖回浅字。 */
+[data-theme="dark"] .bg-\[\#81D8CF\].text-\[\#343838\],
+[data-theme="dark"] .rate-know .kbd-hint,
+[data-theme="dark"] .quiz-accent-solid .kbd-hint { color: var(--ds-on-primary) !important; }
+/* 标签自身的紫色 tint 会抬高底色，不能只按卡面的对比度给小字选色。 */
+[data-theme="dark"] .ach-tag-epic { color: #E8C7FF; }

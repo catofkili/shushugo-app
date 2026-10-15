@@ -2,19 +2,19 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1775805,
+      "bytes": 1779481,
       "passes": true
     },
     "study": {
-      "bytes": 1012670,
+      "bytes": 1013800,
       "passes": true
     },
     "account": {
-      "bytes": 325395,
+      "bytes": 325904,
       "passes": true
     },
     "content-pages": {
-      "bytes": 1121150,
+      "bytes": 1121659,
       "passes": true
     },
     "features": {
@@ -42,7 +42,7 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 903116,
+      "bytes": 903113,
       "passes": true
     },
     "jlpt-bank": {
@@ -1741,6 +1741,10 @@
       "bytes": 119961
     },
     {
+      "source": "frontend/src/design.css",
+      "bytes": 94900
+    },
+    {
       "source": "taro-spike-2/node_modules/react-reconciler/cjs/react-reconciler.production.min.js",
       "bytes": 92952
     },
@@ -1751,10 +1755,6 @@
     {
       "source": "frontend/src/lib/storage.ts",
       "bytes": 90130
-    },
-    {
-      "source": "frontend/src/design.css",
-      "bytes": 88021
     },
     {
       "source": "frontend/src/lib/study-core.ts",

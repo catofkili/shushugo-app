@@ -5,7 +5,7 @@
   "frontend/src/components/study-buddy/StudyBuddy.css": 5011,
   "frontend/src/components/ZooHome.css": 1011,
   "frontend/src/components/ZoomOpen.css": 660,
-  "frontend/src/design.css": 88021,
+  "frontend/src/design.css": 94900,
   "frontend/src/pages/spelling.css": 4017,
   "frontend/src/pages/talk.css": 8294,
   "frontend/src/pages/team-duel.css": 7471,
@@ -19,5 +19,5 @@
   "taro-spike-2/src/content-pages/favorites/favorites-layout.weapp.css": 582,
   "taro-spike-2/src/content-pages/weekly-report/weekly-layout.weapp.css": 3415,
   "taro-spike-2/src/content-pages/yuzu-shop/yuzu-layout.weapp.css": 304,
-  "taro-spike-2/src/platform/mini-overrides.weapp.css": 8965
+  "taro-spike-2/src/platform/mini-overrides.weapp.css": 9439
 }

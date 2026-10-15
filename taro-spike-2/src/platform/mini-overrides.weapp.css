@@ -170,3 +170,14 @@ page { overflow-x: hidden; }
 .attr-data-theme [class*="border-white"] { border-color: var(--ds-line) !important; }
 .attr-data-theme .bg-\[\#81D8CF\]\/10[class*="border-white"],
 .attr-data-theme [class*="bg-[#81D8CF]/1"][class*="border-white"] { border-color: transparent !important; }
+
+/* W12：lucide 在小程序是 Image，不能继承 currentColor；这些中性图标在深色面上需单独提亮。 */
+.theme-dark .zoo-focus-label image,
+.theme-dark .zoo-mode-chip image,
+.theme-dark .zoo-maint image,
+.theme-dark .w7-row image,
+.theme-dark .w7-faq-summary image,
+.theme-dark image.control-cyan-icon,
+.theme-dark .quick-study-kick image,
+.theme-dark .quick-study-action image,
+.theme-dark .quick-study-rating image { filter: brightness(0) invert(.8); }
