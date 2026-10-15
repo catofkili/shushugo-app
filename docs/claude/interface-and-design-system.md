@@ -746,3 +746,9 @@ App 里没有接微信 OpenSDK（没有开放平台移动应用 AppID、Universa
 - **微信 `button` 默认裁切子节点**（网页 button 是 `overflow: visible`），伸出按钮框的装饰会被切掉。
 - **lucide 在小程序里是 Image**，继承不了 `currentColor`：深色页面上的图标会是默认深色。只能按场景加 `filter`。
 - **动态拼出来的贴纸名不会自动进分包**（`sync-brand-assets.mjs` 只认得静态写出来的），要手动登记到用到它的分包。
+
+### 2026-10-16 增补：分段控件和切题过场各只有一套
+
+- **几选一的偏好（主题、动效强度这类）用 `.w10-segmented` / `.w10-segment`**（design.css W10 节，`aria-pressed` 标选中），不要再写一排 chip 或几块大方格。新页面要用就直接复用这组类。
+- **题目页换题的进场动画只有 `.ds-q-in`**（design.css W11 节）。挂在「每题本来就该重新挂载」的那一层；持有计时 / 进度状态的组件上不许为了重播动画加 key。
+  卡片自己有翻面动画的（`GrammarCard`），过场挂在外面一层壳上，不和翻面的 transform 写在同一个元素上。填充一律 `backwards`（理由见上一节和 `.ds-enter` 注释）。
