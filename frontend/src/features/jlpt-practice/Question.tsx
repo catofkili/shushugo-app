@@ -49,7 +49,7 @@ export function Question({ bank, question, chosen, reveal = false, showKind = tr
   onChoose: (chosen: OptionNo) => void;
 }) {
   const singleColumn = question.kind === "usage" || question.options.some(option => [...option].length > 12);
-  return <div className="ds-card jq-card">
+  return <div className="ds-card jq-card ds-q-in">
     {showKind && <span className="jq-kind">{KIND_LABEL[question.kind]}</span>}
     <QuestionStem bank={bank} question={question} />
     <div className={`ds-choices ${singleColumn ? "jq-choices-long" : ""}`}>

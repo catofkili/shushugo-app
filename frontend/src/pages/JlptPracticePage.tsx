@@ -84,7 +84,7 @@ export function JlptPracticePage() {
   const stats = activeBank && !session ? jlptKindStats(activeBank) : [];
   const mistakes = stats.reduce((sum, stat) => sum + stat.mistakes, 0);
 
-  return <div className="jq-page ds-enter">
+  return <div className={`jq-page ${session ? "" : "ds-enter"}`}>
     {result ? <StreakCelebrationGate /> : <StreakSpark />}
     {session && activeBank ? <>
       {error ? <>

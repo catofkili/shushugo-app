@@ -2,19 +2,19 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1774095,
+      "bytes": 1775805,
       "passes": true
     },
     "study": {
-      "bytes": 1012595,
+      "bytes": 1012670,
       "passes": true
     },
     "account": {
-      "bytes": 328115,
+      "bytes": 325395,
       "passes": true
     },
     "content-pages": {
-      "bytes": 1121142,
+      "bytes": 1121150,
       "passes": true
     },
     "features": {
@@ -34,7 +34,7 @@
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 301176,
+      "bytes": 301178,
       "passes": true
     },
     "core": {
@@ -42,7 +42,7 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 903006,
+      "bytes": 903116,
       "passes": true
     },
     "jlpt-bank": {
@@ -1734,7 +1734,7 @@
     },
     {
       "source": "frontend/src/styles.css",
-      "bytes": 129918
+      "bytes": 129774
     },
     {
       "source": "frontend/src/lib/sync-api.ts",
@@ -1753,12 +1753,12 @@
       "bytes": 90130
     },
     {
-      "source": "frontend/src/lib/study-core.ts",
-      "bytes": 87246
+      "source": "frontend/src/design.css",
+      "bytes": 88021
     },
     {
-      "source": "frontend/src/design.css",
-      "bytes": 85804
+      "source": "frontend/src/lib/study-core.ts",
+      "bytes": 87246
     },
     {
       "source": "taro-spike-2/src/platform/WeappPage.tsx",

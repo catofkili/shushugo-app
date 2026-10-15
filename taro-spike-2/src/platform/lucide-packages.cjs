@@ -63,6 +63,10 @@ module.exports = {
     "account",
     "content-pages"
   ],
+  "scrolltext": [
+    "account",
+    "content-pages"
+  ],
   "sun": [
     "account"
   ],
@@ -74,10 +78,6 @@ module.exports = {
   ],
   "cloud": [
     "account"
-  ],
-  "scrolltext": [
-    "account",
-    "content-pages"
   ],
   "helpcircle": [
     "account"

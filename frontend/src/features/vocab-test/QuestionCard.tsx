@@ -20,7 +20,7 @@ export const QuestionCard = ({
   /** 继续固定在屏幕底部，避免长反馈把按钮推到底栏下面；调用方仍负责原有推进/出分流程。 */
   next: { label: string; onClick: () => void };
 }) => (
-  <div className="ds-card vt-card">
+  <div key={question.id} className="ds-card vt-card ds-q-in">
     <div className="flex items-center gap-1.5">
       <span className="ds-pill">{question.kind === "reading" ? "读音题" : "释义题"}</span>
       <span className="ds-pill">{question.level}</span>

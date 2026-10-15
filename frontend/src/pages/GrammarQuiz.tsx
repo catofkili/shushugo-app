@@ -190,12 +190,14 @@ export const GrammarQuiz = ({ initialLevel, onBack }: GrammarQuizProps) => {
           </ScrollArea>
         </div>
       ) : card ? (
-        <GrammarCard
-          card={card}
-          revealed={revealed}
-          onReveal={() => setRevealed(true)}
-          onAnswer={answer}
-        />
+        <div key={`${level}-${card.id}`} className="ds-q-in flex min-h-0 flex-1 flex-col">
+          <GrammarCard
+            card={card}
+            revealed={revealed}
+            onReveal={() => setRevealed(true)}
+            onAnswer={answer}
+          />
+        </div>
       ) : (
         // 今天的都过关了。不自动往后借明天的账 —— 想继续得自己点，和单词的续杯同理。
         <div className="dictionary-card grid min-h-[320px] place-items-center rounded-2xl p-6 text-center">

@@ -146,7 +146,7 @@ const DistinctionQuizSession = ({ scope, onBackToConfusion, onRetryGroup }: Dist
         <div className="ds-progress-fill" style={{ width: `${((index + 1) / questions.length) * 100}%` }} />
       </div><ComboBadge combo={combo} /></div>
       {question && (
-        <>
+        <div key={index} className="ds-q-in">
           <div className="rounded-3xl border border-white/10 bg-[#3f4343] p-6 text-center">
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-white/45">中文线索</p>
             <p className="mt-3 text-2xl font-extrabold text-white">{question.prompt}</p>
@@ -186,9 +186,9 @@ const DistinctionQuizSession = ({ scope, onBackToConfusion, onRetryGroup }: Dist
               </button>
             ))}
           </div>
-          {feedback && <AnswerFeedbackBar key={index} correct={feedback.correct} answer={question.options.find(option => option.id === question.answerId)?.surface ?? ""} combo={combo} questionNumber={index} onContinue={next} />}
-        </>
+        </div>
       )}
+      {question && feedback && <AnswerFeedbackBar key={index} correct={feedback.correct} answer={question.options.find(option => option.id === question.answerId)?.surface ?? ""} combo={combo} questionNumber={index} onContinue={next} />}
     </section>
   );
 };
