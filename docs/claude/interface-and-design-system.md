@@ -752,3 +752,9 @@ App 里没有接微信 OpenSDK（没有开放平台移动应用 AppID、Universa
 - **几选一的偏好（主题、动效强度这类）用 `.w10-segmented` / `.w10-segment`**（design.css W10 节，`aria-pressed` 标选中），不要再写一排 chip 或几块大方格。新页面要用就直接复用这组类。
 - **题目页换题的进场动画只有 `.ds-q-in`**（design.css W11 节）。挂在「每题本来就该重新挂载」的那一层；持有计时 / 进度状态的组件上不许为了重播动画加 key。
   卡片自己有翻面动画的（`GrammarCard`），过场挂在外面一层壳上，不和翻面的 transform 写在同一个元素上。填充一律 `backwards`（理由见上一节和 `.ds-enter` 注释）。
+
+### 2026-10-16 增补：深色下老变量要跟着给值
+
+`design.css` 的 `:root` 重定义了一批老变量（`--zoo-surface`、`--zoo-ink`、`--zoo-muted`、`--color-border*`…），而 `design.css` 比 `styles.css` 后加载、`:root` 和 `[data-theme="dark"]` 同权重——
+**在 `:root` 里给老变量定了浅色值，就必须在 `design.css` 自己的深色段也给一个**，否则 `styles.css` 里的深色值被盖掉。2026-10-16 `--zoo-surface` 就这样让快速复习在深色下整块白底浅字。
+深色专用的修补写在 design.css 末尾「W12 深色」节；改深色前后用 `_codex/v3-w12/audit.cjs` 一类的整站截图对照，并核对浅色逐像素不变。

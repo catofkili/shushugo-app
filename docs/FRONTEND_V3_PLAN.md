@@ -152,3 +152,8 @@
     语法考题挂在页面层外壳（`GrammarCard` 内部不动，所以翻面不重播、混合学习里的语法卡不受影响），外壳里停掉卡片自己的 `.zoo-enter`。JLPT 会话中不再叠页面 `ds-enter`。
   - 主管实测（375×812，真实库）：主题 / 动效分段点了改 `data-theme` / `data-motion`；JLPT 继续后 60ms 题卡 `translateX(6.4px)`、透明度 0.73，660ms `transform: none`；第二题反馈条「继续」在可视区内。
   - 还没做：周报。
+- 2026-10-16 深色（作者：「夜间模式也要优化一下，快速模式没有夜间模式」）合入本地 main（`595e1cd4` + `f5f7680b`）：
+  - 根因：`design.css` 的 `:root` 把老变量 `--zoo-surface` 定成 `#fff`，深色段只改了 `--zoo-ink` → 深色下 `app.css` 里 29 处读它的块（快速复习整块面板最显眼）白底配浅字。
+    `styles.css` 深色段也定过 `--zoo-surface`，但 `design.css` 后加载、`:root` 和 `[data-theme="dark"]` 同权重，被盖掉。**以后在 `design.css` 的 `:root` 动老变量，深色段必须同时给值。**
+  - W12（sol）全站深色审计修了 33 处，浅色 54 张截图逐像素不变。主管收回两处：边线 `.18/.42 → .12/.30`（选项、列表白边太抢）；ink-2 跟着 ink-3 提一档保层次。
+  - 待做：小程序原生导航栏和 tabBar 深色下还是浅色（要 `app.config.js` 开 `darkmode` + `theme.json`，还要处理「App 里选深色但系统是浅色」时原生栏跟不跟）。
