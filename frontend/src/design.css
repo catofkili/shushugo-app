@@ -1054,3 +1054,23 @@ button.fin-row:hover { background: var(--ds-inset-2); }
 .w7-jlpt-row:disabled { opacity: .55; }
 [data-motion="reduced"] .w7-faq-chevron { transition: none; }
 @media (prefers-reduced-motion: reduce) { .w7-faq-chevron { transition: none; } }
+
+/* —————————————————— W10 设置页 —————————————————— */
+.w10-theme-row .w10-segmented { width: min(74%, 290px); flex: none; }
+.w10-segmented { display: flex; min-width: 0; gap: 2px; padding: 3px; border-radius: var(--ds-radius-pill); background: var(--ds-inset); }
+.w10-segment { flex: 1; min-width: 0; padding: 0 4px; background: transparent; }
+.w10-segment[aria-pressed="true"] { background: var(--ds-primary); color: var(--ds-on-primary); }
+.w10-motion-row .w10-segmented { width: 156px; flex: none; }
+.w10-kanji-card > div:first-child { border: 0; }
+.w10-kanji-card .mt-4.rounded-xl { margin-top: 16px; padding: 0; border: 0; border-radius: 0; background: transparent !important; }
+.w10-kanji-card .mt-4.rounded-xl .space-y-1 > div { min-height: 34px; align-items: center; padding: 5px 0; }
+.w10-kanji-card .mt-4.rounded-xl .space-y-1 > div + div { border-top: 1px solid var(--ds-line); }
+.w10-disclosure { border-top: 1px solid var(--ds-line); border-bottom: 1px solid var(--ds-line); }
+.w10-disclosure + .w7-row::before { content: ""; position: absolute; top: 0; left: 48px; right: 0; height: 1px; background: var(--ds-line); }
+.w10-disclosure[open] .w7-faq-chevron { transform: rotate(180deg); }
+.w10-disclosure code { overflow-wrap: anywhere; }
+[data-motion="reduced"] .w10-segment { transition: none; }
+@media (max-width: 390px) {
+  .w10-theme-row .w10-segmented { width: 76%; }
+  .w10-motion-row .w10-segmented { width: 156px; }
+}
