@@ -1054,3 +1054,14 @@ button.fin-row:hover { background: var(--ds-inset-2); }
 .w7-jlpt-row:disabled { opacity: .55; }
 [data-motion="reduced"] .w7-faq-chevron { transition: none; }
 @media (prefers-reduced-motion: reduce) { .w7-faq-chevron { transition: none; } }
+
+/* W11 切题过场：只动画题面；backwards 在播完后释放 transform，避免困住 fixed 反馈。 */
+@keyframes ds-q-in { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: translateX(0); } }
+.ds-q-in { animation: ds-q-in var(--ds-dur) var(--ds-ease-out) backwards; }
+/* 语法测验用外壳切题，停掉卡片原有入场；内层 zoo-reveal-in 翻面照旧。 */
+.ds-q-in > .zoo-enter { animation: none; }
+[data-motion="reduced"] .ds-q-in,
+[data-motion="off"] .ds-q-in { animation: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  .ds-q-in { animation: none !important; }
+}
