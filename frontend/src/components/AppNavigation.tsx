@@ -25,8 +25,12 @@ const navItems: { page: Page; label: string; skinIcon: StickerName; object: Stic
 
 const isGrammarPage = (page: Page) => page === "grammar" || page === "detail";
 // 组队/学习模式/收藏都是从主页的格子进去的，导航上仍高亮「主页」。
+// 2026-10-15：「我的」下面的子页同理高亮「我的」。底栏方案 A 里选中格才画水豚，一格都不亮 = 底栏零水豚（作者：水豚是主角）。
 const isHomePage = (page: Page) =>
-  page === "talk" || page === "jlpt-practice" || ["home", "team", "duel", "quick-study", "vocab-test", "grammar-foundation", "favorites", "distinction-quiz", "yuzu-shop"].includes(page);
+  ["home", "team", "duel", "quick-study", "vocab-test", "talk", "jlpt-practice", "grammar-foundation", "favorites", "distinction-quiz", "yuzu-shop",
+    "confusion", "kanji-readings", "word-list", "jlpt-plan", "streak", "weekly-report"].includes(page);
+const isProfilePage = (page: Page) =>
+  ["profile", "pro", "account", "personal-info", "notifications", "settings", "privacy", "privacy-policy", "user-agreement", "help", "achievements", "about"].includes(page);
 const isRootMobilePage = (page: Page) => ["home", "word", "grammar", "profile"].includes(page);
 
 // 手机顶栏的标题。页面里各自那条「← 返回 | 标题」(.page-backbar) 在手机上藏掉，
@@ -94,6 +98,7 @@ export function AppNavigation({
   const isActive = (target: Page) => (
     target === "grammar" ? isGrammarPage(page)
       : target === "home" ? isHomePage(page)
+      : target === "profile" ? isProfilePage(page)
       : page === target
   );
 
@@ -271,7 +276,9 @@ export function AppNavigation({
                 key={item.page}
                 onClick={(event) => {
                   const icon = event.currentTarget.querySelector<HTMLElement>(".app-tab-icon");
-                  if (active) {
+                  // 只有真的在这个根页面上才是「再点一下」（晃 + 回顶）；子页上这格也亮着，点它是回根页面。
+                  // 原来写的是 if (active)，从主页进的子页点「主页」只晃不走。
+                  if (page === item.page) {
                     if (Capacitor.getPlatform() === "wechat") return;
                     if (icon) {
                       icon.classList.remove("ds-tab-rock", "ds-tab-bump");
