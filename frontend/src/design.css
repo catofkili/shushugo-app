@@ -1060,7 +1060,7 @@ button.fin-row:hover { background: var(--ds-inset-2); }
 .w10-segmented { display: flex; min-width: 0; gap: 2px; padding: 3px; border-radius: var(--ds-radius-pill); background: var(--ds-inset); }
 .w10-segment { flex: 1; min-width: 0; padding: 0 4px; background: transparent; }
 .w10-segment[aria-pressed="true"] { background: var(--ds-primary); color: var(--ds-on-primary); }
-.w10-motion-row .w10-segmented { width: 156px; flex: none; }
+.w10-motion-row .w10-segmented { width: 140px; flex: none; }
 .w10-kanji-card > div:first-child { border: 0; }
 .w10-kanji-card .mt-4.rounded-xl { margin-top: 16px; padding: 0; border: 0; border-radius: 0; background: transparent !important; }
 .w10-kanji-card .mt-4.rounded-xl .space-y-1 > div { min-height: 34px; align-items: center; padding: 5px 0; }
@@ -1072,7 +1072,7 @@ button.fin-row:hover { background: var(--ds-inset-2); }
 [data-motion="reduced"] .w10-segment { transition: none; }
 @media (max-width: 390px) {
   .w10-theme-row .w10-segmented { width: 76%; }
-  .w10-motion-row .w10-segmented { width: 156px; }
+  .w10-motion-row .w10-segmented { width: 140px; }
 }
 
 /* W11 切题过场：只动画题面；backwards 在播完后释放 transform，避免困住 fixed 反馈。 */
