@@ -22,6 +22,9 @@ const mainNames = {
   'tool-modes-capy': 44, 'tool-grammar-capy': 44, 'tool-wordlist-capy': 44, 'tool-confusion-capy': 44,
   'tool-talk-capy': 44, 'tool-jlpt-capy': 44, 'tool-kanji-readings-capy': 44, 'tool-favorites-capy': 44,
   'tool-vocab-test-capy': 44, 'tool-shop-capy': 44, 'tool-team-capy': 34, 'empty-bye': 64,
+  // 主页模式下拉图标和单词完成页 / 庆祝层的柚子币、皇冠。
+  'mode-classic': 32, 'mode-mixed': 32, 'mode-mistakes': 32, 'mode-quick': 32,
+  'mode-reverse': 32, 'mode-kanji': 32, 'mode-picked': 32, 'crown': 52, 'yuzu-coin': 20,
   'shushugo-icon': 56, 'shushugo-icon-dark': 56, 'walk-strip': 72
 };
 const mainOneX = new Set(['mood-ask', 'mood-surprised']);
@@ -29,7 +32,9 @@ const packageNames = {
   study: {
     'empty-box': 96, 'empty-search': 96, 'mood-ask': 96, 'mood-idea': 64, 'mood-proud': 96,
     // 备考页倒计时那只按状态拼名（来得及 / 来不及 / 考完），来不及那张 mood-shocked 只登记在 account 分包时，备考页是一张空图。
-    'mood-shocked': 108
+    'mood-shocked': 108,
+    'emblem-sprout': 28, 'emblem-squirrel': 28, 'emblem-bird': 28, 'emblem-train': 28,
+    'emblem-owl': 28, 'emblem-yuzu': 28, 'emblem-books': 28, 'emblem-torii': 28
   },
   account: {
     'mood-ask': 96, 'mood-heart': 92, 'mood-proud': 96, 'mood-shocked': 48
@@ -40,6 +45,7 @@ const packageNames = {
     'mood-idea': 84, 'mood-love': 84, 'mood-fight': 84,
     // 连胜详情页：快断了的那只（StreakPageView）。
     'mood-shocked': 64,
+    'crown': 44, 'yuzu-coin': 18,
     // 收藏页页头。
     'mood-heart': 60,
     'icon-study-modes': 36, 'icon-grammar': 36, 'icon-vocab': 36,

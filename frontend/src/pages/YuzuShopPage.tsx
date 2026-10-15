@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ComponentType } from "react";
-import { AppWindow, Check, ChevronDown, Citrus, LoaderCircle, Mic, Music, PackageCheck, Palette, Play, Shirt, Sparkles, type LucideProps } from "lucide-react";
+import { AppWindow, Check, ChevronDown, LoaderCircle, Mic, Music, PackageCheck, Palette, Play, Shirt, Sparkles, type LucideProps } from "lucide-react";
 import { CATEGORY_LABEL, EQUIPPABLE, VOICE_ITEM_PREFIX, YUZU_ITEMS, type YuzuCategory, type YuzuItem } from "../lib/yuzu-catalog";
 import { brandIconUrl, prepareMascotSkins, Sticker, stickerUrl, useMascotSkin } from "../components/CapybaraMascot";
 import { CrossPlatformImage } from "../components/CrossPlatformImage";
@@ -203,7 +203,7 @@ export const YuzuShopPage = ({ onOpenPro }: { onOpenPro?: () => void }) => {
       {/* 只有余额固定在顶上;商品货架应当成为首屏主角 */}
       <div className="yz-sticky">
         <section className="yz-wallet">
-          <p className="yz-wallet-num"><Citrus size={18} aria-hidden="true" />{formatYuzu(balance)}</p>
+          <p className="yz-wallet-num"><Sticker name="yuzu-coin" size={18} />{formatYuzu(balance)}</p>
           <b className="yz-wallet-today">{todayIncome > 0 ? `今天 +${formatYuzu(todayIncome)}` : "今天还没进账"}</b>
           <button className="yz-wallet-how" onClick={() => setRulesOpen((v) => !v)} aria-expanded={rulesOpen}>
             怎么赚 <ChevronDown size={13} className={rulesOpen ? "is-open" : ""} aria-hidden="true" />
@@ -260,7 +260,7 @@ export const YuzuShopPage = ({ onOpenPro }: { onOpenPro?: () => void }) => {
           gaps.length ? (
             <div className="yz-repair-days">
               <span className="yz-repair-label">
-                {cards > 0 ? "用补签卡补：" : <><Citrus size={13} aria-hidden="true" />{formatYuzu(price)} 补一天{balance < price ? `，还差 ${formatYuzu(price - balance)}` : ""}</>}
+                {cards > 0 ? "用补签卡补：" : <><Sticker name="yuzu-coin" size={13} />{formatYuzu(price)} 补一天{balance < price ? `，还差 ${formatYuzu(price - balance)}` : ""}</>}
               </span>
               {gaps.map((day) => (
                 <button
@@ -277,7 +277,7 @@ export const YuzuShopPage = ({ onOpenPro }: { onOpenPro?: () => void }) => {
           ) : (
             <button className="yz-cta" disabled={cards >= 1 || balance < price} onClick={buyRepairCard}>
               {cards >= 1 ? <><Check size={15} /> 已有一张补签卡</>
-                : <>备一张 · <Citrus size={15} aria-hidden="true" />{formatYuzu(price)}{balance < price ? `，还差 ${formatYuzu(price - balance)}` : ""}</>}
+                : <>备一张 · <Sticker name="yuzu-coin" size={15} />{formatYuzu(price)}{balance < price ? `，还差 ${formatYuzu(price - balance)}` : ""}</>}
             </button>
           )
         ) : (
@@ -290,7 +290,7 @@ export const YuzuShopPage = ({ onOpenPro }: { onOpenPro?: () => void }) => {
               : !available ? owned ? "此设备暂不可用" : "即将上架"
               : inUse ? <><Check size={15} /> 使用中 · 点击换回</>
                 : owned ? (item.category === "voice" || EQUIPPABLE.has(item.category) ? "使用" : <><Check size={15} /> 已拥有</>)
-                  : confirming ? `确认花 ${formatYuzu(item.price)} 买下` : <><Citrus size={15} /> {formatYuzu(item.price)}{balance < item.price ? ` · 还差 ${formatYuzu(item.price - balance)}` : ""}</>}
+                  : confirming ? `确认花 ${formatYuzu(item.price)} 买下` : <><Sticker name="yuzu-coin" size={15} /> {formatYuzu(item.price)}{balance < item.price ? ` · 还差 ${formatYuzu(item.price - balance)}` : ""}</>}
           </button>
         )}
       </section>}
@@ -311,7 +311,7 @@ export const YuzuShopPage = ({ onOpenPro }: { onOpenPro?: () => void }) => {
                   <b>{it.name}</b>
                   <small>{gaps.length ? `断了 ${gaps.length} 天` : `${YUZU.repairWindowDays} 天内没断`}</small>
                 </span>
-                <span className="yz-price">{cards > 0 ? "有补签卡" : <><Citrus size={11} aria-hidden="true" />{formatYuzu(it.price)}</>}</span>
+                <span className="yz-price">{cards > 0 ? "有补签卡" : <><Sticker name="yuzu-coin" size={11} />{formatYuzu(it.price)}</>}</span>
               </button>
               {showProGift && cards === 0 && <div className="yz-card-footer">
                 <button type="button" className="yz-card-pro" onClick={onOpenPro}><Sparkles size={12} aria-hidden="true" />开通会员送一张补签卡</button>
@@ -325,7 +325,7 @@ export const YuzuShopPage = ({ onOpenPro }: { onOpenPro?: () => void }) => {
               {!itemIsAvailable && !has ? <span className="yz-tag is-soon">即将上架</span>
                 : on ? <span className="yz-tag is-on"><Check size={11} /> 使用中</span>
                 : has ? <span className="yz-tag"><Check size={11} /> 已拥有</span>
-                  : <span className="yz-price"><Citrus size={11} aria-hidden="true" />{formatYuzu(it.price)}</span>}
+                  : <span className="yz-price"><Sticker name="yuzu-coin" size={11} />{formatYuzu(it.price)}</span>}
             </button>
           );
         })}

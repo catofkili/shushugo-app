@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import type { DayStatus } from "../../lib/streak";
+import { Sticker } from "../CapybaraMascot";
 import "./streak.css";
 
 export type FlameState = "off" | "lit" | "gold";
@@ -9,7 +10,7 @@ export const flameStateOf = (status: DayStatus): FlameState =>
   status === "gold" ? "gold" : status === "none" ? "off" : "lit";
 
 /**
- * 连胜火苗。纯 CSS 画（层叠的水滴形），不用内联 SVG（小程序不渲染）、不用 lucide（小程序里是 Image，染不了色）。
+ * 连胜火苗主体用 CSS 画（层叠的水滴形），不用内联 SVG（小程序不渲染）、不用 lucide（小程序里是 Image，染不了色）。
  *
  * - state 说今天：off 睡着（灰、眯眼）/ lit 暖橙在跳 / gold 金色带扫光。
  * - tier 说攒了多久（规格 §3）：2 起有外焰和火星，3 内芯变蓝，4 外圈光环，5 戴冠。
@@ -40,7 +41,7 @@ export function StreakFlame({ state, tier, size = 48, atRisk = false, className 
       <i className="sf-core" />
       {detailed && <i className="sf-face"><i /><i /></i>}
       {detailed && t >= 2 && state !== "off" && <i className="sf-sparks"><i /><i /><i /></i>}
-      {detailed && t >= 5 && <i className="sf-crown">👑</i>}
+      {detailed && t >= 5 && <span className="sf-crown"><Sticker name="crown" size={size * 0.34} /></span>}
     </span>
   );
 }

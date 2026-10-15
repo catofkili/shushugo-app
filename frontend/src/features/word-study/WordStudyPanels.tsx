@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
-import { Brain, CalendarDays, CheckCircle2, ChevronRight, Citrus, Clock3, Flame, History, Languages, ListChecks, Minus, Pencil, Plus, Puzzle, Repeat, Share2, Star, Volume2 } from "lucide-react";
+import { Brain, CalendarDays, CheckCircle2, ChevronRight, Clock3, Flame, History, Languages, ListChecks, Minus, Pencil, Plus, Puzzle, Repeat, Share2, Star, Volume2 } from "lucide-react";
 import { AnalyticsDashboard } from "../../components/AnalyticsDashboard";
 import { useFavoriteFolderPicker } from "../../components/FavoriteFolderPicker";
 import { ScrollArea } from "../../components/ScrollArea";
@@ -502,7 +502,7 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
                 onClick={() => { setYuzuSpinKey((key) => key + 1); playSave(); }}
                 onAnimationEnd={(event) => { if (event.animationName === "ds-bump") setYuzuBumping(false); }}
               >
-                <span key={yuzuSpinKey} ref={walletMarkRef} className={`fin-yuzu-mark${yuzuSpinKey ? " fin-yuzu-spinning" : ""}`} aria-hidden="true"><Citrus size={17} /></span>
+                <span key={yuzuSpinKey} ref={walletMarkRef} className={`fin-yuzu-mark${yuzuSpinKey ? " fin-yuzu-spinning" : ""}`} aria-hidden="true"><Sticker name="yuzu-coin" size={17} /></span>
                 <span aria-live="polite">{shownYuzuBalance}</span>
               </button>
             )}
@@ -838,7 +838,7 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
             if (event.animationName === "fin-yuzu-fly") arriveYuzu(flight.balance);
           }}
         >
-          <Citrus size={20} />
+          <Sticker name="yuzu-coin" size={20} />
         </span>
       )}
 

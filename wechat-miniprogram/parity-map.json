@@ -675,6 +675,28 @@
         "frontend/src/components/capy-tool-selection.ts"
       ],
       "reason": "Taro 小程序直接编译这份共享源码；不维护第二份页面。"
+    },
+    {
+      "web": "frontend/src/components/streak/StreakFlame.tsx",
+      "mini": [
+        "frontend/src/components/streak/StreakFlame.tsx"
+      ],
+      "reason": "Taro 连胜页面直接编译这份共享火苗组件；不维护第二份页面。"
+    },
+    {
+      "web": "frontend/src/components/streak/streak.css",
+      "mini": [
+        "frontend/src/components/streak/streak.css"
+      ],
+      "reason": "Taro 连胜页面直接编译这份共享火苗样式；不维护第二份样式副本。"
+    },
+    {
+      "web": "frontend/public/brand/sheet/",
+      "mini": [
+        "taro-spike-2/src/assets/brand/",
+        "taro-spike-2/src/package-assets/"
+      ],
+      "reason": "Taro 品牌贴纸从同一 public/brand/sheet 母版同步成主包和分包 PNG。"
     }
   ]
 }

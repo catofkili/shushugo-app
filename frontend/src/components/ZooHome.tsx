@@ -417,7 +417,7 @@ export function ZooHome({
                   className={`zoo-modes-item ${active ? "on" : ""}`}
                   onClick={() => { setModeSheetOpen(false); onStartMode(mode.id); }}
                 >
-                  <span className="zoo-modes-item-emoji" aria-hidden="true"><mode.Icon size={20} /></span>
+                  <span className="zoo-modes-item-emoji" aria-hidden="true"><Sticker name={`mode-${mode.id}`} size={32} /></span>
                   <span className="zoo-modes-item-copy">
                     <b>{mode.title}{mode.id === "mixed" && !entitlements.isPro && <span className="zoo-pro-tag">Pro</span>}</b>
                     <small>{mode.subtitle} · {mode.description}</small>

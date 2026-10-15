@@ -15,7 +15,7 @@ import {
   type CloudTeamPlazaItem
 } from "../lib/sync-api";
 import { Check, RefreshCw } from "lucide-react";
-import { CapybaraWalk, Sticker } from "../components/CapybaraMascot";
+import { CapybaraWalk, Sticker, type StickerName } from "../components/CapybaraMascot";
 import { MascotSay } from "../components/MascotSay";
 import { playKnow, playSave, playStreakChirp } from "../lib/zoo-sounds";
 import { confirmDialog, promptDialog } from "../lib/platform-dialogs";
@@ -31,6 +31,16 @@ import { ZooConfetti } from "../components/ZooConfetti";
 import "./team-duel.css";
 
 const EMOJIS = ["🌱", "🐿️", "🐦", "🚃", "🦉", "🍊", "📚", "⛩️"];
+const EMBLEM_ART: Record<string, StickerName> = {
+  "🌱": "emblem-sprout", "🐿️": "emblem-squirrel", "🐦": "emblem-bird", "🚃": "emblem-train",
+  "🦉": "emblem-owl", "🍊": "emblem-yuzu", "📚": "emblem-books", "⛩️": "emblem-torii"
+};
+const EMBLEM_ART_BARE: Record<string, StickerName> = Object.fromEntries(Object.entries(EMBLEM_ART).map(([emoji, name]) => [emoji.replace(/\uFE0F/g, ""), name]));
+// 队徽在库里（也在云端）存的是 emoji 字符本身，只换显示。🐿️ ⛩️ 这类有带 / 不带 U+FE0F 两种写法，查表前去掉它。
+const teamEmblem = (emoji: string, size: number) => {
+  const name = EMBLEM_ART_BARE[emoji.replace(/\uFE0F/g, "")];
+  return name ? <Sticker name={name} size={size} /> : <span style={{ fontSize: size }}>{emoji}</span>;
+};
 const TARGETS = ["N5", "N4", "N3", "N2", "N1", "全部"];
 
 type TeamDraft = {
@@ -297,7 +307,7 @@ export function TeamPage({ onBack, onOpenDuel, initialInviteCode = "" }: { onBac
           <>
             <section className="zoo-tm-summary">
               <div className="zoo-tm-team-topline">
-                <span className="zoo-tm-team-mark">{team.emoji}</span>
+                <span className="zoo-tm-team-mark">{teamEmblem(team.emoji, 28)}</span>
                 <div className="zoo-tm-team-copy">
                   <h2>{team.name}</h2>
                   <p>{team.targetLevel} · {team.visibility === "public" ? "公开队伍" : "仅邀请加入"}</p>
@@ -391,7 +401,7 @@ export function TeamPage({ onBack, onOpenDuel, initialInviteCode = "" }: { onBac
             <section className="zoo-tm-card-shell zoo-tm-create-card">
               <div className="zoo-tm-create-head">
                 <h2>创建自己的学习小队</h2>
-                <span className="zoo-tm-create-emoji">{draft.emoji}</span>
+                <span className="zoo-tm-create-emoji">{teamEmblem(draft.emoji, 28)}</span>
               </div>
               <p className="zoo-tm-detail">最多 6 人。公开队伍会出现在广场，仅邀请队伍需要邀请码。</p>
               <label className="zoo-tm-field">你的队友昵称
@@ -421,7 +431,7 @@ export function TeamPage({ onBack, onOpenDuel, initialInviteCode = "" }: { onBac
               )}
               {plaza.map((item) => (
                 <article key={item.id} className="zoo-tm-card-shell zoo-tm-plaza-item">
-                  <span className="zoo-tm-plaza-emoji">{item.emoji}</span>
+                  <span className="zoo-tm-plaza-emoji">{teamEmblem(item.emoji, 24)}</span>
                   <div className="zoo-tm-plaza-copy">
                     <b>{item.name}</b>
                     <p><span>{item.targetLevel}</span>{item.memberCount}/{item.maxMembers} 人</p>
@@ -493,7 +503,7 @@ function TeamForm({ draft, setDraft, submitLabel, busy, disabled = false, headin
       <div className="zoo-tm-field" role="group" aria-label="图标">图标
         <div className="zoo-tm-chips">
           {EMOJIS.map((emoji) => (
-            <button key={emoji} type="button" className="ds-chip zoo-tm-emoji-chip" aria-pressed={draft.emoji === emoji} onClick={() => setDraft({ ...draft, emoji })}>{emoji}</button>
+            <button key={emoji} type="button" className="ds-chip zoo-tm-emoji-chip" aria-label={`选择队徽 ${emoji}`} aria-pressed={draft.emoji === emoji} onClick={() => setDraft({ ...draft, emoji })}>{teamEmblem(emoji, 20)}</button>
           ))}
         </div>
       </div>

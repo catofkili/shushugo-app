@@ -358,7 +358,7 @@
 .zoo-modes-item{display:flex;align-items:center;gap:10px;width:100%;border:1.5px solid transparent;border-radius:16px;background:transparent;padding:9px 10px;text-align:left}
 .zoo-modes-item:hover{background:var(--zoo-primary-soft)}
 .zoo-modes-item.on{border-color:color-mix(in srgb, var(--ds-primary) 45%, transparent);background:var(--zoo-primary-soft)}
-.zoo-modes-item-emoji{flex:none;font-size:20px;line-height:1;display:inline-flex;color:var(--zoo-primary-deep)}
+.zoo-modes-item-emoji{flex:none;width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center}
 .zoo-modes-item-copy{display:flex;min-width:0;flex:1;flex-direction:column;gap:2px}
 .zoo-modes-item-copy b{color:var(--zoo-ink);font-size:14px;font-weight:800}
 .zoo-modes-item-copy small{color:var(--zoo-muted);font-size:11px;font-weight:700;line-height:1.45}
@@ -576,7 +576,7 @@
 /* 队伍概况 */
 .zoo-tm-summary{padding:16px}
 .zoo-tm-team-topline{display:flex;align-items:center;gap:12px}
-.zoo-tm-team-mark,.zoo-tm-create-emoji{display:grid;width:52px;height:52px;flex:none;place-items:center;border-radius:16px;background:var(--ds-inset);font-size:28px}
+.zoo-tm-team-mark,.zoo-tm-create-emoji{display:grid;width:52px;height:52px;flex:none;place-items:center;border-radius:16px;background:var(--ds-inset)}
 .zoo-tm-team-copy{min-width:0;flex:1}
 .zoo-tm-team-copy h2{overflow:hidden;margin:0;color:var(--ds-ink);font-size:20px;font-weight:900;text-overflow:ellipsis;white-space:nowrap}
 .zoo-tm-team-copy p{margin:3px 0 0;color:var(--ds-ink-3);font-size:12px;font-weight:600}
@@ -648,7 +648,7 @@
 .zoo-tm-close{border:0;background:transparent;color:var(--ds-ink-3);font-size:22px}
 .zoo-tm-chips{display:flex;flex-wrap:wrap;gap:6px}
 .zoo-tm-chips .ds-chip{min-height:34px}
-.zoo-tm-emoji-chip{min-width:44px;padding:0;font-size:20px}
+.zoo-tm-emoji-chip{min-width:44px;padding:0}
 .zoo-tm-form-actions{display:flex;gap:8px}
 .zoo-tm-form-actions .zoo-tm-primary{flex:1}
 
@@ -666,7 +666,7 @@
 .zoo-tm-empty h3{margin:6px 0 3px;color:var(--ds-ink);font-size:15px;font-weight:800}
 .zoo-tm-empty p{margin:0;color:var(--ds-ink-3);font-size:13px}
 .zoo-tm-plaza-item{display:flex;align-items:center;gap:12px;padding:12px 14px}
-.zoo-tm-plaza-emoji{display:grid;width:44px;height:44px;flex:none;place-items:center;border-radius:14px;background:var(--ds-inset);font-size:24px}
+.zoo-tm-plaza-emoji{display:grid;width:44px;height:44px;flex:none;place-items:center;border-radius:14px;background:var(--ds-inset)}
 .zoo-tm-plaza-copy{min-width:0;flex:1}
 .zoo-tm-plaza-copy b{display:block;overflow:hidden;color:var(--ds-ink);font-size:15px;font-weight:800;text-overflow:ellipsis;white-space:nowrap}
 .zoo-tm-plaza-copy p{display:flex;align-items:center;gap:6px;margin:3px 0 2px;color:var(--ds-ink-2);font-size:12px;font-weight:600}
@@ -1419,7 +1419,6 @@
 .yz-wallet{display:flex;align-items:center;flex-wrap:wrap;gap:4px 10px;border:1px solid var(--ds-line);border-radius:16px;padding:8px 14px;
   color:var(--zoo-ink);background:color-mix(in srgb,var(--zoo-surface) 62%,transparent)}
 .yz-wallet-num{display:inline-flex;align-items:center;gap:5px;font-family:"Hiragino Mincho ProN","Noto Serif JP",serif;font-size:24px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
-.yz-wallet-num svg{color:var(--zoo-orange)}
 .yz-wallet-today{font-size:12px;font-weight:700;color:var(--zoo-muted)}
 .yz-wallet-how{margin-left:auto;display:inline-flex;align-items:center;gap:2px;border:1px solid var(--ds-line-2);border-radius:999px;padding:4px 10px;
   background:transparent;color:var(--zoo-brown-deep,#9C6B3F);font-size:12px;font-weight:700}
@@ -1511,7 +1510,6 @@
 .yz-card b{font-size:14px;padding:0 2px}
 .yz-price,.yz-tag{display:inline-flex;align-items:center;gap:3px;align-self:flex-start;border-radius:999px;padding:3px 9px;font-size:12px;font-weight:800;font-variant-numeric:tabular-nums}
 .yz-price{background:var(--zoo-orange-soft);color:var(--zoo-brown-deep)}
-.yz-price svg{color:var(--zoo-orange)}
 .yz-tag{background:color-mix(in srgb,var(--zoo-primary-soft) 70%,transparent);color:var(--zoo-primary-deep)}
 .yz-tag.is-on{background:var(--zoo-primary-deep);color:#fff}
 .yz-tag.is-soon{background:transparent;border:1px dashed var(--ds-line-2);color:var(--zoo-muted)}

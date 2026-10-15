@@ -48,7 +48,11 @@ export type StickerName =
   | "tool-kanji-readings-capy" | "tool-favorites-capy" | "tool-vocab-test-capy" | "tool-shop-capy" | "tool-team-capy"
   // 底栏（方案 A）：没选中 = 物件，选中 = 水豚抱物件。见 AppNavigation 的 navItems
   | "nav-home" | "nav-word" | "nav-grammar" | "nav-profile"
-  | "nav-home-capy" | "nav-word-capy" | "nav-grammar-capy" | "nav-profile-capy";
+  | "nav-home-capy" | "nav-word-capy" | "nav-grammar-capy" | "nav-profile-capy"
+  // 2026-10-15 v3：模式物件、组队徽章、连胜皇冠和柚子币。
+  | "mode-classic" | "mode-mixed" | "mode-mistakes" | "mode-quick" | "mode-reverse" | "mode-kanji" | "mode-picked"
+  | "emblem-sprout" | "emblem-squirrel" | "emblem-bird" | "emblem-train" | "emblem-owl" | "emblem-yuzu" | "emblem-books" | "emblem-torii"
+  | "crown" | "yuzu-coin";
 
 /**
  * 吉祥物皮肤（柚子商店 mascot 槽位）。每套皮肤是 `public/brand/sheet-<皮肤>/` 下**同名**的一批贴纸，

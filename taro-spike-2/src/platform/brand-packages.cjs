@@ -26,6 +26,30 @@ module.exports = {
     "account",
     contentPackage
   ],
+  "emblem-sprout": [
+    "study"
+  ],
+  "emblem-squirrel": [
+    "study"
+  ],
+  "emblem-bird": [
+    "study"
+  ],
+  "emblem-train": [
+    "study"
+  ],
+  "emblem-owl": [
+    "study"
+  ],
+  "emblem-yuzu": [
+    "study"
+  ],
+  "emblem-books": [
+    "study"
+  ],
+  "emblem-torii": [
+    "study"
+  ],
   "mood-heart": [
     "account",
     contentPackage
@@ -34,6 +58,12 @@ module.exports = {
     contentPackage
   ],
   "mood-fight": [
+    contentPackage
+  ],
+  "crown": [
+    contentPackage
+  ],
+  "yuzu-coin": [
     contentPackage
   ],
   "icon-study-modes": [

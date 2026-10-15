@@ -1,22 +1,22 @@
 {
-  "appWxssBytesBefore": 276796,
-  "appWxssBytesAfter": 217099,
+  "appWxssBytesBefore": 276345,
+  "appWxssBytesAfter": 217058,
   "movedRuleBytesByRoute": {
     "account/personal-info/index.wxss": 4644,
     "content-pages/achievements/index.wxss": 4644,
     "content-pages/weekly-report/index.wxss": 161,
-    "content-pages/yuzu-shop/index.wxss": 16013,
+    "content-pages/yuzu-shop/index.wxss": 15642,
     "pages/word/index.wxss": 3066,
     "study/confusion/index.wxss": 8496,
     "study/jlpt-practice/index.wxss": 5361,
     "study/kanji-readings/index.wxss": 12069,
     "study/quick-study/index.wxss": 11262,
-    "study/team/index.wxss": 11736,
+    "study/team/index.wxss": 11688,
     "study/vocab-test/index.wxss": 3275,
     "study/word-list/index.wxss": 14118
   },
   "movedRuleCountByRoute": {
-    "content-pages/yuzu-shop/index.wxss": 144,
+    "content-pages/yuzu-shop/index.wxss": 139,
     "study/word-list/index.wxss": 127,
     "study/team/index.wxss": 118,
     "content-pages/weekly-report/index.wxss": 2,

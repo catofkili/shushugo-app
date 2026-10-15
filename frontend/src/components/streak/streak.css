@@ -122,7 +122,7 @@
   animation: sf-spin 14s linear infinite;
   z-index: 0;
 }
-.sf-crown { z-index: 5; left: 50%; top: calc(var(--sf) * -.1); font-size: calc(var(--sf) * .28); line-height: 1; transform: translateX(-50%) rotate(10deg); font-style: normal; }
+.sf-crown { z-index: 5; left: 50%; top: calc(var(--sf) * -.1); width: calc(var(--sf) * .34); height: calc(var(--sf) * .34); transform: translateX(-50%) rotate(10deg); }
 
 /* 跳动：醒着的火苗身体和外焰错拍伸缩 */
 .sf-lit .sf-body, .sf-gold .sf-body { animation: sf-flick 1.7s ease-in-out infinite both; }
