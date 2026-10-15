@@ -118,6 +118,10 @@
   --ds-font-size-pill: 12px;
 
   --zoo-ink: #F2EFE8;
+  /* 2026-10-16：:root 把 --zoo-surface 定成白色，这里以前没跟着改，深色下凡是还读 --zoo-surface 的块（快速复习整块面板等，app.css 里 29 处）
+     都是白底配浅字。styles.css 的深色段也定过它，但 design.css 后加载、:root 同权重，被覆盖了。深色皮肤的选择器更具体，不受影响。 */
+  --zoo-surface: var(--ds-surface);
+  --zoo-muted: var(--ds-ink-3);
   --color-border-light: rgba(255, 255, 255, 0.07);
   --color-border: rgba(255, 255, 255, 0.14);
   --form-control-bg: var(--ds-inset);
