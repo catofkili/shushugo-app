@@ -428,6 +428,8 @@ export function TalkPage() {
     : [{ id: "all", title: "", scenes }];
   const newScenes = scenes.filter((scene) => scene.collected && !initialCollection.has(scene.id));
   const inputAvailable = speechAvailable && !micBlocked;
+  const sceneListOffset = Number(Boolean(welcome)) + Number(due.length > 0);
+  const sceneListLimit = 8 - sceneListOffset;
   const retry = () => { setError(""); setLoading(true); setAttempt((value) => value + 1); };
 
   return <div className="talk-page">
@@ -444,7 +446,7 @@ export function TalkPage() {
     {loading ? <div className="talk-loading" aria-busy="true"><CapybaraWalk size={72} /><p>正在加载…</p></div>
       : !session ? <>
         {/* 没答过任何一张时的说明；点进任一场景就不再出现。不放按钮：下面的场景格子本身就是入口。 */}
-        {welcome && <section className="ds-card talk-welcome">
+        {welcome && <section className="ds-card talk-welcome ds-enter" style={{ animationDelay: "0ms" }}>
           {talkHeroImage && <CrossPlatformImage src={talkHeroImage} alt="" className="talk-welcome-art"
             weappWidth={88} weappHeight={88} style={{ width: 88, height: 88, objectFit: "contain" }} />}
           <div>
@@ -452,8 +454,12 @@ export function TalkPage() {
             <p className="talk-translation">挑一个场景开始</p>
           </div>
         </section>}
-        {due.length > 0 && <button type="button" className="ds-btn-soft focus-ring talk-review" onClick={() => start(null)}>复习 {due.length} 张</button>}
-        {sceneSections.map((section) => <section key={section.id} className="talk-group">
+        {due.length > 0 && <button type="button" className="ds-btn-soft focus-ring talk-review ds-enter" style={{ animationDelay: `${Number(Boolean(welcome)) * 60}ms` }} onClick={() => start(null)}>复习 {due.length} 张</button>}
+        {sceneSections.map((section, index) => <section
+          key={section.id}
+          className={`talk-group${index < sceneListLimit ? " ds-enter" : ""}`}
+          style={index < sceneListLimit ? { animationDelay: `${(index + sceneListOffset) * 60}ms` } : undefined}
+        >
           {section.title && <h2 className="talk-group-title">{section.title}</h2>}
           <div className="talk-collection-grid">
             {section.scenes.map((scene) => <button type="button" key={scene.id} className="ds-btn-soft focus-ring talk-collection-item" onClick={() => start(scene.id, sceneImages)}>

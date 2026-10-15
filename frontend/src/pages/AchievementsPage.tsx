@@ -47,7 +47,7 @@ export const AchievementsPage = ({ onBack }: AchievementsPageProps) => {
 
   return (
     <div className="mx-auto max-w-3xl pb-4">
-      <div className="page-backbar mb-4 flex items-center justify-between gap-3 rounded-2xl border border-white/15 bg-[#474a4a] p-2">
+      <div className="page-backbar mb-4 flex items-center justify-between gap-3 rounded-2xl border border-white/15 bg-[#474a4a] p-2 ds-enter" style={{ animationDelay: "0ms" }}>
         <button
           onClick={onBack}
           className="focus-ring inline-flex items-center gap-2 rounded-2xl px-2 py-2 text-sm font-bold text-white/78 hover:bg-white/8 hover:text-white"
@@ -59,10 +59,10 @@ export const AchievementsPage = ({ onBack }: AchievementsPageProps) => {
       </div>
 
       {!board ? (
-        <div className="py-10 text-center text-sm font-bold text-white/45"><Sticker name="mood-ask" size={80} className="mx-auto mb-2" />正在结算…</div>
+        <div className="py-10 text-center text-sm font-bold text-white/45 ds-enter" style={{ animationDelay: "60ms" }}><Sticker name="mood-ask" size={80} className="mx-auto mb-2" />正在结算…</div>
       ) : (
         <>
-          <div className="ach-summary">
+          <div className="ach-summary ds-enter" style={{ animationDelay: "60ms" }}>
             <Sticker name="mood-proud" size={52} className="shrink-0" />
             <div>
               <p className="ach-summary-kick">已解锁</p>
@@ -74,47 +74,49 @@ export const AchievementsPage = ({ onBack }: AchievementsPageProps) => {
             <p className="ach-summary-percent">{percent}%</p>
           </div>
 
-          {grouped.map((group) => (
-            <section key={group.category} className="mt-4">
-              <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.18em] text-white/45">
-                {group.category}
-                <span className="ml-2 normal-case tracking-normal text-white/30">
-                  {group.items.filter((item) => item.unlocked).length}/{group.items.length}
-                </span>
-              </p>
-              <div className="ach-grid">
-                {group.items.map((item) => {
-                  const secret = item.hidden && !item.unlocked;
-                  const Icon = ACHIEVEMENT_ICONS[item.id] ?? Star;
-                  return (
-                    <div
-                      key={item.id}
-                      className={`ach-card ${item.unlocked ? TIER_CLASS[item.tier] : "is-locked"}`}
-                    >
-                      <span className="ach-emoji">{secret ? <Lock size={20} /> : <Icon size={20} />}</span>
-                      <div className="min-w-0 flex-1">
-                        <p className="ach-name">
-                          {secret ? "???" : item.name}
-                          {item.tier !== "common" && !secret && (
-                            <span className={`ach-tag ach-tag-${item.tier}`}>{TIER_LABEL[item.tier]}</span>
-                          )}
-                        </p>
-                        <p className="ach-desc">{secret ? "隐藏成就 —— 拿到了才告诉你" : item.description}</p>
-                        {item.unlocked ? (
-                          <p className="ach-date">{item.unlockedOn} 达成</p>
-                        ) : item.goal > 1 && !secret ? (
-                          <div className="ach-progress">
-                            <span style={{ width: `${Math.min(100, item.progress / item.goal * 100)}%` }} />
-                            <b>{item.progress} / {item.goal}</b>
-                          </div>
-                        ) : null}
+          <div className="ds-enter" style={{ animationDelay: "120ms" }}>
+            {grouped.map((group) => (
+              <section key={group.category} className="mt-4">
+                <p className="mb-2 px-1 text-xs font-bold uppercase tracking-[0.18em] text-white/45">
+                  {group.category}
+                  <span className="ml-2 normal-case tracking-normal text-white/30">
+                    {group.items.filter((item) => item.unlocked).length}/{group.items.length}
+                  </span>
+                </p>
+                <div className="ach-grid">
+                  {group.items.map((item) => {
+                    const secret = item.hidden && !item.unlocked;
+                    const Icon = ACHIEVEMENT_ICONS[item.id] ?? Star;
+                    return (
+                      <div
+                        key={item.id}
+                        className={`ach-card ${item.unlocked ? TIER_CLASS[item.tier] : "is-locked"}`}
+                      >
+                        <span className="ach-emoji">{secret ? <Lock size={20} /> : <Icon size={20} />}</span>
+                        <div className="min-w-0 flex-1">
+                          <p className="ach-name">
+                            {secret ? "???" : item.name}
+                            {item.tier !== "common" && !secret && (
+                              <span className={`ach-tag ach-tag-${item.tier}`}>{TIER_LABEL[item.tier]}</span>
+                            )}
+                          </p>
+                          <p className="ach-desc">{secret ? "隐藏成就 —— 拿到了才告诉你" : item.description}</p>
+                          {item.unlocked ? (
+                            <p className="ach-date">{item.unlockedOn} 达成</p>
+                          ) : item.goal > 1 && !secret ? (
+                            <div className="ach-progress">
+                              <span style={{ width: `${Math.min(100, item.progress / item.goal * 100)}%` }} />
+                              <b>{item.progress} / {item.goal}</b>
+                            </div>
+                          ) : null}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </section>
-          ))}
+                    );
+                  })}
+                </div>
+              </section>
+            ))}
+          </div>
         </>
       )}
     </div>

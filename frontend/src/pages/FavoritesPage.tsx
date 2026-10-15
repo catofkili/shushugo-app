@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type CSSProperties } from "react";
 import { FolderPlus, Pencil, Trash2 } from "lucide-react";
 import { Sticker } from "../components/CapybaraMascot";
 import { JapaneseRuby } from "../components/JapaneseRuby";
@@ -127,8 +127,8 @@ export const FavoritesPage = ({ onOpenGrammar, onStudyPicked }: FavoritesPagePro
   const wordIdsInView = items.filter((item) => item.type === "word").map((item) => Number(item.id));
 
   return (
-    <section className="mx-auto max-w-4xl space-y-4">
-      <div className="dictionary-card rounded-2xl p-4">
+    <section className="mx-auto max-w-4xl space-y-4 ds-stagger">
+      <div className="dictionary-card rounded-2xl p-4" style={{ "--i": 0 } as CSSProperties}>
         <div className="flex items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-semibold">收藏</h1>
@@ -216,7 +216,7 @@ export const FavoritesPage = ({ onOpenGrammar, onStudyPicked }: FavoritesPagePro
       )}
 
       {items.length ? (
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-2" style={{ "--i": 2 } as CSSProperties}>
           {items.map((item) => {
             const fallback = item.title ? null : grammarInfo.get(item.id);
             const title = item.title || fallback?.title || item.id;
@@ -260,7 +260,7 @@ export const FavoritesPage = ({ onOpenGrammar, onStudyPicked }: FavoritesPagePro
           })}
         </div>
       ) : (
-        <div className="dictionary-card rounded-2xl p-8 text-center">
+        <div className="dictionary-card rounded-2xl p-8 text-center" style={{ "--i": 2 } as CSSProperties}>
           <Sticker name="mood-hungry" size={110} className="mx-auto" />
           <p className="mt-3 text-lg font-bold">{folder === ALL_FOLDERS ? "这里还空着，饿了" : "这个收藏夹还空着"}</p>
           <p className="mt-2 text-sm text-white/55">在单词卡或语法卡上点星标，就会收进这里。</p>

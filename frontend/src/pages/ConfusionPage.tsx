@@ -184,7 +184,7 @@ export const ConfusionPage = ({ onQuiz }: ConfusionPageProps) => {
 
   return (
     <section className="cf-page">
-      <header className="cf-head">
+      <header className="cf-head ds-enter" style={{ animationDelay: "0ms" }}>
         <div className="flex items-center gap-2">
           <Sticker name="mood-puzzled" size={52} className="-my-2 shrink-0" />
           <h1 className="cf-title">疑难辨析</h1>
@@ -194,7 +194,7 @@ export const ConfusionPage = ({ onQuiz }: ConfusionPageProps) => {
         </p>
       </header>
 
-      <label className="cf-search">
+      <label className="cf-search ds-enter" style={{ animationDelay: "60ms" }}>
         <Search size={15} aria-hidden="true" />
         <input
           value={query}
@@ -209,7 +209,7 @@ export const ConfusionPage = ({ onQuiz }: ConfusionPageProps) => {
         )}
       </label>
 
-      <div className="cf-types">
+      <div className="cf-types ds-enter" style={{ animationDelay: "120ms" }}>
         <button
           className={`cf-type-chip${activeType === "all" ? " on" : ""}`}
           onClick={() => setActiveType("all")}
@@ -242,15 +242,19 @@ export const ConfusionPage = ({ onQuiz }: ConfusionPageProps) => {
       </div>
 
       {sections.length === 0 && (
-        <p className="cf-loading"><Sticker name="empty-search" size={96} />没有找到相关内容，换个关键词试试吧</p>
+        <p className="cf-loading ds-enter" style={{ animationDelay: "180ms" }}><Sticker name="empty-search" size={96} />没有找到相关内容，换个关键词试试吧</p>
       )}
 
-      {sections.map((section) => {
+      {sections.map((section, index) => {
         const meta = TYPE_META[section.type];
         const visibleSectionGroups = section.groups.filter((group) => visibleKeys.has(group.key));
         if (!visibleSectionGroups.length) return null;
         return (
-          <section key={section.type} className="cf-section">
+          <section
+            key={section.type}
+            className={`cf-section${index < 5 ? " ds-enter" : ""}`}
+            style={index < 5 ? { animationDelay: `${(index + 3) * 60}ms` } : undefined}
+          >
             {/* 一类一节。选中某一类时这里只剩一节，标题照旧留着 ——
                 没有标题的话「现在看的是哪一类」只能靠 chip 的高亮去猜。 */}
             <p className="cf-section-head">
