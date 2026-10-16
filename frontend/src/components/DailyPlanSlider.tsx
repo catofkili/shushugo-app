@@ -1,21 +1,25 @@
 export const DailyPlanSlider = ({
   value,
+  min = 0,
   max,
   step = 1,
   color,
   onChange,
-  onCommit
+  onCommit,
+  label
 }: {
   value: number;
+  min?: number;
   max: number;
   step?: number;
   color?: string;
   onChange: (value: number) => void;
   onCommit?: () => void;
+  label?: string;
 }) => <input
   className="w-full"
   type="range"
-  min={0}
+  min={min}
   max={max}
   step={step}
   value={value}
@@ -24,4 +28,5 @@ export const DailyPlanSlider = ({
   onKeyUp={() => onCommit?.()}
   onBlur={() => onCommit?.()}
   style={color ? { accentColor: color } : undefined}
+  aria-label={label}
 />;

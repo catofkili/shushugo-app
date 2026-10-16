@@ -132,6 +132,9 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
   const [clearingData, setClearingData] = useState(false);
   const backupInputRef = useRef<HTMLInputElement | null>(null);
   const wordListInputRef = useRef<HTMLInputElement | null>(null);
+  // 小程序没有 <input type="file">：点「导入」「恢复备份」会对一个不存在的 click() 抛错、整页报「应用刚才遇到了错误」（2026-10-16 实机）。
+  // 导出在小程序有 browser-runtime 的替身（写文件 + 发到聊天），导入要另做 wx.chooseMessageFile，先不出这两行。
+  const canPickFiles = !(globalThis as { wx?: unknown }).wx;
 
   const formatBytes = (bytes: number | null | undefined) => {
     if (bytes === null || bytes === undefined) return "计算中…";
@@ -650,14 +653,14 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
             <ChevronRight size={18} className="shrink-0 text-[var(--ds-ink-3)]" />
           </button>
 
-          <button onClick={() => wordListInputRef.current?.click()} className="w7-row focus-ring flex w-full items-center gap-3 px-4 py-3 text-left">
+          {canPickFiles && <button onClick={() => wordListInputRef.current?.click()} className="w7-row focus-ring flex w-full items-center gap-3 px-4 py-3 text-left">
             <Upload size={20} className="shrink-0 text-[var(--ds-ink-2)]" />
             <span className="min-w-0 flex-1 text-left">
               <span className="block text-[15px] font-bold text-white">导入词单或 MOJi 复习记录</span>
               <span className="mt-1 block text-xs text-white/50">普通词单可直接导入；MOJi 完整复习记录需先用 Mac 导出</span>
             </span>
             <ChevronRight size={18} className="shrink-0 text-[var(--ds-ink-3)]" />
-          </button>
+          </button>}
 
           {/* 需要 Mac + 跑一次 python 脚本,能用的人极少,别让它常驻这一页。
               2026-10-16：步骤要在收集日项目文件夹里跑 npm / python，只有作者做得到——正式包（网页 / 小程序）不出现，开发环境保留。 */}
@@ -680,14 +683,14 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
             </div>
           </details>}
 
-          <button onClick={() => backupInputRef.current?.click()} className="w7-row focus-ring flex w-full items-center gap-3 px-4 py-3 text-left">
+          {canPickFiles && <button onClick={() => backupInputRef.current?.click()} className="w7-row focus-ring flex w-full items-center gap-3 px-4 py-3 text-left">
             <Upload size={20} className="shrink-0 text-[var(--ds-ink-2)]" />
             <span className="min-w-0 flex-1 text-left">
               <span className="block text-[15px] font-bold text-white">恢复备份</span>
               <span className="mt-1 block text-xs text-white/50">选择本应用导出的 .db 文件，会覆盖本机进度</span>
             </span>
             <ChevronRight size={18} className="shrink-0 text-[var(--ds-ink-3)]" />
-          </button>
+          </button>}
 
           <button onClick={openClearDataPanel} className="w7-row focus-ring flex w-full items-center gap-3 px-4 py-3 text-left text-[var(--ds-danger)]">
             <RotateCcw size={20} className="shrink-0" />

@@ -2,17 +2,17 @@
   "limitBytes": 2097152,
   "packages": {
     "main": {
-      "bytes": 1780241,
+      "bytes": 1780213,
       "mib": 1.698,
       "passes": true
     },
     "study": {
-      "bytes": 1013795,
+      "bytes": 1013878,
       "mib": 0.967,
       "passes": true
     },
     "account": {
-      "bytes": 323913,
+      "bytes": 323944,
       "mib": 0.309,
       "passes": true
     },
@@ -52,7 +52,7 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 903253,
+      "bytes": 903182,
       "mib": 0.861,
       "passes": true
     },
@@ -67,12 +67,12 @@
       "passes": true
     }
   },
-  "totalBytes": 10488720,
+  "totalBytes": 10488735,
   "files": [
     {
       "path": "lazy/tabs.js",
       "package": "lazy",
-      "bytes": 867808
+      "bytes": 867737
     },
     {
       "path": "common.js",
@@ -152,7 +152,7 @@
     {
       "path": "app.wxss",
       "package": "main",
-      "bytes": 223207
+      "bytes": 223179
     },
     {
       "path": "features/content/kanji-variants.js",
@@ -287,7 +287,7 @@
     {
       "path": "account/settings/index.js",
       "package": "account",
-      "bytes": 31617
+      "bytes": 31565
     },
     {
       "path": "study/jlpt-practice/index.js",
@@ -880,6 +880,16 @@
       "bytes": 6109
     },
     {
+      "path": "account/sub-common/db45914a76a7641bbd38ab5d9633d3ea.js",
+      "package": "account",
+      "bytes": 5926
+    },
+    {
+      "path": "study/sub-common/db45914a76a7641bbd38ab5d9633d3ea.js",
+      "package": "study",
+      "bytes": 5926
+    },
+    {
       "path": "content-pages/sub-common/c66adfb6abdd662fddcb10a6270f441f.js",
       "package": "content-pages",
       "bytes": 5889
@@ -893,16 +903,6 @@
       "path": "study/sub-common/c66adfb6abdd662fddcb10a6270f441f.js",
       "package": "study",
       "bytes": 5889
-    },
-    {
-      "path": "account/sub-common/db45914a76a7641bbd38ab5d9633d3ea.js",
-      "package": "account",
-      "bytes": 5868
-    },
-    {
-      "path": "study/sub-common/db45914a76a7641bbd38ab5d9633d3ea.js",
-      "package": "study",
-      "bytes": 5868
     },
     {
       "path": "assets/brand/shushugo-icon-dark.png",
@@ -2085,6 +2085,11 @@
       "bytes": 515
     },
     {
+      "path": "account/sub-common/2532878472bdd9729841764bf7a64f96.js",
+      "package": "account",
+      "bytes": 513
+    },
+    {
       "path": "content-pages/assets/lucide/sunmoon-ink.svg",
       "package": "content-pages",
       "bytes": 513
@@ -2092,6 +2097,11 @@
     {
       "path": "content-pages/assets/lucide/sunmoon-light.svg",
       "package": "content-pages",
+      "bytes": 513
+    },
+    {
+      "path": "study/sub-common/2532878472bdd9729841764bf7a64f96.js",
+      "package": "study",
       "bytes": 513
     },
     {
@@ -2145,11 +2155,6 @@
       "bytes": 490
     },
     {
-      "path": "account/sub-common/2532878472bdd9729841764bf7a64f96.js",
-      "package": "account",
-      "bytes": 488
-    },
-    {
       "path": "assets/lucide/sprout-ink.svg",
       "package": "main",
       "bytes": 488
@@ -2157,11 +2162,6 @@
     {
       "path": "assets/lucide/sprout-light.svg",
       "package": "main",
-      "bytes": 488
-    },
-    {
-      "path": "study/sub-common/2532878472bdd9729841764bf7a64f96.js",
-      "package": "study",
       "bytes": 488
     },
     {

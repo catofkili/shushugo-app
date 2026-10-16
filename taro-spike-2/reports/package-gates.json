@@ -2,15 +2,15 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1780241,
+      "bytes": 1780213,
       "passes": true
     },
     "study": {
-      "bytes": 1013795,
+      "bytes": 1013878,
       "passes": true
     },
     "account": {
-      "bytes": 323913,
+      "bytes": 323944,
       "passes": true
     },
     "content-pages": {
@@ -42,7 +42,7 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 903253,
+      "bytes": 903182,
       "passes": true
     },
     "jlpt-bank": {
@@ -248,19 +248,19 @@
       ]
     },
     {
+      "source": "frontend/src/components/DailyPlanRing.weapp.tsx",
+      "bytes": 13427,
+      "packages": [
+        "account",
+        "study"
+      ]
+    },
+    {
       "source": "frontend/src/lib/share-canvas.weapp.ts",
       "bytes": 13191,
       "packages": [
         "content-pages",
         "lazy",
-        "study"
-      ]
-    },
-    {
-      "source": "frontend/src/components/DailyPlanRing.weapp.tsx",
-      "bytes": 13050,
-      "packages": [
-        "account",
         "study"
       ]
     },
@@ -784,7 +784,7 @@
     },
     {
       "source": "frontend/src/components/DailyPlanSlider.weapp.tsx",
-      "bytes": 839,
+      "bytes": 912,
       "packages": [
         "account",
         "lazy",
@@ -1394,7 +1394,7 @@
     },
     {
       "source": "frontend/src/components/DailyPlanRing.weapp.tsx",
-      "bytes": 13050,
+      "bytes": 13427,
       "packages": [
         "account",
         "study"
@@ -1655,7 +1655,7 @@
     },
     {
       "source": "frontend/src/components/DailyPlanSlider.weapp.tsx",
-      "bytes": 839,
+      "bytes": 912,
       "packages": [
         "account",
         "lazy",
@@ -1715,7 +1715,7 @@
     "frontend/src/components/DailyPlanSlider.weapp.tsx": "The lazy setup panel and account/study plan pages render native Sliders; values and commit callbacks are owned by each mounted parent, not this stateless adapter.",
     "frontend/src/components/JapaneseRubyText.weapp.tsx": "Ruby text is used by lazy tabs and independently loaded content/grammar routes."
   },
-  "duplicatedPageComponentBytes": 348086,
+  "duplicatedPageComponentBytes": 348536,
   "unapprovedPageComponents": [],
   "stalePageComponentAllowlist": [],
   "unapprovedPageComponentBytes": 0,
@@ -1734,7 +1734,7 @@
     },
     {
       "source": "frontend/src/styles.css",
-      "bytes": 129774
+      "bytes": 129724
     },
     {
       "source": "frontend/src/lib/sync-api.ts",

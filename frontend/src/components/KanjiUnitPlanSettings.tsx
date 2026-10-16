@@ -12,6 +12,7 @@ import {
 import { kanjiUnitIndexLoaded, loadKanjiUnitIndex } from "../lib/kanji-unit-index";
 import { notifyProgressUpdated } from "../lib/progress-events";
 import { yieldToPaint } from "../lib/yield-to-paint";
+import { DailyPlanSlider } from "./DailyPlanSlider";
 
 /**
  * 汉字读音模式的每日量与目标级别。
@@ -108,15 +109,15 @@ export function KanjiUnitPlanSettings() {
         </div>
         <span className="shrink-0 text-sm font-bold text-[#81D8CF]">{quota} 题/天</span>
       </div>
-      <input
-        type="range"
+      {/* 小程序不认 <input type="range">（Taro 把它画成一个文本框，只露出被裁的「30」），统一走 DailyPlanSlider：网页是 range、小程序是原生 Slider */}
+      <DailyPlanSlider
         min={KANJI_UNIT_QUOTA_MIN}
         max={KANJI_UNIT_QUOTA_MAX}
         step={5}
         value={quota}
-        onChange={(event) => applyQuota(Number(event.target.value))}
-        aria-label="汉字读音每日题量"
-        className="w-full accent-[#81D8CF]"
+        onChange={applyQuota}
+        color="#81D8CF"
+        label="汉字读音每日题量"
       />
       <div className="mt-2 flex flex-wrap gap-2">
         {QUOTA_ANCHORS.map((anchor) => (

@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { Canvas } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import { PLAN_KINDS, PLAN_LABELS, type PlanKind } from "../lib/daily-plan";
+import { getResolvedTheme } from "../lib/studyPreferences";
 import { queryTouchRect, touchPoint, type TouchEventLike, type TouchRect } from "../lib/touch-adapter";
 import { anglesOf, moveDailyPlanBoundary, polar, RING_COLORS, RING_START, type RingValue } from "./daily-plan-ring-geometry";
 
@@ -32,6 +33,8 @@ export const DailyPlanRing = ({ value, onChange, onCommit, active, focus, onFocu
   const canvasId = `daily-plan-ring-${useId().replace(/:/g, "")}`;
   const pixelRatio = Taro.getWindowInfo().pixelRatio || 1;
   const [canvasReady, setCanvasReady] = useState(false);
+  // 设置页切主题时整页会重渲染，这里跟着重算、重画
+  const dark = getResolvedTheme() === "dark";
   const [dragging, setDragging] = useState<number | null>(null);
   const [offset, setOffset] = useState(RING_START);
   const canvasRef = useRef<{ node: RingCanvas; context: CanvasRenderingContext2D } | null>(null);
@@ -117,13 +120,14 @@ export const DailyPlanRing = ({ value, onChange, onCommit, active, focus, onFocu
     const total = PLAN_KINDS.reduce((sum, kind, index) => sum + (active.includes(kind) ? counts[index] : 0), 0);
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillStyle = "#3a2e22";
+    // canvas 读不到 CSS 变量，深色要自己换字色（2026-10-16 实机：深色下中间的数是深褐字压在深底上，几乎看不见）
+    ctx.fillStyle = dark ? "#F2EFE8" : "#3a2e22";
     ctx.font = "900 31px sans-serif";
     ctx.fillText(active.length ? String(total) : "—", center, center - 7);
-    ctx.fillStyle = "#818781";
+    ctx.fillStyle = dark ? "#C2BAAD" : "#818781";
     ctx.font = "12px sans-serif";
     ctx.fillText(active.length ? "今天 · 项" : "不按圆环排", center, center + 17);
-  }, [active, bounds, canvasReady, counts, dragging, focus, size]);
+  }, [active, bounds, canvasReady, counts, dark, dragging, focus, size]);
 
   const pointerAngle = (rect: TouchRect, x: number, y: number) => {
     const px = ((x - rect.left) / rect.width) * size - size / 2;

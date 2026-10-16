@@ -3,6 +3,7 @@ import { Brain, CalendarDays, CheckCircle2, ChevronRight, Clock3, Flame, History
 import { AnalyticsDashboard } from "../../components/AnalyticsDashboard";
 import { useFavoriteFolderPicker } from "../../components/FavoriteFolderPicker";
 import { ScrollArea } from "../../components/ScrollArea";
+import { DailyPlanSlider } from "../../components/DailyPlanSlider";
 import { addFavorite, addFavorites, getStubbornGrammarToday, getStubbornWordsToday, type StubbornGrammarToday, type StubbornWordToday } from "../../lib/api";
 import { ZooConfetti } from "../../components/ZooConfetti";
 import { Sticker } from "../../components/CapybaraMascot";
@@ -659,16 +660,14 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
                           </button>
                         </span>
                       </div>
-                      <input
-                        type="range"
+                      {/* 小程序不认 <input type="range">，走 DailyPlanSlider（网页 range / 小程序原生 Slider） */}
+                      <DailyPlanSlider
                         min={1}
                         max={encoreMax}
-                        step={1}
                         value={encoreCount}
-                        onChange={(event) => applyEncoreSize(Number(event.target.value))}
-                        aria-label="本次加餐数量"
-                        className="w-full"
-                        style={{ accentColor: encoreColor.hex }}
+                        onChange={applyEncoreSize}
+                        color={encoreColor.hex}
+                        label="本次加餐数量"
                       />
                       <div className="mt-2 flex flex-wrap gap-1.5">
                         <button

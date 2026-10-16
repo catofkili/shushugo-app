@@ -180,8 +180,11 @@ page { overflow-x: hidden; }
 .theme-dark image.control-cyan-icon,
 .theme-dark .quick-study-kick image,
 .theme-dark .quick-study-action image,
-.theme-dark .quick-study-rating image { filter: brightness(0) invert(.8); }
+.theme-dark .quick-study-rating image,
+.theme-dark .w10-segment image { filter: brightness(0) invert(.8); }
 
-/* 2026-10-16 发布前实机验收：微信 <input> 自带 height ≈ 1.4rem（22.4px），设置页「今天 N 项」那个 26px 大数字下半截被裁。
-   网页 input 高度跟字号走，没这个问题，所以只在小程序覆盖。 */
-.zoo-plan-headline input { height: 1.4em; min-height: 1.4em; line-height: 1.4em; }
+/* 2026-10-16 发布前实机验收：微信 <input> 自带 height/min-height = 1.4rem（22.4px），而上面那条把 input 设成了 border-box，
+   带 py-2 的输入框（清除数据的确认框等）内容区只剩 6px：字被裁一半、真机上点了也看不见输入。
+   设置页「今天 N 项」那个 26px 大数字同理被裁。网页 input 高度本来就跟字号和内边距走，这里让小程序也一样：
+   高度跟内容走，最小一行字高。写了 h-* 的输入框是类选择器，权重比这条高，不受影响。 */
+input { height: auto; min-height: 1.4em; line-height: 1.4em; }
