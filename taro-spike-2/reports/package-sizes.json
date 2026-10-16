@@ -7,7 +7,7 @@
       "passes": true
     },
     "study": {
-      "bytes": 1013878,
+      "bytes": 1013989,
       "mib": 0.967,
       "passes": true
     },
@@ -52,7 +52,7 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 903182,
+      "bytes": 903293,
       "mib": 0.861,
       "passes": true
     },
@@ -67,12 +67,12 @@
       "passes": true
     }
   },
-  "totalBytes": 10489273,
+  "totalBytes": 10489495,
   "files": [
     {
       "path": "lazy/tabs.js",
       "package": "lazy",
-      "bytes": 867737
+      "bytes": 867848
     },
     {
       "path": "common.js",
@@ -572,7 +572,7 @@
     {
       "path": "study/sub-common/07359afbb1d0437805fffbe91c0394fc.js",
       "package": "study",
-      "bytes": 10860
+      "bytes": 10971
     },
     {
       "path": "study/sub-vendors.js",

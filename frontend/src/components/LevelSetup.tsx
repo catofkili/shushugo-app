@@ -56,16 +56,28 @@ const dateLabel = (value?: string | null) => {
   return Number.isFinite(timestamp) ? new Date(timestamp).toISOString().slice(0, 10) : "待确认";
 };
 
+/**
+ * 下一场考试离今天不到 60 天，就不替用户预选日期，让他自己点。
+ * 2026-10-16 作者实测：新用户默认落在 51 天后那场 JLPT，N3 照每日上限也学不完，
+ * 一上来就看到「学不完」的预估；离得近的那场多半根本不是他要考的，预选只会误导。
+ */
+const PRESELECT_MIN_DAYS = 60;
+const defaultExamDate = (kind: ExamKind) => {
+  const date = suggestedExamDate(kind);
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return date && (date.getTime() - today.getTime()) / 86_400_000 >= PRESELECT_MIN_DAYS ? formatExamDate(date) : "";
+};
+
 export function LevelSetup({ open, dismissible = false, isAuthenticated = false, onRequireAuth, onComplete, onClose }: Props) {
   const entitlement = useEntitlements();
   const existing = getLevelPlanSettings();
   const [startingLevel, setStartingLevel] = useState<StartingLevel>(existing?.startingLevel ?? "kana");
   const [target, setTarget] = useState<JlptTarget>(existing?.target ?? "N3");
   const [examKind, setExamKind] = useState<ExamKind>(existing?.examKind ?? "jlpt");
-  const suggestedDate = suggestedExamDate(existing?.examKind ?? "jlpt");
   const savedDate = parseExamDate(existing?.examDate ?? "");
   const [examDate, setExamDate] = useState(savedDate && savedDate >= new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate())
-    ? formatExamDate(savedDate) : suggestedDate ? formatExamDate(suggestedDate) : "");
+    ? formatExamDate(savedDate) : defaultExamDate(existing?.examKind ?? "jlpt"));
   const [familiarity, setFamiliarity] = useState<Familiarity>(existing?.familiarity ?? familiarityDefaults("kana"));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -89,8 +101,7 @@ export function LevelSetup({ open, dismissible = false, isAuthenticated = false,
   };
   const chooseExam = (value: ExamKind) => {
     setExamKind(value);
-    const next = suggestedExamDate(value);
-    setExamDate(next ? formatExamDate(next) : "");
+    setExamDate(defaultExamDate(value));
   };
   const submit = async () => {
     setSaving(true);

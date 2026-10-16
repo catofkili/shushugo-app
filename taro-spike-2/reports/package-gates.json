@@ -6,7 +6,7 @@
       "passes": true
     },
     "study": {
-      "bytes": 1013878,
+      "bytes": 1013989,
       "passes": true
     },
     "account": {
@@ -42,7 +42,7 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 903182,
+      "bytes": 903293,
       "passes": true
     },
     "jlpt-bank": {
@@ -131,7 +131,7 @@
     },
     {
       "source": "frontend/src/components/LevelSetup.tsx",
-      "bytes": 24595,
+      "bytes": 25135,
       "packages": [
         "lazy",
         "study"
@@ -1313,7 +1313,7 @@
     },
     {
       "source": "frontend/src/components/LevelSetup.tsx",
-      "bytes": 24595,
+      "bytes": 25135,
       "packages": [
         "lazy",
         "study"
@@ -1715,7 +1715,7 @@
     "frontend/src/components/DailyPlanSlider.weapp.tsx": "The lazy setup panel and account/study plan pages render native Sliders; values and commit callbacks are owned by each mounted parent, not this stateless adapter.",
     "frontend/src/components/JapaneseRubyText.weapp.tsx": "Ruby text is used by lazy tabs and independently loaded content/grammar routes."
   },
-  "duplicatedPageComponentBytes": 348536,
+  "duplicatedPageComponentBytes": 349076,
   "unapprovedPageComponents": [],
   "stalePageComponentAllowlist": [],
   "unapprovedPageComponentBytes": 0,
