@@ -90,6 +90,24 @@ const grammarPages = new Set<Page>(['grammar', 'detail', 'grammar-foundation', '
 const protectedPages = new Set<Page>(['account', 'personal-info', 'team']);
 const proPages: Partial<Record<Page, FeatureId>> = { 'distinction-quiz': 'confusionGroups' };
 
+const applyNativeBarTheme = (mode: 'light' | 'dark') => {
+  const dark = mode === 'dark';
+  const ignore = () => undefined;
+  Taro.setNavigationBarColor({
+    frontColor: dark ? '#ffffff' : '#000000',
+    backgroundColor: dark ? '#171B17' : '#FBF6EC',
+    animation: { duration: 0, timingFunc: 'linear' }
+  }).catch(ignore);
+  // 非 tab 页上调用会失败，吞掉即可：底栏样式是全局的，回到 tab 页时 useDidShow 会再设
+  Taro.setTabBarStyle({
+    color: dark ? '#B7B0A4' : '#81796D',
+    selectedColor: dark ? '#A7D77D' : '#4F7A3A',
+    backgroundColor: dark ? '#1F231E' : '#FBF8F1',
+    borderStyle: dark ? 'black' : 'white'
+  }).catch(ignore);
+  Taro.setBackgroundColor({ backgroundColor: dark ? '#171B17' : '#FBF6EC' }).catch(ignore);
+};
+
 export function WeappPage({ page, Route }: { page: Page; Route: ComponentType }) {
   const route = ROUTE_TABLE.find((item) => item.page === page)!;
   const portalHost = usePortalHost();
@@ -161,6 +179,16 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
       window.removeEventListener(YUZU_EVENT, refreshTheme);
     };
   }, []);
+
+  // 原生标题栏和底栏不吃页面 CSS，深浅色只能靠 API 改（2026-10-16 作者：深色下顶栏 / 底栏还是浅色，改完再发布）。
+  // 标题栏颜色是每个页面各自的：主题变了要设，每次页面重新显示也要再设一遍；底栏是全局的，一起设。
+  // 浅色值和 app.config.js 里的默认值一致；深色标题栏取深色页面底色（#171B17，实测），底栏比它亮一档。
+  useEffect(() => {
+    if (ready) applyNativeBarTheme(theme);
+  }, [ready, theme]);
+  useDidShow(() => {
+    try { applyNativeBarTheme(getResolvedTheme()); } catch { /* 偏好还没读到时保持 app.config 的浅色 */ }
+  });
 
   const navigatePage = (target: Page, params?: AppNavigationParams, authenticated = false) => {
     if (protectedPages.has(target) && !cloudSession.token && !authenticated) {

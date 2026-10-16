@@ -77,7 +77,8 @@ export function HelpPage({ onBack }: HelpPageProps) {
             <MessageCircle size={20} className="shrink-0 text-[var(--ds-ink-2)]" />
             <div className="min-w-0 flex-1">
               <p className="text-[15px] font-bold text-white">反馈和支持</p>
-              <p className="mt-0.5 text-xs text-white/50">请通过 App Store 的应用支持入口提交问题或建议</p>
+              {/* 2026-10-16：原来写「请通过 App Store 的应用支持入口」，小程序里没有 App Store；「我的」页第一行就是反馈入口，三端都有 */}
+              <p className="mt-0.5 text-xs text-white/50">在「我的」→「提意见 / 报问题」里告诉我们</p>
             </div>
           </div>
         </div>

@@ -2,7 +2,7 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1780213,
+      "bytes": 1780753,
       "passes": true
     },
     "study": {
@@ -10,7 +10,7 @@
       "passes": true
     },
     "account": {
-      "bytes": 323944,
+      "bytes": 323942,
       "passes": true
     },
     "content-pages": {
@@ -1762,7 +1762,7 @@
     },
     {
       "source": "taro-spike-2/src/platform/WeappPage.tsx",
-      "bytes": 64062
+      "bytes": 65589
     }
   ],
   "passes": true

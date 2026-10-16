@@ -2,7 +2,7 @@
   "limitBytes": 2097152,
   "packages": {
     "main": {
-      "bytes": 1780213,
+      "bytes": 1780753,
       "mib": 1.698,
       "passes": true
     },
@@ -12,7 +12,7 @@
       "passes": true
     },
     "account": {
-      "bytes": 323944,
+      "bytes": 323942,
       "mib": 0.309,
       "passes": true
     },
@@ -67,7 +67,7 @@
       "passes": true
     }
   },
-  "totalBytes": 10488735,
+  "totalBytes": 10489273,
   "files": [
     {
       "path": "lazy/tabs.js",
@@ -77,7 +77,7 @@
     {
       "path": "common.js",
       "package": "main",
-      "bytes": 717513
+      "bytes": 718053
     },
     {
       "path": "grammar-foundation/grammar.js",
@@ -957,7 +957,7 @@
     {
       "path": "account/help/index.js",
       "package": "account",
-      "bytes": 5288
+      "bytes": 5286
     },
     {
       "path": "account/personal-info/index.wxss",
