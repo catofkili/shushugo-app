@@ -545,7 +545,9 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
       <div className="mb-4" style={staggerStyle(5)}>
         <p className="ds-section">数据管理</p>
         <div className="ds-card w7-list overflow-hidden">
-          <div className="border-b border-white/10 p-4">
+          {/* 2026-10-16 发布前实机验收：小程序没有 VITE_SYNC_API_URL（账号走微信登录那条路），这一块在小程序里永远是
+              「还没有配置 VITE_SYNC_API_URL…」这句开发者文案 + 一个点不了的按钮。没配置就整块不画；线上网页配置了，不受影响。 */}
+          {cloudSession.configured && <div className="border-b border-white/10 p-4">
             <div className="mb-3">
               <p className="text-[15px] font-bold text-white">云同步</p>
               <p className="mt-1 text-xs text-white/50">
@@ -557,7 +559,7 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
                         : "云同步可用"
                     }`
                     : "可登录后把本机学习数据库备份到云端"
-                  : "还没有配置 VITE_SYNC_API_URL，部署 Cloudflare Worker 后即可启用"}
+                  : ""}
               </p>
               {/* 换设备顺序是唯一需要强调的步骤；容量告警用文字呈现，整页只保留这一只吉祥物。 */}
               <MascotSay sticker="scene-laptop" size={48} className="mt-3">
@@ -637,7 +639,7 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
                 </button>
               )}
             </div>
-          </div>
+          </div>}
 
           <button onClick={exportData} className="w7-row focus-ring flex w-full items-center gap-3 px-4 py-3 text-left">
             <Download size={20} className="shrink-0 text-[var(--ds-ink-2)]" />
@@ -657,8 +659,9 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
             <ChevronRight size={18} className="shrink-0 text-[var(--ds-ink-3)]" />
           </button>
 
-          {/* 需要 Mac + 跑一次 python 脚本,能用的人极少,别让它常驻这一页 */}
-          <details className="w10-disclosure w7-faq">
+          {/* 需要 Mac + 跑一次 python 脚本,能用的人极少,别让它常驻这一页。
+              2026-10-16：步骤要在收集日项目文件夹里跑 npm / python，只有作者做得到——正式包（网页 / 小程序）不出现，开发环境保留。 */}
+          {import.meta.env.DEV && <details className="w10-disclosure w7-faq">
             <summary className="w7-faq-summary">
               <ScrollText size={20} className="shrink-0 text-[var(--ds-ink-2)]" />
               <span className="min-w-0 flex-1 text-sm font-bold text-white">MOJi 复习记录迁移（需要 Mac）</span>
@@ -675,7 +678,7 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
               </ol>
               <p className="mt-2 text-white/45">导入会把 Moji 的做题次数、错误次数和分数转换为本应用的复习强度，不会覆盖已有本机学习记录。Windows 或纯 iPhone 目前只能导入已经导出的 JSON，不能生成这份完整记录。</p>
             </div>
-          </details>
+          </details>}
 
           <button onClick={() => backupInputRef.current?.click()} className="w7-row focus-ring flex w-full items-center gap-3 px-4 py-3 text-left">
             <Upload size={20} className="shrink-0 text-[var(--ds-ink-2)]" />

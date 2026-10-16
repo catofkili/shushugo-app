@@ -181,3 +181,7 @@ page { overflow-x: hidden; }
 .theme-dark .quick-study-kick image,
 .theme-dark .quick-study-action image,
 .theme-dark .quick-study-rating image { filter: brightness(0) invert(.8); }
+
+/* 2026-10-16 发布前实机验收：微信 <input> 自带 height ≈ 1.4rem（22.4px），设置页「今天 N 项」那个 26px 大数字下半截被裁。
+   网页 input 高度跟字号走，没这个问题，所以只在小程序覆盖。 */
+.zoo-plan-headline input { height: 1.4em; min-height: 1.4em; line-height: 1.4em; }

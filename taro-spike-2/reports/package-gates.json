@@ -2,19 +2,19 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1780163,
+      "bytes": 1780241,
       "passes": true
     },
     "study": {
-      "bytes": 1013794,
+      "bytes": 1013795,
       "passes": true
     },
     "account": {
-      "bytes": 325908,
+      "bytes": 323913,
       "passes": true
     },
     "content-pages": {
-      "bytes": 1121667,
+      "bytes": 1121670,
       "passes": true
     },
     "features": {
@@ -34,7 +34,7 @@
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 301178,
+      "bytes": 301182,
       "passes": true
     },
     "core": {
@@ -42,7 +42,7 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 903252,
+      "bytes": 903253,
       "passes": true
     },
     "jlpt-bank": {
