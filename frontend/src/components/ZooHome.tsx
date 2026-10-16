@@ -308,13 +308,14 @@ export function ZooHome({
           <p className="zoo-greet-hi">{greet}</p>
           <p className="zoo-greet-sub">{greetLine}</p>
         </div>
+        {/* 2026-10-16 作者：火苗要更显眼。从 18px 小药丸放大成问候语右边一块（34px 火苗 + 26px 数字），没学灰、学完橙 */}
         {streak > 0 && (
-          <button type="button" className="zoo-greet-streak" title={`连续学习 ${streak} 天`} onClick={(event) => {
+          <button type="button" className={`zoo-greet-streak is-${flameStateOf(streakSnap?.todayStatus ?? "none")}`} title={`连续学习 ${streak} 天`} onClick={(event) => {
             setFlameJumping(true);
             window.setTimeout(() => setFlameJumping(false), 240);
             open(event, () => onNavigate("streak"));
           }}>
-            <StreakFlame state={flameStateOf(streakSnap?.todayStatus ?? "none")} tier={streakSnap?.tier ?? 1} atRisk={streakSnap?.atRisk} size={18} className={flameJumping ? "zoo-flame-jump" : ""} /><b>{streakCount}</b>
+            <StreakFlame state={flameStateOf(streakSnap?.todayStatus ?? "none")} tier={streakSnap?.tier ?? 1} atRisk={streakSnap?.atRisk} size={34} className={flameJumping ? "zoo-flame-jump" : ""} /><b>{streakCount}</b><small>天</small>
           </button>
         )}
       </div>
@@ -365,13 +366,14 @@ export function ZooHome({
               复习 <b>{stats.stage1ReviewDone}</b>/{stats.stage1ReviewTotal}
             </span>
           )}
-          <MomentPop moment={moment} leaving={momentLeaving} />
           <Sticker name={heroSticker} size={96} className="zoo-now-mascot" />
           <span className="zoo-now-go">
             {heroPct !== null ? <span className="zoo-now-bar" aria-label={`今天完成 ${heroPct}%`}><i style={{ width: `${heroPct}%` }} /></span> : <span />}
             <span className={`zoo-now-cta${activeCount > 0 ? " ds-nudge" : ""}`}>{heroCta} →</span>
           </span>
         </button>
+        {/* 挂在大卡上沿外面：大卡本身 overflow:hidden（裁右上角的装饰圆），2026-10-16 前放在卡里面，上半截一直被裁掉 */}
+        <MomentPop moment={moment} leaving={momentLeaving} />
 
         <div className="zoo-now-foot">
           <div className={`zoo-focus-toggle${focusArmed ? " on" : ""}`}>

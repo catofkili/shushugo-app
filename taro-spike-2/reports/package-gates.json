@@ -2,19 +2,19 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1779481,
+      "bytes": 1780163,
       "passes": true
     },
     "study": {
-      "bytes": 1013800,
+      "bytes": 1013794,
       "passes": true
     },
     "account": {
-      "bytes": 325904,
+      "bytes": 325908,
       "passes": true
     },
     "content-pages": {
-      "bytes": 1121659,
+      "bytes": 1121667,
       "passes": true
     },
     "features": {
@@ -42,7 +42,7 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 903113,
+      "bytes": 903252,
       "passes": true
     },
     "jlpt-bank": {
@@ -1742,7 +1742,7 @@
     },
     {
       "source": "frontend/src/design.css",
-      "bytes": 94900
+      "bytes": 96129
     },
     {
       "source": "taro-spike-2/node_modules/react-reconciler/cjs/react-reconciler.production.min.js",

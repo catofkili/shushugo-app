@@ -1206,3 +1206,14 @@ button.fin-row:hover { background: var(--ds-inset-2); }
 [data-theme="dark"] .quiz-accent-solid .kbd-hint { color: var(--ds-on-primary) !important; }
 /* 标签自身的紫色 tint 会抬高底色，不能只按卡面的对比度给小字选色。 */
 [data-theme="dark"] .ach-tag-epic { color: #E8C7FF; }
+
+/* —————————————————— 主页连胜火苗（2026-10-16 作者：火苗要更显眼） —————————————————— */
+/* 时刻气泡挂在 .zoo-tray-today 上、压在大卡上沿外面（大卡自己 overflow:hidden，挂在卡里会被裁半截） */
+[data-theme] .zoo-tray-today { position: relative; }
+.moment-pop { pointer-events: none; }
+/* 方案二（作者选的）：问候语右边一块。另一版是挂在大卡右上沿的白胶囊，贴着水豚头上的小符号，没选。 */
+[data-theme] .zoo-greet-streak { align-self: center; margin-top: 0; gap: 6px; padding: 8px 14px 8px 10px; border-radius: 18px; color: var(--ds-ink-3); background: var(--ds-inset); }
+[data-theme] .zoo-greet-streak b { font-size: 26px; font-weight: 900; line-height: 1; font-variant-numeric: tabular-nums; }
+[data-theme] .zoo-greet-streak small { font-size: 13px; font-weight: 800; align-self: flex-end; margin-bottom: 3px; }
+[data-theme] .zoo-greet-streak.is-lit { color: var(--ds-warn-ink); background: var(--ds-warn-tint); }
+[data-theme] .zoo-greet-streak.is-gold { color: #B8860B; background: var(--ds-warn-tint); }
