@@ -27,7 +27,8 @@ beforeEach(() => {
   runtime.context.offCanplay(); runtime.context.offError(); vi.clearAllMocks();
   const encoder = new TextEncoder();
   Object.assign(runtime.fs, {
-    readdir: (o: any) => o.success({ files: o.dirPath.endsWith("/audio") ? ["2026-09-26", "talk"] : [] }),
+    readdir: (o: any) => o.success({ files: o.dirPath.endsWith("/audio") ? ["2026-09-26", "talk"]
+      : o.dirPath === "/wx-user" ? [...runtime.files.keys()].filter(p => p.startsWith("/wx-user/") && !p.slice(9).includes("/")).map(p => p.slice(9)) : [] }),
     rmdir: (o: any) => { runtime.removedDirectory = o.dirPath; o.success(); }, mkdir: (o: any) => o.success(),
     stat: (o: any) => runtime.files.has(o.path) ? o.success({ stats: { size: runtime.files.get(o.path)!.length } }) : o.fail({ errMsg: "no such file" }),
     readFile: (o: any) => {
@@ -82,6 +83,20 @@ describe("小程序音频包缓存与播放", () => {
     const current = speech.playPronunciation("箸", "はし");
     const rejection = expect(current).rejects.toThrow("暂不可用"); await expect(previous).resolves.toBeUndefined();
     await vi.waitFor(() => expect(runtime.context.onError).toHaveBeenCalledTimes(2)); runtime.context.listeners.error?.(); await rejection;
+  });
+
+  it("gives every playback a fresh src, or the player replays the first word forever", async () => {
+    runtime.files.set("/wx-user/audio-playing-words.aac", new Uint8Array([9])); // 旧版固定文件名的遗留
+    const speech = await import("./speech.weapp");
+    await speech.prefetchWordPlanAudio([{ kanji: "灰皿", kana: "はいざら", example: "" }, { kanji: "箸", kana: "はし", example: "" }]);
+    const srcs: string[] = [];
+    for (const [kanji, kana] of [["灰皿", "はいざら"], ["箸", "はし"]]) {
+      const done = speech.playPronunciation(kanji, kana);
+      await vi.waitFor(() => expect(runtime.context.onCanplay).toHaveBeenCalled());
+      srcs.push(runtime.context.src); runtime.context.listeners.canplay?.(); await done; runtime.context.onCanplay.mockClear();
+    }
+    expect(srcs[0]).not.toBe(srcs[1]);
+    await vi.waitFor(() => expect([...runtime.files.keys()].filter(p => p.includes("audio-playing-")).sort()).toEqual([srcs[1]]));
   });
 
   it("previews the unpurchased voice from its own cached pack and interrupts the active word", async () => {
