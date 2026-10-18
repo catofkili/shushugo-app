@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ComponentType } from "react";
-import { AppWindow, Check, ChevronDown, LoaderCircle, Mic, Music, PackageCheck, Palette, Play, Shirt, Sparkles, type LucideProps } from "lucide-react";
+import { AppWindow, Award, Check, ChevronDown, Footprints, LoaderCircle, Mic, Music, PackageCheck, Palette, Play, Shirt, Sparkles, type LucideProps } from "lucide-react";
 import { CATEGORY_LABEL, EQUIPPABLE, VOICE_ITEM_PREFIX, YUZU_ITEMS, type YuzuCategory, type YuzuItem } from "../lib/yuzu-catalog";
 import { brandIconUrl, prepareMascotSkins, Sticker, stickerUrl, useMascotSkin } from "../components/CapybaraMascot";
 import { CrossPlatformImage } from "../components/CrossPlatformImage";
@@ -23,7 +23,7 @@ import {
  * 补签是货架上第一件,价格随 30 天内买过几张递增,选中它在底栏列出能补的日子。
  */
 
-const CATEGORY_ORDER: YuzuCategory[] = ["theme", "mascot", "icon", "voice", "sound", "misc"];
+const CATEGORY_ORDER: YuzuCategory[] = ["theme", "mascot", "icon", "voice", "sound", "walk", "title", "misc"];
 const formatYuzu = (amount: number) => Math.abs(amount) >= 1000
   ? `${Number((amount / 1000).toFixed(2))}k`
   : String(amount);
@@ -31,7 +31,7 @@ const formatYuzu = (amount: number) => Math.abs(amount) >= 1000
 const REPAIR_ID = "repair";
 const REPAIR_ITEM: YuzuItem = { id: REPAIR_ID, name: "补签", description: `补回最近 ${YUZU.repairWindowDays} 天里断掉的一天`, category: "misc", price: YUZU.repair[0], art: "item-repair" };
 const CATEGORY_ICON: Record<YuzuCategory, ComponentType<LucideProps>> = {
-  theme: Palette, mascot: Shirt, icon: AppWindow, voice: Mic, sound: Music, misc: Sparkles
+  theme: Palette, mascot: Shirt, icon: AppWindow, voice: Mic, sound: Music, walk: Footprints, title: Award, misc: Sparkles
 };
 const KIND_LABEL: Record<string, string> = {
   study: "今天学了 100 词", plan: "清完今日计划", streak: "连击满 7 天", encore: "加餐", achievement: "成就", focus: "倒计时学习", buy: "购买", repair: "补签",

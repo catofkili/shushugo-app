@@ -11,7 +11,7 @@
  */
 import type { StickerName } from "../components/CapybaraMascot";
 
-export type YuzuCategory = "theme" | "mascot" | "icon" | "voice" | "sound" | "misc";
+export type YuzuCategory = "theme" | "mascot" | "icon" | "voice" | "sound" | "walk" | "title" | "misc";
 
 /** 声音商品的 id 形如 voice-<音频库里的 voice id>,买了哪个设置页就能选哪个 */
 export const VOICE_ITEM_PREFIX = "voice-";
@@ -34,11 +34,13 @@ export const CATEGORY_LABEL: Record<YuzuCategory, string> = {
   icon: "App 图标",
   voice: "发音声音",
   sound: "答题音效",
+  walk: "走法",
+  title: "队伍称号",
   misc: "其他"
 };
 
 /** 买了要「使用」才生效的槽位 */
-export const EQUIPPABLE: ReadonlySet<YuzuCategory> = new Set(["theme", "mascot", "icon", "sound"]);
+export const EQUIPPABLE: ReadonlySet<YuzuCategory> = new Set(["theme", "mascot", "icon", "sound", "walk", "title"]);
 
 export const YUZU_ITEMS: YuzuItem[] = [
   { id: "theme-matcha", name: "抹茶", description: "青绿主色换成抹茶绿", category: "theme", price: 2000 },
@@ -49,14 +51,21 @@ export const YUZU_ITEMS: YuzuItem[] = [
   { id: "theme-round", name: "圆圆", description: "白底圆体、会按下去的立体按钮、柚子橙点缀", category: "theme", price: 3000 },
   { id: "mascot-croc", name: "鳄鱼", description: "换一只鳄鱼:表情、页面图标、空状态插画整套换。小路上走的还是水豚", category: "mascot", price: 3000 },
   { id: "icon-happy", name: "开心图标", description: "把 App 图标换成开心表情", category: "icon", price: 5000, soon: true, art: "mood-happy" },
-  { id: "icon-study", name: "读书图标", description: "把 App 图标换成读书表情", category: "icon", price: 5000, soon: true, art: "mood-study" },
+  // 默认图标本来就是读书的水豚，所以第二个备用图标不再叫「读书」，换成泡汤的（2026-10-19）
+  { id: "icon-onsen", name: "泡汤图标", description: "把 App 图标换成泡汤的水豚", category: "icon", price: 5000, soon: true, art: "scene-onsen" },
   { id: "voice-voicevox-10", name: "雨晴はう", description: "轻快女声。切换单词发音；例句仍用默认声", category: "voice", price: 6000, art: "item-voice-female-2" },
   { id: "voice-voicevox-11", name: "玄野武宏", description: "沉稳男声。切换单词发音；例句仍用默认声", category: "voice", price: 6000, art: "item-voice-male" },
   { id: "sound-marimba", name: "木琴", description: "答题音换成木琴:更圆、更短", category: "sound", price: 3000, art: "item-sound-marimba-2" },
   { id: "sound-epiano", name: "电钢", description: "答题音换成电钢:带一点毛边的暖音", category: "sound", price: 3000, art: "item-sound-epiano-2" },
-  { id: "walk-alt", name: "小路走法", description: "学习页小路上换一套走路动画", category: "misc", price: 4000, soon: true, art: "roll-frame" },
+  { id: "walk-alt", name: "滚着走", description: "学习页小路和加载时，水豚改成滚着走", category: "walk", price: 4000, soon: true, art: "roll-frame" },
   { id: "report-cover", name: "周报封面", description: "周报封面换一张", category: "misc", price: 3000, soon: true, art: "card-daily" },
-  { id: "team-title", name: "队伍称号", description: "队伍称号页名字旁的专属称号", category: "misc", price: 3000, soon: true, art: "decor-set" }
+  // 队伍称号：队友的名单里挂在名字旁边。每个称号单独买、单独装备（槽位 yuzu_equipped:title）
+  { id: "title-early", name: "晨读派", description: "队伍名单里，名字旁挂上「晨读派」", category: "title", price: 3000, soon: true },
+  { id: "title-night", name: "夜读派", description: "队伍名单里，名字旁挂上「夜读派」", category: "title", price: 3000, soon: true },
+  { id: "title-hunter", name: "单词猎人", description: "队伍名单里，名字旁挂上「单词猎人」", category: "title", price: 3000, soon: true },
+  { id: "title-slow", name: "慢慢来", description: "队伍名单里，名字旁挂上「慢慢来」", category: "title", price: 3000, soon: true },
+  { id: "title-grove", name: "柚子庄园主", description: "队伍名单里，名字旁挂上「柚子庄园主」", category: "title", price: 3000, soon: true },
+  { id: "title-capy", name: "水豚本豚", description: "队伍名单里，名字旁挂上「水豚本豚」", category: "title", price: 3000, soon: true }
 ];
 
 export const itemById = (id: string) => YUZU_ITEMS.find((item) => item.id === id);
