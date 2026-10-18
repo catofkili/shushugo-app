@@ -100,6 +100,12 @@ module.exports = {
   "appwindow": [
     "content-pages"
   ],
+  "award": [
+    "content-pages"
+  ],
+  "footprints": [
+    "content-pages"
+  ],
   "loadercircle": [
     "content-pages"
   ],
@@ -116,9 +122,6 @@ module.exports = {
     "content-pages"
   ],
   "angry": [
-    "content-pages"
-  ],
-  "award": [
     "content-pages"
   ],
   "bird": [
@@ -140,9 +143,6 @@ module.exports = {
     "content-pages"
   ],
   "eyeoff": [
-    "content-pages"
-  ],
-  "footprints": [
     "content-pages"
   ],
   "ghost": [

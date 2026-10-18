@@ -128,5 +128,8 @@ module.exports = {
   ],
   "decor-set": [
     contentPackage
+  ],
+  "scene-onsen": [
+    contentPackage
   ]
 };

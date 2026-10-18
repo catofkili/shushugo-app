@@ -16,7 +16,7 @@
     },
     "content-pages": {
       "beforeBytes": 147298,
-      "afterBytes": 576051
+      "afterBytes": 601152
     }
   },
   "images": [
@@ -1788,6 +1788,23 @@
       "afterBytes": 45754,
       "sourceSha256": "f3b632caa8f2fb17c79f8bbfacd00a4cc71f963027e0b0d3185dbd4be760f364",
       "afterSha256": "678684af857f241bb720571aaa18848eac99f01e21f62ac3057d2380335ca0f7",
+      "quality": "65-90"
+    },
+    {
+      "subpackage": "content-pages",
+      "image": "scene-onsen",
+      "sourceWidth": 318,
+      "sourceHeight": 318,
+      "maxDisplayHeightCss": 150,
+      "scale": 2,
+      "outputWidth": 300,
+      "outputHeight": 300,
+      "beforeFormat": "none",
+      "beforeBytes": 0,
+      "afterFormat": "png",
+      "afterBytes": 25101,
+      "sourceSha256": "cbca647415e1688d267cf7e308fbe4943931eeedad356470f289536b890720da",
+      "afterSha256": "991cf9d078d9390f1202618a14615626b61d300162efcd25eb796fded87ecfcc",
       "quality": "65-90"
     }
   ]
