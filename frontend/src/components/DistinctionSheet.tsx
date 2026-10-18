@@ -6,6 +6,7 @@ import type { DistinctionSection } from "../lib/models/word-distinctions";
 import { JapaneseWordRuby } from "./JapaneseWordRuby";
 import { ProReadingGate } from "./ProReadingPreview";
 import { ScrollArea } from "./ScrollArea";
+import { SubgroupedMembers, VoiceTag } from "./SubgroupedMembers";
 
 /**
  * 学习页的辨析气泡 —— 卡中卡：盖住六成屏幕，学习卡还在后面。
@@ -94,8 +95,7 @@ export const DistinctionSheet = ({ title, sections, revealed, onClose, onJump, j
                 </p>
               )}
 
-              <div className="wd-members">
-                {section.members.filter((member) => revealed || !member.isCurrent).map((member) => (
+              <SubgroupedMembers items={section.members.filter((member) => revealed || !member.isCurrent)} className="wd-members" wordOf={(member) => member.word} render={(member) => (
                   <div
                     key={`${section.key}-${member.id}-${member.word}-${member.kana}`}
                     className={`wd-member${member.isCurrent ? " is-current" : ""}`}
@@ -109,6 +109,7 @@ export const DistinctionSheet = ({ title, sections, revealed, onClose, onJump, j
                       />
                       <span className="jp wd-member-kana">{member.kana}</span>
                       {member.isCurrent && <span className="wd-member-tag">这张</span>}
+                      <VoiceTag voice={member.voice} />
                       {member.jlptLevel && <span className="wd-member-level">{member.jlptLevel}</span>}
                     </div>
                     <p className="wd-member-meaning">{member.meaning}</p>
@@ -134,8 +135,7 @@ export const DistinctionSheet = ({ title, sections, revealed, onClose, onJump, j
                       </button>
                     )}
                   </div>
-                ))}
-              </div>
+                )} />
             </section>
           ))}
         </ScrollArea>

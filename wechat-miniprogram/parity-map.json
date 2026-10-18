@@ -773,6 +773,20 @@
         "taro-spike-2/src/package-assets/"
       ],
       "reason": "Taro 品牌贴纸从同一 public/brand/sheet 母版同步成主包和分包 PNG。"
+    },
+    {
+      "web": "frontend/src/components/DistinctionSheet.tsx",
+      "mini": [
+        "frontend/src/components/DistinctionSheet.tsx"
+      ],
+      "reason": "网页与 Taro 背词页直接编译同一份辨析气泡组件；build:weapp 验证双端，不维护第二份界面。"
+    },
+    {
+      "web": "frontend/src/components/SubgroupedMembers.tsx",
+      "mini": [
+        "frontend/src/components/SubgroupedMembers.tsx"
+      ],
+      "reason": "辨析分小组框由网页与 Taro 的辨析卡、疑难辨析页、辨析气泡、练一练共同 import 同一份组件；build:weapp 验证共享源码编译，不维护第二份界面。"
     }
   ]
 }

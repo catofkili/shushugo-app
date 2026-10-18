@@ -9,6 +9,9 @@ import {
 import { distinctionNotesFor, distinctionReviewFor } from "../data/confusion_distinction_reviews";
 import verbPairHints from "../data/verb_pair_hints.json";
 import { matchable } from "./confusion-cards";
+import { pairRoleVoice, placeMembers } from "./confusion-subgroups";
+// 只 import type：不在这里查 JMdict 自他表（77 KB），见 confusion-cards.ts 同处说明
+import type { Transitivity } from "./transitivity";
 import { reviewedQuestionMeaning } from "./models/question-meaning-overrides";
 import { firstValue, rowsFor, today } from "./database/db-utils";
 import { shuffle } from "./vocab-test";
@@ -17,9 +20,13 @@ export interface DistinctionQuestion {
   groupKey: string;
   prompt: string;
   /** reading-register 组（明日 あした / あす）两个选项词形一样，读音才是答案，所以选项必须带 kana。 */
-  options: { id: number; surface: string; kana: string; exampleJp?: string; exampleMeaning?: string; pairRole?: "自动词" | "他动词" }[];
+  options: { id: number; surface: string; kana: string; exampleJp?: string; exampleMeaning?: string }[];
   answerId: number;
   summary: string;
+  /** 区别稿首句（判断要点）。逐词说明已拆到 notes，反馈区别再把整段原文贴一遍 */
+  overview: string;
+  /** 反馈区的讲解顺序：按手写小组排，带自他。选项本身是打乱的，不能拿来讲解 */
+  explained: { id: number; voice: Transitivity | null; subgroup: string }[];
   notes: Map<string, string>;
 }
 
@@ -107,9 +114,14 @@ export function buildQuestions(
       surface: displayForm(member),
       kana: member.kana,
       exampleJp: member.exampleJp,
-      exampleMeaning: member.exampleMeaning,
-      pairRole: group.type === "pair" ? (pairs[member.kanji] ?? pairs[member.kana])?.[0] : undefined
+      exampleMeaning: member.exampleMeaning
     })), rng);
+    const explained = placeMembers(
+      group.key,
+      group.members,
+      (member) => [displayForm(member), member.kanji, member.kana],
+      (member) => pairRoleVoice((pairs[member.kanji] ?? pairs[member.kana])?.[0])
+    ).map(({ member, voice, subgroup }) => ({ id: member.id, voice, subgroup }));
     for (const member of group.members) {
       const prompt = reviewedQuestionMeaning(member.kanji, member.kana);
       if (!prompt) continue;
@@ -119,6 +131,8 @@ export function buildQuestions(
         options,
         answerId: member.id,
         summary: review.summary,
+        overview: review.summary.split(/[；;]/u)[0].trim(),
+        explained,
         notes
       });
     }

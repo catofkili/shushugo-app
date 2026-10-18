@@ -18,6 +18,9 @@ import { withoutSyncStamp } from "./sync/schema";
 import { confusionGroups, displayForm, type ConfusionGroup } from "./confusion-groups";
 import { distinctionNotesFor, distinctionReviewFor } from "../data/confusion_distinction_reviews";
 import verbPairHints from "../data/verb_pair_hints.json";
+import { pairRoleVoice, placeMembers } from "./confusion-subgroups";
+// ⚠️ 只许 import type：本模块在小程序主包（common.js），运行时引用 transitivity.ts 会把 77 KB 的自他表一起拖进主包
+import type { Transitivity } from "./transitivity";
 
 export const CONFUSION_FSRS: FsrsEntity = {
   table: "confusion_progress",
@@ -137,7 +140,10 @@ export interface ConfusionCardMember {
   note?: string;
   exampleJp?: string;
   exampleMeaning?: string;
-  pairRole?: "自动词" | "他动词";
+  /** 自他：手写小组里逐词标的，没有就退回自他对配对表；都没有 = 不标（不查 JMdict 表，理由见 import 处） */
+  voice: Transitivity | null;
+  /** 手写小组标题；空串 = 这组不分小组 */
+  subgroup: string;
 }
 
 export interface MatchingCard {
@@ -166,14 +172,20 @@ export const matchingCard = (groupKey: string): MatchingCard | null => {
     type: group.type,
     label: group.label,
     overview: review.summary.split(/[；;]/u)[0].trim(),
-    members: group.members.map((member) => ({
+    members: placeMembers(
+      group.key,
+      group.members,
+      (member) => [displayForm(member), member.kanji, member.kana],
+      (member) => pairRoleVoice((pairs[member.kanji] ?? pairs[member.kana])?.[0])
+    ).map(({ member, voice, subgroup }) => ({
       id: member.id,
       surface: displayForm(member),
       kana: member.kana,
       note: notes.get(String(member.id)),
       exampleJp: member.exampleJp,
       exampleMeaning: member.exampleMeaning,
-      pairRole: group.type === "pair" ? (pairs[member.kanji] ?? pairs[member.kana])?.[0] : undefined
+      voice,
+      subgroup
     })),
     summary: review.summary,
     notes

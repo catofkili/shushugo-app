@@ -2214,6 +2214,43 @@ select {
 .wd-summary b { font-weight: 800 }
 
 .wd-members { display: flex; flex-direction: column; gap: 8px }
+/* 辨析成员分小组（components/SubgroupedMembers.tsx）。三处共用，深浅两套皮都靠 currentColor：
+   框线、底色、序号都从文字色调出来，不用为每处页面各写一套主题覆盖。 */
+.sg-list { display: flex; flex-direction: column; gap: 12px }
+.sg-group {
+  border: 1.5px solid color-mix(in srgb, currentColor 26%, transparent);
+  border-radius: 18px;
+  background: color-mix(in srgb, currentColor 5%, transparent);
+  padding: 10px;
+}
+.sg-head { display: flex; align-items: center; gap: 8px; margin: 0 2px 8px; font-size: 14px; font-weight: 800; line-height: 1.4 }
+.sg-index {
+  display: grid;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border-radius: 7px;
+  background: color-mix(in srgb, currentColor 14%, transparent);
+  font-size: 12px;
+  font-weight: 900;
+}
+.sg-map {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-radius: 14px;
+  background: color-mix(in srgb, currentColor 7%, transparent);
+  padding: 10px 12px;
+}
+.sg-map-row { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: 13px; line-height: 1.5 }
+.sg-map-row b { font-weight: 800 }
+.sg-map-words { opacity: 0.72; font-weight: 600 }
+/* 自他：实心色块，深浅底上都看得清。自 = 青、他 = 橙，和「自他兼」的紫灰分开 */
+.sg-voice { display: inline-flex; align-items: center; border-radius: 6px; padding: 1px 6px; color: #fff; font-size: 11px; font-weight: 900; line-height: 1.5 }
+.sg-voice-vi { background: #2E9C92 }
+.sg-voice-vt { background: #D9822B }
+.sg-voice-both { background: #8A7FA8 }
 .wd-member {
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 16px;

@@ -5,6 +5,7 @@ import { ComboBadge } from "../components/ComboBadge";
 import { Sticker } from "../components/CapybaraMascot";
 import { buildQuestions, quizGroups, settleGroup, type DistinctionQuestion, type QuizScope } from "../lib/distinction-quiz";
 import { StreakSpark } from "../components/streak/StreakMoments";
+import { SubgroupedMembers, VoiceTag } from "../components/SubgroupedMembers";
 
 interface DistinctionQuizPageProps {
   scope: QuizScope;
@@ -153,20 +154,22 @@ const DistinctionQuizSession = ({ scope, onBackToConfusion, onRetryGroup }: Dist
           </div>
           {feedback && (
             <div className="mt-4 rounded-2xl bg-[var(--ds-inset)] p-4">
-              <p className="mt-2 text-sm leading-6 text-white/80">{question.summary}</p>
-              <div className="mt-3 space-y-2 border-t border-white/10 pt-3">
-                <p className="text-xs font-bold text-white/50">各词辨析与例句</p>
-                {question.options.map((option) => {
+              <p className="mt-2 text-sm leading-6 text-white/80">{question.overview}</p>
+              <div className="mt-3 border-t border-white/10 pt-3">
+                <p className="mb-2 text-xs font-bold text-white/50">各词辨析与例句</p>
+                <SubgroupedMembers items={question.explained} className="space-y-2" wordOf={({ id }) => question.options.find((item) => item.id === id)?.surface ?? ""} render={({ id, voice }) => {
+                  const option = question.options.find((item) => item.id === id);
+                  if (!option) return null;
                   const note = question.notes.get(String(option.id));
-                  if (!note && !option.exampleJp && !option.exampleMeaning && !option.pairRole) return null;
+                  if (!note && !option.exampleJp && !option.exampleMeaning && !voice) return null;
                   return (
                     <div key={option.id} className="rounded-xl bg-black/10 px-3 py-2.5">
-                      <p className="text-sm text-white/70"><b className="text-white/90">{option.surface}<span className="ml-1 font-normal text-white/45">{option.kana}</span></b>{option.pairRole && <span className="ml-2 rounded-full bg-white/10 px-2 py-0.5 text-xs font-bold text-white/75">{option.pairRole}</span>}{note ? `：${note}` : ""}</p>
+                      <p className="text-sm text-white/70"><b className="text-white/90">{option.surface}<span className="ml-1 font-normal text-white/45">{option.kana}</span></b>{voice && <span className="ml-2 inline-flex align-middle"><VoiceTag voice={voice} /></span>}{note ? `：${note}` : ""}</p>
                       {option.exampleJp && <p className="mt-1.5 text-sm font-semibold leading-6 text-white/90"><span className="mr-1 text-xs font-normal text-white/45">例句</span>{option.exampleJp}</p>}
                       {option.exampleMeaning && <p className="mt-0.5 text-sm leading-5 text-white/70"><span className="mr-1 text-xs text-white/45">译文</span>{option.exampleMeaning}</p>}
                     </div>
                   );
-                })}
+                }} />
               </div>
             </div>
           )}

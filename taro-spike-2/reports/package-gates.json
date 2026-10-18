@@ -2,11 +2,11 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1780753,
+      "bytes": 1805709,
       "passes": true
     },
     "study": {
-      "bytes": 1013989,
+      "bytes": 1016236,
       "passes": true
     },
     "account": {
@@ -14,7 +14,7 @@
       "passes": true
     },
     "content-pages": {
-      "bytes": 1121670,
+      "bytes": 1121665,
       "passes": true
     },
     "features": {
@@ -34,7 +34,7 @@
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 301182,
+      "bytes": 303127,
       "passes": true
     },
     "core": {
@@ -42,7 +42,7 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 903293,
+      "bytes": 905156,
       "passes": true
     },
     "jlpt-bank": {
@@ -55,7 +55,7 @@
     }
   },
   "maxUnapprovedPageComponentBytes": 100000,
-  "duplicateSourceModuleCount": 89,
+  "duplicateSourceModuleCount": 90,
   "duplicatedModules": [
     {
       "source": "frontend/src/lib/vocab-test.ts",
@@ -154,19 +154,19 @@
       ]
     },
     {
+      "source": "frontend/src/pages/ConfusionPage.tsx",
+      "bytes": 20612,
+      "packages": [
+        "grammar-pages",
+        "study"
+      ]
+    },
+    {
       "source": "frontend/src/lib/daily-plan.ts",
       "bytes": 20122,
       "packages": [
         "account",
         "lazy",
-        "study"
-      ]
-    },
-    {
-      "source": "frontend/src/pages/ConfusionPage.tsx",
-      "bytes": 19495,
-      "packages": [
-        "grammar-pages",
         "study"
       ]
     },
@@ -439,18 +439,18 @@
       ]
     },
     {
-      "source": "frontend/src/components/ProReadingPreview.tsx",
-      "bytes": 6340,
+      "source": "frontend/src/lib/distinction-quiz.ts",
+      "bytes": 6700,
       "packages": [
+        "grammar-pages",
         "lazy",
         "study"
       ]
     },
     {
-      "source": "frontend/src/lib/distinction-quiz.ts",
-      "bytes": 6302,
+      "source": "frontend/src/components/ProReadingPreview.tsx",
+      "bytes": 6340,
       "packages": [
-        "grammar-pages",
         "lazy",
         "study"
       ]
@@ -580,6 +580,15 @@
       "source": "frontend/src/components/ZooConfetti.tsx",
       "bytes": 2899,
       "packages": [
+        "lazy",
+        "study"
+      ]
+    },
+    {
+      "source": "frontend/src/components/SubgroupedMembers.tsx",
+      "bytes": 2785,
+      "packages": [
+        "grammar-pages",
         "lazy",
         "study"
       ]
@@ -1057,7 +1066,7 @@
     },
     {
       "source": "frontend/src/lib/distinction-quiz.ts",
-      "bytes": 6302,
+      "bytes": 6700,
       "packages": [
         "grammar-pages",
         "lazy",
@@ -1331,7 +1340,7 @@
     },
     {
       "source": "frontend/src/pages/ConfusionPage.tsx",
-      "bytes": 19495,
+      "bytes": 20612,
       "packages": [
         "grammar-pages",
         "study"
@@ -1561,6 +1570,16 @@
       "reason": "Confetti state and its timer are scoped to each mounted celebration; it is a visual effect with no shared or persisted user state."
     },
     {
+      "source": "frontend/src/components/SubgroupedMembers.tsx",
+      "bytes": 2785,
+      "packages": [
+        "grammar-pages",
+        "lazy",
+        "study"
+      ],
+      "reason": "Distinction subgroup frames are rendered by the study sheet and confusion card (lazy, study) and by the confusion page and distinction quiz (grammar-pages); pure markup with no state."
+    },
+    {
       "source": "frontend/src/components/streak/StreakFlame.tsx",
       "bytes": 2776,
       "packages": [
@@ -1703,6 +1722,7 @@
     "frontend/src/components/daily-plan-ring-geometry.ts": "Ring geometry shared by the Canvas ring; duplicated alongside it.",
     "frontend/src/components/GrammarTermHint.weapp.tsx": "Grammar term hints are rendered by both the lazy tab chunk and grammar/content routes (W6 weapp variant).",
     "frontend/src/components/ZooConfetti.tsx": "Confetti state and its timer are scoped to each mounted celebration; it is a visual effect with no shared or persisted user state.",
+    "frontend/src/components/SubgroupedMembers.tsx": "Distinction subgroup frames are rendered by the study sheet and confusion card (lazy, study) and by the confusion page and distinction quiz (grammar-pages); pure markup with no state.",
     "frontend/src/components/streak/StreakFlame.tsx": "The streak flame is drawn by the home chip (lazy tabs), study celebrations and the streak detail page (content-pages); pure CSS markup with no state.",
     "frontend/src/components/MascotSay.tsx": "The lazy overlays and account setup page render this stateless presentational wrapper using the shared mascot adapter.",
     "frontend/src/components/Disclosure.weapp.tsx": "Zoo, grammar, account, and study pages render this small disclosure in isolated package graphs; open state belongs to each mounted control and no user data is cached.",
@@ -1715,7 +1735,7 @@
     "frontend/src/components/DailyPlanSlider.weapp.tsx": "The lazy setup panel and account/study plan pages render native Sliders; values and commit callbacks are owned by each mounted parent, not this stateless adapter.",
     "frontend/src/components/JapaneseRubyText.weapp.tsx": "Ruby text is used by lazy tabs and independently loaded content/grammar routes."
   },
-  "duplicatedPageComponentBytes": 349076,
+  "duplicatedPageComponentBytes": 352978,
   "unapprovedPageComponents": [],
   "stalePageComponentAllowlist": [],
   "unapprovedPageComponentBytes": 0,
@@ -1734,7 +1754,7 @@
     },
     {
       "source": "frontend/src/styles.css",
-      "bytes": 129724
+      "bytes": 131354
     },
     {
       "source": "frontend/src/lib/sync-api.ts",

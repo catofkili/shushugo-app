@@ -3,6 +3,7 @@ import { Eye } from "lucide-react";
 import { ScrollArea } from "../../components/ScrollArea";
 import { answerHotkeyLabels, answerOptions } from "../word-study/word-study-utils";
 import type { MatchingCard } from "../../lib/confusion-cards";
+import { SubgroupedMembers, VoiceTag } from "../../components/SubgroupedMembers";
 import type { WordAnswer } from "../../types/vocabulary";
 
 export const MATCH_ACCENT: CSSProperties = {
@@ -64,13 +65,13 @@ export const ConfusionCardView = ({ card, revealed, onReveal, onAnswer }: Props)
               <p className="text-[11px] font-bold tracking-[0.16em] text-white/55">判断要点</p>
               <p className="mt-1.5 text-sm leading-6 text-white/90">{card.overview}</p>
             </div>
-            <div className="mt-3 flex flex-col gap-2">
-              {card.members.map((member) => (
+            <div className="mt-3">
+              <SubgroupedMembers items={card.members} className="flex flex-col gap-2" wordOf={(member) => member.surface} render={(member) => (
                 <div key={member.id} className="grid grid-cols-[minmax(84px,0.34fr)_minmax(0,1fr)] gap-x-3 rounded-2xl border border-white/10 bg-white/[0.045] px-3 py-3 sm:grid-cols-[150px_minmax(0,1fr)] sm:px-4">
                   <div className="min-w-0">
                     <p className="jp break-words text-lg font-bold leading-6 text-white">{member.surface}</p>
                     <p className="jp mt-0.5 break-words text-xs leading-5 text-white/50">{member.kana}</p>
-                    {member.pairRole && <span className="mt-1 inline-flex rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-bold text-white/70">{member.pairRole}</span>}
+                    {member.voice && <span className="mt-1 inline-flex"><VoiceTag voice={member.voice} /></span>}
                   </div>
                   <div className="min-w-0 self-center">
                     <p className="text-sm leading-6 text-white/78">{member.note || "此组词的用法见总述。"}</p>
@@ -78,7 +79,7 @@ export const ConfusionCardView = ({ card, revealed, onReveal, onAnswer }: Props)
                     {member.exampleMeaning && <p className="mt-0.5 break-words text-xs leading-5 text-white/65"><span className="mr-1 text-[10px] text-white/40">译文</span>{member.exampleMeaning}</p>}
                   </div>
                 </div>
-              ))}
+              )} />
             </div>
           </div>
         )}

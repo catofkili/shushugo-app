@@ -3,6 +3,9 @@ import { confusionGroupsForWord, displayForm, TYPE_META } from "../confusion-gro
 import { sameStemForms } from "./confusion";
 import { distinctionNotesFor, distinctionReviewFor, type DistinctionLevel } from "../../data/confusion_distinction_reviews";
 import { Eye, NotebookPen, type LucideIcon } from "lucide-react";
+import { pairRoleVoice, placeMembers } from "../confusion-subgroups";
+import type { Transitivity } from "../transitivity";
+import verbPairHints from "../../data/verb_pair_hints.json";
 
 /**
  * 一张词卡上「和它容易混的东西」的统一模型。
@@ -33,6 +36,10 @@ export interface DistinctionMember {
   note: string;
   /** 就是当前这张卡本身 —— 对照要有参照物，它得留在列表里并且标出来 */
   isCurrent: boolean;
+  /** 自他。只有 confusion-groups 来的组才标（手写小组 → 自他对配对表），其余为 null */
+  voice: Transitivity | null;
+  /** 手写小组标题；空串 = 不分小组 */
+  subgroup: string;
 }
 
 export interface DistinctionSection {
@@ -58,7 +65,9 @@ const currentMember = (card: WordCard): DistinctionMember => ({
   exampleMeaning: card.example?.meaning ?? "",
   jlptLevel: card.jlptLevel,
   note: "",
-  isCurrent: true
+  isCurrent: true,
+  voice: null,
+  subgroup: ""
 });
 
 const plainMember = (
@@ -73,7 +82,9 @@ const plainMember = (
   jlptLevel: "",
   // note 和 meaning 一样时说明手写组没给单独说法（自动组就是这样），别重复显示一遍
   note: item.note && item.note !== item.meaning ? item.note : "",
-  isCurrent: false
+  isCurrent: false,
+  voice: null,
+  subgroup: ""
 });
 
 export function wordDistinctions(card: WordCard): DistinctionSection[] {
@@ -126,6 +137,7 @@ export function wordDistinctions(card: WordCard): DistinctionSection[] {
     });
   }
 
+  const pairs = verbPairHints as unknown as Record<string, ["自动词" | "他动词", string, string, string]>;
   confusionGroupsForWord(card.id).forEach((group) => {
     const meta = TYPE_META[group.type];
     const review = distinctionReviewFor(group.key);
@@ -143,7 +155,13 @@ export function wordDistinctions(card: WordCard): DistinctionSection[] {
       level: review?.level ?? null,
       // 不按「学没学过」筛。分组里的成员是语言事实，仍要完整展示；只过滤当前卡
       // 在前面更具体的辨析里已经看过的词，避免一个词在一张展开卡里重复出现。
-      members: group.members.map((member) => ({
+      members: placeMembers(
+        group.key,
+        group.members,
+        (member) => [displayForm(member), member.kanji, member.kana],
+        // 不查 JMdict 自他表（77 KB，会被拖进小程序主包）；当前这张词卡自己的自他徽章在卡面上
+        (member) => pairRoleVoice((pairs[member.kanji] ?? pairs[member.kana])?.[0])
+      ).map(({ member, voice, subgroup }) => ({
           id: member.id,
           word: displayForm(member),
           kana: member.kana,
@@ -152,7 +170,9 @@ export function wordDistinctions(card: WordCard): DistinctionSection[] {
           exampleMeaning: member.exampleMeaning,
           jlptLevel: member.jlptLevel,
           note: notes.get(String(member.id)) ?? "",
-          isCurrent: member.id === card.id
+          isCurrent: member.id === card.id,
+          voice,
+          subgroup
         })),
       masterable: true
     });

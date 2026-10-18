@@ -94,7 +94,9 @@ const allowedPageComponentDuplicates = {
   'frontend/src/components/streak/StreakFlame.tsx': 'The streak flame is drawn by the home chip (lazy tabs), study celebrations and the streak detail page (content-pages); pure CSS markup with no state.',
   'frontend/src/components/streak/StreakMoments.tsx': 'Streak celebration gate and spark are mounted by lazy tab pages and study-package pages; the once-per-day flags live in storage, not in module state.',
   'frontend/src/components/streak/StreakCelebration.tsx': 'The full-screen streak celebration is rendered by the gate in lazy tab pages and study-package finish screens; component-local state only.',
-  'frontend/src/components/streak/streak.css': 'Flame and celebration styles: the lazy tab copy is merged into app.wxss by split-route-css (no runtime link for lazy wxss), so stats list both; page styles live in StreakPageView.css.'
+  'frontend/src/components/streak/streak.css': 'Flame and celebration styles: the lazy tab copy is merged into app.wxss by split-route-css (no runtime link for lazy wxss), so stats list both; page styles live in StreakPageView.css.',
+  // 2026-10-18 疑难辨析分小组：学习页辨析气泡 / 辨析卡在 lazy、study，疑难辨析页和练一练在 grammar-pages。
+  'frontend/src/components/SubgroupedMembers.tsx': 'Distinction subgroup frames are rendered by the study sheet and confusion card (lazy, study) and by the confusion page and distinction quiz (grammar-pages); pure markup with no state.'
 };
 const packages = JSON.parse(fs.readFileSync(path.join(root, 'reports/package-sizes.json'), 'utf8'));
 const stats = JSON.parse(fs.readFileSync(path.join(root, 'reports/webpack-stats.json'), 'utf8'));

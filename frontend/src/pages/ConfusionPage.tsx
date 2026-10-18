@@ -19,6 +19,9 @@ import { JapaneseWordRuby } from "../components/JapaneseWordRuby";
 import { Sticker } from "../components/CapybaraMascot";
 import { useStudyTimer } from "../lib/useStudyTimer";
 import { useProgressiveList } from "../lib/touch-adapter";
+import { pairRoleVoice, placeMembers } from "../lib/confusion-subgroups";
+import verbPairHints from "../data/verb_pair_hints.json";
+import { SubgroupedMembers, VoiceTag } from "../components/SubgroupedMembers";
 
 /**
  * 疑难辨析。
@@ -161,7 +164,17 @@ export const ConfusionPage = ({ onQuiz }: ConfusionPageProps) => {
   const visibleGroups = useProgressiveList(sectionGroups, sections, 48);
   const visibleKeys = useMemo(() => new Set(visibleGroups.map((group) => group.key)), [visibleGroups]);
 
+  const pairHints = verbPairHints as unknown as Record<string, ["自动词" | "他动词", string, string, string]>;
   const open = ordered.find((group) => group.key === openKey) ?? null;
+  const openPlaced = open
+    ? placeMembers(
+        open.key,
+        open.members,
+        (member) => [displayForm(member), member.kanji, member.kana],
+        // 自他只用手写标注和自他对配对表，不拉 JMdict 表（77 KB；见 confusion-cards.ts）
+        (member) => pairRoleVoice((pairHints[member.kanji] ?? pairHints[member.kana])?.[0])
+      )
+    : [];
   const openReview = open ? distinctionReviewFor(open.key) : null;
   const openNotes = open && openReview?.level === "major"
     ? distinctionNotesFor(openReview.summary, open.members.map((member) => ({
@@ -317,8 +330,7 @@ export const ConfusionPage = ({ onQuiz }: ConfusionPageProps) => {
               </p>
             )}
 
-            <div className="cf-members">
-              {open.members.map((member) => (
+            <SubgroupedMembers items={openPlaced} className="cf-members" wordOf={({ member }) => displayForm(member)} render={({ member, voice }) => (
                 <div key={member.id} className="cf-member">
                   <div className="cf-member-head">
                     {/* 词形和读音必须并排显示,不能像单词卡那样只给一个 ——
@@ -329,6 +341,7 @@ export const ConfusionPage = ({ onQuiz }: ConfusionPageProps) => {
                       className="jp-serif cf-member-word"
                     />
                     <span className="jp cf-member-kana">{member.kana}</span>
+                    <VoiceTag voice={voice} />
                     {member.jlptLevel && <span className="cf-member-level">{member.jlptLevel}</span>}
                   </div>
                   <p className="cf-member-meaning">{member.meaning}</p>
@@ -342,8 +355,7 @@ export const ConfusionPage = ({ onQuiz }: ConfusionPageProps) => {
                     </p>
                   )}
                 </div>
-              ))}
-            </div>
+              )} />
 
             <button
               className={`cf-master${mastered.has(open.key) ? " is-on" : ""}`}
