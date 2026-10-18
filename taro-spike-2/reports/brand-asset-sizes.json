@@ -1,10 +1,10 @@
 {
   "formatVersion": 2,
-  "compression": "pngquant 256-color palette: main quality 60-85, subpackage quality 65-90; verified lossless main outputs retained by source/output SHA256",
+  "compression": "pngquant palette: main 256 colors quality 60-85, roll-strip 40 colors quality 0-85, subpackage 256 colors quality 65-90; verified lossless main outputs retained by source/output SHA256",
   "packages": {
     "main": {
-      "beforeBytes": 165240,
-      "afterBytes": 375254
+      "beforeBytes": 200574,
+      "afterBytes": 410588
     },
     "study": {
       "beforeBytes": 41968,
@@ -939,6 +939,23 @@
       "afterSha256": "57b7b018f0e73a43c3779b8aca61abe8981fb9790b625f15dd79699022b1d74b",
       "quality": "60-85",
       "losslessOptimized": true
+    },
+    {
+      "subpackage": "main",
+      "image": "roll-strip",
+      "sourceWidth": 2192,
+      "sourceHeight": 168,
+      "maxDisplayHeightCss": 72,
+      "scale": 2,
+      "outputWidth": 1880,
+      "outputHeight": 144,
+      "beforeFormat": "png",
+      "beforeBytes": 35334,
+      "afterFormat": "png",
+      "afterBytes": 35334,
+      "sourceSha256": "55c6319cbc13cd0b352092fd21b3c1a59f83d042463bbfa03eb523dd5d00a300",
+      "afterSha256": "03bb1878b008e218d8e81c50b06332bb7b4e90d800190e9e10e919e020782040",
+      "quality": "0-85"
     },
     {
       "subpackage": "study",

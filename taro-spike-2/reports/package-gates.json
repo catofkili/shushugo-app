@@ -2,19 +2,19 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1826903,
+      "bytes": 1861428,
       "passes": true
     },
     "study": {
-      "bytes": 1019130,
+      "bytes": 1016863,
       "passes": true
     },
     "account": {
-      "bytes": 324569,
+      "bytes": 324573,
       "passes": true
     },
     "content-pages": {
-      "bytes": 1130645,
+      "bytes": 1122332,
       "passes": true
     },
     "features": {
@@ -34,7 +34,7 @@
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 303737,
+      "bytes": 303753,
       "passes": true
     },
     "core": {
@@ -42,7 +42,7 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 907342,
+      "bytes": 905791,
       "passes": true
     },
     "jlpt-bank": {
@@ -240,15 +240,6 @@
       ]
     },
     {
-      "source": "frontend/src/lib/team-activity.ts",
-      "bytes": 14864,
-      "packages": [
-        "content-pages",
-        "lazy",
-        "study"
-      ]
-    },
-    {
       "source": "frontend/src/components/GrammarHighlightProvider.tsx",
       "bytes": 14740,
       "packages": [
@@ -338,6 +329,14 @@
       "packages": [
         "account",
         "lazy"
+      ]
+    },
+    {
+      "source": "frontend/src/lib/team-activity.ts",
+      "bytes": 10954,
+      "packages": [
+        "lazy",
+        "study"
       ]
     },
     {
@@ -488,7 +487,6 @@
       "source": "frontend/src/lib/team-rules.ts",
       "bytes": 4899,
       "packages": [
-        "content-pages",
         "lazy",
         "study"
       ]
@@ -963,16 +961,6 @@
       "reason": "Reports are read from and written to the shared database on each call; the module keeps no report snapshot."
     },
     {
-      "source": "frontend/src/lib/team-activity.ts",
-      "bytes": 14864,
-      "packages": [
-        "content-pages",
-        "lazy",
-        "study"
-      ],
-      "reason": "Study rows and account-keyed caches are read from SQLite/localStorage on each call; only request coalescing is module-local, and duplicate route requests merge activity idempotently on the Worker."
-    },
-    {
       "source": "frontend/src/lib/share-canvas.weapp.ts",
       "bytes": 13191,
       "packages": [
@@ -1013,6 +1001,15 @@
         "lazy"
       ],
       "reason": "The lazy post-login callback and independent account routes read account-keyed pending flags and avatar signatures from shared Preferences on every call; this module retains no session, profile or retry queue in memory."
+    },
+    {
+      "source": "frontend/src/lib/team-activity.ts",
+      "bytes": 10954,
+      "packages": [
+        "lazy",
+        "study"
+      ],
+      "reason": "Study rows and account-keyed caches are read from SQLite/localStorage on each call; only request coalescing is module-local, and duplicate route requests merge activity idempotently on the Worker."
     },
     {
       "source": "frontend/src/lib/privacy-policy-content.ts",
@@ -1102,7 +1099,6 @@
       "source": "frontend/src/lib/team-rules.ts",
       "bytes": 4899,
       "packages": [
-        "content-pages",
         "lazy",
         "study"
       ],
@@ -1277,11 +1273,11 @@
     "frontend/src/lib/study-focus.ts": "Each isolated route package mounts only its own study source; partial baseline windows are persisted on page exit, countdown state is deliberately discarded, and rewards are guarded by unique database ledger keys.",
     "frontend/src/lib/audio-pack-platform.weapp.ts": "globalThis.__shushugoAudioPackClient is shared by every subpackage; only that instance owns the wx file ledger and transfer queue.",
     "frontend/src/lib/analytics/weekly-reports.ts": "Reports are read from and written to the shared database on each call; the module keeps no report snapshot.",
-    "frontend/src/lib/team-activity.ts": "Study rows and account-keyed caches are read from SQLite/localStorage on each call; only request coalescing is module-local, and duplicate route requests merge activity idempotently on the Worker.",
     "frontend/src/lib/share-canvas.weapp.ts": "The canvas and file sequence are temporary rendering state scoped to a page bundle, not persisted user data.",
     "frontend/src/lib/token-dictionary.ts": "Dictionary matches are computed from the supplied database rows; results are not retained in a module cache.",
     "frontend/src/lib/speech-packs.ts": "All catalog/cache/transfer state belongs to the process-wide client. Preferences and voice ownership are read live; plan arrays are not retained.",
     "frontend/src/lib/profile-sync.ts": "The lazy post-login callback and independent account routes read account-keyed pending flags and avatar signatures from shared Preferences on every call; this module retains no session, profile or retry queue in memory.",
+    "frontend/src/lib/team-activity.ts": "Study rows and account-keyed caches are read from SQLite/localStorage on each call; only request coalescing is module-local, and duplicate route requests merge activity idempotently on the Worker.",
     "frontend/src/lib/privacy-policy-content.ts": "The lazy auth dialog and account legal pages read the same immutable bundled policy text; consent-version constants remain shared in legal-versions.ts and no consent state is stored here.",
     "frontend/src/lib/speech.weapp.ts": "Only public voice-index content and package-local audio handles are cached; user preferences are read live and no study data is cached.",
     "frontend/src/lib/share-image.weapp.ts": "Share and save operations use the image passed to each call and retain no mutable user state.",
@@ -1750,7 +1746,7 @@
   "mainTopModules": [
     {
       "source": "frontend/src/app.css",
-      "bytes": 145931
+      "bytes": 145916
     },
     {
       "source": "frontend/src/lib/word-api.ts",
@@ -1758,15 +1754,15 @@
     },
     {
       "source": "frontend/src/styles.css",
-      "bytes": 131391
+      "bytes": 131354
     },
     {
       "source": "frontend/src/lib/sync-api.ts",
-      "bytes": 120549
+      "bytes": 119961
     },
     {
       "source": "frontend/src/design.css",
-      "bytes": 97436
+      "bytes": 96129
     },
     {
       "source": "taro-spike-2/node_modules/react-reconciler/cjs/react-reconciler.production.min.js",
@@ -1786,7 +1782,7 @@
     },
     {
       "source": "taro-spike-2/src/platform/WeappPage.tsx",
-      "bytes": 65589
+      "bytes": 65701
     }
   ],
   "passes": true

@@ -226,7 +226,7 @@
    放全局顶栏而不是学习卡片里:卡片高度是死的,进度条占的每一像素都是从答案区扣的;
    顶栏中间本来就空着,白捡。所以这里所有尺寸都按「一条 26px 的细带」设计。 */
 .zoo-trail{
-  --zoo-trail-tail:56px;              /* 右端留给计数的宽度,松鼠不会跑进去和数字糊在一起 */
+  --zoo-trail-tail:88px;              /* 右端留给四位数计数和滚动水豚的半宽，终点不碰数字 */
   position:relative;flex:1;min-width:0;height:26px
 }
 /* 不画外框（用户 2026-09-27：绿框多余）：一条圆角细轨道，走过的那段填主色，和水豚的位置用同一个比例 */
@@ -1384,10 +1384,10 @@
 /* ===== 吉祥物点缀（2026-09-19 定妆稿）===== */
 /* 顶栏 logo 组合里「收集日」后面那片嫩芽 */
 .brand-sprout{display:inline-block;width:.6em;height:.6em;margin-left:.15em;vertical-align:.35em;background:no-repeat center/contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M10 19v-8' stroke='%235B8F3A' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M10 11C8 4 3 3 1 4c1 5 5 8 9 7z' fill='%238CC77A'/%3E%3Cpath d='M10 11c2-7 7-8 9-7-1 5-5 8-9 7z' fill='%23A9D88F'/%3E%3C/svg%3E")}
-/* 走路的那只：四帧走 image + overflow 裁切，WXSS 不支持包内 background-image。 */
+/* 走法 sprite 走 image + overflow 裁切，WXSS 不支持包内 background-image。 */
 .mascot-walk{display:inline-block;overflow:hidden;vertical-align:bottom}
-.mascot-walk-strip{display:block;max-width:none;animation:mascotWalk .64s steps(4,end) infinite}
-/* steps(4,end) 停在 0/25/50/75%，所以终点必须是 -100%（整条宽 = 4 帧）；写 -75% 每帧都停在两帧中间 */
+.mascot-walk-strip{display:block;max-width:none;animation:mascotWalk var(--walk-duration,.64s) steps(var(--walk-frames,4),end) infinite}
+/* steps(N,end) 的终点必须是整条 -100%，才能逐格停在帧边界。 */
 @keyframes mascotWalk{to{transform:translateX(-100%)}}
 [data-motion="reduced"] .mascot-walk-strip{animation:none}
 /* 底部 Tab：选中那格的图标放大一点、带一点投影 */

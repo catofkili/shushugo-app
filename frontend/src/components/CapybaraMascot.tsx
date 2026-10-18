@@ -11,7 +11,7 @@
  *   confused 疑惑 · surprised 惊讶 · working 努力中 · love 喜欢
  * 空状态 / 提示插画走 <Sticker name="empty-…">，那一排是整张画不是表情。
  */
-import { useSyncExternalStore } from "react";
+import { useSyncExternalStore, type CSSProperties } from "react";
 import { MASCOT_SKIN_EVENT, MASCOT_SKINS } from "../lib/mascot-skins";
 export { MASCOT_SKIN_EVENT };
 
@@ -76,6 +76,21 @@ const subscribe = (cb: () => void) => { window.addEventListener(MASCOT_SKIN_EVEN
 /** 组件里拿当前皮肤，皮肤一换所有贴纸同一帧重画 */
 export const useMascotSkin = () => useSyncExternalStore(subscribe, () => skin, () => "");
 
+const WALK_STYLE_EVENT = "shushugo:walk-style";
+let walkStyle = "";
+/** 走法独立于皮肤；装备变化时所有已挂载的走路组件同步重画。 */
+export const setWalkStyle = (itemId: string) => {
+  const next = itemId === "walk-alt" ? itemId : "";
+  if (walkStyle === next) return;
+  walkStyle = next;
+  window.dispatchEvent(new Event(WALK_STYLE_EVENT));
+};
+const subscribeWalkStyle = (callback: () => void) => {
+  window.addEventListener(WALK_STYLE_EVENT, callback);
+  return () => window.removeEventListener(WALK_STYLE_EVENT, callback);
+};
+export const useWalkStyle = () => useSyncExternalStore(subscribeWalkStyle, () => walkStyle, () => "");
+
 export const brandAssetUrl = (path: string) => `${import.meta.env.BASE_URL}brand/${path}`;
 
 export const stickerUrl = (name: StickerName, skinId = skin) => {
@@ -108,18 +123,20 @@ export function CapybaraMascot({ size = 96, mood = "default", className = "" }: 
 
 /**
  * walk-frame 是 walk-strip 的第一帧（sips 裁的），给商店当商品图用。
- * 走路的那只：四帧拼成一条 sprite（`walk-strip.png`，格子 248×272），CSS steps(4) 翻帧。
+ * 默认走路四帧（248:272），滚着走八帧（545:334）；按帧数设置 steps 和时长。
  * 顶栏小路和页面加载都用它；尺寸按高度给，宽度按格子比例算。
  */
 export function CapybaraWalk({ size = 55, className = "" }: { size?: number; className?: string }) {
-  const w = Math.round((size * 248) / 272);
+  const rolling = useWalkStyle() === "walk-alt";
+  const frames = rolling ? 8 : 4;
+  const w = Math.round(size * (rolling ? 545 / 334 : 248 / 272));
   return (
     <span
       className={`mascot-walk ${className}`}
       aria-hidden="true"
-      style={{ width: w, height: size }}
+      style={{ width: w, height: size, "--walk-frames": frames, "--walk-duration": `${frames * 160}ms` } as CSSProperties}
     >
-      <img className="mascot-walk-strip" src={brandAssetUrl("sheet/walk-strip.png")} alt="" style={{ width: w * 4, height: size }} />
+      <img className="mascot-walk-strip" src={brandAssetUrl(rolling ? "sheet/roll-strip.png" : "sheet/walk-strip.png")} alt="" style={{ width: w * frames, height: size }} />
     </span>
   );
 }

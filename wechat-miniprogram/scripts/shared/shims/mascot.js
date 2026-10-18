@@ -1,1 +1,1 @@
-module.exports = { setMascotSkin() {} };
+module.exports = { setMascotSkin() {}, setWalkStyle() {} };

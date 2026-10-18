@@ -25,7 +25,7 @@ const mainNames = {
   // 主页模式下拉图标和单词完成页 / 庆祝层的柚子币、皇冠。
   'mode-classic': 32, 'mode-mixed': 32, 'mode-mistakes': 32, 'mode-quick': 32,
   'mode-reverse': 32, 'mode-kanji': 32, 'mode-picked': 32, 'crown': 52, 'yuzu-coin': 20,
-  'shushugo-icon': 56, 'shushugo-icon-dark': 56, 'walk-strip': 72
+  'shushugo-icon': 56, 'shushugo-icon-dark': 56, 'walk-strip': 72, 'roll-strip': 72
 };
 const mainOneX = new Set(['mood-ask', 'mood-surprised']);
 const packageNames = {
@@ -111,14 +111,17 @@ try {
     const original = readFileSync(source);
     const { width: sourceWidth, height: sourceHeight } = pngDimensions(original);
     const outputHeight = target.maxDisplayHeightCss * target.scale;
-    const outputWidth = Math.round(sourceWidth * outputHeight / sourceHeight);
+    // Sprite 总宽须能被帧数整除，避免每格采样到相邻帧。
+    const frames = target.image === 'roll-strip' ? 8 : 1;
+    const outputWidth = Math.round(sourceWidth * outputHeight / sourceHeight / frames) * frames;
     const destination = targetPath(target);
     mkdirSync(path.dirname(destination), { recursive: true });
     const key = `${target.subpackage ?? 'main'}/${target.image}`;
     const priorImage = previousSizes.get(key);
     const priorOutput = previousOutputs.get(key);
     const sourceSha256 = sha256(original);
-    const quality = target.subpackage ? '65-90' : '60-85';
+    const rolling = target.image === 'roll-strip';
+    const quality = rolling ? '0-85' : target.subpackage ? '65-90' : '60-85';
     const keepLossless = !target.subpackage && priorImage?.losslessOptimized && priorOutput
       && priorImage.sourceSha256 === sourceSha256 && priorImage.afterSha256 === sha256(priorOutput)
       && priorImage.outputWidth === outputWidth && priorImage.outputHeight === outputHeight
@@ -130,7 +133,8 @@ try {
       execFileSync('sips', ['--resampleHeightWidth', String(outputHeight), String(outputWidth), source, '--out', resized], { stdio: 'ignore' });
       // pngquant applies a 256-color RGBA palette; it keeps the output as PNG, which iOS Mini Program <image> can load locally.
       // 主包贴纸压到 60-85：主包离 1.9 MB 闸门只剩几 KB（2026-09-27 合 W24+W26 时超了 3 KB），小尺寸贴纸看不出差别。
-      execFileSync('pngquant', ['256', '--quality', quality, '--speed', '1', '--force', '--output', destination, resized], { stdio: 'ignore' });
+      // 八帧滚动图单独用 40 色，保留 2× 高度并让主包增量低于 40 KB。
+      execFileSync('pngquant', [rolling ? '40' : '256', '--quality', quality, '--speed', '1', '--force', '--output', destination, resized], { stdio: 'ignore' });
     }
     const prior = before.get(`${target.subpackage ?? 'main'}/${target.image}`);
     measurements.push({
@@ -168,7 +172,7 @@ try {
   writeFileSync(path.join(root, 'src/platform/brand-packages.cjs'), `const contentPackage = 'content-pages';\nmodule.exports = ${JSON.stringify(brandPackages, null, 2).replaceAll('"content-pages"', 'contentPackage')};\n`);
   writeFileSync(reportPath, `${JSON.stringify({
     formatVersion: 2,
-    compression: 'pngquant 256-color palette: main quality 60-85, subpackage quality 65-90; verified lossless main outputs retained by source/output SHA256',
+    compression: 'pngquant palette: main 256 colors quality 60-85, roll-strip 40 colors quality 0-85, subpackage 256 colors quality 65-90; verified lossless main outputs retained by source/output SHA256',
     packages,
     images: measurements
   }, null, 2)}\n`);

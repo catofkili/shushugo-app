@@ -1,5 +1,5 @@
 {
-  "frontend/src/app.css": 145891,
+  "frontend/src/app.css": 145876,
   "frontend/src/components/streak/streak.css": 16013,
   "frontend/src/components/streak/StreakPageView.css": 8168,
   "frontend/src/components/study-buddy/StudyBuddy.css": 5011,
@@ -15,7 +15,7 @@
   "frontend/src/skins.css": 10702,
   "frontend/src/styles.css": 131391,
   "taro-spike-2/src/account/personal-info/personal-info.weapp.css": 309,
-  "taro-spike-2/src/app.css": 1113,
+  "taro-spike-2/src/app.css": 1153,
   "taro-spike-2/src/content-pages/favorites/favorites-layout.weapp.css": 582,
   "taro-spike-2/src/content-pages/weekly-report/weekly-layout.weapp.css": 3415,
   "taro-spike-2/src/content-pages/yuzu-shop/yuzu-layout.weapp.css": 304,
