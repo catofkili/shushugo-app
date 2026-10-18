@@ -287,7 +287,7 @@ export const YuzuShopPage = ({ onOpenPro }: { onOpenPro?: () => void }) => {
             onClick={act}
           >
             {busy ? <><LoaderCircle className="yz-spin" size={15} /> 正在结账…</>
-              : !available ? owned ? "此设备暂不可用" : "即将上架"
+              : !available ? owned ? "此设备暂不可用" : item.category === "icon" && !item.soon ? "仅 iOS App 可用" : "即将上架"
               : inUse ? <><Check size={15} /> 使用中 · 点击换回</>
                 : owned ? (item.category === "voice" || EQUIPPABLE.has(item.category) ? "使用" : <><Check size={15} /> 已拥有</>)
                   : confirming ? `确认花 ${formatYuzu(item.price)} 买下` : <><Sticker name="yuzu-coin" size={15} /> {formatYuzu(item.price)}{balance < item.price ? ` · 还差 ${formatYuzu(item.price - balance)}` : ""}</>}

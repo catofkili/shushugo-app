@@ -5,6 +5,12 @@ let db: Database;
 let plan = { total: 0, completed: 0 };
 let encoreWords = 0;
 const TODAY = "2026-09-19";
+const nativeIcon = vi.hoisted(() => ({ getCurrent: vi.fn(), set: vi.fn() }));
+
+vi.mock("@capacitor/core", () => ({
+  Capacitor: { getPlatform: vi.fn(() => "web"), isPluginAvailable: vi.fn(() => false), isNativePlatform: () => false },
+  registerPlugin: vi.fn(() => nativeIcon)
+}));
 
 vi.mock("./database", () => ({ getDatabase: () => db }));
 vi.mock("./database/db-utils", async (importOriginal) => ({
@@ -15,7 +21,9 @@ vi.mock("./database/db-utils", async (importOriginal) => ({
 vi.mock("./word-api/stage1", () => ({ stage1ProgressCounts: () => plan }));
 vi.mock("./review-budget", () => ({ readEncoreLog: () => ({ dayWords: encoreWords }) }));
 
-import { buyItem, claimDailyPlanYuzu, equippedItem, grantRepairCard, ownsItem, repairableDays, repairCards, repairDay, repairDayWithCard, repairPrice, settleYuzu, yuzuBalance, YUZU } from "./yuzu";
+import { buyItem, claimDailyPlanYuzu, equipItem, equippedItem, unequip, grantRepairCard, ownsItem, repairableDays, repairCards, repairDay, repairDayWithCard, repairPrice, settleYuzu, yuzuBalance, YUZU } from "./yuzu";
+import { Capacitor } from "@capacitor/core";
+import { setAppIcon, syncAppIcon } from "./app-icon";
 import { streakSnapshot } from "./streak";
 import { itemById } from "./yuzu-catalog";
 
@@ -25,6 +33,12 @@ const answers = (n: number, day = TODAY) => {
 };
 
 beforeEach(async () => {
+  vi.mocked(Capacitor.getPlatform).mockReturnValue("web");
+  vi.mocked(Capacitor.isPluginAvailable).mockReturnValue(false);
+  nativeIcon.getCurrent.mockReset().mockResolvedValue({ name: null });
+  nativeIcon.set.mockReset().mockImplementation(async ({ name }: { name: string | null }) => {
+    nativeIcon.getCurrent.mockResolvedValue({ name });
+  });
   const SQL = await initSqlJs();
   db = new SQL.Database();
   db.run("CREATE TABLE reviews (id INTEGER PRIMARY KEY AUTOINCREMENT, word_id INTEGER, reviewed_on TEXT, direction TEXT)");
@@ -156,5 +170,77 @@ describe("消费", () => {
     expect(grantRepairCard("event-b")).toBe(true);
     expect(repairCards()).toBe(1);
     expect(yuzuBalance()).toBe(0);
+  });
+});
+
+describe("iOS App 图标", () => {
+  const own = (id = "icon-happy") => db.run("INSERT INTO yuzu_ledger VALUES ('buy', ?, -5000, ?)", [id, TODAY]);
+  beforeEach(() => {
+    vi.mocked(Capacitor.getPlatform).mockReturnValue("ios");
+    vi.mocked(Capacitor.isPluginAvailable).mockReturnValue(true);
+  });
+
+  it("装备映射到原生名，重复装备不重复改图标，换回传 null", async () => {
+    own();
+    equipItem("icon-happy");
+    equipItem("icon-happy");
+    await vi.waitFor(() => expect(nativeIcon.getCurrent).toHaveBeenCalledTimes(2));
+    expect(nativeIcon.set).toHaveBeenCalledExactlyOnceWith({ name: "AppIconHappy" });
+    unequip("icon");
+    await vi.waitFor(() => expect(nativeIcon.set).toHaveBeenLastCalledWith({ name: null }));
+    expect(equippedItem("icon")).toBe("");
+  });
+
+  it("原生已经是目标名时不弹提示", async () => {
+    own();
+    nativeIcon.getCurrent.mockResolvedValue({ name: "AppIconHappy" });
+    equipItem("icon-happy");
+    await vi.waitFor(() => expect(nativeIcon.getCurrent).toHaveBeenCalledOnce());
+    expect(nativeIcon.set).not.toHaveBeenCalled();
+  });
+
+  it("买下且槽位为空时自动装备泡汤图标", async () => {
+    db.run("INSERT INTO yuzu_ledger VALUES ('test', 'fund', 5000, ?)", [TODAY]);
+    expect(buyItem("icon-onsen")).toBe(true);
+    await vi.waitFor(() => expect(nativeIcon.set).toHaveBeenCalledOnce());
+    expect(equippedItem("icon")).toBe("icon-onsen");
+    expect(nativeIcon.set).toHaveBeenCalledExactlyOnceWith({ name: "AppIconOnsen" });
+  });
+
+  it("启动按装备槽对账一次，相同不重设，空槽恢复默认", async () => {
+    db.run("INSERT INTO app_state VALUES ('yuzu_equipped:icon', 'icon-happy')");
+    await syncAppIcon();
+    await syncAppIcon();
+    expect(nativeIcon.set).toHaveBeenCalledExactlyOnceWith({ name: "AppIconHappy" });
+    db.run("UPDATE app_state SET value = '' WHERE key = 'yuzu_equipped:icon'");
+    await syncAppIcon();
+    expect(nativeIcon.set).toHaveBeenLastCalledWith({ name: null });
+  });
+
+  it("原生拒绝或读取失败时静默，队列之后仍能重试", async () => {
+    own();
+    nativeIcon.set.mockRejectedValueOnce(new Error("系统拒绝"));
+    equipItem("icon-happy");
+    await expect(setAppIcon("icon-happy")).resolves.toBeUndefined();
+    expect(nativeIcon.set).toHaveBeenLastCalledWith({ name: "AppIconHappy" });
+    nativeIcon.getCurrent.mockRejectedValueOnce(new Error("读取失败"));
+    await expect(syncAppIcon()).resolves.toBeUndefined();
+  });
+
+  it.each(["web", "android", "wechat", "ios-without-plugin"])("%s 不可购买或修改图标槽", async (platform) => {
+    vi.mocked(Capacitor.getPlatform).mockReturnValue(platform === "ios-without-plugin" ? "ios" : platform);
+    vi.mocked(Capacitor.isPluginAvailable).mockReturnValue(platform !== "ios-without-plugin");
+    db.run("INSERT INTO yuzu_ledger VALUES ('test', 'fund', 10000, ?)", [TODAY]);
+    expect(buyItem("icon-onsen")).toBe(false);
+    own();
+    equipItem("icon-happy");
+    expect(equippedItem("icon")).toBe("");
+    db.run("INSERT INTO app_state VALUES ('yuzu_equipped:icon', 'icon-happy')");
+    unequip("icon");
+    expect(equippedItem("icon")).toBe("icon-happy");
+    await syncAppIcon();
+    await setAppIcon("");
+    expect(nativeIcon.getCurrent).not.toHaveBeenCalled();
+    expect(nativeIcon.set).not.toHaveBeenCalled();
   });
 });

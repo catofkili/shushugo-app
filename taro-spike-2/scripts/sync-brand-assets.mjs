@@ -55,7 +55,9 @@ const packageNames = {
     'mood-happy': 150, 'mood-study': 150, 'item-repair': 150,
     'item-voice-female-2': 150, 'item-voice-male': 150,
     'item-sound-marimba-2': 150, 'item-sound-epiano-2': 150,
-    'roll-frame': 150, 'card-daily': 150, 'decor-set': 150
+    'roll-frame': 150, 'card-daily': 150, 'decor-set': 150,
+    // 柚子商店「泡汤图标」的商品图（2026-10-19 前没登记进内容分包，小程序里是空白）
+    'scene-onsen': 150
   }
 };
 const out = path.join(root, 'src/assets/brand');

@@ -13,6 +13,7 @@ export function createSharedShims(root) {
     [`${lib}/entitlements`, shim('entitlements.js')],
     [`${lib}/progress-events`, shim('progress-events.js')],
     [`${lib}/zoo-sounds`, shim('zoo-sounds.js')],
+    [`${lib}/app-icon`, shim('app-icon.mjs')],
     [`${lib}/models/question-meaning-overrides`, shim('question-meaning-overrides.js')],
     [`${frontend}/src/components/CapybaraMascot`, shim('mascot.js')],
     [`${data}/verb_pair_hints`, shim('verb-pair-hints.js')],

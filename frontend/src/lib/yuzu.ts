@@ -16,6 +16,7 @@ import { repairableStreakDays, streakSnapshot, todayStreakStatus } from "./strea
 import { setSoundTimbre, type SoundTimbre } from "./zoo-sounds";
 import { setMascotSkin } from "../components/CapybaraMascot";
 import { getEntitlements } from "./entitlements";
+import { appIconAvailable, setAppIcon } from "./app-icon";
 import { EQUIPPABLE, itemById, VOICE_ITEM_PREFIX, type YuzuCategory } from "./yuzu-catalog";
 
 export const YUZU = {
@@ -186,6 +187,7 @@ export const ownsItem = (id: string): boolean =>
 export const buyItem = (id: string): boolean => {
   const item = itemById(id);
   if (!item || item.soon || ownsItem(id) || yuzuBalance() < item.price) return false;
+  if (item.category === "icon" && !appIconAvailable()) return false;
   book("buy", id, -item.price);
   if (EQUIPPABLE.has(item.category) && !equippedItem(item.category)) equipItem(id);
   persistSoon(); emit();
@@ -198,10 +200,17 @@ export const equippedItem = (category: YuzuCategory): string => getState(equipKe
 export const equipItem = (id: string): void => {
   const item = itemById(id);
   if (!item || !EQUIPPABLE.has(item.category) || !ownsItem(id)) return;
+  if (item.category === "icon" && !appIconAvailable()) return;
   setState(equipKey(item.category), id);
+  if (item.category === "icon") void setAppIcon(id);
   persistSoon(); emit();
 };
-export const unequip = (category: YuzuCategory): void => { setState(equipKey(category), ""); persistSoon(); emit(); };
+export const unequip = (category: YuzuCategory): void => {
+  if (category === "icon" && !appIconAvailable()) return;
+  setState(equipKey(category), "");
+  if (category === "icon") void setAppIcon("");
+  persistSoon(); emit();
+};
 
 /** 补签价:30 天内已经补过几次 */
 export const repairPrice = (): number => {

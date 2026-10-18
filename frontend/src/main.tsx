@@ -10,6 +10,7 @@ import { BrowserDatabaseInUseError, LocalArchiveUnreadableError, loadDatabase, r
 import { Sticker } from './components/CapybaraMascot';
 import { ensureSeedData } from './lib/study-core';
 import { applyYuzuEquipment } from './lib/yuzu';
+import { syncAppIcon } from './lib/app-icon';
 import { initWebViewOptimizer } from './lib/webview-optimizer';
 import { applyMotionLevel, applyTheme, ensureJlptPlanAnchor, getStudyPreferences } from './lib/studyPreferences';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -136,6 +137,7 @@ async function bootWithDatabase() {
     ensureSyncSchema();
     hydrateLevelPlanPreferences();
     applyYuzuEquipment();
+    void syncAppIcon();
     ensureJlptPlanAnchor();
     registerPersistenceLifecycle();
     registerCloudAutoSyncLifecycle();
