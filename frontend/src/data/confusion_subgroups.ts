@@ -4,7 +4,7 @@
  *
  * 为什么要有这一层：五个、七个词平铺开，人记不住；「向かう/向く/向ける | 向かい合う/向き合う」
  * 先分成「单方朝向」和「〜合う＝双方互相」，后一组其实不用另记。所以标题要写**能一眼认出的特征**
- * （读音、自他、后项、谁作主语），不写「用法不同」这种等于没说的话。
+ * （读音、自他、后项、谁作主语），不写缺乏具体判据的空话。
  *
  * 自他是逐词手标的，不只限于两两对应的自他对。JMdict 的 vi/vt 标签对学习者有几处会误导
  * （向く、触る 标成自他兼，入れ替わる 标成自他兼，言う 标成自动词），这里按学习者最常遇到的
@@ -550,5 +550,569 @@ export const CONFUSION_SUBGROUPS: Readonly<Record<string, readonly ConfusionSubg
   "synonym:外观": [
     { title: "外 字头：外部样子", words: { 外見: "", 外観: "" } },
     { title: "見 字头：看起来、卖相", words: { 見かけ: "", 見栄え: "" } }
+  ],
+  "reading-sense:分": [
+    { title: "时间：分钟", words: { ふん: "" } },
+    { title: "份额", words: { ぶん: "", ぶ: "" } }
+  ],
+  "reading-sense:間": [
+    { title: "时间：期间", words: { かん: "" } },
+    { title: "间隔：两者之间", words: { あいだ: "" } },
+    { title: "空隙", words: { ま: "" } }
+  ],
+  "reading-sense:角": [
+    { title: "位置：拐角", words: { かど: "" } },
+    { title: "几何：角度", words: { かく: "" } },
+    { title: "动物的角", words: { つの: "" } }
+  ],
+  "synonym:警察": [
+    { title: "机构", words: { 警察: "" } },
+    { title: "执法人员", words: { 警察官: "", 警官: "" } }
+  ],
+  "synonym:原因": [
+    { title: "汉语：原因、缘由", words: { 原因: "", 所以: "" } },
+    { title: "也能表示目的", words: { ため: "" } }
+  ],
+  "synonym:遗憾的": [
+    { title: "个人感受：可惜、悔恨", words: { 残念: "", 無念: "" } },
+    { title: "正式评价", words: { 遺憾: "" } }
+  ],
+  "synonym:时间": [
+    { title: "阶段、时期", words: { 時期: "" } },
+    { title: "时长、时刻", words: { 時間: "" } },
+    { title: "比赛计时", words: { タイム: "" } }
+  ],
+  "synonym:住所": [
+    { title: "登记的地址", words: { 住所: "" } },
+    { title: "居住的房屋", words: { 住まい: "", 住居: "" } }
+  ],
+  "synonym:来": [
+    { title: "朝说话人方向来", words: { 来る: "自" } },
+    { title: "尊敬语：来、去、在", words: { いらっしゃる: "自", おいでになる: "自" } }
+  ],
+  "synonym:做": [
+    { title: "中性说法", words: { する: "自他" } },
+    { title: "口语", words: { やる: "他" } },
+    { title: "谦让语", words: { いたす: "他" } }
+  ],
+  "synonym:医生": [
+    { title: "日常称呼", words: { 医者: "" } },
+    { title: "正式职业名称", words: { 医師: "" } },
+    { title: "外来语：也指博士", words: { ドクター: "" } }
+  ],
+  "synonym:学生": [
+    { title: "在校学习者", words: { 学生: "", 生徒: "" } },
+    { title: "教师所教的人", words: { 教え子: "" } }
+  ],
+  "synonym:丈夫": [
+    { title: "中性配偶称呼", words: { 夫: "" } },
+    { title: "也指主人", words: { 主人: "", 亭主: "" } }
+  ],
+  "synonym:妻子": [
+    { title: "中性配偶称呼", words: { 妻: "" } },
+    { title: "传统家庭称呼", words: { 家内: "", 女房: "" } }
+  ],
+  "synonym:包": [
+    { title: "携带用包", words: { かばん: "", バッグ: "" } },
+    { title: "柔软袋子", words: { 袋: "" } }
+  ],
+  "synonym:票": [
+    { title: "乘车、入场凭证", words: { チケット: "", 切符: "" } },
+    { title: "选票、票数", words: { 票: "" } }
+  ],
+  "synonym:请": [
+    { title: "礼貌邀请", words: { どうぞ: "" } },
+    { title: "郑重恳请", words: { どうか: "", 何とぞ: "" } }
+  ],
+  "synonym:已经": [
+    { title: "一般说明已经发生", words: { もう: "", すでに: "" } },
+    { title: "多接否定：如今不再", words: { もはや: "" } }
+  ],
+  "synonym:饮料": [
+    { title: "日常统称", words: { 飲み物: "" } },
+    { title: "外来语：菜单、商品", words: { ドリンク: "" } },
+    { title: "正式分类", words: { 飲料: "" } }
+  ],
+  "synonym:车站": [
+    { title: "铁路、地铁站", words: { 駅: "" } },
+    { title: "外来语：服务站点", words: { ステーション: "" } },
+    { title: "公交停靠处", words: { 停留所: "" } }
+  ],
+  "synonym:各位": [
+    { title: "日常称呼听众", words: { 皆さん: "" } },
+    { title: "礼貌地指一群人", words: { 方々: "" } },
+    { title: "书面称呼收信人", words: { 各位: "" } }
+  ],
+  "synonym:对面": [
+    { title: "向こう：那一边", words: { 向こう: "", 向こう側: "" } },
+    { title: "正相对的位置", words: { 向かい: "" } }
+  ],
+  "synonym:擅长的": [
+    { title: "技能熟练的评价", words: { 上手: "" } },
+    { title: "得 字头：强项", words: { 得意: "", 得手: "" } }
+  ],
+  "synonym:人": [
+    { title: "日常指个人", words: { 人: "" } },
+    { title: "人类、本性", words: { 人間: "" } },
+    { title: "接在身份类别后", words: { 者: "" } }
+  ],
+  "synonym:身体": [
+    { title: "和语：日常表达", words: { 体: "", 身: "" } },
+    { title: "汉语：正式人体概念", words: { 身体: "" } }
+  ],
+  "synonym:天气": [
+    { title: "日常天气", words: { 天気: "" } },
+    { title: "客观记录天气", words: { 天候: "" } },
+    { title: "适合某活动的天气", words: { 日和: "" } }
+  ],
+  "synonym:晚饭": [
+    { title: "家庭日常称呼", words: { 晩ご飯: "", 夕飯: "" } },
+    { title: "正式餐次名称", words: { 夕食: "" } }
+  ],
+  "synonym:感觉": [
+    { title: "主观印象", words: { 感じ: "" } },
+    { title: "感官能力", words: { 感覚: "" } },
+    { title: "接词后表示倾向", words: { 気味: "" } }
+  ],
+  "synonym:弄错": [
+    { title: "間違〜：日常说做错", words: { 間違える: "他", 間違う: "自他" } },
+    { title: "书面说判断失误", words: { 誤る: "自他" } }
+  ],
+  "synonym:想法": [
+    { title: "考え〜：意见、思考", words: { 考え: "", 考え方: "" } },
+    { title: "外来语：具体创意", words: { アイデア: "" } }
+  ],
+  "synonym:认真的": [
+    { title: "性格踏实", words: { 真面目: "" } },
+    { title: "面对事情的态度", words: { 真剣: "", 本気: "" } }
+  ],
+  "synonym:座位": [
+    { title: "也指席位、名额", words: { 席: "" } },
+    { title: "供人坐的位置、座椅", words: { 座席: "", シート: "" } }
+  ],
+  "synonym:内容": [
+    { title: "文章、节目信息", words: { 内容: "" } },
+    { title: "容器里的东西", words: { 中身: "" } },
+    { title: "数字媒体作品", words: { コンテンツ: "" } }
+  ],
+  "synonym:身高": [
+    { title: "背 字头：日常身高", words: { 背: "", 背丈: "" } },
+    { title: "正式测量、登记", words: { 身長: "" } }
+  ],
+  "synonym:而且": [
+    { title: "补充、递加信息", words: { それに: "", そのうえ: "" } },
+    { title: "强调超出预期", words: { しかも: "" } }
+  ],
+  "synonym:技术": [
+    { title: "技术体系、工艺", words: { 技術: "" } },
+    { title: "具体技巧、手法", words: { テクニック: "", 技法: "" } }
+  ],
+  "synonym:相反的": [
+    { title: "方向、立场相反", words: { 逆: "", 反対: "" } },
+    { title: "表里不一致", words: { 裏腹: "" } }
+  ],
+  "synonym:紧急的": [
+    { title: "也形容突然、陡峭", words: { 急: "" } },
+    { title: "尽快处理", words: { 早急: "" } },
+    { title: "正式危急状态", words: { 緊急: "" } }
+  ],
+  "synonym:找到": [
+    { title: "东西作主语（自）", words: { 見つかる: "自", 見当たる: "自" } },
+    { title: "寻找者作主语（他）", words: { 見つける: "他" } }
+  ],
+  "synonym:留下": [
+    { title: "剩下的人物作主语（自）", words: { 残る: "自" } },
+    { title: "把对象留下（他）", words: { 残す: "他", 取り残す: "他" } }
+  ],
+  "synonym:线": [
+    { title: "线条、路线、界线", words: { 線: "", ライン: "" } },
+    { title: "缝纫、编织材料", words: { 糸: "" } }
+  ],
+  "synonym:表面": [
+    { title: "物体正面、外层", words: { 表: "", 表面: "" } },
+    { title: "外表与真实相对", words: { 上辺: "" } }
+  ],
+  "synonym:分开": [
+    { title: "主动分开（他）", words: { 分ける: "他", 切り離す: "他" } },
+    { title: "整体自行分开（自）", words: { 分かれる: "自" } }
+  ],
+  "synonym:方法": [
+    { title: "一般做法", words: { 方法: "" } },
+    { title: "解决问题的对策", words: { 方策: "" } },
+    { title: "外来语：体系化程序", words: { メソッド: "" } }
+  ],
+  "synonym:背面": [
+    { title: "读 うら：日常背面", words: { 裏: "", 裏側: "" } },
+    { title: "读 りめん：正式说法", words: { 裏面: "" } }
+  ],
+  "synonym:好好地": [
+    { title: "肯定地说做好", words: { ちゃんと: "", きちんと: "" } },
+    { title: "多接否定：不充分", words: { ろくに: "" } }
+  ],
+  "synonym:轻松的": [
+    { title: "不费力、舒服", words: { 楽: "" } },
+    { title: "気 字头：心理无拘束", words: { 気楽: "", 気軽: "" } }
+  ],
+  "synonym:同伴": [
+    { title: "同一群体的伙伴", words: { 仲間: "" } },
+    { title: "出行、陪同关系", words: { 連れ: "", 同伴: "" } }
+  ],
+  "synonym:刚才": [
+    { title: "口语说不久前", words: { さっき: "", たった今: "" } },
+    { title: "礼貌、正式说法", words: { 先ほど: "" } }
+  ],
+  "synonym:压力": [
+    { title: "外来语：身心负担", words: { ストレス: "", プレッシャー: "" } },
+    { title: "也指物理压力", words: { 圧力: "" } }
+  ],
+  "synonym:抓住": [
+    { title: "捕 字头：逮捕、捕获", words: { 捕まえる: "他", 捕らえる: "他" } },
+    { title: "用手抓取", words: { つかむ: "他" } }
+  ],
+  "synonym:样子": [
+    { title: "观察到的状态", words: { 様子: "" } },
+    { title: "装出来的姿态", words: { 振り: "" } },
+    { title: "书面说存在方式", words: { ありよう: "" } }
+  ],
+  "synonym:客厅": [
+    { title: "家庭起居室", words: { 居間: "", リビング: "" } },
+    { title: "接待、住宿客房", words: { 客室: "" } }
+  ],
+  "synonym:布料": [
+    { title: "布 字头：织物", words: { 布: "", 布地: "" } },
+    { title: "也指面团等底料", words: { 生地: "" } }
+  ],
+  "synonym:暂时": [
+    { title: "一段时间", words: { しばらく: "", 当分: "" } },
+    { title: "先做一步再说", words: { いったん: "" } }
+  ],
+  "synonym:就业": [
+    { title: "获得职位", words: { 就職: "" } },
+    { title: "从事工作、劳动", words: { 就業: "", 就労: "" } }
+  ],
+  "synonym:设计": [
+    { title: "工程、系统规划", words: { 設計: "" } },
+    { title: "外来语：视觉外观", words: { デザイン: "" } },
+    { title: "构思新方案", words: { 考案: "" } }
+  ],
+  "synonym:年长": [
+    { title: "相对某人年龄大", words: { 年上: "", 年長: "" } },
+    { title: "中老年", words: { 年配: "" } }
+  ],
+  "synonym:果然": [
+    { title: "日常确认：や 系", words: { やっぱり: "", やはり: "" } },
+    { title: "书面说不出所料", words: { 案の定: "" } }
+  ],
+  "synonym:不久": [
+    { title: "很快即将发生", words: { 間もなく: "" } },
+    { title: "过一阵后出现结果", words: { やがて: "" } },
+    { title: "近日", words: { 近々: "" } }
+  ],
+  "synonym:再次": [
+    { title: "日常说法", words: { もう一度: "" } },
+    { title: "再 字头：较书面", words: { 再び: "", 再度: "" } }
+  ],
+  "synonym:总之": [
+    { title: "暂不计较某项", words: { とにかく: "", ともかく: "" } },
+    { title: "归纳前文结论", words: { 要するに: "" } }
+  ],
+  "synonym:成员": [
+    { title: "外来语：团队成员", words: { メンバー: "" } },
+    { title: "社团、部门成员", words: { 部員: "" } },
+    { title: "书面说组织成员", words: { 成員: "" } }
+  ],
+  "synonym:价值": [
+    { title: "事物的价值、身价", words: { 価値: "", 値打ち: "" } },
+    { title: "付出值得", words: { かい: "" } }
+  ],
+  "synonym:果实": [
+    { title: "果实，也比喻成果", words: { 実: "", 果実: "" } },
+    { title: "树木的果子、坚果", words: { 木の実: "" } }
+  ],
+  "synonym:分数": [
+    { title: "汉语：得分", words: { 点数: "", 得点: "" } },
+    { title: "外来语：比赛记录", words: { スコア: "" } }
+  ],
+  "synonym:田地": [
+    { title: "旱田", words: { 畑: "" } },
+    { title: "水田", words: { 田んぼ: "" } },
+    { title: "旱田、水田总称", words: { 田畑: "" } }
+  ],
+  "synonym:分量": [
+    { title: "数量、份额", words: { 量: "", 分量: "" } },
+    { title: "重量、影响力", words: { 重み: "" } }
+  ],
+  "synonym:积攒": [
+    { title: "自行累积（自）", words: { たまる: "自" } },
+    { title: "主动积攒（他）", words: { ためる: "他", 積み立てる: "他" } }
+  ],
+  "synonym:提前": [
+    { title: "主动调前（他）", words: { 早める: "他", 繰り上げる: "他" } },
+    { title: "自行提前（自）", words: { 早まる: "自" } }
+  ],
+  "synonym:捆绑": [
+    { title: "縛 字头：捆绑、束缚", words: { 縛る: "他", 縛り付ける: "他" } },
+    { title: "捆成一束，也指归纳", words: { くくる: "他" } }
+  ],
+  "synonym:服装": [
+    { title: "汉语：服饰名称", words: { 服装: "", 衣装: "" } },
+    { title: "和语：外表举止", words: { なりふり: "" } }
+  ],
+  "synonym:西式": [
+    { title: "西式结构、风格", words: { 洋式: "", 洋風: "" } },
+    { title: "单字：西洋、海洋", words: { 洋: "" } }
+  ],
+  "synonym:碎片": [
+    { title: "切下的片、块", words: { 切れ: "", 細切れ: "" } },
+    { title: "破裂后的碎片", words: { 破片: "" } }
+  ],
+  "synonym:搭配": [
+    { title: "合わせ：配合、组合", words: { 合わせ: "", 組み合わせ: "" } },
+    { title: "外来语：视觉造型", words: { コーディネート: "" } }
+  ],
+  "synonym:察觉": [
+    { title: "推测、体谅他人", words: { 察し: "" } },
+    { title: "察觉信息、异常", words: { 察知: "" } },
+    { title: "感官感知", words: { 感知: "" } }
+  ],
+  "synonym:非常": [
+    { title: "书面强调程度高", words: { いとも: "", 誠に: "" } },
+    { title: "常接「言えない」", words: { 何とも: "" } }
+  ],
+  "synonym:说法": [
+    { title: "措辞、说话方式", words: { 言い方: "", 物言い: "" } },
+    { title: "学说、主张", words: { 説: "" } }
+  ],
+  "synonym:传说": [
+    { title: "和语：口耳流传", words: { 昔話: "", 言い伝え: "" } },
+    { title: "汉语：历史神秘色彩", words: { 伝説: "" } }
+  ],
+  "synonym:离开": [
+    { title: "空间、关系脱离", words: { 離れる: "自" } },
+    { title: "去 字：离去", words: { 去る: "自他", 立ち去る: "自" } }
+  ],
+  "synonym:记号": [
+    { title: "印 字：标记", words: { 印: "", 目印: "" } },
+    { title: "正式符号类别", words: { 記号: "" } }
+  ],
+  "synonym:长处": [
+    { title: "一般优点", words: { 長所: "" } },
+    { title: "竞争优势", words: { 強み: "" } },
+    { title: "采用某做法的好处", words: { 利点: "" } }
+  ],
+  "synonym:演员": [
+    { title: "戏剧、影视表演者", words: { 俳優: "", 役者: "" } },
+    { title: "电视艺人、综艺嘉宾", words: { タレント: "" } }
+  ],
+  "synonym:论点": [
+    { title: "理论、主张", words: { 論: "" } },
+    { title: "讨论的焦点", words: { 論点: "" } },
+    { title: "文章的中心内容", words: { 論旨: "" } }
+  ],
+  "synonym:山顶": [
+    { title: "不限于山的顶端", words: { 頂上: "", 頂: "" } },
+    { title: "专指山的最高处", words: { 山頂: "" } }
+  ],
+  "synonym:阳光": [
+    { title: "照射感、晒感", words: { 日差し: "" } },
+    { title: "汉语：太阳光", words: { 日光: "", 陽光: "" } }
+  ],
+  "synonym:跳起": [
+    { title: "上がる：向上跳", words: { 飛び上がる: "自", 跳ね上がる: "自" } },
+    { title: "弹跳、飞溅", words: { 跳ねる: "自" } }
+  ],
+  "synonym:要点": [
+    { title: "内容的核心重点", words: { 要点: "" } },
+    { title: "外来语：也指分数", words: { ポイント: "" } },
+    { title: "关键位置、环节", words: { 要所: "" } }
+  ],
+  "synonym:稍微": [
+    { title: "程度稍许", words: { やや: "", いささか: "" } },
+    { title: "某种不明对象", words: { 何らか: "" } }
+  ],
+  "synonym:替换": [
+    { title: "交换位置、内容", words: { 入れ替える: "他" } },
+    { title: "用新对象代替旧对象", words: { 置き換える: "他", 差し替える: "他" } }
+  ],
+  "synonym:清楚的": [
+    { title: "外来语：也指通过", words: { クリア: "" } },
+    { title: "汉语：清楚明确", words: { 明瞭: "", 分明: "" } }
+  ],
+  "synonym:地位": [
+    { title: "位 字：身份、等级", words: { 位: "", 地位: "" } },
+    { title: "外来语：也指状态", words: { ステータス: "" } }
+  ],
+  "synonym:恩惠": [
+    { title: "得到的利益、恩泽", words: { 恩恵: "", 恵み: "" } },
+    { title: "感受到的可贵", words: { ありがたみ: "" } }
+  ],
+  "synonym:极其": [
+    { title: "修饰一部、わずか", words: { ごく: "" } },
+    { title: "正式强调程度", words: { 極めて: "", 至って: "" } }
+  ],
+  "synonym:考虑": [
+    { title: "把条件纳入判断", words: { 考慮: "" } },
+    { title: "顾及他人处境", words: { 配慮: "" } },
+    { title: "慎重深思", words: { 思慮: "" } }
+  ],
+  "synonym:线索": [
+    { title: "调查、解决的突破口", words: { 糸口: "" } },
+    { title: "自己记得或猜到", words: { 心当たり: "" } },
+    { title: "可依凭的判断依据", words: { 手がかり: "" } }
+  ],
+  "synonym:瞬间": [
+    { title: "短暂时刻、时间", words: { 瞬間: "", 瞬時: "" } },
+    { title: "突发状况下的反应", words: { とっさ: "" } }
+  ],
+  "synonym:膨胀": [
+    { title: "鼓起、增大", words: { 膨らむ: "自", 膨れる: "自" } },
+    { title: "上がる：急剧暴增", words: { 膨れ上がる: "自" } }
+  ],
+  "synonym:涌出": [
+    { title: "湧 字：从内部产生", words: { 湧く: "自", 湧き出る: "自" } },
+    { title: "超出容量而溢出", words: { あふれ出す: "自" } }
+  ],
+  "synonym:顽固的": [
+    { title: "頑 字：固执", words: { 頑固: "", 頑迷: "" } },
+    { title: "和语：坚持、拒绝", words: { かたくな: "" } }
+  ],
+  "synonym:看穿": [
+    { title: "识破真相、隐瞒", words: { 見抜く: "他", 見透かす: "他" } },
+    { title: "看清全局、预见未来", words: { 見通す: "他" } }
+  ],
+  "synonym:用尽": [
+    { title: "把资源用完（他）", words: { 使い果たす: "他", 切らす: "他" } },
+    { title: "资源自然耗尽（自）", words: { 尽きる: "自" } }
+  ],
+  "synonym:安排": [
+    { title: "外来语：也指改编", words: { アレンジ: "" } },
+    { title: "步骤先后顺序", words: { 段取り: "" } },
+    { title: "人员、物资、手续", words: { 手配: "" } }
+  ],
+  "synonym:嵌入": [
+    { title: "はまる／はめる：嵌合", words: { はまる: "自", はめる: "他" } },
+    { title: "侵占空间、时间", words: { 食い込む: "自" } }
+  ],
+  "synonym:步伐": [
+    { title: "外来语：速度、进度", words: { ペース: "" } },
+    { title: "脚步，也有比喻义", words: { 歩み: "", 足取り: "" } }
+  ],
+  "synonym:坚固的": [
+    { title: "日常结实耐用", words: { 頑丈: "" } },
+    { title: "正式说牢固可靠", words: { 強固: "", 堅牢: "" } }
+  ],
+  "synonym:支援": [
+    { title: "一般援助", words: { 支援: "" } },
+    { title: "针对停滞追加措施", words: { てこ入れ: "" } },
+    { title: "外来语：也指备份", words: { バックアップ: "" } }
+  ],
+  "synonym:支持": [
+    { title: "赞同、支撑", words: { 支持: "" } },
+    { title: "协助、服务", words: { サポート: "" } },
+    { title: "背后推动行动", words: { 後押し: "" } }
+  ],
+  "synonym:手势": [
+    { title: "身体整体动作", words: { 身振り: "" } },
+    { title: "手部动作", words: { 手振り: "" } },
+    { title: "外来语：有意传达", words: { ジェスチャー: "" } }
+  ],
+  "synonym:领域": [
+    { title: "一般活动、研究范围", words: { 領域: "", 域: "" } },
+    { title: "自己负责的范围", words: { 領分: "" } }
+  ],
+  "synonym:欺骗": [
+    { title: "使对方受骗", words: { だます: "他", 欺く: "他" } },
+    { title: "伪造身份、说法", words: { 偽る: "自他" } }
+  ],
+  "synonym:核心": [
+    { title: "单字：也指原子核", words: { 核: "" } },
+    { title: "议题的中心要点", words: { 核心: "" } },
+    { title: "组织、系统骨干", words: { 中核: "" } }
+  ],
+  "synonym:浪费": [
+    { title: "乱花钱、耗费资源", words: { 無駄遣い: "", 浪費: "" } },
+    { title: "外来语：损耗流失", words: { ロス: "" } }
+  ],
+  "synonym:触感": [
+    { title: "触り：触摸手感", words: { 触り: "", 肌触り: "" } },
+    { title: "也指心理印象", words: { 感触: "" } }
+  ],
+  "synonym:愚蠢的": [
+    { title: "口语骂人", words: { ばか: "" } },
+    { title: "书面说缺乏判断", words: { 愚か: "" } },
+    { title: "具体笨拙失误", words: { へま: "" } }
+  ],
+  "synonym:细致的": [
+    { title: "计划、准备周密", words: { 綿密: "", 入念: "" } },
+    { title: "关怀、感情细腻", words: { 細やか: "" } }
+  ],
+  "synonym:妖怪": [
+    { title: "邪恶魔物", words: { 魔物: "" } },
+    { title: "外形怪物、超常者", words: { 化け物: "" } },
+    { title: "古典文学鬼怪", words: { 物の怪: "" } }
+  ],
+  "synonym:傲慢的": [
+    { title: "慢 字：自大", words: { 傲慢: "", 高慢: "" } },
+    { title: "摆架子：尊大ぶる", words: { 尊大: "" } }
+  ],
+  "synonym-now:准备": [
+    { title: "为做事预先安排", words: { 準備: "", 用意: "" } },
+    { title: "也指防备", words: { 備え: "" } }
+  ],
+  "synonym-now:包": [
+    { title: "携带用包", words: { かばん: "" } },
+    { title: "装东西的袋子", words: { 袋: "" } },
+    { title: "外来语：包装、面膜", words: { パック: "" } }
+  ],
+  "synonym-now:想法": [
+    { title: "意见、思想", words: { 考え: "" } },
+    { title: "外来语：具体创意", words: { アイデア: "" } },
+    { title: "一时起意", words: { 思いつき: "" } }
+  ],
+  "synonym-now:样子": [
+    { title: "外表装束", words: { 格好: "" } },
+    { title: "观察到的情况", words: { 様子: "" } },
+    { title: "装出来的姿态", words: { 振り: "" } }
+  ],
+  "synonym-now:事情": [
+    { title: "泛指事情、事项", words: { こと: "", 事柄: "" } },
+    { title: "要办的事务", words: { 用事: "", 用件: "" } },
+    { title: "发生的事件", words: { 出来事: "" } }
+  ],
+  "synonym-now:开始": [
+    { title: "汉语：开始", words: { 開始: "" } },
+    { title: "外来语：也指起点", words: { スタート: "" } },
+    { title: "和语：开端", words: { 始まり: "", 手始め: "" } }
+  ],
+  "synonym-now:习惯": [
+    { title: "汉语：习惯、风俗", words: { 習慣: "", 慣習: "" } },
+    { title: "个人毛病", words: { 癖: "" } },
+    { title: "适应、熟悉", words: { 慣れ: "" } }
+  ],
+  "synonym-now:路线": [
+    { title: "道 字头：走法、脉络", words: { 道順: "", 道筋: "" } },
+    { title: "线路、方针", words: { 路線: "" } }
+  ],
+  "synonym-now:强硬的": [
+    { title: "和语：顽强难对付", words: { したたか: "" } },
+    { title: "強 字头：态度强硬", words: { 強引: "", 強硬: "" } }
+  ],
+  "synonym-now:外观": [
+    { title: "单字：也指观点", words: { 観: "" } },
+    { title: "外 字头：外形", words: { 外見: "", 外観: "" } },
+    { title: "看起来的样子", words: { 見かけ: "" } }
+  ],
+  "synonym-now:构想": [
+    { title: "発／着 字头：想法", words: { 発想: "", 着想: "" } },
+    { title: "構 字头：设想", words: { 構想: "" } }
+  ],
+  "synonym-now:部门": [
+    { title: "政府省厅", words: { 省: "" } },
+    { title: "组织内部部门", words: { 部門: "", 部署: "" } }
+  ],
+  "synonym-now:间隙": [
+    { title: "事情之间的空当", words: { 合間: "" } },
+    { title: "中断，也指切口", words: { 切れ目: "" } },
+    { title: "多接否定：不断", words: { 絶え間: "" } }
   ]
 };

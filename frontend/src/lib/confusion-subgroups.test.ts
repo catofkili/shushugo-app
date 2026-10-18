@@ -55,6 +55,14 @@ describe("疑难辨析手写小组", () => {
     expect(missing).toEqual([]);
   });
 
+  it("超过两个词的近义组、一形多读组也都有手写小组（2026-10-18 交 sol 补齐）", () => {
+    const missing = groups
+      .filter((group) => group.type !== "stem" && group.type !== "homophone" && group.type !== "pair"
+        && group.members.length > 2 && !CONFUSION_SUBGROUPS[group.key])
+      .map((group) => group.key);
+    expect(missing).toEqual([]);
+  });
+
   it("止 组：「止める」认领的是 とめる，不是 kanji 也写作止める的 やめる", () => {
     const group = groups.find((item) => item.key === "stem:止")!;
     const placed = placeMembers(group.key, group.members, formsOf, () => null);
