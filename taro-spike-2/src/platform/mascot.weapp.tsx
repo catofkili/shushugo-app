@@ -1,6 +1,6 @@
 import { Image, View } from '@tarojs/components';
 import Taro from '@tarojs/taro';
-import { useSyncExternalStore } from 'react';
+import { useSyncExternalStore, type CSSProperties } from 'react';
 import { MASCOT_SKIN_EVENT, MASCOT_SKINS } from '../../../frontend/src/lib/mascot-skins';
 declare const wx: any;
 
@@ -12,6 +12,21 @@ const brandPath = (name: string) => {
   const packagePath = brandPackages[name]?.includes(currentPackage) ? `/${currentPackage}/assets/brand` : '/assets/brand';
   return `${packagePath}/${name}.png`;
 };
+
+const WALK_STYLE_EVENT = "shushugo:walk-style";
+let walkStyle = "";
+/** 走法独立于皮肤；装备变化时所有已挂载的走路组件同步重画。 */
+export const setWalkStyle = (itemId: string) => {
+  const next = itemId === "walk-alt" ? itemId : "";
+  if (walkStyle === next) return;
+  walkStyle = next;
+  window.dispatchEvent(new Event(WALK_STYLE_EVENT));
+};
+const subscribeWalkStyle = (callback: () => void) => {
+  window.addEventListener(WALK_STYLE_EVENT, callback);
+  return () => window.removeEventListener(WALK_STYLE_EVENT, callback);
+};
+export const useWalkStyle = () => useSyncExternalStore(subscribeWalkStyle, () => walkStyle, () => "");
 
 const skinRoot = `${wx.env.USER_DATA_PATH}/skins`;
 const cacheKeys = new Map<string, string | null>();
@@ -107,9 +122,11 @@ export const brandIconUrl = (skinId = skin) => {
 };
 
 export function CapybaraWalk({ size = 55, className = '' }: { size?: number; className?: string }) {
-  const width = Math.round((size * 248) / 272);
-  return <View aria-hidden="true" className={`taro-spike-walk ${className}`} style={{ width: `${width}px`, height: `${size}px` }}>
-    <Image className="taro-spike-walk-strip" src={brandPath('walk-strip')} mode="scaleToFill" style={{ width: `${width * 4}px`, height: `${size}px` }} />
+  const rolling = useWalkStyle() === "walk-alt";
+  const frames = rolling ? 8 : 4;
+  const width = Math.round(size * (rolling ? 545 / 334 : 248 / 272));
+  return <View aria-hidden="true" className={`taro-spike-walk ${className}`} style={{ width: `${width}px`, height: `${size}px`, "--walk-frames": frames, "--walk-duration": `${frames * 160}ms` } as CSSProperties}>
+    <Image className="taro-spike-walk-strip" src={rolling ? brandPath('roll-strip') : brandPath('walk-strip')} mode="scaleToFill" style={{ width: `${width * frames}px`, height: `${size}px` }} />
   </View>;
 }
 

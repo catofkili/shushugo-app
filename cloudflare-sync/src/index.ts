@@ -1,3 +1,4 @@
+import { YUZU_TITLE_IDS } from "../../frontend/src/lib/yuzu-titles";
 import { canTakeTeamLeave, compareDuelScores, deriveTeamPeriod, scoreDuel, shiftTeamDay, teamDayPassed, teamIsoWeek, teamPeriod, teamStudyDay, type DuelAnswer, type DuelQuestion, type DuelScore, type TeamPeriodMember } from "../../frontend/src/lib/team-rules";
 import {
   PRIVACY_POLICY_EFFECTIVE_DATE,
@@ -2012,7 +2013,7 @@ const teamSnapshot = async (
   if (beforeSnapshot) statements.push(beforeSnapshot);
   statements.push(
     env.DB.prepare(`
-    SELECT tm.id AS member_id, tm.user_id, tm.role, tm.joined_at, u.display_name,
+    SELECT tm.id AS member_id, tm.user_id, tm.role, tm.joined_at, tm.title, u.display_name,
            COALESCE(a.study_count, 0) AS study_count,
            COALESCE(a.completed, 0) AS completed,
            COALESCE(a.word_count, 0) AS word_count,
@@ -2056,6 +2057,7 @@ const teamSnapshot = async (
     active_minutes: number;
     role: "owner" | "member";
     display_name: string | null;
+    title: string | null;
     study_count: number;
     completed: number;
     cheers_received: number;
@@ -2093,6 +2095,7 @@ const teamSnapshot = async (
     members: rows.map((row) => ({
       memberId: row.member_id,
       name: row.display_name || "学习伙伴",
+      title: row.title ?? null,
       avatar: teamAvatar(row.member_id),
       isMe: row.user_id === userId,
       isOwner: row.role === "owner",
@@ -2503,6 +2506,21 @@ const updateTeam = async (request: Request, env: Env) => {
   await env.DB.prepare("UPDATE teams SET name = ?, target_level = ?, emoji = ?, visibility = ?, updated_at = ? WHERE id = ?")
     .bind(name, targetLevel, emoji, visibility, new Date().toISOString(), team.id).run();
   return json({ team: await teamSnapshot(env, userId, teamStudyDay()) });
+};
+
+const TEAM_TITLE_KEYS: ReadonlySet<string> = new Set(Object.values(YUZU_TITLE_IDS));
+const updateTeamTitle = async (request: Request, env: Env) => {
+  const userId = await requireVerifiedUser(request, env);
+  await rateLimitSubject(env, "team-write", `user:${userId}`, 30, 3600);
+  const body = await readJson<{ title?: unknown } | null>(request);
+  if (typeof body?.title !== "string" || (body.title !== "" && !TEAM_TITLE_KEYS.has(body.title))) {
+    return json({ detail: "队伍称号无效。" }, 400);
+  }
+  // user_id is UNIQUE: one account belongs to at most one team. Cosmetics need no purchase check.
+  const result = await env.DB.prepare("UPDATE team_members SET title = ? WHERE user_id = ?")
+    .bind(body.title || null, userId).run();
+  if (!result.meta.changes) return json({ detail: "你还没有加入队伍。" }, 404);
+  return json({ title: body.title || null });
 };
 
 const teamActivityWrite = (env: Env, team: TeamRow, userId: string, body: {
@@ -3735,6 +3753,7 @@ const health = async (env: Env) => {
     "auth_rate_limits",         // 0010
     "apple_notifications",      // 0012
     "wechat_orders",            // 0013
+    // 0020 adds a column, not a table; deployment must also verify PRAGMA table_info(team_members).
     "teams", "team_members", "team_daily_activity", "team_cheers", "team_reports", // 0014
     "trial_grants",            // 0015
     "launch_gift_grants",      // 0016
@@ -3839,6 +3858,7 @@ const route = async (request: Request, env: Env) => {
   if (request.method === "GET" && url.pathname === "/api/teams/plaza") return listTeamPlaza(request, env);
   if (request.method === "POST" && url.pathname === "/api/teams/overview") return teamOverview(request, env);
   if (request.method === "POST" && url.pathname === "/api/teams") return createTeam(request, env);
+  if (request.method === "PUT" && url.pathname === "/api/teams/title") return updateTeamTitle(request, env);
   if (request.method === "PUT" && url.pathname === "/api/teams/me") return updateTeam(request, env);
   if (request.method === "POST" && url.pathname === "/api/teams/join") return joinTeam(request, env);
   if (request.method === "POST" && url.pathname === "/api/teams/activity") return reportTeamActivity(request, env);

@@ -21,10 +21,11 @@ import { playKnow, playSave, playStreakChirp } from "../lib/zoo-sounds";
 import { confirmDialog, promptDialog } from "../lib/platform-dialogs";
 import { copyText, shareText } from "../lib/share-text";
 import { pageShareButtonProps, usePageShare } from "../lib/page-share";
-import { claimTeamCheckin, collectTeamRewards, localActivity, readTeamCache, rememberTeamActivity, teamCheckedIn, writeTeamCache } from "../lib/team-activity";
+import { syncTeamTitle, watchTeamTitle, claimTeamCheckin, collectTeamRewards, localActivity, readTeamCache, rememberTeamActivity, teamCheckedIn, writeTeamCache } from "../lib/team-activity";
 import { shiftTeamDay, teamDayPassed, type TeamDayStatus } from "../lib/team-rules";
 import { triggerTeamCheckinHaptic } from "../lib/haptics";
 import { jsMotionAllowed } from "../lib/studyPreferences";
+import { teamTitleName } from "../lib/yuzu-catalog";
 import { YUZU_EVENT } from "../lib/yuzu";
 import { PROGRESS_UPDATED_EVENT } from "../lib/progress-events";
 import { ZooConfetti } from "../components/ZooConfetti";
@@ -76,17 +77,30 @@ export function TeamPage({ onBack, onOpenDuel, initialInviteCode = "" }: { onBac
   const inviteCard = { title: `来「收集日」加入我的学习队伍「${team?.name ?? ""}」`, path: `/study/team/index?invite=${encodeURIComponent(team?.inviteCode ?? "")}` };
   usePageShare(team?.period?.dayNumber && team.members.every((member) => teamDayPassed(member.wordCount, member.activeMinutes)) ? progressCard : null);
 
+  const applyTitle = useCallback((title: string | null, teamId?: string) => {
+    setTeam((current) => current && (!teamId || current.id === teamId)
+      ? { ...current, members: current.members.map((member) => member.isMe ? { ...member, title } : member) }
+      : current);
+  }, []);
+  const reconcileTitle = useCallback((next: CloudTeam | null) => {
+    void syncTeamTitle(next).then((title) => {
+      if (title !== undefined && next) applyTitle(title, next.id);
+    });
+  }, [applyTitle]);
+  useEffect(() => watchTeamTitle(applyTitle), [applyTitle]);
+
   const refresh = useCallback(async () => {
     const currentActivity = localActivity();
     setActivity(currentActivity);
     const overview = await getCloudTeamOverview(currentActivity);
     setTeam(overview.team);
+    reconcileTitle(overview.team);
     setPlaza(overview.plaza);
     setLoading(false);
     writeTeamCache(ownerRef.current, overview.team, overview.plaza);
     if (overview.team) rememberTeamActivity(ownerRef.current, currentActivity);
     void collectTeamRewards().catch(() => undefined);
-  }, []);
+  }, [reconcileTitle]);
 
   const acceptTeam = (next: CloudTeam | null) => {
     setTeam(next);
@@ -170,7 +184,9 @@ export function TeamPage({ onBack, onOpenDuel, initialInviteCode = "" }: { onBac
     const created = await createCloudTeam({ ...draft, displayName: nickname });
     acceptTeam(created);
     const currentActivity = localActivity();
-    acceptTeam(await reportCloudTeamActivity(currentActivity));
+    const next = await reportCloudTeamActivity(currentActivity);
+    acceptTeam(next);
+    reconcileTitle(next);
     rememberTeamActivity(ownerRef.current, currentActivity);
     setPlaza((items) => items.filter((item) => item.id !== created.id));
     playStreakChirp();
@@ -180,7 +196,9 @@ export function TeamPage({ onBack, onOpenDuel, initialInviteCode = "" }: { onBac
   const join = (input: { teamId?: string; inviteCode?: string }) => run("join-" + (input.teamId ?? "invite"), async () => {
     acceptTeam(await joinCloudTeam({ ...input, displayName: nickname }));
     const currentActivity = localActivity();
-    acceptTeam(await reportCloudTeamActivity(currentActivity));
+    const next = await reportCloudTeamActivity(currentActivity);
+    acceptTeam(next);
+    reconcileTitle(next);
     rememberTeamActivity(ownerRef.current, currentActivity);
     setInviteCode("");
     playStreakChirp();
@@ -351,6 +369,7 @@ export function TeamPage({ onBack, onOpenDuel, initialInviteCode = "" }: { onBac
                     <div className="zoo-tm-member-copy">
                       <div className="zoo-tm-name-line">
                         <b>{member.name}</b>
+                        {teamTitleName(member.title) && <span className="zoo-tm-title">{teamTitleName(member.title)}</span>}
                         {member.isMe && <span className="zoo-tm-you-badge">你</span>}
                         {member.isOwner && <span className="zoo-tm-captain-badge">队长</span>}
                       </div>

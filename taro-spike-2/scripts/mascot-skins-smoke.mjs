@@ -31,6 +31,7 @@ const makeRuntime = ({ manifest, networkError = false, failName = '', files = []
     requests: [],
     removedDirectories: [],
     events: [],
+    subscriptions: [],
     modules: new Map()
   };
   const fs = {
@@ -115,8 +116,13 @@ Module._load = function (request, parent, isMain) {
   if (request === '../../../wechat-miniprogram/src/runtime/wx-promise.js') return runtime.helpers;
   if (request === '@tarojs/components') return { Image() {}, View() {} };
   if (request === '@tarojs/taro') return { getCurrentPages: () => [] };
-  if (request === 'react') return { useSyncExternalStore: (_subscribe, getSnapshot) => getSnapshot() };
-  if (request === 'react/jsx-runtime') return { jsx: () => null, jsxs: () => null, Fragment: Symbol('Fragment') };
+  if (request === 'react') return { useSyncExternalStore: (subscribe, getSnapshot) => {
+    const updates = [];
+    const unsubscribe = subscribe(() => updates.push(getSnapshot()));
+    runtime.subscriptions.push({ updates, unsubscribe });
+    return getSnapshot();
+  } };
+  if (request === 'react/jsx-runtime') return { jsx: (type, props) => ({ type, props }), jsxs: (type, props) => ({ type, props }), Fragment: Symbol('Fragment') };
   if (request.startsWith('.') && parent?.filename) {
     const base = path.resolve(path.dirname(parent.filename), request);
     for (const extension of ['.ts', '.tsx']) if (existsSync(`${base}${extension}`)) return loadTypeScript(`${base}${extension}`);
@@ -209,6 +215,45 @@ let downloaded;
   assert.equal(runtime.storage.has(`mn-skin-ready:${skinId}`), false);
   assert.equal([...runtime.files].some((filename) => filename.startsWith(`${versionDir}/`)), false);
   assert.equal(runtime.events.filter((event) => event === 'shushugo:mascot-skin').length, 1);
+}
+
+{
+  makeRuntime();
+  const mascot = loadMascot();
+  const normal = mascot.CapybaraWalk({ size: 18 });
+  assert.equal(normal.props.style.width, '16px');
+  assert.equal(normal.props.style['--walk-frames'], 4);
+  assert.equal(normal.props.children.props.src, '/assets/brand/walk-strip.png');
+  mascot.useWalkStyle();
+  mascot.useWalkStyle();
+  const updates = runtime.subscriptions.slice(-2).map(({ updates }) => updates);
+  mascot.setWalkStyle('walk-alt');
+  assert.deepEqual(updates, [['walk-alt'], ['walk-alt']]);
+  for (let instance = 0; instance < 2; instance++) {
+    const rolling = mascot.CapybaraWalk({ size: 18 });
+    assert.equal(rolling.props.style.width, '29px');
+    assert.equal(rolling.props.style['--walk-frames'], 8);
+    assert.equal(rolling.props.style['--walk-duration'], '1280ms');
+    assert.equal(rolling.props.children.props.style.width, '232px');
+    assert.equal(rolling.props.children.props.src, '/assets/brand/roll-strip.png');
+  }
+  mascot.setWalkStyle('walk-alt');
+  assert.equal(runtime.events.length, 1);
+  mascot.setWalkStyle('');
+  assert.deepEqual(updates, [['walk-alt', ''], ['walk-alt', '']]);
+  assert.equal(mascot.CapybaraWalk({ size: 72 }).props.children.props.src, '/assets/brand/walk-strip.png');
+  mascot.setWalkStyle('unknown-item');
+  assert.equal(mascot.useWalkStyle(), '');
+  assert.equal(runtime.events.length, 2);
+  const png = readFileSync(path.join(root, 'src/assets/brand/roll-strip.png'));
+  assert.ok(png.length <= 40000);
+  assert.equal(png.readUInt32BE(16) % 8, 0);
+  assert.equal(png.readUInt32BE(20), 144);
+  for (const file of ['src/app.css', '../frontend/src/app.css']) {
+    const css = readFileSync(path.join(root, file), 'utf8');
+    assert.match(css, /steps\(var\(--walk-frames,\s*4\),\s*end\)/);
+    assert.match(css, /\[data-motion="reduced"\] \.[\w-]+walk-strip\s*\{\s*animation:\s*none/);
+  }
 }
 
 Module._load = realLoad;

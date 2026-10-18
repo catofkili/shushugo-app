@@ -55,6 +55,7 @@ try {
   junkDb.close();
   const db = openDatabase(dbPath, migrationsDir);
   assert.equal(db.prepare("SELECT COUNT(*) AS n FROM d1_migrations").get().n, migrationFiles.length);
+  assert.equal(db.prepare("PRAGMA table_info(team_members)").all().find((column) => column.name === "title")?.type, "TEXT", "startup applies the title column migration");
   const r2 = createBindings(db, path.join(staging, "r2"));
 
   db.exec("CREATE TABLE adapter_probe(id INTEGER PRIMARY KEY, value TEXT NOT NULL UNIQUE)");
