@@ -15,9 +15,10 @@ vi.mock("./database/db-utils", async (importOriginal) => ({
 vi.mock("./word-api/stage1", () => ({ stage1ProgressCounts: () => plan }));
 vi.mock("./review-budget", () => ({ readEncoreLog: () => ({ dayWords: encoreWords }) }));
 
-import { buyItem, claimDailyPlanYuzu, equippedItem, grantRepairCard, ownsItem, repairableDays, repairCards, repairDay, repairDayWithCard, repairPrice, settleYuzu, yuzuBalance, YUZU } from "./yuzu";
+import { buyItem, unequip, claimDailyPlanYuzu, equippedItem, grantRepairCard, ownsItem, repairableDays, repairCards, repairDay, repairDayWithCard, repairPrice, settleYuzu, yuzuBalance, YUZU } from "./yuzu";
 import { streakSnapshot } from "./streak";
 import { itemById } from "./yuzu-catalog";
+import { setWalkStyle } from "../components/CapybaraMascot";
 
 const checkin = (...days: string[]) => days.forEach((d) => db.run("INSERT OR IGNORE INTO checkins (checked_on) VALUES (?)", [d]));
 const answers = (n: number, day = TODAY) => {
@@ -113,6 +114,35 @@ describe("消费", () => {
     expect(equippedItem("theme")).toBe("theme-matcha");
     expect(yuzuBalance()).toBe(0);
     expect(buyItem("theme-matcha")).toBe(false);
+  });
+
+  it("滚着走：余额不足不卖，买后自动装备，卸下回到默认走路", () => {
+    vi.stubGlobal("window", new EventTarget());
+    vi.stubGlobal("document", { documentElement: { setAttribute() {}, removeAttribute() {} } });
+    setWalkStyle("");
+    const changed = vi.fn();
+    window.addEventListener("shushugo:walk-style", changed);
+    try {
+      fund(itemById("walk-alt")!.price - 1);
+      expect(buyItem("walk-alt")).toBe(false);
+      expect(changed).not.toHaveBeenCalled();
+      expect(ownsItem("walk-alt")).toBe(false);
+      expect(equippedItem("walk")).toBe("");
+      fund(1);
+      expect(buyItem("walk-alt")).toBe(true);
+      expect(ownsItem("walk-alt")).toBe(true);
+      expect(equippedItem("walk")).toBe("walk-alt");
+      expect(changed).toHaveBeenCalledTimes(1);
+      expect(yuzuBalance()).toBe(0);
+      expect(buyItem("walk-alt")).toBe(false);
+      unequip("walk");
+      expect(changed).toHaveBeenCalledTimes(2);
+      expect(equippedItem("walk")).toBe("");
+      expect(ownsItem("walk-alt")).toBe(true);
+    } finally {
+      setWalkStyle("");
+      vi.unstubAllGlobals();
+    }
   });
 
   it("补签:只补 7 天内、首次亮之后的洞;30 天内 500/1000/2000 递增;补完连击接上", () => {

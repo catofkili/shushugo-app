@@ -1,6 +1,6 @@
 {
-  "appWxssBytesBefore": 284905,
-  "appWxssBytesAfter": 224286,
+  "appWxssBytesBefore": 284985,
+  "appWxssBytesAfter": 224366,
   "movedRuleBytesByRoute": {
     "account/personal-info/index.wxss": 5155,
     "content-pages/achievements/index.wxss": 5155,

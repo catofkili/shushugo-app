@@ -14,7 +14,7 @@ import { readEncoreLog } from "./review-budget";
 import { shiftDay } from "./zoo-streak";
 import { repairableStreakDays, streakSnapshot, todayStreakStatus } from "./streak";
 import { setSoundTimbre, type SoundTimbre } from "./zoo-sounds";
-import { setMascotSkin } from "../components/CapybaraMascot";
+import { setMascotSkin, setWalkStyle } from "../components/CapybaraMascot";
 import { getEntitlements } from "./entitlements";
 import { EQUIPPABLE, itemById, VOICE_ITEM_PREFIX, type YuzuCategory } from "./yuzu-catalog";
 
@@ -73,6 +73,7 @@ export const applyYuzuEquipment = (): void => {
     else document.documentElement.removeAttribute("data-skin");
     setSoundTimbre((equippedItem("sound").replace("sound-", "") || "kalimba") as SoundTimbre);
     setMascotSkin(equippedItem("mascot"));
+    setWalkStyle(equippedItem("walk"));
   } catch { /* 表还没建出来(老库第一次启动) */ }
 };
 

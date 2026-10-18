@@ -57,7 +57,7 @@ export const YUZU_ITEMS: YuzuItem[] = [
   { id: "voice-voicevox-11", name: "玄野武宏", description: "沉稳男声。切换单词发音；例句仍用默认声", category: "voice", price: 6000, art: "item-voice-male" },
   { id: "sound-marimba", name: "木琴", description: "答题音换成木琴:更圆、更短", category: "sound", price: 3000, art: "item-sound-marimba-2" },
   { id: "sound-epiano", name: "电钢", description: "答题音换成电钢:带一点毛边的暖音", category: "sound", price: 3000, art: "item-sound-epiano-2" },
-  { id: "walk-alt", name: "滚着走", description: "学习页小路和加载时，水豚改成滚着走", category: "walk", price: 4000, soon: true, art: "roll-frame" },
+  { id: "walk-alt", name: "滚着走", description: "学习页小路和加载时，水豚改成滚着走", category: "walk", price: 4000, art: "roll-frame" },
   { id: "report-cover", name: "周报封面", description: "周报封面换一张", category: "misc", price: 3000, soon: true, art: "card-daily" },
   // 队伍称号：队友的名单里挂在名字旁边。每个称号单独买、单独装备（槽位 yuzu_equipped:title）
   { id: "title-early", name: "晨读派", description: "队伍名单里，名字旁挂上「晨读派」", category: "title", price: 3000, soon: true },
