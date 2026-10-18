@@ -129,7 +129,9 @@ export const GRAMMAR_SEED_VERSION = "2026-09-18-grammar-split-variants-v1";
  */
 export const GRAMMAR_SEED_ROW_COUNT = 769;
 export const DICTIONARY_SUPPLEMENT_VERSION = "2026-08-16-handwritten-v1";
-export const JLPT_COLLOCATION_CONTENT_VERSION = "2026-10-10-jlpt-collocations-zh-v2";
+// v3（2026-10-18）内容和 v2 一样，只为让 retireRemovedCollocations 再跑一次：
+// 起点重估曾把已退役的行 known_forever 清回 0（见 level-plan.ts 重置那段）。
+export const JLPT_COLLOCATION_CONTENT_VERSION = "2026-10-18-jlpt-collocations-zh-v3";
 
 const loadJlptWordSeed = async (): Promise<JlptWordSeedRow[]> => {
   const payload = await import("../data/jlpt_words_seed.json");

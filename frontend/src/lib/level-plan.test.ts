@@ -70,6 +70,16 @@ describe("起点水平计划", () => {
     expect(Number(one("SELECT COUNT(*) FROM level_prior_baselines WHERE entity='words' AND entity_key=?", [wordId]))).toBe(1);
   });
 
+  it("起点改掉后，标了熟知但没有作答的卡不被重置回排期", async () => {
+    const wordId = Number(one("SELECT CAST(b.entity_key AS INTEGER) FROM level_prior_baselines b JOIN words w ON w.id = CAST(b.entity_key AS INTEGER) WHERE b.entity='words' AND w.jlpt_level='N4' AND NOT EXISTS (SELECT 1 FROM reviews r WHERE r.word_id = w.id) LIMIT 1"));
+    testDb.run("UPDATE progress SET known_forever=1 WHERE word_id=?", [wordId]);
+    const settings = getLevelPlanSettings()!;
+    await applyLevelStartingPoint({ ...settings, startingLevel: "N5", familiarity: { ...settings.familiarity, words: 0 } }, new Date("2026-09-22T12:00:00Z"));
+    expect(Number(one("SELECT known_forever FROM progress WHERE word_id=?", [wordId]))).toBe(1);
+    await applyLevelStartingPoint(settings, new Date("2026-09-22T12:00:00Z"));
+    testDb.run("UPDATE progress SET known_forever=0 WHERE word_id=?", [wordId]);
+  });
+
   it("汉字流水重放和撤销都回到自报基线，而不是全新卡", () => {
     const char = String(one("SELECT entity_key FROM level_prior_baselines WHERE entity='kanji' LIMIT 1"));
     const baseline = Number(one("SELECT stability FROM level_prior_baselines WHERE entity='kanji' AND entity_key=?", [char]));

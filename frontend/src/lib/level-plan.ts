@@ -188,6 +188,10 @@ export async function applyLevelStartingPoint(settings: LevelPlanSettings, now =
         // 已有真实答题的卡仍要保留最初基线：汉字/辨析在云合并和撤销时会重放流水。
         // 删掉它会让历史作答从“全新卡”重新算，稳定性突然大幅缩短。
         if (hasReview) continue;
+        // 标了熟知的卡（固定搭配退役、整组熟知……不一定有作答流水）不在候选里，
+        // 所以一定落到这里。整行重置会把 known_forever 清掉、让它重新进排期 ——
+        // 2026-10-13 起点重估就这样把 10-10 退役的 27 条固定搭配复活了。
+        if (firstValue<number>(`SELECT known_forever FROM ${entity.table} WHERE ${entity.key} = ?`, [key], 0)) continue;
         db.run(`UPDATE ${entity.table} SET ${resetFields} WHERE ${entity.key} = ?`, [key]);
         db.run("DELETE FROM level_prior_baselines WHERE entity = ? AND entity_key = ?", [entity.name, key]);
       }
