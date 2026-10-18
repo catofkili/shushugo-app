@@ -919,7 +919,8 @@ button.fin-row:hover { background: var(--ds-inset-2); }
 [data-theme] .zoo-quad span > img { max-width: min(100%, 60px); height: auto !important; max-height: 44px; object-fit: contain; }
 /* 主页「组队」小格：原来一排四个 emoji，现在是组队头图的小图 */
 .zoo-duo-team { flex: none; margin: -4px 2px -4px -2px; }
-/* 顶栏小路的标记（v3：原来是走路的小水豚 / emoji；背词页的吉祥物交给陪伴水豚，一屏一只）。
+/* 顶栏小路的标记。默认 / 混合模式是走路的水豚（v3 曾换成图标，作者 2026-10-19 要求恢复；装备「滚着走」会换成滚动版），
+   错题本 / 反向 / 汉字三个模式用 lucide 图标，下面的 clip 只给图标用。
    ⚠️ 不要拆成 SquirrelTrail.css 单独 import：SquirrelTrail 被小程序主包的 WeappPage 直接引用，
    主包组件 import CSS 会让 Taro 把整份全局样式另存成 app-origin.wxss、按路由拆 CSS 失效，主包白涨 80 KB（2026-10-14 踩到）。 */
 .zoo-trail-marker-clip { display: inline-flex; width: 18px; height: 18px; overflow: hidden; }

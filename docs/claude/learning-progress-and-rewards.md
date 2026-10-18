@@ -153,6 +153,58 @@
 **补传声音**（云端还没有时）：`cd wechat-miniprogram && VOICES="voicevox-8 voicevox-10 voicevox-11" UPLOAD="voicevox-10 voicevox-11" TCB=<tcb> ./scripts/upload-cloud-content.sh --audio`，
 每个声音约 45 MB。传完商店里两个声音自动变成可买，不用发版。
 
+### 2026-10-19 逐件补齐：走法 / 队伍称号 / 备用 App 图标
+
+作者问「商店里一大堆东西还没完整做好，一个一个查具体是什么情况、做好」。逐件核查后：配色 ×5、鳄鱼、音效 ×2、声音 ×2 本来就能用
+（鳄鱼皮肤包和两个付费声音在**小程序**里能不能买，取决于云存储里传没传，本机查不了，见上面两节）；剩下五件 `soon` 的按作者当天的决定处理：
+
+| 商品 | 作者的决定 | 现状 |
+|---|---|---|
+| 小路走法 → 「滚着走」 | 「本来就不应该移除一开始的走法」 | ✅ 做完。顶栏小路恢复走路的水豚；`walk` 槽位，8 帧滚动版 |
+| 队伍称号 ×6 | 做，服务端部署作者来 | ✅ 代码做完；**上线要先迁移 0020 再切流量** |
+| 备用 App 图标 ×2（开心 / 泡汤） | 图让 GPT 生成 | ✅ 做完，仅 iOS App 里能买能换；真机 / 模拟器点换图标要验 |
+| 周报封面 | 等周报重做完再说 | ⏳ 仍是 `soon`，别动：v3 周报还没重做，现在做封面大概率白做 |
+
+**走法（`walk` 槽，商品 `walk-alt`「滚着走」，4000）**
+- v3 的 `99485957`（背词页陪伴水豚）把小路上走路的水豚换成了 lucide 图标，作者否决。**默认模式（今日复习）和 `mixed` 用 `CapybaraWalk`；错题本 / 反向 / 汉字仍是 lucide 图标**（emoji → lucide 是另一个决定，没动）。
+  陪伴水豚已搁置（`STUDY_BUDDY_SHELVED`），所以不存在「一屏两只」。若哪天陪伴水豚恢复，小路上的这只要重新和作者对一次。
+- `CapybaraMascot.tsx` / `taro-spike-2/src/platform/mascot.weapp.tsx` 各有 `setWalkStyle` + `useWalkStyle`（`useSyncExternalStore`，和皮肤同一个写法）；
+  `applyYuzuEquipment` 传 `equippedItem("walk")`，所有已挂载的 `CapybaraWalk`（小路 + 各页加载）同一帧换。默认 4 帧 248:272 / 640ms，滚动 8 帧 545:334 / 1280ms，帧数和时长走 CSS 变量 `--walk-frames` / `--walk-duration`。
+- ⚠️ 滚着走的格子比走路宽（545:334），顶栏 `--zoo-trail-tail` 因此从 56px 加到 88px（小路本身短了约 32px）。
+- 素材：`roll-strip.png` 网页版 1.2 MB → 78 KB；小程序版（`taro-spike-2/src/assets/brand/roll-strip.png`，主包）高 144、**40 色**、35 KB。
+  **小程序主包 1,825,518 → 1,861,428 B（上限 1,900,000），余量只剩约 38 KB。** 下一个往主包加东西的人先看这个数。
+  `sync-brand-assets.mjs` 对 `roll-strip` 单独取整宽度（须被 8 整除，否则每格采样到相邻帧）。
+
+**队伍称号（`title` 槽，6 个商品，各 3000）**
+- 商品：`title-early` 晨读派 / `title-night` 夜读派 / `title-hunter` 单词猎人 / `title-slow` 慢慢来 / `title-grove` 柚子庄园主 / `title-capy` 水豚本豚。
+  key 的**唯一一份**在 `frontend/src/lib/yuzu-titles.ts`（`YUZU_TITLE_IDS`），catalog 和 Worker 白名单都引用它。
+  单买单装备，槽位 `yuzu_equipped:title`（lww 同步）；第一件自动装备，买第二件不抢占，点「使用」才替换。
+- 服务端（`cloudflare-sync/src/index.ts`）：迁移 `0020_team_member_title.sql`（`team_members.title TEXT` 可空）；`PUT /api/teams/title`
+  `{title: 六个 key 或 ""}`，鉴权 / 限速（team-write 每账号 30 次 / 小时）/ 错误形状沿用别的组队接口，非法 key 400，未入队 404；队伍详情的每个成员多一个 `title: string | null`，**只加字段**。
+- 客户端：组队页名字旁一枚浅底主色字的胶囊（`team-activity.ts` 的 `watchTeamTitle` 订阅 `YUZU_EVENT`，装备槽真的变了才推；进组队页时和服务端自己那条比，不一致才推）。
+  **失败一律静默**（断网 / 旧服务端 404 / 限速），下次进组队页再试；未知 key / 缺字段 / 旧版本不显示任何东西。商品图是纯 CSS 的迷你名单，没有新图片。
+- ⚠️ **服务端不知道谁买了什么**（柚子账本在客户端，随快照同步），只校验白名单：改过客户端的人能挂上没买的称号。纯外观，和「单机外观币，骗的是自己，不加闸」同一口径；
+  如果以后称号要有「稀缺」含义（比如限定），这里就得改成服务端校验。
+- ⚠️ **部署顺序：先迁移，再让新 Worker 接流量。** 新 Worker + 没有 `title` 列的库，组队的 SELECT / UPDATE 全部报错，旧客户端也受影响。`/api/health` 的 `migrationsApplied=true` **不能证明 `title` 列已加**（那份清单只列表名）。
+  阿里云自托管的完整命令（停服务 → `.backup` 备份 → 解包 → 用 `openDatabase` 跑增量迁移 → 查列 → 启动 → 回退 / 四种新旧组合）在 `docs/TEAM_TITLE_DEPLOY.md`（**线上一步都还没执行**）；**不要用 `selfhost/migrate.mjs` / `install-migration.sh`**，那是 Cloudflare D1 全量搬家工具，阿里云已经切流，重新全量导入可能拿旧 D1 覆盖新服务器数据。
+
+**备用 App 图标（`icon` 槽，`icon-happy` 开心 / `icon-onsen` 泡汤，各 5000）**
+- **默认 App 图标本来就是读书的水豚**，所以原计划的「读书图标」（`icon-study`）是和默认重复的，改成「泡汤图标」（id `icon-onsen`；旧 id 没人买过，可换）。两张图是 GPT 按默认图标的画风生成的，1024×1024、无 alpha、整张铺满（iOS 自己切圆角）：
+  `frontend/ios/App/App/Assets.xcassets/AppIconHappy.appiconset/AppIconHappy-1024.png`、`AppIconOnsen.appiconset/AppIconOnsen-1024.png`。换图只覆盖这两个路径（保持文件名和 Contents.json），不用改代码。
+- 原生：App target 里的本地 Capacitor 6 插件 `AppIconPlugin.swift`（jsName `AppIcon`，`getCurrent` / `set`）；构建设置 `ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "AppIconHappy AppIconOnsen"`（Debug / Release 各一处，由 actool 生成 `CFBundleAlternateIcons`，没手写 Info.plist）。
+  ⚠️ **Capacitor 6 里 App target 内的本地插件要显式注册**：`Main.storyboard` 唯一的 controller 改成了 App 模块的 `AppBridgeViewController`，它覆写 `capacitorDidLoad()` 调 `bridge?.registerPluginInstance(AppIconPlugin())`；
+  不要换成 `registerPluginType`（这个版本自动注册模式下直接 return）。别的插件仍走自动注册，没碰。
+- 前端 `lib/app-icon.ts`：`appIconAvailable()`（iOS + 插件在）；`setAppIcon(itemId)` 串行排队、**先 `getCurrent` 再 `set`，名字相同不调原生**（iOS 每次真换图标都弹系统提示「你已更改了…的图标」，不能没变也弹）；失败静默；
+  `main.tsx` 启动时 `syncAppIcon()` 对账一次（别的设备同步来的装备也会落到这台）。`equipItem` / `unequip` / `buyItem` 对 `icon` 类在非 iOS 上直接拒绝。
+  小程序用 `wechat-miniprogram/scripts/shared/shims/app-icon.mjs`（经 `shims-map.mjs` 整模块替换，恒不可用）。
+  商店页：不可用且没买的图标按钮写「仅 iOS App 可用」，已拥有但本设备不可用写「此设备暂不可用」。
+- ⚠️ **小程序里「泡汤图标」商品图曾是空白**：`scene-onsen` 没登记进 `sync-brand-assets.mjs` 的内容分包名单。**以后商品 `art` 指向哪张贴纸，要同时登记到小程序的素材名单里**，网页里看不出缺（网页直接读 `public/brand`）。
+- Xcode 27 本机构建（worktree 里没有 Pods 时要先 `cd frontend && npm run build && npx cap sync ios`，再 `cd ios/App && pod install`；`cap sync` 会因 node_modules 软链改 Podfile 路径，要还原）：
+  独立 `-project` 编不过（Capacitor 的 Pod 依赖不在依赖图里），要用 `-workspace frontend/ios/App/App.xcworkspace -scheme App -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' IPHONEOS_DEPLOYMENT_TARGET=16.4 build`
+  （Pods 里的 iOS 13 / 14 最低版本会被 Xcode 27 拒绝，只在命令行覆盖，没改 Podfile / pbxproj）。
+
+**判据（以后再加商品）**：① 要靠外部资源的商品必须接进 `itemAvailable`；② 商品 `art` 用的贴纸要登记进小程序素材名单；③ 货架上露脸但没做的商品保持 `soon`，别为了「货架满」去掉。
+
 ## 成就：判据现算，不攒计数器
 
 `lib/achievements/` — 47 个成就。**判据全部从 reviews/progress 现算**（`stats.ts`），
