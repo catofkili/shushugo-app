@@ -7,14 +7,19 @@ import type { StudyActivityHandlers } from '../../../frontend/src/hooks/useStudy
 const interactions = new Map<string, Set<() => void>>();
 export const notifyStudyInteraction = (pagePath: string) => interactions.get(pagePath)?.forEach((listener) => listener());
 
-/** Match AuthDialog: a page overlay cannot cover WeChat's native tab bar. */
+/**
+ * A page overlay cannot cover WeChat's native tab bar (AuthDialog, LevelSetup, study break).
+ * Overlays stack (the sign-in dialog opens over the level setup), so count holders:
+ * the bar comes back only when the last one lets go.
+ */
+let tabBarHolds = 0;
 export function useStudyBreakTabBar(open: boolean): void {
   useEffect(() => {
     if (!open) return;
     const route = Taro.getCurrentPages().at(-1)?.route;
     if (!route || !/^pages\/(home|word|grammar|profile)\/index$/.test(route)) return;
-    void Taro.hideTabBar({ animation: false });
-    return () => { void Taro.showTabBar({ animation: false }); };
+    if (tabBarHolds++ === 0) void Taro.hideTabBar({ animation: false });
+    return () => { if (--tabBarHolds === 0) void Taro.showTabBar({ animation: false }); };
   }, [open]);
 }
 

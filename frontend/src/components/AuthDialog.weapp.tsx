@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Taro from "@tarojs/taro";
+import { useStudyBreakTabBar } from "../hooks/useStudyActivity";
 import { Check, Loader2, MessageCircle, X } from "lucide-react";
 import { ScrollArea } from "./ScrollArea";
 import { claimLaunchGift, cloudReviewLogin, cloudWechatMiniLogin, getCloudAuthConfig, isCloudErrorCode, linkCloudWechatMini, refreshLaunchGiftAvailability, requestCloudWechatLinkCode, type CloudSession } from "../lib/sync-api";
@@ -47,14 +47,8 @@ export function AuthDialog({ open, onClose, onAuthenticated }: AuthDialogProps) 
     return () => { active = false; };
   }, [open]);
 
-  // 微信原生 tabBar 在页面渲染树之外，页面层级无法盖住它；登录弹窗打开时临时隐藏。
-  useEffect(() => {
-    if (!open) return;
-    const route = Taro.getCurrentPages().at(-1)?.route;
-    if (!route || !/^pages\/(home|word|grammar|profile)\/index$/.test(route)) return;
-    void Taro.hideTabBar({ animation: false });
-    return () => { void Taro.showTabBar({ animation: false }); };
-  }, [open]);
+  // 微信原生 tabBar 在页面渲染树之外，页面层级无法盖住它；登录弹窗打开时临时隐藏（带计数，可叠在首次设定上）。
+  useStudyBreakTabBar(open);
 
   if (!open) return null;
 

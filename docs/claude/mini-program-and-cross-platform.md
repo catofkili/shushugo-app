@@ -410,3 +410,20 @@ JOIN 读的是 **grammar_state** —— **点了收藏永远显示不出来**，
 **判据**：改了 `frontend/src/lib/*.ts` 里有 `.weapp.ts` 兄弟文件的模块，推 main 前顺手跑一次 `cd taro-spike-2 && npm run build:weapp`。
 同一天还有一条：小程序里 `wx.request` 访问云存储的临时下载地址，真机要在微信后台配「request 合法域名」，开发者工具不校验、测不出来；
 能用云 SDK（`wx.cloud.downloadFile`）的地方不要用 `wx.request`（读音包的单条兜底因此改成整包走 SDK）。
+
+## ⚠️ 小程序的全屏弹窗盖不住原生底栏：一律用 `useStudyBreakTabBar`，别各写各的 `hideTabBar`（2026-10-19）
+
+网页上弹窗（`z-index` 10001）能盖住自建底栏（9999）；小程序的 `tabBar` 是原生的，在页面渲染树之外，任何层级都盖不住。
+首次设定（`LevelSetup`）原来没处理：设定还开着，用户点底栏「单词学习」就进了学习页，在**没有计划、没有起点先验**的状态下开始出新词
+（作者 10-19 撞到：「先验的时候点到单词学习界面，为什么会有词开始学习」）。
+- 现在 `LevelSetup` 和 `AuthDialog.weapp` 都调 `hooks/useStudyActivity` 的 `useStudyBreakTabBar(open)`（网页是空操作，小程序替身在
+  `taro-spike-2/src/platform/use-study-activity.weapp.ts`）。⚠️ 它**带计数**：领首月会员要先登录，登录框叠在设定弹窗上，
+  各自 hide/show 的话登录框一关底栏就冒出来。判据在 `scripts/study-activity-smoke.cjs`（叠加场景）。
+- 新增任何全屏弹窗/遮罩，只要可能出现在 `home/word/grammar/profile` 四个 tab 页上，都要调这个 hook。
+- 设定期间已经出现在今天队列里、**没答**的词，保存时会被 `refreshTodayWordPlan` 删掉按新额度重抽；**答过**的词有 `reviews` 流水，
+  起点先验（`applyLevelStartingPoint`）不会碰它，按真实记录走。
+- 10-19 在开发者工具里实测过：新用户状态下设定弹窗一出来底栏就没了（automator 的 `mp.screenshot` 能截到原生底栏，可直接对比）。
+  ⚠️ 想看「新用户」这一屏：**模拟器存储按 appid 分，不按项目目录**——把 `dist` 复制到别的目录再打开，读到的还是同一份学习库
+  （`~/Library/Application Support/微信开发者工具/<hash>/WeappSimulator/WeappFileSystem/<openid>/<appid>/usr/masternihongo/`）。
+  做法：`cli close` → 备份该目录并记 `shasum` → 挪开 → `cli auto` 重开（出厂库会重新拉）→ 看完再 `cli close` → 放回、`shasum` 对一遍。
+  别在项目开着时挪文件：落盘会把内存里的库写回去。

@@ -23,6 +23,7 @@ import { DailyPlanSlider } from "./DailyPlanSlider";
 import { ExamDatePicker } from "./ExamDatePicker";
 import { ScrollArea } from "./ScrollArea";
 import { useEntitlements } from "../hooks/useEntitlements";
+import { useStudyBreakTabBar } from "../hooks/useStudyActivity";
 
 const KANA_STARTS: Array<{ value: StartingLevel; label: string; hint: string }> = [
   { value: "kana-none", label: "不懂五十音", hint: "从假名开始，约一周" },
@@ -85,6 +86,8 @@ export function LevelSetup({ open, dismissible = false, isAuthenticated = false,
   const [gift, setGift] = useState<{ open: boolean; claimUntil: string | null }>();
   const [giftError, setGiftError] = useState("");
   const [claiming, setClaiming] = useState(false);
+  // 小程序的原生底栏在页面层之外，弹窗盖不住：设定期间点「单词学习」会在没有计划时开始学。网页端弹窗已盖住底栏，这里是空操作。
+  useStudyBreakTabBar(open);
   if (!open) return null;
 
   const samePlan = existing?.startingLevel === startingLevel && existing.target === target && existing.examKind === examKind
