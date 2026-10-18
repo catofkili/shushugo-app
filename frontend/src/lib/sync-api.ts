@@ -110,6 +110,7 @@ export interface CloudWeeklyReportIndexItem {
 }
 
 export interface CloudTeamMember {
+  title?: string | null;
   memberId: string;
   name: string;
   avatar: string;
@@ -948,6 +949,10 @@ export const updateCloudTeam = async (input: {
   emoji: string;
   visibility: "public" | "invite";
 }): Promise<CloudTeam> => (await teamRequest<{ team: CloudTeam }>("/api/teams/me", "PUT", input)).team;
+
+export const updateCloudTeamTitle = async (title: string): Promise<string | null> => (
+  (await teamRequest<{ title: string | null }>("/api/teams/title", "PUT", { title })).title
+);
 
 export const reportCloudTeamActivity = async (input: CloudTeamActivity): Promise<CloudTeam> => (
   (await teamRequest<{ team: CloudTeam }>("/api/teams/activity", "POST", input)).team

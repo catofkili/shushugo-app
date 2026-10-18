@@ -796,6 +796,17 @@
 [data-theme] .yz-owned-empty { gap: 6px; padding: 20px 16px; border: 0; background: var(--ds-surface); box-shadow: var(--ds-shadow); color: var(--ds-ink-3); }
 [data-theme] .yz-owned-empty b { color: var(--ds-ink); font-size: 15px; }
 
+/* 称号商品图：纯 CSS 名单，货架与底部小预览分别缩放。 */
+.yz-title-list { width: 90%; padding: 10% 5%; border-radius: 10px; background: var(--ds-surface); box-sizing: border-box; }
+.yz-title-row { display: flex; align-items: center; gap: 4%; min-height: 24px; }
+.yz-title-row + .yz-title-row { opacity: .45; }
+.yz-title-avatar { flex: none; width: 14%; aspect-ratio: 1; border-radius: 50%; background: var(--ds-inset-2); }
+.yz-title-name { flex: none; width: 18%; height: 4px; border-radius: 999px; background: var(--ds-ink-3); }
+.yz-title-pill { padding: 3px 5px; border-radius: 999px; background: var(--ds-primary-tint); color: var(--ds-primary-ink); font-size: 8px; font-weight: 700; white-space: nowrap; }
+.yz-art-l .yz-title-row { min-height: 10px; }
+.yz-art-l .yz-title-name { height: 2px; }
+.yz-art-l .yz-title-pill { padding: 1px 2px; font-size: 4px; }
+
 /* 试衣台：固定在底栏上方的一张白卡。小标题不再是加宽字距的 9px 大写（中文不需要） */
 [data-theme] .yz-stage { gap: 6px 12px; padding: 12px; border: 1px solid var(--ds-line); border-radius: 22px; background: color-mix(in srgb, var(--ds-surface) 94%, transparent); box-shadow: var(--ds-shadow-lg); }
 [data-theme] .yz-art-l { width: 56px; height: 56px; border-radius: 14px; }
@@ -1217,3 +1228,7 @@ button.fin-row:hover { background: var(--ds-inset-2); }
 [data-theme] .zoo-greet-streak small { font-size: 13px; font-weight: 800; align-self: flex-end; margin-bottom: 3px; }
 [data-theme] .zoo-greet-streak.is-lit { color: var(--ds-warn-ink); background: var(--ds-warn-tint); }
 [data-theme] .zoo-greet-streak.is-gold { color: #B8860B; background: var(--ds-warn-tint); }
+
+/* 组队成员称号：浅底主色字；窄屏可换行，保留完整称号与右侧加油按钮。 */
+.zoo-tm-name-line { flex-wrap: wrap; }
+.zoo-tm-title { flex: none; max-width: 100%; padding: 2px 7px; border-radius: var(--ds-radius-pill); background: var(--ds-primary-tint); color: var(--ds-primary-ink); font-size: 11px; font-weight: 700; line-height: 1.5; white-space: nowrap; }

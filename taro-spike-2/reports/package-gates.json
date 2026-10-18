@@ -2,19 +2,19 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1825518,
+      "bytes": 1826903,
       "passes": true
     },
     "study": {
-      "bytes": 1016224,
+      "bytes": 1019130,
       "passes": true
     },
     "account": {
-      "bytes": 323936,
+      "bytes": 324569,
       "passes": true
     },
     "content-pages": {
-      "bytes": 1121662,
+      "bytes": 1130645,
       "passes": true
     },
     "features": {
@@ -34,7 +34,7 @@
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 303119,
+      "bytes": 303737,
       "passes": true
     },
     "core": {
@@ -42,7 +42,7 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 905155,
+      "bytes": 907342,
       "passes": true
     },
     "jlpt-bank": {
@@ -240,6 +240,15 @@
       ]
     },
     {
+      "source": "frontend/src/lib/team-activity.ts",
+      "bytes": 14864,
+      "packages": [
+        "content-pages",
+        "lazy",
+        "study"
+      ]
+    },
+    {
       "source": "frontend/src/components/GrammarHighlightProvider.tsx",
       "bytes": 14740,
       "packages": [
@@ -332,14 +341,6 @@
       ]
     },
     {
-      "source": "frontend/src/lib/team-activity.ts",
-      "bytes": 10954,
-      "packages": [
-        "lazy",
-        "study"
-      ]
-    },
-    {
       "source": "frontend/src/features/word-study/word-study-utils.ts",
       "bytes": 10867,
       "packages": [
@@ -370,6 +371,17 @@
       "packages": [
         "content-pages",
         "grammar-pages"
+      ]
+    },
+    {
+      "source": "frontend/src/lib/speech.weapp.ts",
+      "bytes": 8164,
+      "packages": [
+        "account",
+        "content-pages",
+        "grammar-pages",
+        "lazy",
+        "study"
       ]
     },
     {
@@ -428,17 +440,6 @@
       ]
     },
     {
-      "source": "frontend/src/lib/speech.weapp.ts",
-      "bytes": 6811,
-      "packages": [
-        "account",
-        "content-pages",
-        "grammar-pages",
-        "lazy",
-        "study"
-      ]
-    },
-    {
       "source": "frontend/src/lib/distinction-quiz.ts",
       "bytes": 6700,
       "packages": [
@@ -487,6 +488,7 @@
       "source": "frontend/src/lib/team-rules.ts",
       "bytes": 4899,
       "packages": [
+        "content-pages",
         "lazy",
         "study"
       ]
@@ -961,6 +963,16 @@
       "reason": "Reports are read from and written to the shared database on each call; the module keeps no report snapshot."
     },
     {
+      "source": "frontend/src/lib/team-activity.ts",
+      "bytes": 14864,
+      "packages": [
+        "content-pages",
+        "lazy",
+        "study"
+      ],
+      "reason": "Study rows and account-keyed caches are read from SQLite/localStorage on each call; only request coalescing is module-local, and duplicate route requests merge activity idempotently on the Worker."
+    },
+    {
       "source": "frontend/src/lib/share-canvas.weapp.ts",
       "bytes": 13191,
       "packages": [
@@ -1003,15 +1015,6 @@
       "reason": "The lazy post-login callback and independent account routes read account-keyed pending flags and avatar signatures from shared Preferences on every call; this module retains no session, profile or retry queue in memory."
     },
     {
-      "source": "frontend/src/lib/team-activity.ts",
-      "bytes": 10954,
-      "packages": [
-        "lazy",
-        "study"
-      ],
-      "reason": "Study rows and account-keyed caches are read from SQLite/localStorage on each call; only request coalescing is module-local, and duplicate route requests merge activity idempotently on the Worker."
-    },
-    {
       "source": "frontend/src/lib/privacy-policy-content.ts",
       "bytes": 10104,
       "packages": [
@@ -1019,6 +1022,18 @@
         "lazy"
       ],
       "reason": "The lazy auth dialog and account legal pages read the same immutable bundled policy text; consent-version constants remain shared in legal-versions.ts and no consent state is stored here."
+    },
+    {
+      "source": "frontend/src/lib/speech.weapp.ts",
+      "bytes": 8164,
+      "packages": [
+        "account",
+        "content-pages",
+        "grammar-pages",
+        "lazy",
+        "study"
+      ],
+      "reason": "Only public voice-index content and package-local audio handles are cached; user preferences are read live and no study data is cached."
     },
     {
       "source": "frontend/src/lib/share-image.weapp.ts",
@@ -1051,18 +1066,6 @@
         "study"
       ],
       "reason": "SAP1 encoding/catalog validation are pure functions; there is no module-level cache."
-    },
-    {
-      "source": "frontend/src/lib/speech.weapp.ts",
-      "bytes": 6811,
-      "packages": [
-        "account",
-        "content-pages",
-        "grammar-pages",
-        "lazy",
-        "study"
-      ],
-      "reason": "Only public voice-index content and package-local audio handles are cached; user preferences are read live and no study data is cached."
     },
     {
       "source": "frontend/src/lib/distinction-quiz.ts",
@@ -1099,6 +1102,7 @@
       "source": "frontend/src/lib/team-rules.ts",
       "bytes": 4899,
       "packages": [
+        "content-pages",
         "lazy",
         "study"
       ],
@@ -1273,16 +1277,16 @@
     "frontend/src/lib/study-focus.ts": "Each isolated route package mounts only its own study source; partial baseline windows are persisted on page exit, countdown state is deliberately discarded, and rewards are guarded by unique database ledger keys.",
     "frontend/src/lib/audio-pack-platform.weapp.ts": "globalThis.__shushugoAudioPackClient is shared by every subpackage; only that instance owns the wx file ledger and transfer queue.",
     "frontend/src/lib/analytics/weekly-reports.ts": "Reports are read from and written to the shared database on each call; the module keeps no report snapshot.",
+    "frontend/src/lib/team-activity.ts": "Study rows and account-keyed caches are read from SQLite/localStorage on each call; only request coalescing is module-local, and duplicate route requests merge activity idempotently on the Worker.",
     "frontend/src/lib/share-canvas.weapp.ts": "The canvas and file sequence are temporary rendering state scoped to a page bundle, not persisted user data.",
     "frontend/src/lib/token-dictionary.ts": "Dictionary matches are computed from the supplied database rows; results are not retained in a module cache.",
     "frontend/src/lib/speech-packs.ts": "All catalog/cache/transfer state belongs to the process-wide client. Preferences and voice ownership are read live; plan arrays are not retained.",
     "frontend/src/lib/profile-sync.ts": "The lazy post-login callback and independent account routes read account-keyed pending flags and avatar signatures from shared Preferences on every call; this module retains no session, profile or retry queue in memory.",
-    "frontend/src/lib/team-activity.ts": "Study rows and account-keyed caches are read from SQLite/localStorage on each call; only request coalescing is module-local, and duplicate route requests merge activity idempotently on the Worker.",
     "frontend/src/lib/privacy-policy-content.ts": "The lazy auth dialog and account legal pages read the same immutable bundled policy text; consent-version constants remain shared in legal-versions.ts and no consent state is stored here.",
+    "frontend/src/lib/speech.weapp.ts": "Only public voice-index content and package-local audio handles are cached; user preferences are read live and no study data is cached.",
     "frontend/src/lib/share-image.weapp.ts": "Share and save operations use the image passed to each call and retain no mutable user state.",
     "frontend/src/lib/jlpt/status.ts": "The lazy setup panel and study plan route query current database progress and persisted preferences; this module retains no user data.",
     "frontend/src/lib/audio-pack-format.ts": "SAP1 encoding/catalog validation are pure functions; there is no module-level cache.",
-    "frontend/src/lib/speech.weapp.ts": "Only public voice-index content and package-local audio handles are cached; user preferences are read live and no study data is cached.",
     "frontend/src/lib/distinction-quiz.ts": "Question groups and results are derived from the shared database on demand; there is no module-level user-data cache.",
     "frontend/src/lib/grammarProgressPreferences.ts": "The WeakSet records only an idempotent legacy-migration marker per DB object; position values remain in the shared database.",
     "frontend/src/lib/speech-audio.ts": "Reading normalization and audio hashes are pure functions with no user state.",
@@ -1754,15 +1758,15 @@
     },
     {
       "source": "frontend/src/styles.css",
-      "bytes": 131354
+      "bytes": 131391
     },
     {
       "source": "frontend/src/lib/sync-api.ts",
-      "bytes": 119961
+      "bytes": 120549
     },
     {
       "source": "frontend/src/design.css",
-      "bytes": 96129
+      "bytes": 97436
     },
     {
       "source": "taro-spike-2/node_modules/react-reconciler/cjs/react-reconciler.production.min.js",
@@ -1778,7 +1782,7 @@
     },
     {
       "source": "frontend/src/lib/study-core.ts",
-      "bytes": 87246
+      "bytes": 87440
     },
     {
       "source": "taro-spike-2/src/platform/WeappPage.tsx",

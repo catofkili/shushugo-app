@@ -15,9 +15,10 @@ vi.mock("./database/db-utils", async (importOriginal) => ({
 vi.mock("./word-api/stage1", () => ({ stage1ProgressCounts: () => plan }));
 vi.mock("./review-budget", () => ({ readEncoreLog: () => ({ dayWords: encoreWords }) }));
 
-import { buyItem, claimDailyPlanYuzu, equippedItem, grantRepairCard, ownsItem, repairableDays, repairCards, repairDay, repairDayWithCard, repairPrice, settleYuzu, yuzuBalance, YUZU } from "./yuzu";
+import { buyItem, claimDailyPlanYuzu, equipItem, unequip, equippedItem, grantRepairCard, ownsItem, repairableDays, repairCards, repairDay, repairDayWithCard, repairPrice, settleYuzu, yuzuBalance, YUZU } from "./yuzu";
 import { streakSnapshot } from "./streak";
-import { itemById } from "./yuzu-catalog";
+import { YUZU_TITLE_IDS } from "./yuzu-titles";
+import { YUZU_ITEMS, itemById } from "./yuzu-catalog";
 
 const checkin = (...days: string[]) => days.forEach((d) => db.run("INSERT OR IGNORE INTO checkins (checked_on) VALUES (?)", [d]));
 const answers = (n: number, day = TODAY) => {
@@ -113,6 +114,24 @@ describe("消费", () => {
     expect(equippedItem("theme")).toBe("theme-matcha");
     expect(yuzuBalance()).toBe(0);
     expect(buyItem("theme-matcha")).toBe(false);
+  });
+
+  it("称号单买：首件自动装备，换另一件只占一个槽，卸下保留所有权", () => {
+    const titles = YUZU_ITEMS.filter((item) => item.category === "title");
+    expect(titles.map((item) => item.id).sort()).toEqual(Object.values(YUZU_TITLE_IDS).sort());
+    expect(titles.every((item) => !item.soon && item.price === 3000)).toBe(true);
+    fund(6000);
+    expect(buyItem("title-early")).toBe(true);
+    expect(equippedItem("title")).toBe("title-early");
+    expect(buyItem("title-night")).toBe(true);
+    expect(equippedItem("title")).toBe("title-early");
+    equipItem("title-night");
+    expect(equippedItem("title")).toBe("title-night");
+    expect(db.exec("SELECT value FROM app_state WHERE key = 'yuzu_equipped:title'")[0].values).toEqual([["title-night"]]);
+    unequip("title");
+    expect(equippedItem("title")).toBe("");
+    expect(ownsItem("title-early") && ownsItem("title-night")).toBe(true);
+    expect(yuzuBalance()).toBe(0);
   });
 
   it("补签:只补 7 天内、首次亮之后的洞;30 天内 500/1000/2000 递增;补完连击接上", () => {

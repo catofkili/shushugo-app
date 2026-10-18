@@ -6,6 +6,7 @@ import { CrossPlatformImage } from "../components/CrossPlatformImage";
 import { getResolvedTheme, getStudyPreferences, PREFERENCES_EVENT, saveStudyPreferences } from "../lib/studyPreferences";
 import { loadVoices, prefetchVoicePreviews, prepareVoice, previewVoice, voiceDeliveryMode } from "../lib/speech";
 import { previewTimbre, type SoundTimbre } from "../lib/zoo-sounds";
+import { watchTeamTitle } from "../lib/team-activity";
 import { itemAvailable } from "../lib/shop-availability";
 
 import {
@@ -66,6 +67,15 @@ const Art = ({ item, size }: { item: YuzuItem; size: "s" | "l" }) => {
   const currentMascot = useMascotSkin();
   if (item.category === "theme") return <div className={`yz-art yz-art-${size} yz-art-home`}><MiniHome skinId={item.id} mascotId={currentMascot} /></div>;
   if (item.category === "mascot") return <div className={`yz-art yz-art-${size} yz-art-home`}><MiniHome skinId={equippedItem("theme")} mascotId={item.id} /></div>;
+  if (item.category === "title") return (
+    <div className={`yz-art yz-art-${size}`}>
+      <div className="yz-title-list" aria-hidden="true">
+        <div className="yz-title-row"><i className="yz-title-avatar" /><i className="yz-title-name" /><span className="yz-title-pill">{item.name}</span></div>
+        <div className="yz-title-row"><i className="yz-title-avatar" /><i className="yz-title-name" /></div>
+        <div className="yz-title-row"><i className="yz-title-avatar" /><i className="yz-title-name" /></div>
+      </div>
+    </div>
+  );
   const src = item.art ? stickerUrl(item.art) : null;
   return (
     <div className={`yz-art yz-art-${size}`} data-cat={item.category}>
@@ -84,6 +94,8 @@ export const YuzuShopPage = ({ onOpenPro }: { onOpenPro?: () => void }) => {
   const [rulesOpen, setRulesOpen] = useState(false);
   const [checkout, setCheckout] = useState<{ itemId: string; status: CheckoutStatus } | null>(null);
   const mounted = useRef(true);
+
+  useEffect(() => watchTeamTitle(), []);
 
   // 加载要比用户快一步：一进商店就把几个声音的试听音频下好（小程序；网页是空操作）
   useEffect(() => { void prefetchVoicePreviews().catch(() => undefined); }, []);

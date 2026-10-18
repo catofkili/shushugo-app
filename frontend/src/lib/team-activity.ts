@@ -1,11 +1,11 @@
 import { firstValue, today } from "./database/db-utils";
 import { getDatabase } from "./database";
 import {
-  getCloudSession, getCloudTeamRewards, getLocalSyncOwnerEmail, reportCloudTeamActivity,
+  getCloudSession, getCloudTeamRewards, updateCloudTeamTitle, getLocalSyncOwnerEmail, reportCloudTeamActivity,
   type CloudTeam, type CloudTeamActivity, type CloudTeamPlazaItem
 } from "./sync-api";
 import { teamDayPassed } from "./team-rules";
-import { bookTeamReward } from "./yuzu";
+import { equippedItem, YUZU_EVENT, bookTeamReward } from "./yuzu";
 
 const tableExists = (table: string) => Number(firstValue(
   "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = ?", [table], 0
@@ -112,4 +112,43 @@ export const collectTeamRewards = async (): Promise<number> => {
     if (bookTeamReward("duel_win", row.iso_week, 150)) amount += 150;
   }
   return amount;
+};
+
+/** 页面入口传服务端快照，只推差异；商店换装备时不额外 GET，未入队 / 旧服务端的 404 也静默。 */
+export const syncTeamTitle = async (team?: CloudTeam | null): Promise<string | null | undefined> => {
+  try {
+    const title = equippedItem("title");
+    if (team !== undefined) {
+      const me = team?.members.find((member) => member.isMe);
+      if (!me || (me.title ?? "") === title) return;
+    }
+    const db = getDatabase();
+    const session = await getCloudSession();
+    if (!session.token || !session.email) return;
+    const owner = await getLocalSyncOwnerEmail();
+    if (owner && owner !== session.email) return;
+    const current = await getCloudSession();
+    if (current.token !== session.token || current.email !== session.email || getDatabase() !== db || equippedItem("title") !== title) return;
+    const saved = await updateCloudTeamTitle(title);
+    const after = await getCloudSession();
+    if (after.token === session.token && after.email === session.email && getDatabase() === db && equippedItem("title") === title) return saved;
+  } catch { /* 外观同步失败留到下次进入队伍页重试，不打扰学习。 */ }
+};
+
+/** 只跟踪称号槽变化；购买 / 装备会连发事件，且快速换装的写请求必须依次完成。 */
+export const watchTeamTitle = (onSynced?: (title: string | null) => void): (() => void) => {
+  let last = equippedItem("title");
+  let pending = Promise.resolve();
+  let active = true;
+  const update = () => {
+    const title = equippedItem("title");
+    if (title === last) return;
+    last = title;
+    pending = pending.then(async () => {
+      const saved = await syncTeamTitle();
+      if (active && saved !== undefined) onSynced?.(saved);
+    });
+  };
+  window.addEventListener(YUZU_EVENT, update);
+  return () => { active = false; window.removeEventListener(YUZU_EVENT, update); };
 };

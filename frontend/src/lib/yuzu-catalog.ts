@@ -9,6 +9,7 @@
  * voice(speech.resolveVoice + 设置页)、sound(zoo-sounds 音色)。
  * `soon` 的还没做(icon 要 Capacitor 换图标插件、misc 三件等图),货架上露脸但不卖。
  */
+import { YUZU_TITLE_IDS } from "./yuzu-titles";
 import type { StickerName } from "../components/CapybaraMascot";
 
 export type YuzuCategory = "theme" | "mascot" | "icon" | "voice" | "sound" | "walk" | "title" | "misc";
@@ -60,12 +61,18 @@ export const YUZU_ITEMS: YuzuItem[] = [
   { id: "walk-alt", name: "滚着走", description: "学习页小路和加载时，水豚改成滚着走", category: "walk", price: 4000, soon: true, art: "roll-frame" },
   { id: "report-cover", name: "周报封面", description: "周报封面换一张", category: "misc", price: 3000, soon: true, art: "card-daily" },
   // 队伍称号：队友的名单里挂在名字旁边。每个称号单独买、单独装备（槽位 yuzu_equipped:title）
-  { id: "title-early", name: "晨读派", description: "队伍名单里，名字旁挂上「晨读派」", category: "title", price: 3000, soon: true },
-  { id: "title-night", name: "夜读派", description: "队伍名单里，名字旁挂上「夜读派」", category: "title", price: 3000, soon: true },
-  { id: "title-hunter", name: "单词猎人", description: "队伍名单里，名字旁挂上「单词猎人」", category: "title", price: 3000, soon: true },
-  { id: "title-slow", name: "慢慢来", description: "队伍名单里，名字旁挂上「慢慢来」", category: "title", price: 3000, soon: true },
-  { id: "title-grove", name: "柚子庄园主", description: "队伍名单里，名字旁挂上「柚子庄园主」", category: "title", price: 3000, soon: true },
-  { id: "title-capy", name: "水豚本豚", description: "队伍名单里，名字旁挂上「水豚本豚」", category: "title", price: 3000, soon: true }
+  { id: YUZU_TITLE_IDS.early, name: "晨读派", description: "队伍名单里，名字旁挂上「晨读派」", category: "title", price: 3000 },
+  { id: YUZU_TITLE_IDS.night, name: "夜读派", description: "队伍名单里，名字旁挂上「夜读派」", category: "title", price: 3000 },
+  { id: YUZU_TITLE_IDS.hunter, name: "单词猎人", description: "队伍名单里，名字旁挂上「单词猎人」", category: "title", price: 3000 },
+  { id: YUZU_TITLE_IDS.slow, name: "慢慢来", description: "队伍名单里，名字旁挂上「慢慢来」", category: "title", price: 3000 },
+  { id: YUZU_TITLE_IDS.grove, name: "柚子庄园主", description: "队伍名单里，名字旁挂上「柚子庄园主」", category: "title", price: 3000 },
+  { id: YUZU_TITLE_IDS.capy, name: "水豚本豚", description: "队伍名单里，名字旁挂上「水豚本豚」", category: "title", price: 3000 }
 ];
 
 export const itemById = (id: string) => YUZU_ITEMS.find((item) => item.id === id);
+
+/** 未知 key / 旧客户端没有的称号不显示；其它类别也不能冒充称号。 */
+export const teamTitleName = (title?: string | null): string => {
+  const item = title ? itemById(title) : undefined;
+  return item?.category === "title" ? item.name : "";
+};
