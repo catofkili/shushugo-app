@@ -96,9 +96,10 @@ export function ensureFsrsColumns(entity: FsrsEntity = WORD_FSRS): void {
   const existing = new Set(
     rowsFor(`PRAGMA table_info(${entity.table})`).map((r) => String(r.name ?? ""))
   );
-  for (const [name, type] of FSRS_COLS) {
-    if (!existing.has(name)) db.run(`ALTER TABLE ${entity.table} ADD COLUMN ${name} ${type}`);
-  }
+  // 小程序 iPhone 解释执行 WASM，逐列跨边界解析太贵；仍按原顺序补列，合成一次调用。
+  const statements = FSRS_COLS.filter(([name]) => !existing.has(name))
+    .map(([name, type]) => `ALTER TABLE ${entity.table} ADD COLUMN ${name} ${type}`);
+  if (statements.length) db.exec(statements.join(";"));
   done.add(entity.table);
 }
 

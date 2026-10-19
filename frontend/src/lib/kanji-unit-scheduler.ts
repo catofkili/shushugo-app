@@ -279,7 +279,7 @@ export const ensureKanjiUnitTables = (): void => {
  *
  * 单事务 + 只数一次总量。原来每个单位先 `SELECT COUNT(*)` 再插两张表 ——
  * 3,278 个单位 = 3,278 次查询 + 6,556 次写,首次进模式会明显卡住。
- * 现在只在首尾各数一次,插入本身交给 `INSERT OR IGNORE`。
+ * 现在只在开头数一次,插入本身交给 `INSERT OR IGNORE`，新增量取 getRowsModified。
  */
 export const materializeKanjiUnitIndex = (): number => {
   ensureKanjiUnitTables();
@@ -299,21 +299,30 @@ export const materializeKanjiUnitIndex = (): number => {
   } catch {
     owned = false;
   }
+  let inserted = 0;
   try {
-    for (const unit of units) {
-      db.run(`
-        INSERT OR IGNORE INTO kanji_units
-          (unit_key, unit_type, char, base, surface, reading, kinds)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-      `, [unit.unitKey, unit.unitType, unit.char, unit.base, unit.surface, unit.reading, JSON.stringify(unit.kinds)]);
-      db.run("INSERT OR IGNORE INTO kanji_unit_memory (unit_key) VALUES (?)", [unit.unitKey]);
-    }
+    // 小程序 iPhone 解释执行 WASM，逐条解析 SQL 太贵；按数组顺序批量插入，保持自增 id。
+    const batch = JSON.stringify(units.map((unit) => [
+      unit.unitKey, unit.unitType, unit.char, unit.base, unit.surface, unit.reading, JSON.stringify(unit.kinds)
+    ]));
+    db.run(`
+      INSERT OR IGNORE INTO kanji_units
+        (unit_key, unit_type, char, base, surface, reading, kinds)
+      SELECT value ->> '$[0]', value ->> '$[1]', value ->> '$[2]', value ->> '$[3]',
+             value ->> '$[4]', value ->> '$[5]', value ->> '$[6]'
+      FROM json_each(?) ORDER BY CAST(key AS INTEGER)
+    `, [batch]);
+    inserted = db.getRowsModified();
+    db.run(`
+      INSERT OR IGNORE INTO kanji_unit_memory (unit_key)
+      SELECT value ->> '$[0]' FROM json_each(?) ORDER BY CAST(key AS INTEGER)
+    `, [batch]);
     if (owned) db.run("COMMIT");
   } catch (error) {
     if (owned) db.run("ROLLBACK");
     throw error;
   }
-  return firstValue<number>("SELECT COUNT(*) FROM kanji_units", [], 0) - before;
+  return inserted;
 };
 
 /**

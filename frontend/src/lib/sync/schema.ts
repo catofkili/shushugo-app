@@ -181,25 +181,41 @@ function ensureSyncStructure(): void {
   const db = getDatabase();
   const baseDdlCount = 5;
   const ddl = syncSchemaDdlStatements();
-  for (const statement of ddl.slice(0, baseDdlCount)) db.run(statement);
-  getDeviceId();
+  // 小程序 iPhone 解释执行 WASM，逐条调用 DDL 太贵；合批并用 SAVEPOINT 兼容外层事务。
+  db.run("SAVEPOINT sync_structure");
+  try {
+    db.exec(ddl.slice(0, baseDdlCount).join(";"));
+    getDeviceId();
 
-  if (!columnsOf("sync_tombstones").has("origin_device")) {
-    db.run("ALTER TABLE sync_tombstones ADD COLUMN origin_device TEXT NOT NULL DEFAULT ''");
-  }
-  for (const entry of SYNCED_TABLES) {
-    if (!tableExists(entry.table)) continue;
-    const columns = columnsOf(entry.table);
-    if (entry.table === "reviews") {
-      if (!columns.has("direction")) db.run("ALTER TABLE reviews ADD COLUMN direction TEXT NOT NULL DEFAULT 'forward'");
-      if (!columns.has("reviewed_at")) db.run("ALTER TABLE reviews ADD COLUMN reviewed_at INTEGER");
-      if (!columns.has("scheduler_mode")) db.run("ALTER TABLE reviews ADD COLUMN scheduler_mode TEXT NOT NULL DEFAULT 'legacy'");
-      if (!columns.has("fsrs_params_version")) db.run("ALTER TABLE reviews ADD COLUMN fsrs_params_version TEXT NOT NULL DEFAULT 'legacy'");
-      if (!columns.has("event_source")) db.run("ALTER TABLE reviews ADD COLUMN event_source TEXT NOT NULL DEFAULT 'legacy'");
+    const statements: string[] = [];
+    if (!columnsOf("sync_tombstones").has("origin_device")) {
+      statements.push("ALTER TABLE sync_tombstones ADD COLUMN origin_device TEXT NOT NULL DEFAULT ''");
     }
-    for (const statement of legacyMemoryColumnStatements(entry.table, columns)) db.run(statement);
-    for (const statement of trackingDdlStatements(entry, columns)) db.run(statement);
-    for (const statement of triggerDdlStatements(entry)) db.run(statement);
+    const tables = new Set(rowsFor("SELECT name FROM sqlite_master WHERE type = 'table'").map((row) => String(row.name)));
+    for (const entry of SYNCED_TABLES) {
+      if (!tables.has(entry.table)) continue;
+      const columns = columnsOf(entry.table);
+      if (entry.table === "reviews") {
+        if (!columns.has("direction")) statements.push("ALTER TABLE reviews ADD COLUMN direction TEXT NOT NULL DEFAULT 'forward'");
+        if (!columns.has("reviewed_at")) statements.push("ALTER TABLE reviews ADD COLUMN reviewed_at INTEGER");
+        if (!columns.has("scheduler_mode")) statements.push("ALTER TABLE reviews ADD COLUMN scheduler_mode TEXT NOT NULL DEFAULT 'legacy'");
+        if (!columns.has("fsrs_params_version")) statements.push("ALTER TABLE reviews ADD COLUMN fsrs_params_version TEXT NOT NULL DEFAULT 'legacy'");
+        if (!columns.has("event_source")) statements.push("ALTER TABLE reviews ADD COLUMN event_source TEXT NOT NULL DEFAULT 'legacy'");
+      }
+      statements.push(...legacyMemoryColumnStatements(entry.table, columns));
+      statements.push(...trackingDdlStatements(entry, columns));
+      statements.push(...triggerDdlStatements(entry));
+    }
+    // 先补完列再建索引/触发器，避免每次 ALTER 都重新解析刚建出的整套触发器。
+    db.exec([
+      ...statements.filter((statement) => statement.startsWith("ALTER TABLE")),
+      ...statements.filter((statement) => !statement.startsWith("ALTER TABLE"))
+    ].join(";"));
+    db.run("RELEASE sync_structure");
+  } catch (error) {
+    db.run("ROLLBACK TO sync_structure");
+    db.run("RELEASE sync_structure");
+    throw error;
   }
 }
 

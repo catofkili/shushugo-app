@@ -21,7 +21,7 @@ import { withoutSyncStamp } from "./sync/schema";
 import { allKanjiUnits, kanjiUnitIndexLoaded, kanjiUnitWordIds, loadKanjiUnitIndex } from "./kanji-unit-index";
 import { allKanjiReadingQuestionChars, kanjiReadingQuestionFor, kanjiReadingUsageFor, kanjiReadingUsageLoaded, loadKanjiReadingUsage, clauseText, type KanjiReadingQuestion } from "./kanji-reading-usage";
 import readingsPayload from "../data/kanji_readings.json";
-import { kanjiChoiceQuestion, type KanjiChoiceQuestion } from "./kanji-choice";
+import { kanjiChoiceQuestion, warmKanjiChoiceQuestions, type KanjiChoiceQuestion } from "./kanji-choice";
 
 export const KANJI_CHAR_FSRS: FsrsEntity = {
   table: "kanji_char_memory",
@@ -89,21 +89,14 @@ export const materializeKanjiChars = (): number => {
     if (current === undefined || unit.levelRank < current) levelByChar.set(unit.char, unit.levelRank);
   }
   const db = getDatabase();
-  const existing = new Set(rowsFor("SELECT char FROM kanji_char_memory").map((row) => String(row.char)));
-  let inserted = 0;
-  withoutSyncStamp(() => {
-    db.run("BEGIN");
-    try {
-      for (const [char, levelRank] of levelByChar) {
-        if (existing.has(char)) continue;
-        db.run("INSERT INTO kanji_char_memory (char, level_rank) VALUES (?, ?)", [char, levelRank]);
-        inserted += 1;
-      }
-      db.run("COMMIT");
-    } catch (error) {
-      db.run("ROLLBACK");
-      throw error;
-    }
+  // 小程序 iPhone 解释执行 WASM，逐条解析 SQL 太贵；单条批量 INSERT 自带原子性。
+  const inserted = withoutSyncStamp(() => {
+    db.run(`
+      INSERT OR IGNORE INTO kanji_char_memory (char, level_rank)
+      SELECT json_extract(value, '$[0]'), json_extract(value, '$[1]')
+      FROM json_each(?) ORDER BY CAST(key AS INTEGER)
+    `, [JSON.stringify([...levelByChar])]);
+    return db.getRowsModified();
   });
   return inserted;
 };
@@ -189,7 +182,9 @@ const eligibleQuestionChars = (): Set<string> => {
   const chars = new Set(allKanjiReadingQuestionChars());
   // 首页可能在内容装好前查池子；不能永久缓存那一刻的空资格集。
   if (!kanjiCharDataLoaded()) return chars;
-  for (const char of new Set(allKanjiUnits().filter((unit) => unit.unitType === "char").map((unit) => unit.char))) {
+  const candidates = [...new Set(allKanjiUnits().filter((unit) => unit.unitType === "char").map((unit) => unit.char))];
+  warmKanjiChoiceQuestions(candidates.filter((char) => !chars.has(char)));
+  for (const char of candidates) {
     if (!chars.has(char) && kanjiChoiceQuestion(char)) chars.add(char);
   }
   eligibleByDatabase.set(db, chars);

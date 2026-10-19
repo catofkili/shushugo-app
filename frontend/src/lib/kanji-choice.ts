@@ -104,7 +104,7 @@ const shuffleOptions = (options: string[], char: string, wordId: number) => {
 };
 
 /** 每字首次取题按当时熟悉度排序；本次数据库实例内复用题面和选项。 */
-export const kanjiChoiceQuestion = (char: string): KanjiChoiceQuestion | null => {
+const buildChoiceQuestion = (char: string, batchWords?: Map<number, ReturnType<typeof rowsFor>[number]>): KanjiChoiceQuestion | null => {
   if (!kanjiUnitIndexLoaded()) return null;
   const db = getDatabase();
   let cache = questionsByDatabase.get(db);
@@ -115,7 +115,10 @@ export const kanjiChoiceQuestion = (char: string): KanjiChoiceQuestion | null =>
   const wordIds = [...new Set(examples.map((example) => example.wordId))];
   const candidates: Omit<KanjiChoiceItem, "options">[] = [];
   if (wordIds.length) {
-    const words = rowsFor(`
+    const words = batchWords ? wordIds.flatMap((id) => {
+      const row = batchWords.get(id);
+      return row ? [row] : [];
+    }).sort((a, b) => Number(b.seen) - Number(a.seen) || Number(b.importance) - Number(a.importance) || Number(a.id) - Number(b.id)) : rowsFor(`
       SELECT w.id, w.kanji, w.kana, w.meaning, COALESCE(p.seen_count, 0) AS seen, COALESCE(w.importance, 0) AS importance
       FROM words w LEFT JOIN progress p ON p.word_id = w.id
       WHERE w.id IN (${wordIds.map(() => "?").join(",")})
@@ -153,4 +156,22 @@ export const kanjiChoiceQuestion = (char: string): KanjiChoiceQuestion | null =>
   const question = items.length ? { items } : null;
   cache.set(char, question);
   return question;
+};
+
+export const kanjiChoiceQuestion = (char: string): KanjiChoiceQuestion | null => buildChoiceQuestion(char);
+
+/** 同步资格扫描时按当时熟悉度一次读完；不保留词行快照，之后新取的字仍读最新进度。 */
+export const warmKanjiChoiceQuestions = (chars: string[]): void => {
+  if (!kanjiUnitIndexLoaded()) return;
+  const cache = questionsByDatabase.get(getDatabase());
+  const pending = chars.filter((char) => !cache?.has(char));
+  if (!pending.length) return;
+  // 小程序 iPhone 解释执行 WASM，逐字解析同一条例词查询太贵，整批共用一次读取和排序。
+  const words = rowsFor(`
+    SELECT w.id, w.kanji, w.kana, w.meaning, COALESCE(p.seen_count, 0) AS seen, COALESCE(w.importance, 0) AS importance
+    FROM words w LEFT JOIN progress p ON p.word_id = w.id
+    ORDER BY seen DESC, importance DESC, w.id ASC
+  `);
+  const byId = new Map(words.map((row) => [Number(row.id), row]));
+  for (const char of pending) buildChoiceQuestion(char, byId);
 };

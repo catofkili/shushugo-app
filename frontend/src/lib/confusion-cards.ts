@@ -61,7 +61,8 @@ export const ensureConfusionCardTables = (): void => {
   if (!rowsFor("PRAGMA table_info(confusion_progress)").some((row) => row.name === "level_rank")) {
     db.run("ALTER TABLE confusion_progress ADD COLUMN level_rank INTEGER NOT NULL DEFAULT 4");
   }
-  db.run(`
+  // 小程序 iPhone 解释执行 WASM，合批 DDL，避免反复跨 WASM 解析调用。
+  db.exec(`
     CREATE TABLE IF NOT EXISTS confusion_reviews (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       group_key TEXT NOT NULL,
@@ -71,18 +72,16 @@ export const ensureConfusionCardTables = (): void => {
       scheduler_mode TEXT NOT NULL DEFAULT 'normal',
       fsrs_params_version TEXT NOT NULL DEFAULT 'fsrs-v1',
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
-  db.run("CREATE INDEX IF NOT EXISTS idx_confusion_reviews_group_on ON confusion_reviews (group_key, reviewed_on)");
-  db.run(`
+    );
+    CREATE INDEX IF NOT EXISTS idx_confusion_reviews_group_on ON confusion_reviews (group_key, reviewed_on);
     CREATE TABLE IF NOT EXISTS confusion_tasks (
       reviewed_on TEXT NOT NULL,
       group_key TEXT NOT NULL,
       order_index INTEGER NOT NULL,
       PRIMARY KEY (reviewed_on, group_key)
-    )
+    );
+    CREATE TABLE IF NOT EXISTS confusion_mastered (group_key TEXT PRIMARY KEY, mastered_on TEXT NOT NULL);
   `);
-  db.run("CREATE TABLE IF NOT EXISTS confusion_mastered (group_key TEXT PRIMARY KEY, mastered_on TEXT NOT NULL)");
   ensureFsrsColumns(CONFUSION_FSRS);
 };
 
@@ -113,17 +112,20 @@ export const materializeConfusionCards = (): number => {
   withoutSyncStamp(() => {
     db.run("BEGIN");
     try {
-      for (const group of confusionGroups()) {
-        if (!matchable(group)) continue;
-        const rank = groupLevelRank(group);
-        const current = existing.get(group.key);
-        if (current === undefined) {
-          db.run("INSERT INTO confusion_progress (group_key, level_rank) VALUES (?, ?)", [group.key, rank]);
-          inserted += 1;
-        } else if (current !== rank) {
-          db.run("UPDATE confusion_progress SET level_rank = ? WHERE group_key = ?", [rank, group.key]);
-        }
-      }
+      // 小程序 iPhone 解释执行 WASM，逐条解析 SQL 太贵；插入和等级回填各吃一批。
+      const groups = confusionGroups().filter(matchable).map((group) => [group.key, groupLevelRank(group)] as const);
+      const fresh = groups.filter(([key]) => !existing.has(key));
+      db.run(`
+        INSERT INTO confusion_progress (group_key, level_rank)
+        SELECT json_extract(value, '$[0]'), json_extract(value, '$[1]')
+        FROM json_each(?) ORDER BY CAST(key AS INTEGER)
+      `, [JSON.stringify(fresh)]);
+      inserted = db.getRowsModified();
+      const changed = groups.filter(([key, rank]) => existing.has(key) && existing.get(key) !== rank);
+      if (changed.length) db.run(`
+        UPDATE confusion_progress SET level_rank = batch.value ->> '$[1]'
+        FROM json_each(?) AS batch WHERE group_key = batch.value ->> '$[0]'
+      `, [JSON.stringify(changed)]);
       db.run("COMMIT");
     } catch (error) {
       db.run("ROLLBACK");
