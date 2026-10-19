@@ -466,3 +466,19 @@ JOIN 读的是 **grammar_state** —— **点了收藏永远显示不出来**，
   首月赠送页都有冲突，要按现在的代码重做）。那两条旧分支已归档到 `refs/archive/weapp/startup-fast-a|b`。
 - 首页每次冷启动仍要装 word-study 那套内容（`question-meanings` 613 KB、`pitch-accent` 273 KB、`distinction-reviews` 255 KB……）和汉字那两份（约 730 KB），
   全是 JS 对象字面量，iOS 上解释执行。首页本身是否用得到这些没核实（懒代理在未加载时返回代理而不是报错，用错了是静默的），要动先真机计时再逐个核对。
+
+## ⚠️ 弹层（`createPortal`）不能挂在主 ScrollView 的父节点上：一删弹层，列表就跳回顶部（2026-10-19 修）
+
+作者 10-19 真机：疑难辨析 / 一字多音打开某一组、再关掉，列表回到最上方。根因在 Taro：删掉弹层时 `removeChild` 之后对**父节点** `updateChildNodes()`，
+把父节点的整组 `childNodes` 重新 setData 一遍。原来弹层宿主（`portal-host.weapp.ts`）就是 `.weapp-route-root`，也就是主 ScrollView 的父节点，
+于是主 ScrollView 跟着被重建，滚动位置归零。现在 `WeappPage.tsx` 在 ScrollView **后面并列**放一个空 `<View ref={portalHost} />` 专门挂弹层，
+删弹层只更新这个空宿主；它仍在 `.weapp-route-root`（主题 class）里面，弹层配色不受影响。
+⚠️ 以后给页面根节点加兄弟 / 换宿主时，判据是「弹层增删时被 `updateChildNodes` 的那个节点，子节点里不能有主 ScrollView」。
+
+**开发者工具里怎么验**（这次的做法，下次照抄）：
+- 非会员看到的疑难辨析 / 一字多音是**固定高度的会员预览**（`.pro-reading-preview`），根本不滚，测不出来。小程序版的会员不认网页那份 `mn-entitlements`，
+  认的是**库里** `app_state` 的 `entitlement_cache`。测试时先 `cli quit` 等进程退出，用 `sqlite3` 往模拟器的 `usr/masternihongo/nihongo.db` 写一行
+  `{"active":true,"plan":"shushugo_pro_monthly","expiresAt":"<明天>","source":"server"}`，测完从备份放回。
+- 主 ScrollView 带 `enhanced` 和 `id="weapp-main-scroll"`，automator 的 `element.scrollTo` 对它**无效**（滚了也读回 0）。要在 `mp.evaluate` 里用
+  `wx.createSelectorQuery().select('#weapp-main-scroll').node(r => r.node.scrollTo({ top }))` 滚，用 `.scrollOffset()` 读。
+- 对照结果：修复前「滚到 1500 → 开一组 → 关掉」读回 0；修复后读回 1500，两页都一样。
