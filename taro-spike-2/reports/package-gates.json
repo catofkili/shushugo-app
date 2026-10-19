@@ -2,19 +2,19 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1863626,
+      "bytes": 1864211,
       "passes": true
     },
     "study": {
-      "bytes": 1019194,
+      "bytes": 1021322,
       "passes": true
     },
     "account": {
-      "bytes": 324320,
+      "bytes": 324858,
       "passes": true
     },
     "content-pages": {
-      "bytes": 1173918,
+      "bytes": 1173919,
       "passes": true
     },
     "features": {
@@ -34,7 +34,7 @@
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 303757,
+      "bytes": 303751,
       "passes": true
     },
     "core": {
@@ -42,7 +42,7 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 907123,
+      "bytes": 909274,
       "passes": true
     },
     "jlpt-bank": {
@@ -122,6 +122,14 @@
       ]
     },
     {
+      "source": "frontend/src/components/LevelSetup.tsx",
+      "bytes": 29645,
+      "packages": [
+        "lazy",
+        "study"
+      ]
+    },
+    {
       "source": "frontend/src/lib/word-list-import.ts",
       "bytes": 27779,
       "packages": [
@@ -130,19 +138,20 @@
       ]
     },
     {
-      "source": "frontend/src/components/LevelSetup.tsx",
-      "bytes": 25418,
-      "packages": [
-        "lazy",
-        "study"
-      ]
-    },
-    {
       "source": "frontend/src/components/AuthDialog.weapp.tsx",
       "bytes": 24038,
       "packages": [
         "account",
         "lazy"
+      ]
+    },
+    {
+      "source": "frontend/src/lib/daily-plan.ts",
+      "bytes": 21602,
+      "packages": [
+        "account",
+        "lazy",
+        "study"
       ]
     },
     {
@@ -158,15 +167,6 @@
       "bytes": 20612,
       "packages": [
         "grammar-pages",
-        "study"
-      ]
-    },
-    {
-      "source": "frontend/src/lib/daily-plan.ts",
-      "bytes": 20122,
-      "packages": [
-        "account",
-        "lazy",
         "study"
       ]
     },
@@ -922,7 +922,7 @@
     },
     {
       "source": "frontend/src/lib/daily-plan.ts",
-      "bytes": 20122,
+      "bytes": 21602,
       "packages": [
         "account",
         "lazy",
@@ -1326,7 +1326,7 @@
     },
     {
       "source": "frontend/src/components/LevelSetup.tsx",
-      "bytes": 25418,
+      "bytes": 29645,
       "packages": [
         "lazy",
         "study"
@@ -1739,7 +1739,7 @@
     "frontend/src/components/DailyPlanSlider.weapp.tsx": "The lazy setup panel and account/study plan pages render native Sliders; values and commit callbacks are owned by each mounted parent, not this stateless adapter.",
     "frontend/src/components/JapaneseRubyText.weapp.tsx": "Ruby text is used by lazy tabs and independently loaded content/grammar routes."
   },
-  "duplicatedPageComponentBytes": 352873,
+  "duplicatedPageComponentBytes": 357100,
   "unapprovedPageComponents": [],
   "stalePageComponentAllowlist": [],
   "unapprovedPageComponentBytes": 0,
@@ -1758,7 +1758,7 @@
     },
     {
       "source": "frontend/src/styles.css",
-      "bytes": 131391
+      "bytes": 131439
     },
     {
       "source": "frontend/src/lib/sync-api.ts",
@@ -1778,7 +1778,7 @@
     },
     {
       "source": "frontend/src/lib/storage.ts",
-      "bytes": 90130
+      "bytes": 90430
     },
     {
       "source": "frontend/src/lib/study-core.ts",
@@ -1786,7 +1786,7 @@
     },
     {
       "source": "taro-spike-2/src/platform/WeappPage.tsx",
-      "bytes": 70000
+      "bytes": 70144
     }
   ],
   "passes": true

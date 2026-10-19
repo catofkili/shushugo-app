@@ -495,6 +495,8 @@ export default function App() {
       onLevelSetupComplete={(message) => {
         setLevelSetupOpen(false);
         showNotice(message, 5200);
+        // 选了「暂不备考」就留在原页，不进备考页（那里只剩一个关着的开关）
+        if (!getStudyPreferences().jlptPlanEnabled) return;
         const current = getAppState();
         setAppState({ pageHistory: [...current.pageHistory, current.page], page: "jlpt-plan" });
       }}

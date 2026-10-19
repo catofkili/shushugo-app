@@ -13,7 +13,7 @@ import {
   type LocalDelta
 } from './local-delta';
 import { rebuildStudyTimeAggregate } from './sync/study-time';
-import { perfTimeAsync } from './perf-marks';
+import { perfTime, perfTimeAsync } from './perf-marks';
 
 // 供当前页面把“数据库写盘失败”显示出来；旧版 localStorage 配额异常曾被静默吞掉。
 export const PERSISTENCE_ERROR_EVENT = 'persistence-error';
@@ -612,14 +612,14 @@ async function saveDatabaseNowUnlocked(options: { notifyCloud?: boolean } = {}):
     } catch {
       // 库还没起来,下面 exportDatabase() 会返回 null
     }
-    const data = exportDatabase();
+    const data = perfTime('落盘 · 整库导出', exportDatabase);
     if (!data) {
       console.warn('No database to save');
       return;
     }
 
     if (isNativeFileStorage()) {
-      await saveFileDatabase(data);
+      await perfTimeAsync('落盘 · 整库写文件', () => saveFileDatabase(data));
     } else {
       await saveBrowserDatabase(data);
       // 顺手把整库镜像到 frontend/.local/live.db,好让命令行查得到今天的真实状态。
@@ -894,7 +894,7 @@ const persistNowInQueue = async (): Promise<void> => {
       await saveDatabaseNow();
       return;
     }
-    const delta = collectDelta(since);
+    const delta = perfTime('落盘 · 收集增量', () => collectDelta(since));
     // 触发器和水位线都使用墙上时钟。系统时间回拨后，新的改动可能比旧水位线
     // 更早；继续写这份增量会把它永久漏掉。整库快照能把现有状态完整带走，
     // 同时把下一次增量的基准重置到回拨后的时间。
@@ -906,7 +906,7 @@ const persistNowInQueue = async (): Promise<void> => {
       await saveDatabaseNow();
       return;
     }
-    await saveDeltaRecord(JSON.stringify(delta));
+    await perfTimeAsync('落盘 · 写增量', () => saveDeltaRecord(JSON.stringify(delta)));
     if (localDataRevision === revisionAtStart) pendingSave = false;
     notifyPersistenceOk();
     mirrorForDev();

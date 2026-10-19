@@ -1,8 +1,11 @@
-import { useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { Capacitor } from "@capacitor/core";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
-import { applyExamPreset, previewCurrentLevelPlan } from "../lib/daily-plan";
+import { applyExamPreset, applyStudyIntensity, remainingPlanWords, STUDY_INTENSITY, type StudyIntensity } from "../lib/daily-plan";
+import { previewLevelPlan } from "../lib/plan/content-matrix";
+import { getStudyPreferences } from "../lib/studyPreferences";
+import { perfTime, perfTimeAsync } from "../lib/perf-marks";
 import { examLabel, EXAM_TYPES, formatExamDate, parseExamDate, suggestedExamDate, type ExamKind } from "../lib/jlpt/exam-dates";
 import { JLPT_TARGETS, type JlptTarget } from "../lib/jlpt/plan";
 import {
@@ -72,7 +75,9 @@ const defaultExamDate = (kind: ExamKind) => {
 
 export function LevelSetup({ open, dismissible = false, isAuthenticated = false, onRequireAuth, onComplete, onClose }: Props) {
   const entitlement = useEntitlements();
-  const existing = getLevelPlanSettings();
+  // 只在打开 / 关上时读一次：这个组件挂在 AppShell 里一直渲染，原来每次重渲染都要查一遍库里的计划。
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- 故意按 open 重读：备考页关了再开要拿到刚存的计划
+  const existing = useMemo(() => getLevelPlanSettings(), [open]);
   const [startingLevel, setStartingLevel] = useState<StartingLevel>(existing?.startingLevel ?? "kana");
   const [target, setTarget] = useState<JlptTarget>(existing?.target ?? "N3");
   const [examKind, setExamKind] = useState<ExamKind>(existing?.examKind ?? "jlpt");
@@ -80,6 +85,10 @@ export function LevelSetup({ open, dismissible = false, isAuthenticated = false,
   const [examDate, setExamDate] = useState(savedDate && savedDate >= new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate())
     ? formatExamDate(savedDate) : defaultExamDate(existing?.examKind ?? "jlpt"));
   const [familiarity, setFamiliarity] = useState<Familiarity>(existing?.familiarity ?? familiarityDefaults("kana"));
+  const [noExam, setNoExam] = useState(() => Boolean(existing) && !getStudyPreferences().jlptPlanEnabled);
+  // 重新打开时按现在的每日新词量认回档位；对不上（自己在计划页改过）就落在「标准」
+  const [intensity, setIntensity] = useState<StudyIntensity>(() =>
+    (Object.keys(STUDY_INTENSITY) as StudyIntensity[]).find((level) => STUDY_INTENSITY[level].words === getStudyPreferences().dailyGoal) ?? "normal");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [giftPage, setGiftPage] = useState(false);
@@ -88,12 +97,19 @@ export function LevelSetup({ open, dismissible = false, isAuthenticated = false,
   const [claiming, setClaiming] = useState(false);
   // 小程序的原生底栏在页面层之外，弹窗盖不住：设定期间点「单词学习」会在没有计划时开始学。网页端弹窗已盖住底栏，这里是空操作。
   useStudyBreakTabBar(open);
+  // 估算里唯一查库的一步（目标范围内还没学的词）。只随起点、目标、「单词没学过」变：拖其他滑杆、点日期都不用再查。
+  // iPhone 小程序里 wasm 解释执行，原来每次重渲染都跑一遍（2026-10-19 作者：点考试日期卡）。
+  const wordsUnfamiliar = familiarity.words === 0; // remainingPlanWords 只看这一点
+  const remainingWords = useMemo(
+    () => open && !noExam ? perfTime("设定 · 估算查库", () => remainingPlanWords(startingLevel, target, { words: wordsUnfamiliar ? 0 : 1 })) : 0,
+    [open, noExam, startingLevel, target, wordsUnfamiliar]
+  );
   if (!open) return null;
 
   const samePlan = existing?.startingLevel === startingLevel && existing.target === target && existing.examKind === examKind
     && existing.examDate === examDate && JSON.stringify(existing.familiarity) === JSON.stringify(familiarity);
-  const preview = examDate ? previewCurrentLevelPlan({
-    startingLevel, target, familiarity,
+  const preview = examDate && !noExam ? previewLevelPlan({
+    startingLevel, target, familiarity, remainingWords,
     examDate: parseExamDate(examDate) ?? new Date(Date.now() + 90 * 86_400_000),
     startedOn: samePlan ? parseExamDate(existing?.startedOn ?? "") ?? undefined : undefined
   }) : null;
@@ -103,6 +119,7 @@ export function LevelSetup({ open, dismissible = false, isAuthenticated = false,
     setFamiliarity(familiarityDefaults(value));
   };
   const chooseExam = (value: ExamKind) => {
+    setNoExam(false);
     setExamKind(value);
     setExamDate(defaultExamDate(value));
   };
@@ -110,8 +127,8 @@ export function LevelSetup({ open, dismissible = false, isAuthenticated = false,
     setSaving(true);
     setError("");
     try {
-      await saveLevelPlanSettings({ startingLevel, familiarity, target, examKind, examDate });
-      const preset = applyExamPreset(target);
+      await perfTimeAsync("设定 · 保存起点", () => saveLevelPlanSettings({ startingLevel, familiarity, target, examKind, examDate: noExam ? "" : examDate, planEnabled: !noExam }));
+      const preset = perfTime("设定 · 排每日量", () => noExam ? applyStudyIntensity(intensity) : applyExamPreset(target));
       if (startingLevel === "kana-none") deferWordPlanUntilKanaComplete(preset.plan.words.fresh);
       const currentEntitlement = getEntitlements();
       const giftOnly = isLaunchGiftOnlyRelease();
@@ -130,7 +147,7 @@ export function LevelSetup({ open, dismissible = false, isAuthenticated = false,
           return;
         }
       }
-      completeLevelSetup(onComplete);
+      perfTime("设定 · 生成今天的任务", () => completeLevelSetup(onComplete));
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "计划创建失败，请稍后重试。");
     } finally {
@@ -204,9 +221,17 @@ export function LevelSetup({ open, dismissible = false, isAuthenticated = false,
 
           <Step n={3} title="准备参加哪种考试？" hint="已公布的场次会列出；其他考试可按准考信息选日期。">
             <div className="grid grid-cols-2 gap-2">
-              {EXAM_TYPES.map(({ kind, label }) => <button key={kind} type="button" aria-pressed={examKind === kind} onClick={() => chooseExam(kind)} className="ls-option focus-ring">{label}</button>)}
+              {EXAM_TYPES.map(({ kind, label }) => <button key={kind} type="button" aria-pressed={!noExam && examKind === kind} onClick={() => chooseExam(kind)} className="ls-option focus-ring">{label}</button>)}
+              <button type="button" aria-pressed={noExam} onClick={() => setNoExam(true)} className="ls-option focus-ring col-span-2">暂不备考</button>
             </div>
-            <div className="mt-3"><ExamDatePicker key={examKind} kind={examKind} value={examDate} onChange={setExamDate} /></div>
+            {noExam ? <>
+              <div className="mt-3 grid grid-cols-3 gap-2">
+                {(Object.keys(STUDY_INTENSITY) as StudyIntensity[]).map((level) => <button key={level} type="button" aria-pressed={intensity === level} onClick={() => setIntensity(level)} className="ls-option ls-option-tall focus-ring">
+                  <b>{STUDY_INTENSITY[level].label}</b><small>每天 {STUDY_INTENSITY[level].words} 词</small>
+                </button>)}
+              </div>
+              <p className="mt-2 text-xs jp-muted">之后想备考，在备考页设考期。</p>
+            </> : <div className="mt-3"><ExamDatePicker key={examKind} kind={examKind} value={examDate} onChange={setExamDate} /></div>}
           </Step>
 
           <Step n={4} title="这些内容你有多熟？">
@@ -226,7 +251,7 @@ export function LevelSetup({ open, dismissible = false, isAuthenticated = false,
             {examKind !== "jlpt" && <><br />按 {examLabel(examKind)} 备考时，这里仍按本站 N 级素材估算，不代表该考试考纲覆盖率。</>}
             {!preview.feasible && <><br /><b>照每天的上限，这场考前学不完。</b>换一场考期或者降一级目标吧。</>}
             {startingLevel === "kana-none" && <><br />五十音按真的学会了多少来算，没学完就往后顺延。</>}
-          </MascotSay> : <p className="mt-5 text-sm jp-muted">选择考试日期后，会估算每天的学习量和这场考试前是否来得及。</p>}
+          </MascotSay> : noExam ? null : <p className="mt-5 text-sm jp-muted">选择考试日期后，会估算每天的学习量和这场考试前是否来得及。</p>}
           {error && <div role="alert"><MascotSay sticker="mood-dizzy" tone="warn" className="mt-3">{error}</MascotSay></div>}
           </>}
         </ScrollArea>
@@ -237,11 +262,12 @@ export function LevelSetup({ open, dismissible = false, isAuthenticated = false,
           </div> : <>
           {/* 估算那段在最底下，选项在上面：底栏常驻一行结果，点哪个都能立刻看到变化 */}
           <p className="ls-foot-sum" aria-live="polite">
-            {preview ? <>按这个计划：每天 <b>{preview.required.words}</b> 个新词
+            {noExam ? <>按这个强度：每天 <b>{STUDY_INTENSITY[intensity].words}</b> 个新词</>
+              : preview ? <>按这个计划：每天 <b>{preview.required.words}</b> 个新词
               {preview.feasible ? <span className="ds-pill ds-pill-primary">来得及</span> : <span className="ds-pill ds-pill-warn">照上限学不完</span>}</>
               : "选好考试日期后显示每日计划估算"}
           </p>
-          <button disabled={saving || !examDate} onClick={submit} className="ds-btn focus-ring w-full disabled:opacity-50">{saving ? "正在建立计划…" : "保存并查看今天怎么学 →"}</button>
+          <button disabled={saving || (!noExam && !examDate)} onClick={submit} className="ds-btn focus-ring w-full disabled:opacity-50">{saving ? "正在建立计划…" : "保存并查看今天怎么学 →"}</button>
           </>}
         </div>
       </div>

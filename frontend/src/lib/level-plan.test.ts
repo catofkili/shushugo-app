@@ -14,7 +14,7 @@ import { ensureUserTables } from "./study-core";
 import { applyLevelStartingPoint, effectiveStartingLevel, shouldShowLevelSetup, getLevelPlanSettings, hydrateLevelPlanPreferences, recalibrateLevelStartingPoint, saveLevelPlanSettings, stabilityFor } from "./level-plan";
 import { setState } from "./database/db-utils";
 import { getStudyPreferences } from "./studyPreferences";
-import { examPreset } from "./daily-plan";
+import { applyStudyIntensity, examPreset, STUDY_INTENSITY } from "./daily-plan";
 import { recordKanjiCharReview, replayKanjiCharReviews, undoLastKanjiCharReview } from "./kanji-char-cards";
 import { getProgressOverview } from "./progress-api";
 
@@ -120,6 +120,22 @@ describe("起点水平计划", () => {
     expect(getLevelPlanSettings()?.startingLevel).toBe("N4");
     expect(Number(one("SELECT COUNT(*) FROM level_prior_baselines b JOIN progress p ON p.word_id=CAST(b.entity_key AS INTEGER) JOIN words w ON w.id=p.word_id WHERE b.entity='words' AND w.jlpt_level='N3'"))).toBeGreaterThan(0);
     expect(Number(one("SELECT COUNT(*) FROM level_prior_baselines WHERE entity='words' AND entity_key=?", [ids[0]]))).toBe(0);
+  });
+
+  it("暂不备考：起点照写，备考计划关着且跨设备记得，每日量按强度", async () => {
+    const before = getLevelPlanSettings()!;
+    await saveLevelPlanSettings({ startingLevel: before.startingLevel, familiarity: before.familiarity, target: "N3", examDate: "", planEnabled: false });
+    applyStudyIntensity("hard");
+    expect(one("SELECT value FROM app_state WHERE key='jlpt_plan_enabled'")).toBe("0");
+    expect(getStudyPreferences().jlptPlanEnabled).toBe(false);
+    expect(getStudyPreferences().dailyGoal).toBe(STUDY_INTENSITY.hard.words);
+    expect(getStudyPreferences().grammarDailyGoal).toBe(STUDY_INTENSITY.hard.grammar);
+    // 另一台设备（本机偏好是空的）从同步来的 SQLite 恢复
+    store.clear();
+    hydrateLevelPlanPreferences();
+    expect(getStudyPreferences().jlptPlanEnabled).toBe(false);
+    expect(getStudyPreferences().dailyGoal).toBe(STUDY_INTENSITY.hard.words);
+    expect(getLevelPlanSettings()?.startingLevel).toBe(before.startingLevel);
   });
 });
 

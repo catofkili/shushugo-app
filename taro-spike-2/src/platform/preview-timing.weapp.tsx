@@ -147,7 +147,9 @@ export function PerfOverlay() {
         other.push(`${phase} 中位${sorted[Math.floor(sorted.length / 2)]} 最大${sorted[sorted.length - 1]} (${values.length}次)`);
       });
       if (startup.length) next.push('启动（onLaunch 起）', ...startup);
-      if (other.length) next.push('作答分段', ...other);
+      // 「卡住 · …」排最前：真机上用户只会截一张图
+      other.sort((a, b) => Number(b.startsWith('卡住')) - Number(a.startsWith('卡住')));
+      if (other.length) next.push('分段 / 卡住（中位 最大 次数）', ...other);
       setLines(next);
     }, 1000);
     return () => clearInterval(timer);
@@ -155,7 +157,7 @@ export function PerfOverlay() {
   if (!lines.length) return null;
   return (
     <View className="perf-overlay-marker" style={{ position: 'fixed', top: '0', left: '48%', right: '12rpx', zIndex: 9999, padding: '4rpx 6rpx', borderRadius: '12rpx', backgroundColor: 'rgba(28, 35, 34, 0.88)', color: '#fff', fontSize: '16rpx', lineHeight: 1.1, pointerEvents: 'none' }}>
-      {lines.map((line, index) => index === 0 || line === '作答分段'
+      {lines.map((line, index) => index === 0 || line.startsWith('分段') || !line.endsWith('ms')
         ? <Text key={line} style={{ display: 'block', paddingBottom: '2rpx' }}>{line}</Text>
         : <Text key={line} style={{ display: 'inline-block', width: '50%', whiteSpace: 'nowrap' }}>{line}</Text>)}
     </View>

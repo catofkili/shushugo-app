@@ -355,7 +355,8 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
       onLevelSetupComplete={(message) => {
         setLevelSetupOpen(false);
         showNotice(message, 5200);
-        navigatePage('jlpt-plan');
+        // 选了「暂不备考」就留在原页，不进备考页（和网页 App.tsx 一致）
+        if (getStudyPreferences().jlptPlanEnabled) navigatePage('jlpt-plan');
       }}
       onDismissTrial={() => { markTrialNoticeRead(); setTrialEndedOpen(false); }}
       onViewPro={() => { markTrialNoticeRead(); setTrialEndedOpen(false); navigatePage('pro'); }}

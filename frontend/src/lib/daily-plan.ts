@@ -91,7 +91,7 @@ const wordExtras = () => getDailyReliefProgress().total + getDailyTailProgress()
 const pick = (cap: number, due: number) => (cap === PLAN_REVIEW_DISABLED ? 0 : cap > 0 ? Math.min(cap, due) : due);
 
 /** 级别起点只补足旧级别的先验；目标级别以上已有的真实学习/批量认识记录必须从今日剩余量中扣掉。 */
-const remainingPlanWords = (startingLevel: string, target: JlptTarget, familiarity?: { words: number }) => {
+export const remainingPlanWords = (startingLevel: string, target: JlptTarget, familiarity?: { words: number }) => {
   if (startingLevel === "beyond") return 0;
   const startRank = JLPT_TARGETS.indexOf(startingLevel as JlptTarget);
   const targetRank = JLPT_TARGETS.indexOf(target);
@@ -313,4 +313,24 @@ export const applyExamPreset = (target: JlptTarget) => {
   saveStudyPreferences({ ...prefs, jlptTarget: target });
   saveDailyPlan(preset.plan, true);
   return preset;
+};
+
+/**
+ * 「暂不备考」时的三档每日新内容量（2026-10-19 作者要）。没有考期就算不出「每天至少多少」，只能让用户挑强度；
+ * 「标准」= 没设计划时的默认量（studyPreferences 的 defaultStudyPreferences）。复习上限不动，沿用当前设置。
+ */
+export type StudyIntensity = "light" | "normal" | "hard";
+export const STUDY_INTENSITY: Record<StudyIntensity, { label: string } & Record<PlanKind, number>> = {
+  light: { label: "轻松", words: 10, grammar: 2, kanji: 3, confusion: 2 },
+  normal: { label: "标准", words: 15, grammar: 5, kanji: 5, confusion: 5 },
+  hard: { label: "加把劲", words: 30, grammar: 8, kanji: 10, confusion: 8 }
+};
+
+export const applyStudyIntensity = (intensity: StudyIntensity) => {
+  const shown = dailyPlanView();
+  const reviewOf = (kind: PlanKind) => shown.segments.find((segment) => segment.kind === kind)?.review ?? 0;
+  const plan = Object.fromEntries(PLAN_KINDS.map((kind) => [kind, { fresh: STUDY_INTENSITY[intensity][kind], review: reviewOf(kind) }])) as Record<PlanKind, { fresh: number; review: number }>;
+  // review 原样传回 = saveDailyPlan 保留现有复习上限
+  saveDailyPlan(plan, true, shown);
+  return { plan };
 };

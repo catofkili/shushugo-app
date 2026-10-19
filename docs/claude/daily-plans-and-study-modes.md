@@ -214,3 +214,19 @@ N3 词 2,144 / 语法 146；N4 词 876 / 语法 136。巩固期现在是 **`min(
 - ⚠️ **那 39 个普通词修不回来**：快照里看不出它们原先为什么是熟知（不是 `auto_retired_on`、不是 `vocab_excluded`、没有 `known_forever` 作答），
   也没有 10-13 之前的本机备份。它们现在是普通新词/先验卡，重新遇到时再点熟知即可。
 - 判断这类「复活」的口径：`progress.sync_updated_at` 成批落在同一毫秒级时刻、且 `level_prior_baselines` 里有/刚没了基线。
+
+### 2026-10-19 首次设定加「暂不备考」：不选考期，挑每日强度（`LevelSetup.tsx`）
+
+作者 10-19 实机：「要有一个暂时不备考、设置每日学习强度的选项」——原来不选考期就不能保存。
+- 第 3 步考试类型下面多一个整行的「暂不备考」，选了就把考期日历换成三档强度（`daily-plan.ts` 的 `STUDY_INTENSITY`）：
+  轻松 10 词 / 语法 2 / 汉字 3 / 辨析 2；**标准 = `defaultStudyPreferences` 的默认量** 15 / 5 / 5 / 5；加把劲 30 / 8 / 10 / 8。只改新内容量，复习上限沿用。
+- 存法：`saveLevelPlanSettings({ …, examDate: "", planEnabled: false })` —— 起点和熟悉度照写（先验照样要），`jlpt_plan_enabled = "0"`
+  （进 `app_state`、跟账号同步，`hydrateLevelPlanPreferences` 恢复成本机偏好），然后 `applyStudyIntensity` 代替 `applyExamPreset`。
+  这和备考页那个「开启备考计划」开关关掉是同一个状态，主页的备考卡随之消失；之后想备考就在备考页开开关、设考期。
+- 首次设定存完：选了暂不备考就**留在原页**，不进备考页（`App.tsx` / `WeappPage.tsx` 的 `onLevelSetupComplete`）。
+- 重新打开时按当前 `dailyGoal` 认回档位，对不上（在计划页手动改过）就落在「标准」。
+- 判据：`level-plan.test.ts`「暂不备考」那条（关掉的计划和强度要能在另一台设备上从 SQLite 恢复）。
+
+同一批的性能修正：弹窗里唯一查库的估算（`remainingPlanWords`）只随起点、目标、「单词没学过」变，用 `useMemo` 缓存；
+`existing`（`getLevelPlanSettings`，6 次 `getState`）只在打开 / 关上时读 —— 这个组件挂在 AppShell 里一直渲染，原来每次重渲染都要读。
+作者说「点考试日期很卡无比」，但这两处在 Node 里各只有 1–2 ms，按 iPhone 慢几十倍估也解释不了；真正原因要看计时版的「卡住」记录（见 `mini-program-and-cross-platform.md` 启动那节）。

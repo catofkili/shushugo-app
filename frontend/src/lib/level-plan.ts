@@ -220,7 +220,8 @@ export async function applyLevelStartingPoint(settings: LevelPlanSettings, now =
   notifyProgressUpdated();
 }
 
-export async function saveLevelPlanSettings(input: Omit<LevelPlanSettings, "startedOn" | "examKind"> & { startedOn?: string; examKind?: ExamKind }): Promise<LevelPlanSettings> {
+/** `planEnabled: false` = 首次设定里选了「暂不备考」：起点和熟悉度照写（先验照样要），备考计划关着，每日量由调用方按强度定。 */
+export async function saveLevelPlanSettings({ planEnabled = true, ...input }: Omit<LevelPlanSettings, "startedOn" | "examKind"> & { startedOn?: string; examKind?: ExamKind; planEnabled?: boolean }): Promise<LevelPlanSettings> {
   const previous = getLevelPlanSettings();
   const examKind = input.examKind ?? previous?.examKind ?? "jlpt";
   const familiarity = normalizedFamiliarity(input.familiarity);
@@ -242,12 +243,12 @@ export async function saveLevelPlanSettings(input: Omit<LevelPlanSettings, "star
   setState(SETTINGS_KEYS.examKind, settings.examKind);
   setState(SETTINGS_KEYS.examDate, settings.examDate);
   setState(SETTINGS_KEYS.startedOn, settings.startedOn);
-  setState("jlpt_plan_enabled", "1");
+  setState("jlpt_plan_enabled", planEnabled ? "1" : "0");
   const currentPrefs = getStudyPreferences();
   setState("level_plan_quotas", JSON.stringify(Object.fromEntries(PLAN_QUOTA_KEYS.map((key) => [key, currentPrefs[key]]))));
   saveStudyPreferences({
     ...currentPrefs,
-    jlptPlanEnabled: true,
+    jlptPlanEnabled: planEnabled,
     jlptTarget: settings.target,
     planExamKind: settings.examKind,
     jlptExamDate: settings.examDate,
