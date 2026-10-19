@@ -363,7 +363,7 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
     >
       {/* 只听按下和点击：touchmove / scroll 每帧都要从渲染层跨到逻辑层，背词页上每一帧还会让陪伴水豚重渲染一次（真机滚动卡）。
           学习时长按 60 秒没操作算走神（study-clock.ts），每次手指按下记一笔已经够了。 */}
-      <View ref={portalHost} className={`weapp-route-root theme-${theme}${skin ? ` skin-${skin}` : ''}`}
+      <View className={`weapp-route-root theme-${theme}${skin ? ` skin-${skin}` : ''}`}
         onTouchStart={() => notifyStudyInteraction(pagePath)}
         onClick={() => notifyStudyInteraction(pagePath)}>
         {/* Native page scrolling is disabled by the full-screen shell. A View with
@@ -382,6 +382,9 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
             <Route />
           </Suspense>
         </ScrollView>
+        {/* Taro 删除 portal 子节点时会整组更新宿主的 childNodes。独立宿主让关闭弹层只更新这里，
+            避免连带重建旁边的主 ScrollView、丢掉列表的原滚动位置。 */}
+        <View ref={portalHost} />
       </View>
     </AppShell>
     {page === 'home' ? <PerfOverlay /> : null}
