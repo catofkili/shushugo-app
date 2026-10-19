@@ -427,3 +427,36 @@ JOIN 读的是 **grammar_state** —— **点了收藏永远显示不出来**，
   （`~/Library/Application Support/微信开发者工具/<hash>/WeappSimulator/WeappFileSystem/<openid>/<appid>/usr/masternihongo/`）。
   做法：`cli close` → 备份该目录并记 `shasum` → 挪开 → `cli auto` 重开（出厂库会重新拉）→ 看完再 `cli close` → 放回、`shasum` 对一遍。
   别在项目开着时挪文件：落盘会把内存里的库写回去。
+
+## 小程序启动：开库和内容分包并行，首次整库写盘不挡页面，根节点不听每帧事件（2026-10-19）
+
+作者 10-19：「小程序实机测试还是很卡顿，尤其是第一次进入」。同样的改法 09-30 就做过（`weapp/startup-fast-a` `f88c5f39`、
+`weapp/startup-fast-b` `d8388373`），卡在「开发者工具视觉验收」上三周没人合，main 也一直是串行加载。这次按当时的 main 重做后合入。
+**教训：性能分支做完当场在开发者工具里验收并合回，不要留一句「等验收」——留下就等于没做。**
+
+现在的启动链路（`taro-spike-2/src/platform/WeappPage.tsx` + `database-runtime.weapp.ts`）：
+- `WeappPage` 里**开库、AppShell 外壳、汉字内容（`readyForKanji`）、语法内容（语法页才要）四件事同时开始**，原来是「开库 → 外壳」与「汉字 / 语法」两段串行。
+- `ensureDatabase` 里**页面内容分包（`readyForPage`，word-study 那套约 1.5 MB JS）和开库同时开始**，原来是内容分包全部装完才开始读本机库 / 下出厂库。
+  判据：开库这条路（`loadDatabase` / `importDatabase` / `ensureUserTables` / `ensureSyncSchema`）不 import 任何内容缓存模块；
+  `readyForKanji` / 语法内容的 web loader 只灌内容缓存、不碰数据库。⚠️ 以后往开库路径里加用到 `content-store` 的迁移，就得把它挪到 `Promise.all` 之后。
+- **首次装机的整库写盘推迟 3 秒，不再挡页面**。安全性靠 `storage.ts` 的快照基准：导入出厂库后 `snapshotDb` 为空，推迟期间任何落盘都**必定整库**，
+  不会出现「只有增量、没有整库」。而首页 `getProgressOverview` → `initProgress` 每次启动都 `persistSoon()`，首次安装那次就是整库；
+  所以推迟的那次在 `getLocalDataRevision()` 变了时跳过——不跳的话首次安装会连写两遍十几 MB（开发者工具里看得出来：磁盘上多一份 `nihongo.db.prev`）。
+- 加载画面 `StartupLoading.tsx`：走路水豚 + 「下载词库 N%」+ 进度条，下完转「正在加载…」。只有发起开库的那个页面拿得到下载进度，其他标签页显示「正在加载…」。
+- **页面根节点只听 `onTouchStart` / `onClick`，不听 `onTouchMove`，主 ScrollView 不绑 `onScroll`**。这两个每帧都从渲染层跨到逻辑层，
+  背词页上每一帧还经 `notifyStudyInteraction` → `WordStudy` 的 `onInteraction` → `buddySession.send({type:'interaction'})` 生成一份新的陪伴水豚状态、整组件重渲染。
+  学习时长按 60 秒没操作算走神（`study-clock.ts`），每次手指按下记一笔就够。⚠️ 别为了「更准」把这两个加回来；真要更细，先在 `notifyStudyInteraction` 里节流。
+
+开发者工具实测（10-19，Mac 上有 JIT，数字不代表 iPhone）：清库首次安装从首帧到首页约 1.7–2.8 秒，首次设定照常弹出、底栏照常藏；普通冷启动正常；四个标签页切换无报错。
+**真机计时还没测**——要测就 `npm run build:preview:weapp`（计时版，首页 / 单词页有分段浮层），推到手机后冷启动截图。
+
+⚠️ **开发者工具里模拟「首次安装」的坑**（这次踩到）：模拟器文件按 appid 共享。`cli close` 关掉主目录项目后，它的模拟器实例并没有马上死，
+打开另一个项目的那一刻把内存里的旧库**写回了磁盘**（同一秒写出 `nihongo.db` 和 `.prev`），于是那一轮测的根本不是首次安装。
+做法：`cli quit` 之后**等 `wechatwebdevtools.app/Contents/MacOS/Electron` 进程真的退出**（`quit` 打勾后主进程还会挂十几秒到几十秒），
+再挪走 / 删掉 `usr/masternihongo`，再 `cli auto`。判据：首次安装那轮开头必须出现「下载词库 N%」。恢复时同样先等进程退出，放回备份后逐个 `shasum` 对。
+
+未做、可以接着做的：
+- `weapp/startup-fast-b` 的思路——**一判断出没有本机存档就先弹首次设定，词库在后台下**——没移植（它改了 `LevelSetup` 和弹层挂载点，和 10-19 的底栏规则、
+  首月赠送页都有冲突，要按现在的代码重做）。那两条旧分支已归档到 `refs/archive/weapp/startup-fast-a|b`。
+- 首页每次冷启动仍要装 word-study 那套内容（`question-meanings` 613 KB、`pitch-accent` 273 KB、`distinction-reviews` 255 KB……）和汉字那两份（约 730 KB），
+  全是 JS 对象字面量，iOS 上解释执行。首页本身是否用得到这些没核实（懒代理在未加载时返回代理而不是报错，用错了是静默的），要动先真机计时再逐个核对。
