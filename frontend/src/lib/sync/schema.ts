@@ -7,7 +7,7 @@
 // 依赖 SQLite 默认关闭 recursive_triggers:触发器内部的 UPDATE 不会再次触发自己。
 
 import { getDatabase } from "../database";
-import { firstRow, firstValue, rowsFor, setState } from "../database/db-utils";
+import { firstValue, rowsFor, setState } from "../database/db-utils";
 import { hashSchemaDefinition, hasSchemaFingerprint, saveSchemaFingerprint } from "../database/schema-fingerprint";
 import { backfillStudyTimeByDevice } from "./study-time";
 import { SYNCED_TABLES, STUDY_TIME_TABLE, type SyncedTable } from "./tables";
@@ -221,36 +221,34 @@ function ensureSyncStructure(): void {
 
 function backfillMissingSyncMetadata(): void {
   const db = getDatabase();
-  for (const entry of SYNCED_TABLES) {
-    if (!tableExists(entry.table)) continue;
-    const missing = firstRow(
-      `SELECT
-         ${entry.strategy === "append"
-        ? `EXISTS (SELECT 1 FROM ${entry.table} WHERE ${SYNC_UID_COL} IS NULL LIMIT 1)`
-        : "0"} AS uid,
-         EXISTS (SELECT 1 FROM ${entry.table} WHERE ${SYNC_UPDATED_COL} IS NULL LIMIT 1) AS updated,
-         EXISTS (SELECT 1 FROM ${entry.table}
-                WHERE ${SYNC_ORIGIN_COL} IS NULL OR ${SYNC_ORIGIN_COL} = '' LIMIT 1) AS origin`
-    );
-    if (Number(missing?.uid)) {
-      db.run(
-        `UPDATE ${entry.table}
-         SET ${SYNC_UID_COL} = (SELECT id FROM sync_device LIMIT 1) || ':' || CAST(id AS TEXT)
-         WHERE ${SYNC_UID_COL} IS NULL`
-      );
+  const tables = new Set(rowsFor("SELECT name FROM sqlite_master WHERE type = 'table'").map((row) => String(row.name)));
+  // 小程序 iPhone 每次冷启动都探测：一条 UNION ALL 共用一次解析/跨 WASM 调用，仍各走缺失项索引。
+  const entries = SYNCED_TABLES.filter((entry) => tables.has(entry.table));
+  if (!entries.length) return;
+  const missingRows = rowsFor(entries.map((entry, index) => `SELECT ${index} AS position,
+    ${entry.strategy === "append" ? `EXISTS (SELECT 1 FROM ${entry.table} WHERE ${SYNC_UID_COL} IS NULL LIMIT 1)` : "0"} AS uid,
+    EXISTS (SELECT 1 FROM ${entry.table} WHERE ${SYNC_UPDATED_COL} IS NULL LIMIT 1) AS updated,
+    EXISTS (SELECT 1 FROM ${entry.table} WHERE ${SYNC_ORIGIN_COL} IS NULL OR ${SYNC_ORIGIN_COL} = '' LIMIT 1) AS origin
+  `).join(" UNION ALL "));
+  for (const missing of missingRows) {
+    const entry = entries[Number(missing.position)];
+    const assignments: string[] = [];
+    const conditions: string[] = [];
+    if (Number(missing.uid)) {
+      assignments.push(`${SYNC_UID_COL} = COALESCE(${SYNC_UID_COL}, (SELECT id FROM sync_device LIMIT 1) || ':' || CAST(id AS TEXT))`);
+      conditions.push(`${SYNC_UID_COL} IS NULL`);
     }
-    if (Number(missing?.updated)) {
-      db.run(
-        `UPDATE ${entry.table} SET ${SYNC_UPDATED_COL} = '1970-01-01T00:00:00.000Z'
-         WHERE ${SYNC_UPDATED_COL} IS NULL`
-      );
+    if (Number(missing.updated)) {
+      assignments.push(`${SYNC_UPDATED_COL} = COALESCE(${SYNC_UPDATED_COL}, '1970-01-01T00:00:00.000Z')`);
+      conditions.push(`${SYNC_UPDATED_COL} IS NULL`);
     }
-    if (Number(missing?.origin)) {
-      db.run(
-        `UPDATE ${entry.table} SET ${SYNC_ORIGIN_COL} = (SELECT id FROM sync_device LIMIT 1)
-         WHERE ${SYNC_ORIGIN_COL} IS NULL OR ${SYNC_ORIGIN_COL} = ''`
-      );
+    if (Number(missing.origin)) {
+      assignments.push(`${SYNC_ORIGIN_COL} = CASE WHEN ${SYNC_ORIGIN_COL} IS NULL OR ${SYNC_ORIGIN_COL} = ''
+        THEN (SELECT id FROM sync_device LIMIT 1) ELSE ${SYNC_ORIGIN_COL} END`);
+      conditions.push(`${SYNC_ORIGIN_COL} IS NULL OR ${SYNC_ORIGIN_COL} = ''`);
     }
+    // applying_remote 内只补原来缺失的字段；合为一次 UPDATE，避免每行重复维护索引和检查触发器。
+    if (assignments.length) db.run(`UPDATE ${entry.table} SET ${assignments.join(", ")} WHERE ${conditions.join(" OR ")}`);
   }
 }
 

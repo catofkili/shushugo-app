@@ -1,7 +1,8 @@
 /** 单字选择题只拼现有字音索引与词库；不生成或打包另一份题库。 */
 import { getDatabase } from "./database";
-import { rowsFor } from "./study-core";
-import { allKanjiUnits, kanjiUnitExamples, kanjiUnitIndexLoaded, type KanjiUnitRecord } from "./kanji-unit-index";
+import { firstValue, rowsFor } from "./study-core";
+import type { SqlValue } from "./database/db-utils";
+import { allKanjiUnits, kanjiUnitExamples, kanjiUnitIndexLoaded, type KanjiUnitRecord, type KanjiUnitExample } from "./kanji-unit-index";
 import { shuffleKanjiReadingOptions } from "./kanji-reading-usage";
 
 export interface KanjiChoiceItem {
@@ -86,7 +87,7 @@ const sameSpellingWords = () => {
     for (const row of rowsFor("SELECT id, kanji, kana FROM words")) {
       const word = String(row.kanji ?? "");
       const peers = spellings.get(word) ?? [];
-      peers.push({ wordId: Number(row.id), kana: hiragana(String(row.kana ?? "")) });
+      peers.push({ wordId: Number(row.id), kana: String(row.kana ?? "") });
       spellings.set(word, peers);
     }
     spellingsByDatabase.set(db, spellings);
@@ -103,54 +104,81 @@ const shuffleOptions = (options: string[], char: string, wordId: number) => {
   });
 };
 
+type ChoiceExample = KanjiUnitExample & { base: string };
+type ChoiceWord = ReturnType<typeof rowsFor>[number];
+type ChoiceCandidate = Omit<KanjiChoiceItem, "options">;
+
+const choiceExamples = (units: KanjiUnitRecord[]): ChoiceExample[] =>
+  units.flatMap((unit) => kanjiUnitExamples(unit.unitKey).map((example) => ({ ...example, base: unit.base })));
+
+// 原先排序后取首个 base / 音变项；线性保留同一排序键的最优项，相等时保留原例词顺序。
+const selectedCandidates = (char: string, examples: ChoiceExample[], words: Map<number, ChoiceWord>): ChoiceCandidate[] => {
+  const selected: { row: ChoiceWord; example: ChoiceExample; answer: string; base: string }[] = [];
+  for (const example of examples) {
+    const row = words.get(example.wordId);
+    if (!row) continue;
+    const word = String(row.kanji ?? "");
+    if (/[\[\]]/u.test(word) || word.slice(example.start, example.start + example.length) !== char) continue;
+    if (example.variant !== "base" && !SOUND_CHANGES.has(example.variant)) continue;
+    const index = example.variant === "base" ? 0 : 1;
+    const previous = selected[index];
+    if (previous) {
+      const order = Number(previous.row.seen) - Number(row.seen)
+        || Number(previous.row.importance) - Number(row.importance)
+        || Number(row.id) - Number(previous.row.id);
+      if (order >= 0) continue;
+    }
+    const answer = hiragana(example.reading);
+    const base = hiragana(example.base);
+    if (!isHiragana(answer) || !isHiragana(base)) continue;
+    selected[index] = { row, example, answer, base };
+  }
+  return selected.flatMap(({ row, example, answer, base }) => [{
+    wordId: example.wordId, word: String(row.kanji ?? ""), start: example.start, length: example.length,
+    kana: String(row.kana ?? ""), meaning: String(row.meaning ?? ""), answer, base, variant: example.variant
+  }]);
+};
+
+const acceptsDistractor = (item: ChoiceCandidate, examples: ChoiceExample[]) => {
+  const peers = sameSpellingWords().get(item.word) ?? [];
+  return (option: string) => !peers.some((peer) => {
+    if (peer.wordId === item.wordId) return false;
+    const aligned = examples.filter((example) => example.wordId === peer.wordId && example.start === item.start && example.length === item.length);
+    // 索引只保留前六个例词；其它词条缺切段时，保守排掉其整词假名中出现的候选音。
+    return aligned.length ? aligned.some((example) => hiragana(example.reading) === option) : hiragana(peer.kana).includes(option);
+  });
+};
+
+const choiceDistractors = (item: ChoiceCandidate, units: KanjiUnitRecord[], examples: ChoiceExample[]): string[] => {
+  const extras = [...(item.variant === "base" ? [] : [item.base]), ...units.map((unit) => unit.base)];
+  return readingDistractors(item.answer, extras).filter(acceptsDistractor(item, examples)).slice(0, 3);
+};
+
+const canUseDistractors = (item: ChoiceCandidate, distractors: string[]): boolean =>
+  distractors.length > 0 && (item.variant === "base" || distractors.includes(item.base));
+
 /** 每字首次取题按当时熟悉度排序；本次数据库实例内复用题面和选项。 */
-const buildChoiceQuestion = (char: string, batchWords?: Map<number, ReturnType<typeof rowsFor>[number]>): KanjiChoiceQuestion | null => {
+const buildChoiceQuestion = (char: string): KanjiChoiceQuestion | null => {
   if (!kanjiUnitIndexLoaded()) return null;
   const db = getDatabase();
   let cache = questionsByDatabase.get(db);
   if (!cache) { cache = new Map(); questionsByDatabase.set(db, cache); }
   if (cache.has(char)) return cache.get(char)!;
   const units = charUnits(char);
-  const examples = units.flatMap((unit) => kanjiUnitExamples(unit.unitKey).map((example) => ({ ...example, base: unit.base })));
+  const examples = choiceExamples(units);
   const wordIds = [...new Set(examples.map((example) => example.wordId))];
-  const candidates: Omit<KanjiChoiceItem, "options">[] = [];
-  if (wordIds.length) {
-    const words = batchWords ? wordIds.flatMap((id) => {
-      const row = batchWords.get(id);
-      return row ? [row] : [];
-    }).sort((a, b) => Number(b.seen) - Number(a.seen) || Number(b.importance) - Number(a.importance) || Number(a.id) - Number(b.id)) : rowsFor(`
-      SELECT w.id, w.kanji, w.kana, w.meaning, COALESCE(p.seen_count, 0) AS seen, COALESCE(w.importance, 0) AS importance
-      FROM words w LEFT JOIN progress p ON p.word_id = w.id
-      WHERE w.id IN (${wordIds.map(() => "?").join(",")})
-      ORDER BY seen DESC, importance DESC, w.id ASC
-    `, wordIds);
-    for (const row of words) {
-      const word = String(row.kanji ?? "");
-      if (/[\[\]]/u.test(word)) continue;
-      for (const example of examples) {
-        if (example.wordId !== Number(row.id) || word.slice(example.start, example.start + example.length) !== char) continue;
-        if (example.variant !== "base" && !SOUND_CHANGES.has(example.variant)) continue;
-        const answer = hiragana(example.reading);
-        const base = hiragana(example.base);
-        if (!isHiragana(answer) || !isHiragana(base)) continue;
-        candidates.push({ wordId: example.wordId, word, start: example.start, length: example.length, kana: String(row.kana ?? ""), meaning: String(row.meaning ?? ""), answer, base, variant: example.variant });
-      }
-    }
-  }
-  const selected = [candidates.find((item) => item.variant === "base"), candidates.find((item) => SOUND_CHANGES.has(item.variant))];
+  const words = wordIds.length ? rowsFor(`
+    SELECT w.id, w.kanji, w.kana, w.meaning, COALESCE(p.seen_count, 0) AS seen, COALESCE(w.importance, 0) AS importance
+    FROM words w LEFT JOIN progress p ON p.word_id = w.id
+    WHERE w.id IN (${wordIds.map(() => "?").join(",")})
+  `, wordIds) : [];
+  const selected = selectedCandidates(char, examples, new Map(words.map((row) => [Number(row.id), row])));
   const items: KanjiChoiceItem[] = [];
   for (const item of selected) {
     if (!item) continue;
-    const peers = sameSpellingWords().get(item.word) ?? [];
-    const extras = [...(item.variant === "base" ? [] : [item.base]), ...units.map((unit) => unit.base)];
-    const distractors = readingDistractors(item.answer, extras).filter((option) => !peers.some((peer) => {
-      if (peer.wordId === item.wordId) return false;
-      const aligned = examples.filter((example) => example.wordId === peer.wordId && example.start === item.start && example.length === item.length);
-      // 索引只保留前六个例词；其它词条缺切段时，保守排掉其整词假名中出现的候选音。
-      return aligned.length ? aligned.some((example) => hiragana(example.reading) === option) : peer.kana.includes(option);
-    })).slice(0, 3);
+    const distractors = choiceDistractors(item, units, examples);
     // 音变项的 base 必须是错答；同写法另一词条合法使用它时，宁可不出这一项。
-    if (!distractors.length || (item.variant !== "base" && !distractors.includes(item.base))) continue;
+    if (!canUseDistractors(item, distractors)) continue;
     items.push({ ...item, options: shuffleOptions([item.answer, ...distractors], char, item.wordId) });
   }
   const question = items.length ? { items } : null;
@@ -160,18 +188,41 @@ const buildChoiceQuestion = (char: string, batchWords?: Map<number, ReturnType<t
 
 export const kanjiChoiceQuestion = (char: string): KanjiChoiceQuestion | null => buildChoiceQuestion(char);
 
-/** 同步资格扫描时按当时熟悉度一次读完；不保留词行快照，之后新取的字仍读最新进度。 */
-export const warmKanjiChoiceQuestions = (chars: string[]): void => {
-  if (!kanjiUnitIndexLoaded()) return;
-  const cache = questionsByDatabase.get(getDatabase());
-  const pending = chars.filter((char) => !cache?.has(char));
-  if (!pending.length) return;
-  // 小程序 iPhone 解释执行 WASM，逐字解析同一条例词查询太贵，整批共用一次读取和排序。
-  const words = rowsFor(`
-    SELECT w.id, w.kanji, w.kana, w.meaning, COALESCE(p.seen_count, 0) AS seen, COALESCE(w.importance, 0) AS importance
+/** 小程序 iPhone 每次冷启动都查资格：批读最少的词列，只选候选并验干扰项，不建题面、排序或洗牌。 */
+export const eligibleKanjiChoiceChars = (chars: string[]): string[] => {
+  if (!kanjiUnitIndexLoaded() || !chars.length) return [];
+  const db = getDatabase();
+  const examplesByChar = new Map(chars.map((char) => [char, choiceExamples(charUnits(char))]));
+  const wordIds = new Set([...examplesByChar.values()].flatMap((examples) => examples.map((example) => example.wordId)));
+  const byId = new Map<number, ChoiceWord>();
+  // 同写法的其它词才需要假名归一化；别在冷启动把一万多条不会比较的读音全算一遍。
+  const spellings = new Map<string, { wordId: number; kana: string }[]>();
+  const rows = JSON.parse(firstValue<string>(`
+    SELECT json_group_array(json_array(w.id, w.kanji, w.kana, COALESCE(p.seen_count, 0), COALESCE(w.importance, 0)))
     FROM words w LEFT JOIN progress p ON p.word_id = w.id
-    ORDER BY seen DESC, importance DESC, w.id ASC
-  `);
-  const byId = new Map(words.map((row) => [Number(row.id), row]));
-  for (const char of pending) buildChoiceQuestion(char, byId);
+  `, [], "[]")) as SqlValue[][];
+  for (const [id, kanji, kana, seen, importance] of rows) {
+    const wordId = Number(id);
+    const word = String(kanji ?? "");
+    if (wordIds.has(wordId)) byId.set(wordId, { id, kanji, kana, seen, importance });
+    const peers = spellings.get(word) ?? [];
+    peers.push({ wordId, kana: String(kana ?? "") });
+    spellings.set(word, peers);
+  }
+  if (!spellingsByDatabase.has(db)) spellingsByDatabase.set(db, spellings);
+  const cache = questionsByDatabase.get(getDatabase());
+  return chars.filter((char) => {
+    if (cache?.has(char)) return cache.get(char) !== null;
+    const units = charUnits(char);
+    const examples = examplesByChar.get(char)!;
+    return selectedCandidates(char, examples, byId).some((item) => {
+      const allowed = acceptsDistractor(item, examples);
+      // 音变的 base 是第一候选，合法且未被同写词排除就必在前三；相同则永远被正确答案过滤。
+      if (item.variant !== "base") return item.base !== item.answer && allowed(item.base);
+      // 增删末尾「ん」是生成器必给的合法干扰项；资格只问存在性，不需要先生成其它音变。
+      const nasal = item.answer.endsWith("ん") ? item.answer.slice(0, -1) : item.answer + "ん";
+      if (nasal && allowed(nasal)) return true;
+      return canUseDistractors(item, choiceDistractors(item, units, examples));
+    });
+  });
 };

@@ -21,7 +21,7 @@ import { withoutSyncStamp } from "./sync/schema";
 import { allKanjiUnits, kanjiUnitIndexLoaded, kanjiUnitWordIds, loadKanjiUnitIndex } from "./kanji-unit-index";
 import { allKanjiReadingQuestionChars, kanjiReadingQuestionFor, kanjiReadingUsageFor, kanjiReadingUsageLoaded, loadKanjiReadingUsage, clauseText, type KanjiReadingQuestion } from "./kanji-reading-usage";
 import readingsPayload from "../data/kanji_readings.json";
-import { kanjiChoiceQuestion, warmKanjiChoiceQuestions, type KanjiChoiceQuestion } from "./kanji-choice";
+import { kanjiChoiceQuestion, eligibleKanjiChoiceChars, type KanjiChoiceQuestion } from "./kanji-choice";
 
 export const KANJI_CHAR_FSRS: FsrsEntity = {
   table: "kanji_char_memory",
@@ -183,10 +183,7 @@ const eligibleQuestionChars = (): Set<string> => {
   // 首页可能在内容装好前查池子；不能永久缓存那一刻的空资格集。
   if (!kanjiCharDataLoaded()) return chars;
   const candidates = [...new Set(allKanjiUnits().filter((unit) => unit.unitType === "char").map((unit) => unit.char))];
-  warmKanjiChoiceQuestions(candidates.filter((char) => !chars.has(char)));
-  for (const char of candidates) {
-    if (!chars.has(char) && kanjiChoiceQuestion(char)) chars.add(char);
-  }
+  for (const char of eligibleKanjiChoiceChars(candidates.filter((char) => !chars.has(char)))) chars.add(char);
   eligibleByDatabase.set(db, chars);
   return chars;
 };

@@ -73,8 +73,14 @@ export const refreshMixedCardTasks = (db: object) => {
 
 /** 今天两种卡还剩几张（主页角标 / 小路的分母）。没建清单的日子先建再数，代价是几条 SQL。 */
 export const mixedCardCounts = (db: object, day = today()) => {
-  const kanji = getKanjiCardSession(db, day);
-  const confusion = getConfusionCardSession(db, day);
+  materializeOnce(db);
+  const prefs = getEffectiveStudyPreferences();
+  const rank = targetLevelRank();
+  // 小程序 iPhone 每次冷启动都算角标；只建任务和数进度，不为未进入的会话选卡、拼题面。
+  createKanjiCharTasks({ fresh: prefs.kanjiDailyGoal, review: reviewQuota(prefs.kanjiReviewCap) }, rank, day);
+  const kanji = kanjiCharProgress(day);
+  createConfusionTasks({ fresh: prefs.confusionDailyGoal, review: reviewQuota(prefs.confusionReviewCap) }, rank, day);
+  const confusion = confusionCardProgress(day);
   return {
     kanjiDone: kanji.done, kanjiRemaining: kanji.remaining,
     confusionDone: confusion.done, confusionRemaining: confusion.remaining

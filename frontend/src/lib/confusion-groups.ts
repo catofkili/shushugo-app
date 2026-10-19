@@ -1,6 +1,6 @@
 import { getDatabase } from "./database";
 import { preferredWordSurface } from "./orthography";
-import { rowsFor } from "./database/db-utils";
+import { firstValue, rowsFor, type SqlValue } from "./database/db-utils";
 import { ensureUserTables, persistSoon } from "./study-core";
 import verbPairHints from "../data/verb_pair_hints.json";
 import { EXCLUDED_SYNONYM_GROUPS, MANUAL_VARIANT_GROUPS } from "../data/confusion_manual_review";
@@ -71,6 +71,7 @@ const LATIN = /[A-Za-z]/;
 
 interface Row {
   id: number;
+  order: number;
   kanji: string;
   kana: string;
   meaning: string;
@@ -89,7 +90,7 @@ export const firstSense = (meaning: string): string => {
     const char = meaning[index];
     if (char === "（" || char === "(") depth += 1;
     else if (char === "）" || char === ")") depth = Math.max(0, depth - 1);
-    else if (depth === 0 && /[；;，,、]/.test(char)) return meaning.slice(0, index).trim();
+    else if (depth === 0 && "；;，,、".includes(char)) return meaning.slice(0, index).trim();
   }
   return meaning.trim();
 };
@@ -162,8 +163,9 @@ const variantMerges = (rows: Row[]): Map<number, number> => {
   //
   // 同汉字同假名的两行不可能是两个词:一形多読(開く = あく/ひらく)假名不同,
   // 同音异义(公園/講演)汉字不同。两样都一样就只剩「录了两遍」一种可能。
-  groupBy(rows, (row) => (row.kanji ? `${row.kanji}\u0000${row.kana}` : "")).forEach((members) => {
-    if (members.length < 2) return;
+  const bySurface = groupBy(rows, (row) => `${row.kanji}\u0000${row.kana}`);
+  bySurface.forEach((members) => {
+    if (!members[0].kanji || members.length < 2) return;
     const [survivor, ...losers] = [...members].sort((left, right) => rank(left) - rank(right) || left.id - right.id);
     losers.forEach((row) => drop(row, survivor));
   });
@@ -227,10 +229,10 @@ const variantMerges = (rows: Row[]): Map<number, number> => {
   // 首义不同、或者成员释义字段来自不同词典时，自动规则会把同一个词漏掉。
   // 这里是人工逐项确认的稳定表记合并，不能退化成「同假名 + 有汉字」的宽规则：
   // かかる(掛かる/罹る)、やめる(辞める/止める) 等确实是不同词，必须保留。
-  const manualRows = () => rows.filter((row) => !suppressed.has(row.id));
+  // 小程序 iPhone 每次冷启动都算去重；按词形索引，避免人工表每个成员重新扫全库。
   MANUAL_VARIANT_GROUPS.forEach((group) => {
     const members = group.members
-      .map(([kanji, kana]) => manualRows().find((row) => row.kanji === kanji && row.kana === kana))
+      .map(([kanji, kana]) => bySurface.get(`${kanji}\u0000${kana}`)?.find((row) => !suppressed.has(row.id)))
       .filter((row): row is Row => Boolean(row));
     if (members.length < 2) return;
     const survivor = [...members].sort((left, right) => rank(left) - rank(right) || left.id - right.id)[0];
@@ -275,6 +277,7 @@ const buildGroups = (allRows: Row[]): ConfusionGroup[] => {
   const suppressed = duplicateWordIds();
   const rows = allRows.filter((row) => !suppressed.has(row.id));
   const found: ConfusionGroup[] = [];
+  const foundByWord = new Map<number, ConfusionGroup[]>();
   const add = (type: ConfusionType, label: string, members: Row[], key = `${type}:${label}`) => {
     // 卡面写法一样的成员只留一个：老库里同一个词录了两遍(貴方/あなた + あなた/あなた)、
     // 或两行是同一个词的异体写法(片づける + 片付ける)，两种都会让这一组显示成
@@ -291,12 +294,21 @@ const buildGroups = (allRows: Row[]): ConfusionGroup[] => {
     // 只改展示类型，冻结组的 synonym:<label> 仍挂着「已掌握」和手写稿，不能随 type 改键。
     const currentType = type === "synonym" && new Set(unique.map((row) => firstSense(row.meaning))).size > 1
       ? "near-synonym" : type;
-    found.push({ key, type: currentType, label, members: unique.map(toMember) });
+    const group = { key, type: currentType, label, members: unique.map(toMember) };
+    found.push(group);
+    for (const row of unique) {
+      const groups = foundByWord.get(row.id);
+      if (groups) groups.push(group);
+      else foundByWord.set(row.id, [group]);
+    }
   };
 
   // ① 自他动词对。368 对现成数据，是最干净的一类：が/を 就能分开。
   const pairs = verbPairHints as unknown as Record<string, [string, string, string, string]>;
   const seenPairs = new Set<string>();
+  // 小程序 iPhone 每次冷启动都建组；先索引搭档，仍按原词行顺序合并两个条件的命中。
+  const byKanji = groupBy(rows, (row) => row.kanji);
+  const byKana = groupBy(rows, (row) => row.kana);
   rows.forEach((row) => {
     const hint = pairs[row.kanji] ?? pairs[row.kana];
     if (!hint) return;
@@ -305,8 +317,10 @@ const buildGroups = (allRows: Row[]): ConfusionGroup[] => {
     // 搭档必须汉字和假名都对上。只按汉字找,開ける 的搭档「開く」会同时命中
     // 開く(あく) 和 開く(ひらく) —— 后者不是它的自他对,是另一个词,
     // 塞进来这组就成了「三个成员的自他动词对」,而助词那条判据只对其中两个成立。
-    const mates = rows.filter((other) => (other.kanji === partner && (!partnerKana || other.kana === partnerKana))
-      || other.kana === partner);
+    const mates = [...new Set([
+      ...(byKanji.get(partner) ?? []).filter((other) => !partnerKana || other.kana === partnerKana),
+      ...(byKana.get(partner) ?? [])
+    ])].sort((a, b) => a.order - b.order);
     if (!mates.length) return;
     const label = [row.kanji || row.kana, partner].sort().join(" / ");
     if (seenPairs.has(label)) return;
@@ -318,7 +332,7 @@ const buildGroups = (allRows: Row[]): ConfusionGroup[] => {
   //    汉字使い分け（探す/捜す，日语里区别很清楚，是中文释义把它压没了）。
   //    首义相同但有一方没汉字的是纯异写（繋がる/つながる）—— 同一个词的两种
   //    写法，**不是易混词**，放进来只会让用户去找不存在的区别，直接丢掉。
-  groupBy(rows, (row) => row.kana).forEach((members, kana) => {
+  byKana.forEach((members, kana) => {
     if (members.length < 2) return;
     const senses = new Set(members.map((row) => senseOf(row)));
     if (senses.size > 1) { add("homophone", kana, members); return; }
@@ -327,7 +341,8 @@ const buildGroups = (allRows: Row[]): ConfusionGroup[] => {
 
   // ③ 同一个汉字写法、多个读音。这类假名不同，前面按假名分的组一个都抓不到。
   //    首义相同多半是语体差（あさって/みょうごにち），不同则是真多义（あく/ひらく）。
-  groupBy(rows, (row) => (CJK.test(row.kanji) ? row.kanji : "")).forEach((members, kanji) => {
+  byKanji.forEach((members, kanji) => {
+    if (!CJK.test(kanji)) return;
     if (new Set(members.map((row) => row.kana)).size < 2) return;
     const senses = new Set(members.map((row) => senseOf(row)));
     add(senses.size === 1 ? "reading-register" : "reading-sense", kanji, members);
@@ -338,11 +353,11 @@ const buildGroups = (allRows: Row[]): ConfusionGroup[] => {
   //    比纯中文模糊匹配准得多（中文「切下」和「放下」都有「下」，日语侧毫无关系）。
   const verbs = rows.filter((row) => (row.verbType === "godan" || row.verbType === "ichidan") && CJK.test(row.kanji));
   groupBy(verbs, (row) => row.kanji.match(CJK)?.[0] ?? "").forEach((members, stem) => {
-    const charsOf = (row: Row) => new Set(senseOf(row).match(/[㐀-鿿]/g) ?? []);
+    const charsByRow = new Map(members.map((row) => [row, new Set(senseOf(row).match(/[㐀-鿿]/g) ?? [])]));
     const cohesive = members.filter((row) => {
-      const chars = charsOf(row);
+      const chars = charsByRow.get(row)!;
       return members.some((other) => other.id !== row.id
-        && [...charsOf(other)].some((char) => chars.has(char)));
+        && [...charsByRow.get(other)!].some((char) => chars.has(char)));
     });
     add("stem", stem, cohesive);
   });
@@ -360,7 +375,7 @@ const buildGroups = (allRows: Row[]): ConfusionGroup[] => {
       ));
       if (excluded) return;
       // 已有任何类型的组把这些词完整放在一起，就不再补一个子组。
-      if (current && found.some((group) => members.every((row) => group.members.some((member) => member.id === row.id)))) return;
+      if (current && foundByWord.get(members[0].id)?.some((group) => members.every((row) => group.members.some((member) => member.id === row.id)))) return;
       add("synonym", sense, members, `${current ? "synonym-now" : "synonym"}:${sense}`);
     });
   };
@@ -414,21 +429,17 @@ const loadRows = (): Row[] => {
   if (cachedRows) return cachedRows;
   // 测试里手建的裸 words 表没有 sense_key 列;缺列就退回现算首义,别让整页分组出不来。
   const hasSenseKey = rowsFor("PRAGMA table_info(words)").some((row) => row.name === "sense_key");
-  cachedRows = rowsFor(`
-    SELECT id, kanji, kana, meaning, pos, verb_type, example_jp, example_meaning, jlpt_level,
-           ${hasSenseKey ? "sense_key" : "''"} AS sense_key
+  // 小程序 iPhone 每次冷启动都读一万多词；SQLite 打包 JSON 后一次跨 WASM 取值，避免十万次逐列读取。
+  const rows = JSON.parse(firstValue<string>(`
+    SELECT json_group_array(json_array(id, kanji, kana, meaning, pos, verb_type,
+      example_jp, example_meaning, jlpt_level, ${hasSenseKey ? "sense_key" : "''"}))
     FROM words
-  `).map((row): Row => ({
-    id: Number(row.id ?? 0),
-    kanji: String(row.kanji ?? ""),
-    kana: String(row.kana ?? ""),
-    meaning: String(row.meaning ?? ""),
-    pos: String(row.pos ?? ""),
-    verbType: String(row.verb_type ?? ""),
-    exampleJp: String(row.example_jp ?? ""),
-    exampleMeaning: String(row.example_meaning ?? ""),
-    jlptLevel: String(row.jlpt_level ?? ""),
-    senseKey: String(row.sense_key ?? "")
+  `, [], "[]")) as SqlValue[][];
+  cachedRows = rows.map((row, order): Row => ({
+    order, id: Number(row[0] ?? 0), kanji: String(row[1] ?? ""), kana: String(row[2] ?? ""),
+    meaning: String(row[3] ?? ""), pos: String(row[4] ?? ""), verbType: String(row[5] ?? ""),
+    exampleJp: String(row[6] ?? ""), exampleMeaning: String(row[7] ?? ""),
+    jlptLevel: String(row[8] ?? ""), senseKey: String(row[9] ?? "")
   })).filter((row) => row.id && !LATIN.test(row.kana));
   return cachedRows;
 };
