@@ -4,7 +4,7 @@ import { ExampleSentence } from "../components/ExampleSentence";
 import { GrammarTermHint } from "../components/GrammarTermHint";
 import { JapaneseRuby } from "../components/JapaneseRuby";
 import { ReviewButton } from "../components/ReviewButton";
-import { grammarKeyPointFor } from "../lib/grammar-key-points";
+import { grammarKanjiHintFor, grammarKeyPointFor } from "../lib/grammar-key-points";
 import { grammarPoints } from "../data/grammar";
 import { getGrammarNote, setGrammarNote } from "../lib/grammarNotes";
 import { grammarSequence } from "../lib/grammar-numbering";
@@ -30,6 +30,7 @@ export const GrammarDetail = ({
 }: GrammarDetailProps) => {
   const point = grammarPoints.find((item) => item.id === grammarId) ?? grammarPoints[0];
   const mastery = getMastery(point.id);
+  const kanjiHint = grammarKanjiHintFor(point);
   const [noteEditorOpen, setNoteEditorOpen] = useState(false);
   const [noteDraft, setNoteDraft] = useState(() => getGrammarNote(point.id));
   const [, setNoteVersion] = useState(0);
@@ -114,6 +115,15 @@ export const GrammarDetail = ({
         )}
         {/* 抓手在分隔线之内、说明之上：先看一句「这条错在哪」，再读整段说明。 */}
         <div className="mt-6 max-w-3xl border-t border-[#81D8CF] pt-5 dark:border-zinc-800">
+          {kanjiHint && (
+            <p
+              className="mb-2 break-words rounded-2xl px-3 py-2 text-sm leading-6"
+              style={{ background: "var(--quiz-accent-soft, var(--ds-primary-tint))", color: "var(--quiz-accent-ink, var(--ds-primary-ink))" }}
+            >
+              <span className="jp">{kanjiHint.kana} → <strong>{kanjiHint.kanji}</strong></span>
+              <span className="ml-2">{kanjiHint.hook}</span>
+            </p>
+          )}
           {grammarKeyPointFor(point) && (
             <p className="grammar-key-point !mt-0">{grammarKeyPointFor(point)}</p>
           )}

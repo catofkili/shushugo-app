@@ -7,7 +7,7 @@ import { JapaneseRuby } from "../../components/JapaneseRuby";
 import { GrammarTermHint } from "../../components/GrammarTermHint";
 import { answerHotkeyLabels, answerOptions } from "../word-study/word-study-utils";
 import { patternPieces } from "../../lib/grammar-formation";
-import { grammarKeyPoint } from "../../lib/grammar-key-points";
+import { grammarKanjiHint, grammarKeyPoint } from "../../lib/grammar-key-points";
 import { getGrammarTitleFuriganaByPattern, projectFurigana } from "../../lib/grammar-title-furigana";
 import type { GrammarQuizAnswer, GrammarQuizCard } from "../../lib/grammar-quiz";
 import { ExamplePlayButton } from "../word-study/WordStudyPanels";
@@ -91,6 +91,7 @@ interface GrammarCardProps {
 }
 
 export const GrammarCard = ({ card, revealed, onReveal, onAnswer, accent = QUIZ_ACCENT_TEAL }: GrammarCardProps) => {
+  const kanjiHint = revealed ? grammarKanjiHint(card.pattern) : null;
   const reveal = () => { playFlip(); triggerRevealHaptic(); onReveal(); };
   // 键盘：任意普通键翻面，翻面后 V/B/N/M 评分。和单词学习一致。
   useEffect(() => {
@@ -167,6 +168,15 @@ export const GrammarCard = ({ card, revealed, onReveal, onAnswer, accent = QUIZ_
             <p className="mx-auto mt-2 max-w-2xl break-words text-lg leading-7 text-white/85 sm:text-xl">
               {card.meaning || "—"}
             </p>
+            {kanjiHint && (
+              <p
+                className="mx-auto mt-3 max-w-2xl break-words rounded-2xl px-3 py-2 text-sm leading-6"
+                style={{ background: "var(--quiz-accent-soft)", color: "var(--quiz-accent-ink)" }}
+              >
+                <span className="jp">{kanjiHint.kana} → <strong>{kanjiHint.kanji}</strong></span>
+                <span className="ml-2">{kanjiHint.hook}</span>
+              </p>
+            )}
             {/* 抓手：这条最容易错的那一点。摆在答案之后、例句之前 ——
                 翻面那两秒真正该带走的是它，不是再读一遍 49 字的说明。 */}
             {grammarKeyPoint(card.pattern) && (

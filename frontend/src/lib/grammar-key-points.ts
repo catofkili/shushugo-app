@@ -17,6 +17,7 @@ import data from "../data/grammar_key_points.json";
  */
 const points = data.points as Record<string, string>;
 const aliases = data.aliases as Record<string, string>;
+const kanji = data.kanji as Record<string, unknown>;
 
 /** 按 grammar_points 的 pattern 取抓手（语法考题卡走这条）。 */
 // typeof 守门：小程序里这份 JSON 是懒代理，没加载时取到的是代理对象而不是 undefined，
@@ -29,3 +30,17 @@ export const grammarKeyPoint = (pattern: string): string => {
 /** 按 grammar.ts 的语法点取抓手（辞典、语法库、沉浸阅读走这条）。 */
 export const grammarKeyPointFor = (point: { id: string; title: string }): string =>
   grammarKeyPoint(aliases[point.id] ?? point.title);
+
+/** 汉字只作揭晓后的记忆提示，不替换题面；未加载的懒代理也必须返回 null。 */
+export const grammarKanjiHint = (pattern: string): { kana: string; kanji: string; hook: string } | null => {
+  const hint = kanji[pattern];
+  if (!Array.isArray(hint) || hint.length !== 3) return null;
+  const [kana, kanjiText, hook] = hint;
+  if (typeof kana !== "string" || typeof kanjiText !== "string" || typeof hook !== "string") return null;
+  return { kana, kanji: kanjiText, hook };
+};
+
+export const grammarKanjiHintFor = (point: { id: string; title: string }) => {
+  const alias = aliases[point.id];
+  return grammarKanjiHint(typeof alias === "string" ? alias : point.title);
+};

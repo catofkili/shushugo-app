@@ -2,23 +2,23 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1869377,
+      "bytes": 1868973,
       "passes": true
     },
     "study": {
-      "bytes": 1022417,
+      "bytes": 1022361,
       "passes": true
     },
     "account": {
-      "bytes": 324860,
+      "bytes": 324831,
       "passes": true
     },
     "content-pages": {
-      "bytes": 1173908,
+      "bytes": 1174614,
       "passes": true
     },
     "features": {
-      "bytes": 580519,
+      "bytes": 588538,
       "passes": true
     },
     "content": {
@@ -30,23 +30,23 @@
       "passes": true
     },
     "grammar-advanced": {
-      "bytes": 547381,
+      "bytes": 547379,
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 303743,
+      "bytes": 304456,
       "passes": true
     },
     "core": {
-      "bytes": 279123,
+      "bytes": 279124,
       "passes": true
     },
     "lazy": {
-      "bytes": 910612,
+      "bytes": 911033,
       "passes": true
     },
     "jlpt-bank": {
-      "bytes": 764758,
+      "bytes": 764762,
       "passes": true
     },
     "jlpt-bank-2": {
@@ -367,7 +367,7 @@
     },
     {
       "source": "frontend/src/pages/GrammarDetail.tsx",
-      "bytes": 9025,
+      "bytes": 9738,
       "packages": [
         "content-pages",
         "grammar-pages"
@@ -587,6 +587,15 @@
       ]
     },
     {
+      "source": "frontend/src/lib/grammar-key-points.ts",
+      "bytes": 2865,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy"
+      ]
+    },
+    {
       "source": "frontend/src/components/SubgroupedMembers.tsx",
       "bytes": 2785,
       "packages": [
@@ -677,15 +686,6 @@
       "packages": [
         "content-pages",
         "grammar-pages"
-      ]
-    },
-    {
-      "source": "frontend/src/lib/grammar-key-points.ts",
-      "bytes": 1975,
-      "packages": [
-        "content-pages",
-        "grammar-pages",
-        "lazy"
       ]
     },
     {
@@ -1141,6 +1141,16 @@
       "reason": "Timer state is passed immutably between calls and belongs to the mounted page, not a module singleton."
     },
     {
+      "source": "frontend/src/lib/grammar-key-points.ts",
+      "bytes": 2865,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy"
+      ],
+      "reason": "The module reads bundled grammar key-point content and retains no mutable user state."
+    },
+    {
       "source": "frontend/src/lib/page-share.weapp.ts",
       "bytes": 2770,
       "packages": [
@@ -1189,16 +1199,6 @@
         "study"
       ],
       "reason": "Plan load estimates are pure calculations over supplied quotas and fixed age coefficients, with no module-local user state."
-    },
-    {
-      "source": "frontend/src/lib/grammar-key-points.ts",
-      "bytes": 1975,
-      "packages": [
-        "content-pages",
-        "grammar-pages",
-        "lazy"
-      ],
-      "reason": "The module reads bundled grammar key-point content and retains no mutable user state."
     },
     {
       "source": "frontend/src/lib/study-totals.ts",
@@ -1294,12 +1294,12 @@
     "frontend/src/lib/plan/content-matrix.ts": "Setup previews and plan routes share deterministic matrices over bundled content counts; user input and preview results are passed to each call and never cached.",
     "frontend/src/lib/useStudyTimer.ts": "Timer state and intervals belong to each mounted React hook instance; no shared module state is retained.",
     "frontend/src/lib/study-clock.ts": "Timer state is passed immutably between calls and belongs to the mounted page, not a module singleton.",
+    "frontend/src/lib/grammar-key-points.ts": "The module reads bundled grammar key-point content and retains no mutable user state.",
     "frontend/src/lib/page-share.weapp.ts": "Share cards are stored on the native page instance, not in module state, so the main-package and lazy copies see the same card.",
     "frontend/src/lib/grammar-form-target.ts": "Grammar form matching is a pure calculation over the supplied grammar point.",
     "frontend/src/lib/grammar-title-furigana.ts": "Memoized values are deterministic lookups over bundled title-furigana content, not user data.",
     "frontend/src/lib/user-agreement-content.ts": "The lazy auth dialog and account legal pages read immutable agreement text; consent records and version constants are not cached in this content module.",
     "frontend/src/lib/plan/load-model.ts": "Plan load estimates are pure calculations over supplied quotas and fixed age coefficients, with no module-local user state.",
-    "frontend/src/lib/grammar-key-points.ts": "The module reads bundled grammar key-point content and retains no mutable user state.",
     "frontend/src/lib/study-totals.ts": "Study totals are queried from the shared database on demand; query results are not cached.",
     "frontend/src/lib/grammar-numbering.ts": "Ordinal maps are derived only from bundled grammar records and are safe package-local content caches.",
     "frontend/src/lib/haptics.weapp.ts": "Haptics call the Mini Program vibration API per invocation and keep no module state.",
@@ -1467,7 +1467,7 @@
     },
     {
       "source": "frontend/src/pages/GrammarDetail.tsx",
-      "bytes": 9025,
+      "bytes": 9738,
       "packages": [
         "content-pages",
         "grammar-pages"
@@ -1739,7 +1739,7 @@
     "frontend/src/components/DailyPlanSlider.weapp.tsx": "The lazy setup panel and account/study plan pages render native Sliders; values and commit callbacks are owned by each mounted parent, not this stateless adapter.",
     "frontend/src/components/JapaneseRubyText.weapp.tsx": "Ruby text is used by lazy tabs and independently loaded content/grammar routes."
   },
-  "duplicatedPageComponentBytes": 359619,
+  "duplicatedPageComponentBytes": 360332,
   "unapprovedPageComponents": [],
   "stalePageComponentAllowlist": [],
   "unapprovedPageComponentBytes": 0,
