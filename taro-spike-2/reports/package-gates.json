@@ -2,19 +2,19 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1864211,
+      "bytes": 1869020,
       "passes": true
     },
     "study": {
-      "bytes": 1021322,
+      "bytes": 1021353,
       "passes": true
     },
     "account": {
-      "bytes": 324858,
+      "bytes": 324860,
       "passes": true
     },
     "content-pages": {
-      "bytes": 1173919,
+      "bytes": 1173923,
       "passes": true
     },
     "features": {
@@ -34,7 +34,7 @@
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 303751,
+      "bytes": 303755,
       "passes": true
     },
     "core": {
@@ -42,7 +42,7 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 909274,
+      "bytes": 909549,
       "passes": true
     },
     "jlpt-bank": {
@@ -1786,7 +1786,7 @@
     },
     {
       "source": "taro-spike-2/src/platform/WeappPage.tsx",
-      "bytes": 70144
+      "bytes": 70188
     }
   ],
   "passes": true
