@@ -16,7 +16,7 @@
     },
     "content-pages": {
       "beforeBytes": 147298,
-      "afterBytes": 601152
+      "afterBytes": 619163
     }
   },
   "images": [
@@ -1792,9 +1792,9 @@
     },
     {
       "subpackage": "content-pages",
-      "image": "scene-onsen",
-      "sourceWidth": 318,
-      "sourceHeight": 318,
+      "image": "app-icon-happy",
+      "sourceWidth": 320,
+      "sourceHeight": 320,
       "maxDisplayHeightCss": 150,
       "scale": 2,
       "outputWidth": 300,
@@ -1802,9 +1802,26 @@
       "beforeFormat": "none",
       "beforeBytes": 0,
       "afterFormat": "png",
-      "afterBytes": 25101,
-      "sourceSha256": "cbca647415e1688d267cf7e308fbe4943931eeedad356470f289536b890720da",
-      "afterSha256": "991cf9d078d9390f1202618a14615626b61d300162efcd25eb796fded87ecfcc",
+      "afterBytes": 18198,
+      "sourceSha256": "ab5c948846c709959b39d47d011400848b542ae48a7e637d429863b59f5e8b09",
+      "afterSha256": "4383f69b3702385b847bb862259f26b5e7bd751f6e87cecd1fd1ba4c02352cf4",
+      "quality": "65-90"
+    },
+    {
+      "subpackage": "content-pages",
+      "image": "app-icon-onsen",
+      "sourceWidth": 320,
+      "sourceHeight": 320,
+      "maxDisplayHeightCss": 150,
+      "scale": 2,
+      "outputWidth": 300,
+      "outputHeight": 300,
+      "beforeFormat": "none",
+      "beforeBytes": 0,
+      "afterFormat": "png",
+      "afterBytes": 24914,
+      "sourceSha256": "cfe225b62039a410972096e1ad564c9a5e88076b918b57b2084f6b4e3c8dedf3",
+      "afterSha256": "83f0eb09ff133dbe646181cb0eaef2301e6cea651f6ddf40a747aed917b236f1",
       "quality": "65-90"
     }
   ]

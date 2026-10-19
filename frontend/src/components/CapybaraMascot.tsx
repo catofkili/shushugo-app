@@ -52,7 +52,9 @@ export type StickerName =
   // 2026-10-15 v3：模式物件、组队徽章、连胜皇冠和柚子币。
   | "mode-classic" | "mode-mixed" | "mode-mistakes" | "mode-quick" | "mode-reverse" | "mode-kanji" | "mode-picked"
   | "emblem-sprout" | "emblem-squirrel" | "emblem-bird" | "emblem-train" | "emblem-owl" | "emblem-yuzu" | "emblem-books" | "emblem-torii"
-  | "crown" | "yuzu-coin";
+  | "crown" | "yuzu-coin"
+  // 2026-10-19 柚子商店备用 App 图标的缩略图：真图标（GPT 生成）压成 320px、iOS 圆角烘进 PNG（透明角）
+  | "app-icon-happy" | "app-icon-onsen";
 
 /**
  * 吉祥物皮肤（柚子商店 mascot 槽位）。每套皮肤是 `public/brand/sheet-<皮肤>/` 下**同名**的一批贴纸，

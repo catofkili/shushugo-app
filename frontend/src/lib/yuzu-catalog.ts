@@ -51,9 +51,9 @@ export const YUZU_ITEMS: YuzuItem[] = [
   { id: "theme-paper", name: "纸本", description: "奶油纸色、墨色主键、细线分隔，像一本安静的单词本", category: "theme", price: 3000 },
   { id: "theme-round", name: "圆圆", description: "白底圆体、会按下去的立体按钮、柚子橙点缀", category: "theme", price: 3000 },
   { id: "mascot-croc", name: "鳄鱼", description: "换一只鳄鱼:表情、页面图标、空状态插画整套换。小路上走的还是水豚", category: "mascot", price: 3000 },
-  { id: "icon-happy", name: "开心图标", description: "把 App 图标换成开心表情", category: "icon", price: 5000, art: "mood-happy" },
+  { id: "icon-happy", name: "开心图标", description: "把 App 图标换成开心表情", category: "icon", price: 5000, art: "app-icon-happy" },
   // 默认图标本来就是读书的水豚，所以第二个备用图标不再叫「读书」，换成泡汤的（2026-10-19）
-  { id: "icon-onsen", name: "泡汤图标", description: "把 App 图标换成泡汤的水豚", category: "icon", price: 5000, art: "scene-onsen" },
+  { id: "icon-onsen", name: "泡汤图标", description: "把 App 图标换成泡汤的水豚", category: "icon", price: 5000, art: "app-icon-onsen" },
   { id: "voice-voicevox-10", name: "雨晴はう", description: "轻快女声。切换单词发音；例句仍用默认声", category: "voice", price: 6000, art: "item-voice-female-2" },
   { id: "voice-voicevox-11", name: "玄野武宏", description: "沉稳男声。切换单词发音；例句仍用默认声", category: "voice", price: 6000, art: "item-voice-male" },
   { id: "sound-marimba", name: "木琴", description: "答题音换成木琴:更圆、更短", category: "sound", price: 3000, art: "item-sound-marimba-2" },

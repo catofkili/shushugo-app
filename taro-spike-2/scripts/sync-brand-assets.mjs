@@ -56,8 +56,8 @@ const packageNames = {
     'item-voice-female-2': 150, 'item-voice-male': 150,
     'item-sound-marimba-2': 150, 'item-sound-epiano-2': 150,
     'roll-frame': 150, 'card-daily': 150, 'decor-set': 150,
-    // 柚子商店「泡汤图标」的商品图（2026-10-19 前没登记进内容分包，小程序里是空白）
-    'scene-onsen': 150
+    // 柚子商店两个备用 App 图标的缩略图（商品 art 指向哪张，就要登记在这里，否则小程序里是空白）
+    'app-icon-happy': 150, 'app-icon-onsen': 150
   }
 };
 const out = path.join(root, 'src/assets/brand');

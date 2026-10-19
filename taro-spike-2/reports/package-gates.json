@@ -2,19 +2,19 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1862250,
+      "bytes": 1862303,
       "passes": true
     },
     "study": {
-      "bytes": 1019156,
+      "bytes": 1019199,
       "passes": true
     },
     "account": {
-      "bytes": 324566,
+      "bytes": 324319,
       "passes": true
     },
     "content-pages": {
-      "bytes": 1155858,
+      "bytes": 1173926,
       "passes": true
     },
     "features": {
@@ -34,7 +34,7 @@
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 303751,
+      "bytes": 303757,
       "passes": true
     },
     "core": {
@@ -42,7 +42,7 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 907349,
+      "bytes": 907122,
       "passes": true
     },
     "jlpt-bank": {
@@ -131,7 +131,7 @@
     },
     {
       "source": "frontend/src/components/LevelSetup.tsx",
-      "bytes": 25135,
+      "bytes": 25418,
       "packages": [
         "lazy",
         "study"
@@ -139,7 +139,7 @@
     },
     {
       "source": "frontend/src/components/AuthDialog.weapp.tsx",
-      "bytes": 24426,
+      "bytes": 24038,
       "packages": [
         "account",
         "lazy"
@@ -1326,7 +1326,7 @@
     },
     {
       "source": "frontend/src/components/LevelSetup.tsx",
-      "bytes": 25135,
+      "bytes": 25418,
       "packages": [
         "lazy",
         "study"
@@ -1335,7 +1335,7 @@
     },
     {
       "source": "frontend/src/components/AuthDialog.weapp.tsx",
-      "bytes": 24426,
+      "bytes": 24038,
       "packages": [
         "account",
         "lazy"
@@ -1739,7 +1739,7 @@
     "frontend/src/components/DailyPlanSlider.weapp.tsx": "The lazy setup panel and account/study plan pages render native Sliders; values and commit callbacks are owned by each mounted parent, not this stateless adapter.",
     "frontend/src/components/JapaneseRubyText.weapp.tsx": "Ruby text is used by lazy tabs and independently loaded content/grammar routes."
   },
-  "duplicatedPageComponentBytes": 352978,
+  "duplicatedPageComponentBytes": 352873,
   "unapprovedPageComponents": [],
   "stalePageComponentAllowlist": [],
   "unapprovedPageComponentBytes": 0,
@@ -1766,7 +1766,7 @@
     },
     {
       "source": "frontend/src/design.css",
-      "bytes": 97436
+      "bytes": 97570
     },
     {
       "source": "taro-spike-2/node_modules/react-reconciler/cjs/react-reconciler.production.min.js",

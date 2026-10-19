@@ -334,7 +334,7 @@ export const YuzuShopPage = ({ onOpenPro }: { onOpenPro?: () => void }) => {
             <button key={it.id} className={`yz-card${picked === it.id ? " is-picked" : ""}${has ? " is-owned" : ""}`} onClick={() => pick(it.id)} aria-pressed={picked === it.id}>
               <Art item={it} size="s" />
               <b>{it.name}</b>
-              {!itemIsAvailable && !has ? <span className="yz-tag is-soon">即将上架</span>
+              {!itemIsAvailable && !has ? <span className="yz-tag is-soon">{it.category === "icon" && !it.soon ? "仅 iOS App" : "即将上架"}</span>
                 : on ? <span className="yz-tag is-on"><Check size={11} /> 使用中</span>
                 : has ? <span className="yz-tag"><Check size={11} /> 已拥有</span>
                   : <span className="yz-price"><Sticker name="yuzu-coin" size={11} />{formatYuzu(it.price)}</span>}

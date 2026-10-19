@@ -129,7 +129,10 @@ module.exports = {
   "decor-set": [
     contentPackage
   ],
-  "scene-onsen": [
+  "app-icon-happy": [
+    contentPackage
+  ],
+  "app-icon-onsen": [
     contentPackage
   ]
 };
