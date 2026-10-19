@@ -1,6 +1,6 @@
 import initSqlJs, { Database } from 'sql.js';
 import wasmUrl from 'sql.js/dist/sql-wasm.wasm?url';
-import { perfTime, perfTimeAsync } from './perf-marks';
+import { perfInstrumentSql, perfTime, perfTimeAsync } from './perf-marks';
 
 let db: Database | null = null;
 let initPromise: Promise<Database> | null = null;
@@ -28,7 +28,7 @@ const validateAppDatabase = (candidate: Database): void => {
 
 const loadSqlModule = () => {
   if (!sqlModulePromise) {
-    sqlModulePromise = perfTimeAsync('启动 · sql.js WASM 初始化', () => initSqlJs({ locateFile: () => wasmUrl }));
+    sqlModulePromise = perfTimeAsync('启动 · sql.js WASM 初始化', () => initSqlJs({ locateFile: () => wasmUrl }).then(perfInstrumentSql));
   }
   return sqlModulePromise;
 };

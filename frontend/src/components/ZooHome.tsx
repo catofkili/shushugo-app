@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent as ReactMouseEvent } from "react";
+import { perfTime } from "../lib/perf-marks";
 import { Capacitor } from "@capacitor/core";
 // 图标统一走 lucide（ISC 协议，线性、单色、跟随 currentColor）。
 import { Check, Merge, RefreshCw, SkipForward, SlidersHorizontal, Timer } from "lucide-react";
@@ -130,7 +131,7 @@ export function ZooHome({
   useEffect(() => {
     const refreshWeeklyNotice = () => {
       try {
-        setWeeklyNotice(getWeeklyReportNotice().state);
+        setWeeklyNotice(perfTime("首页 · 周报提示", () => getWeeklyReportNotice().state));
       } catch {
         setWeeklyNotice("none");
       }
@@ -138,7 +139,7 @@ export function ZooHome({
     const refresh = () => {
       refreshWeeklyNotice();
       try {
-        const next = getWordStats();
+        const next = perfTime("首页 · 词统计与排今日计划", () => getWordStats());
         setStats(next);
       } catch {
         // 词库还没加载好时先留空,进度事件会再触发一次
@@ -146,7 +147,7 @@ export function ZooHome({
       }
       // 关掉备考计划的人不该在首页看到它,所以 enabled 为假时直接清空
       try {
-        const plan = getJlptPlanStatus();
+        const plan = perfTime("首页 · 备考状态", () => getJlptPlanStatus());
         setJlpt(plan.enabled ? plan : null);
         const nextRecovery = plan.enabled ? postExamRecovery() : null;
         setRecovery(nextRecovery);
@@ -157,7 +158,7 @@ export function ZooHome({
       }
       // 必须在 stats 读完之后:当天的计划是在那里面排好的,
       // 排之前问 plan_trend 会看到「今天 0 个」,报出一句假喜讯。
-      collectMoments();
+      perfTime("首页 · 小时刻", collectMoments);
     };
     refresh();
     refreshRef.current = refresh;
@@ -195,7 +196,7 @@ export function ZooHome({
   const done = stats?.stage1ProgressDone ?? 0;
   const remaining = Math.max(0, total - done);
   // streakSnapshot 扫全表：只在 stats 变了（答题 / 进度更新）时重算，不跟着每次渲染
-  const streakSnap = useMemo(() => (stats ? streakSnapshot() : null), [stats]);
+  const streakSnap = useMemo(() => (stats ? perfTime("首页 · 连胜", streakSnapshot) : null), [stats]);
   const streak = streakSnap?.streak ?? 0;
   const streakCount = useCountUp(streak);
   const examDateMissing = Boolean(jlpt && !parseExamDate(goals.jlptExamDate) && !suggestedExamDate(jlpt.examKind));

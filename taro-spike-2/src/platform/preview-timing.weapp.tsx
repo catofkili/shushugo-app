@@ -1,7 +1,19 @@
 import { Profiler, useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
-import { perfPhases } from '../../../frontend/src/lib/perf-marks';
+import { perfPhases, perfTime, topSql } from '../../../frontend/src/lib/perf-marks';
 import { Text, View } from '@tarojs/components';
 import Taro from '@tarojs/taro';
+import { TaroRootElement } from '@tarojs/runtime';
+
+// 计时版专用（普通构建整个模块被 preview-timing-off 替换）：Taro 把虚拟 DOM 序列化成 setData 的那一步单独计时，
+// 用来区分「卡住」里有多少是渲染、多少是业务逻辑 / SQL（2026-10-19 真机首次进主页卡 8.6 秒）。
+const rootProto = TaroRootElement.prototype as unknown as { scheduleTask: (task: () => void) => void; __perfTimed?: boolean };
+if (!rootProto.__perfTimed) {
+  rootProto.__perfTimed = true;
+  const schedule = rootProto.scheduleTask;
+  rootProto.scheduleTask = function (this: unknown, task: () => void) {
+    return schedule.call(this, () => perfTime('渲染 · 序列化+setData', task));
+  };
+}
 
 type Kind = 'study' | 'vocab';
 type Sample = { startedAt: number; beforeId: string; beforeText: string };
@@ -150,6 +162,8 @@ export function PerfOverlay() {
       // 「卡住 · …」排最前：真机上用户只会截一张图
       other.sort((a, b) => Number(b.startsWith('卡住')) - Number(a.startsWith('卡住')));
       if (other.length) next.push('分段 / 卡住（中位 最大 次数）', ...other);
+      const sql = topSql(6).filter(([, entry]) => entry.ms >= 100);
+      if (sql.length) next.push('最慢 SQL（累计 次数）', ...sql.map(([text, entry]) => `${Math.round(entry.ms)}ms ×${entry.n} ${text.slice(0, 60)}`));
       setLines(next);
     }, 1000);
     return () => clearInterval(timer);
@@ -157,7 +171,7 @@ export function PerfOverlay() {
   if (!lines.length) return null;
   return (
     <View className="perf-overlay-marker" style={{ position: 'fixed', top: '0', left: '48%', right: '12rpx', zIndex: 9999, padding: '4rpx 6rpx', borderRadius: '12rpx', backgroundColor: 'rgba(28, 35, 34, 0.88)', color: '#fff', fontSize: '16rpx', lineHeight: 1.1, pointerEvents: 'none' }}>
-      {lines.map((line, index) => index === 0 || line.startsWith('分段') || !line.endsWith('ms')
+      {lines.map((line, index) => index === 0 || line.startsWith('分段') || line.startsWith('最慢') || !line.endsWith('ms')
         ? <Text key={line} style={{ display: 'block', paddingBottom: '2rpx' }}>{line}</Text>
         : <Text key={line} style={{ display: 'inline-block', width: '50%', whiteSpace: 'nowrap' }}>{line}</Text>)}
     </View>
