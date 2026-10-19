@@ -482,3 +482,37 @@ JOIN 读的是 **grammar_state** —— **点了收藏永远显示不出来**，
 - 主 ScrollView 带 `enhanced` 和 `id="weapp-main-scroll"`，automator 的 `element.scrollTo` 对它**无效**（滚了也读回 0）。要在 `mp.evaluate` 里用
   `wx.createSelectorQuery().select('#weapp-main-scroll').node(r => r.node.scrollTo({ top }))` 滚，用 `.scrollOffset()` 读。
 - 对照结果：修复前「滚到 1500 → 开一组 → 关掉」读回 0；修复后读回 1500，两页都一样。
+
+## ⚠️ 小程序冷启动「过三五秒才好」的真凶是首页角标，不是落盘（2026-10-19，接「小程序启动」一节）
+
+计时版浮层（作者真机）：启动卡 4.2 秒、首页和首次设定刚出来又卡 8.6 秒。拆下来是**首页算模式角标**这一条路：
+`getWordStats`（`word-api/stats.ts`）→ 混合模式角标 `mixedCardCounts`（`mixed-cards.ts`）→ 汉字卡 / 辨析卡物化 + 建今日任务。
+这条路**每次冷启动都走**，不只是首装：辨析分组 `confusionGroups()` 是模块级缓存，冷启动必重建；汉字选择题的资格集合按库实例缓存，也必重建。
+
+小程序 iPhone 上 sql.js 是解释执行的 WASM，JS 也慢，整体约是 Node 的 17–19 倍；**每次 `db.run(sql, params)` 都重新解析一遍 SQL**，逐行插几千行就是几千次解析。
+改法（结果逐字节不变）：
+
+| 步骤（Node ms） | 首装：改前 → 改后 | 每次冷启动：改前 → 改后 |
+| --- | --- | --- |
+| 同步结构 `ensureSyncSchema` | 155 → 63（DDL 合成一次 exec + SAVEPOINT） | 42 → 28（逐表探测合成一条 UNION ALL） |
+| 汉字卡占位 `materializeKanjiChars` | 54 → 18（`INSERT … SELECT FROM json_each(?)`） | — |
+| 汉字单位 `materializeKanjiUnitIndex` | 90 → 25（同上，3278×2 行两条语句） | — |
+| 辨析分组 `confusionGroups()` | 115 → 28 | 115 → 28（`json_group_array` 一次打包读词表 + 按词形 / 假名建索引） |
+| 角标 `mixedCardCounts` | 81 → 约 60 | 53 → 18（资格只验「有候选 + 有合法干扰项」，不建题面；角标只建任务数进度，不为没进的会话选卡） |
+
+判据：
+- **批量写一律一条语句吃一整批**（`json_each(?)` 传 `JSON.stringify(rows)`，新增行数用 `db.getRowsModified()`，类型补在 `lib/database/sql-js.d.ts`）；
+  批量读一万行用 `SELECT json_group_array(json_array(...))` 拿一个字符串再 `JSON.parse`，别让 sql.js 逐行逐列跨 WASM。
+  sql.js 1.10 / SQLite 3.49.1，网页和小程序 vendored 的 wasm 都有 JSON 函数和 `->>`。
+- `withoutSyncStamp` 包裹、`applying_remote` 的顺序一个都没动（占位行不盖同步时间戳，见 sync 专题）。
+- **怎么证明「结果不变」**（这次的做法，下次照抄）：在 `frontend/src/__prof/`（临时目录，不提交）写 vitest，`vi.mock("../lib/database")` 返回一个用 `public/nihongo.db` 新开的 sql.js 库、
+  `vi.mock("../lib/storage")` 置空，按首页顺序调一遍，再把 `sqlite_master` + 所有用户表（排序后，抹掉 ISO 时间戳和 uuid；`stage1_tasks` 按设计随机抽词，排除）
+  + `confusionGroups()` 全量 JSON + 每个字的 `kanjiChoiceQuestion` 写成文本，改前改后 `cmp`。资格判据另做全量对照（「资格 = 真建题面非空」，再把 `progress.seen_count` 打乱建新库实例重比，
+  并把旧版 `kanji-choice.ts` 拷进 `__prof` 逐题比），都是 0 差异。计时用包一层 `db.run/prepare/exec` 数调用次数——次数比毫秒稳，也直接对应 iPhone 上的解析开销。
+- 计时版现在多了「最慢 SQL」一段（`perfInstrumentSql`，只在计时版 / 开发下装钩子）和 `渲染 · 序列化+setData` 标签；开发者工具里测到 Taro 渲染本身只有二十毫秒级，不是瓶颈。
+
+还没做的（等作者扫计时版看「卡住」还剩多少再定）：
+- 首页对**所有人**都算混合模式角标，哪怕用户从没开过混合模式；可以只在混合模式开着时算，但主页那几栏说明要跟着核对。
+- 首装的 `getProgressOverview`（`initProgress` 给一万多词建 progress 行）约 74 ms，还是逐条思路，没动。
+- word-study 内容分包在 iPhone 上 JS 求值约 4.3 秒（见「小程序启动」一节末尾），这次没碰。
+- 主包 1,869,020 / 1,900,000 字节，余量约 31 KB。
