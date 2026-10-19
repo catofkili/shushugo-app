@@ -32,6 +32,7 @@ import { consumePendingWeeklyReportWeekStart, WEEKLY_REPORT_NOTIFICATION_EVENT }
 import { ACHIEVEMENT_UNLOCKED_EVENT } from '../../../frontend/src/lib/userProfile';
 import { ready as readyForGrammar, readyForKanji } from '../../scripts/taro-content.cjs';
 import { ensureDatabase } from './database-runtime.weapp';
+import { StartupLoading } from './StartupLoading';
 import { usePortalHost } from './portal-host.weapp';
 import { PerfOverlay } from './preview-timing.weapp';
 import { SquirrelTrail } from '../../../frontend/src/components/SquirrelTrail';
@@ -118,6 +119,7 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
   const [ready, setReady] = useState(false);
   const [shell, setShell] = useState<typeof import('../../../frontend/src/app/AppShell') | null>(null);
   const [error, setError] = useState('');
+  const [downloadPercent, setDownloadPercent] = useState<number | null | undefined>(undefined);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [skin, setSkin] = useState('');
   const [motionLevel, setMotionLevel] = useState(() => getStudyPreferences().motionLevel);
@@ -130,17 +132,16 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
     let cancelled = false;
     // 计时版里记每个页面从挂载到能用花多久（用户报「单词和语法加载几秒」「进组队页十秒」）；普通构建里 perfRecord 是空操作。
     const openedAt = Date.now();
-    Promise.all([ensureDatabase(), loadShell()])
-      .then(([, shell]) => {
+    // 开库、外壳、汉字 / 语法内容分包互不依赖，一起开始（汉字和语法内容只灌内容缓存，不碰数据库）。
+    Promise.all([
+      ensureDatabase('word-study', { onDownload: ({ percent }) => { if (!cancelled) setDownloadPercent(percent); } }),
+      loadShell(),
+      perfTimeAsync('启动 · 汉字和辨析内容就绪', () => readyForKanji()),
+      grammarPages.has(page) ? perfTimeAsync(`页面 · ${page} 语法内容`, () => readyForGrammar()) : undefined
+    ])
+      .then(async ([, shell]) => {
         if (cancelled) return;
         setShell(shell);
-      })
-      .then(() => Promise.all([
-        perfTimeAsync('启动 · 汉字和辨析内容就绪', () => readyForKanji()),
-        grammarPages.has(page) ? perfTimeAsync(`页面 · ${page} 语法内容`, () => readyForGrammar()) : undefined
-      ]))
-      .then(async () => {
-        if (cancelled) return;
         setOverview(page === 'home'
           ? perfTime('启动 · 今日主页数据计算', () => getProgressOverview())
           : perfTime(`页面 · ${page} 概览计算`, () => getProgressOverview()));
@@ -331,7 +332,7 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
     actions
   };
   if (error) return <View className="theme-light p-4"><Text>{error}</Text></View>;
-  if (!ready || !shell) return <View className="theme-light p-4"><Text>正在载入学习数据…</Text></View>;
+  if (!ready || !shell) return <StartupLoading downloadPercent={downloadPercent} />;
   const { AppShell, markTrialNoticeRead } = shell;
 
   return (
@@ -359,9 +360,10 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
       onDismissTrial={() => { markTrialNoticeRead(); setTrialEndedOpen(false); }}
       onViewPro={() => { markTrialNoticeRead(); setTrialEndedOpen(false); navigatePage('pro'); }}
     >
+      {/* 只听按下和点击：touchmove / scroll 每帧都要从渲染层跨到逻辑层，背词页上每一帧还会让陪伴水豚重渲染一次（真机滚动卡）。
+          学习时长按 60 秒没操作算走神（study-clock.ts），每次手指按下记一笔已经够了。 */}
       <View ref={portalHost} className={`weapp-route-root theme-${theme}${skin ? ` skin-${skin}` : ''}`}
         onTouchStart={() => notifyStudyInteraction(pagePath)}
-        onTouchMove={() => notifyStudyInteraction(pagePath)}
         onClick={() => notifyStudyInteraction(pagePath)}>
         {/* Native page scrolling is disabled by the full-screen shell. A View with
             overflow-y:auto does not become a mini-program scroll container. */}
@@ -371,7 +373,6 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
           showScrollbar={false}
           enhanced
           lowerThreshold={240}
-          onScroll={() => notifyStudyInteraction(pagePath)}
           onScrollToLower={() => notifyMainScrollReachBottom(pagePath)}
           className={`app-landscape-main weapp-app-main min-w-0 px-4 pb-4 pt-4${page === 'word' ? ' weapp-has-study-progress' : ''}`}
         >

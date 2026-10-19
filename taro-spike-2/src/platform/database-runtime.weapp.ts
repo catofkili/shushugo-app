@@ -3,7 +3,7 @@ import { readyForPage } from '../../scripts/taro-content.cjs';
 import { downloadFile, readCompressedFile, readFile, removeFile } from '../../../wechat-miniprogram/src/runtime/wx-promise';
 import { ensureUserTables } from '../../../frontend/src/lib/study-core';
 import { getDatabase, importDatabase } from '../../../frontend/src/lib/database';
-import { loadDatabase, registerPersistenceLifecycle, saveDatabase } from '../../../frontend/src/lib/storage';
+import { getLocalDataRevision, loadDatabase, registerPersistenceLifecycle, saveDatabase } from '../../../frontend/src/lib/storage';
 import { ensureSyncSchema } from '../../../frontend/src/lib/sync/schema';
 import { perfTime, perfTimeAsync, recordStartupMilestone } from '../../../frontend/src/lib/perf-marks';
 
@@ -37,12 +37,15 @@ export async function ensureDatabase(
   contentPage: 'word-study' | 'vocab-test' | 'confusion-quiz' | 'kanji-reading' | 'grammar-quiz' = 'word-study',
   observer?: StartupObserver
 ) {
-  let started = Date.now();
-  await perfTimeAsync('启动 · 页面内容分包就绪', () => readyForPage(contentPage));
-  observer?.onStage?.('page-content', elapsed(started));
+  // 内容分包和开库互不依赖（开库、建表只碰数据库），同时开始：首次安装时两边都要下载，串行要多等一整段。
+  const pageContentReady = (async () => {
+    const started = Date.now();
+    await perfTimeAsync('启动 · 页面内容分包就绪', () => readyForPage(contentPage));
+    observer?.onStage?.('page-content', elapsed(started));
+  })();
 
   if (!opening) opening = (async () => {
-    started = Date.now();
+    let started = Date.now();
     const restored = await perfTimeAsync('启动 · 本机存档检查与恢复', () => loadDatabase());
     observer?.onStage?.('local-database', elapsed(started));
     if (restored) recordStartupMilestone('本机学习库恢复完成');
@@ -83,14 +86,23 @@ export async function ensureDatabase(
     observer?.onStage?.('sync-schema', elapsed(started));
     registerPersistenceLifecycle();
     if (!restored) {
-      started = Date.now();
-      await perfTimeAsync('启动 · 首次保存出厂库', () => saveDatabase({ notifyCloud: false }));
-      observer?.onStage?.('first-save', elapsed(started));
+      // 首次装机那次整库写盘（出厂库十几 MB）不让用户等：推迟到页面出来之后。没写成只是下次启动再下一遍出厂库。
+      // 推迟期间有作答也安全：导入后还没有快照基准（storage.ts 的 snapshotDb 为空），第一次落盘必定整库，不会只留一份增量。
+      // 也正因为如此，首页补进度行排的那次落盘（约 2 秒后）就已经是整库：本地改动号变了就不再重复写一遍。
+      const revision = getLocalDataRevision();
+      setTimeout(() => {
+        if (getLocalDataRevision() !== revision) return;
+        const saveStarted = Date.now();
+        perfTimeAsync('启动 · 首次保存出厂库', () => saveDatabase({ notifyCloud: false }))
+          .then(() => observer?.onStage?.('first-save', elapsed(saveStarted)))
+          .catch((error) => console.error('[database] 首次保存出厂库失败', error));
+      }, 3000);
     }
     return getDatabase();
   })().catch((error) => {
     opening = null;
     throw error;
   });
-  return opening;
+  const [, database] = await Promise.all([pageContentReady, opening]);
+  return database;
 }
