@@ -2,11 +2,11 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1869020,
+      "bytes": 1869377,
       "passes": true
     },
     "study": {
-      "bytes": 1021353,
+      "bytes": 1022417,
       "passes": true
     },
     "account": {
@@ -14,7 +14,7 @@
       "passes": true
     },
     "content-pages": {
-      "bytes": 1173923,
+      "bytes": 1173908,
       "passes": true
     },
     "features": {
@@ -34,7 +34,7 @@
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 303755,
+      "bytes": 303743,
       "passes": true
     },
     "core": {
@@ -42,7 +42,7 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 909549,
+      "bytes": 910612,
       "passes": true
     },
     "jlpt-bank": {
@@ -112,19 +112,19 @@
       ]
     },
     {
-      "source": "frontend/src/data/grammar_title_furigana.json",
-      "bytes": 30888,
+      "source": "frontend/src/components/LevelSetup.tsx",
+      "bytes": 32164,
       "packages": [
-        "content-pages",
-        "grammar-pages",
         "lazy",
         "study"
       ]
     },
     {
-      "source": "frontend/src/components/LevelSetup.tsx",
-      "bytes": 29645,
+      "source": "frontend/src/data/grammar_title_furigana.json",
+      "bytes": 30888,
       "packages": [
+        "content-pages",
+        "grammar-pages",
         "lazy",
         "study"
       ]
@@ -1326,7 +1326,7 @@
     },
     {
       "source": "frontend/src/components/LevelSetup.tsx",
-      "bytes": 29645,
+      "bytes": 32164,
       "packages": [
         "lazy",
         "study"
@@ -1739,7 +1739,7 @@
     "frontend/src/components/DailyPlanSlider.weapp.tsx": "The lazy setup panel and account/study plan pages render native Sliders; values and commit callbacks are owned by each mounted parent, not this stateless adapter.",
     "frontend/src/components/JapaneseRubyText.weapp.tsx": "Ruby text is used by lazy tabs and independently loaded content/grammar routes."
   },
-  "duplicatedPageComponentBytes": 357100,
+  "duplicatedPageComponentBytes": 359619,
   "unapprovedPageComponents": [],
   "stalePageComponentAllowlist": [],
   "unapprovedPageComponentBytes": 0,
@@ -1766,7 +1766,7 @@
     },
     {
       "source": "frontend/src/design.css",
-      "bytes": 97570
+      "bytes": 97821
     },
     {
       "source": "taro-spike-2/node_modules/react-reconciler/cjs/react-reconciler.production.min.js",
@@ -1786,7 +1786,7 @@
     },
     {
       "source": "taro-spike-2/src/platform/WeappPage.tsx",
-      "bytes": 70188
+      "bytes": 70802
     }
   ],
   "passes": true

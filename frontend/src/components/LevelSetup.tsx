@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Capacitor } from "@capacitor/core";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
@@ -16,7 +16,7 @@ import {
   type StartingLevel
 } from "../lib/level-plan";
 import { getEntitlements } from "../lib/entitlements";
-import { claimLaunchGift, refreshLaunchGiftAvailability } from "../lib/sync-api";
+import { claimLaunchGift, CLOUD_SYNC_EVENT, refreshLaunchGiftAvailability } from "../lib/sync-api";
 import { isLaunchGiftOnlyRelease } from "../lib/purchases";
 import { shouldOfferOnboardingGift, completeLevelSetup } from "../lib/level-setup-flow";
 import { deferWordPlanUntilKanaComplete } from "../lib/kana-progress";
@@ -95,6 +95,17 @@ export function LevelSetup({ open, dismissible = false, isAuthenticated = false,
   const [gift, setGift] = useState<{ open: boolean; claimUntil: string | null }>();
   const [giftError, setGiftError] = useState("");
   const [claiming, setClaiming] = useState(false);
+  // 小程序首次设定先登录（作者 10-19）：老用户云端进度一回来，外层（WeappPage）就把设定关掉，不用再设一遍；
+  // 新用户登录过了，最后一页直接是「领取首月会员」。网页 / App 没有这一页。
+  const [loginPage, setLoginPage] = useState(() => !dismissible && !isAuthenticated && Capacitor.getPlatform() === "wechat");
+  // 登录后先等第一次同步落地（最多 5 秒）再进选等级：不然老用户刚点了几下，设定就被找回的进度关掉。
+  useEffect(() => {
+    if (!loginPage || !isAuthenticated) return;
+    const next = () => setLoginPage(false);
+    const timer = setTimeout(next, 5000);
+    window.addEventListener(CLOUD_SYNC_EVENT, next);
+    return () => { clearTimeout(timer); window.removeEventListener(CLOUD_SYNC_EVENT, next); };
+  }, [loginPage, isAuthenticated]);
   // 小程序的原生底栏在页面层之外，弹窗盖不住：设定期间点「单词学习」会在没有计划时开始学。网页端弹窗已盖住底栏，这里是空操作。
   useStudyBreakTabBar(open);
   // 估算里唯一查库的一步（目标范围内还没学的词）。只随起点、目标、「单词没学过」变：拖其他滑杆、点日期都不用再查。
@@ -179,7 +190,12 @@ export function LevelSetup({ open, dismissible = false, isAuthenticated = false,
     <div className="ls-backdrop" role="dialog" aria-modal="true" aria-label="设定学习计划">
       <div className="ls-sheet">
         <ScrollArea className="ls-scroll" scrollToTopSignal={giftPage ? 1 : 0}>
-          <header className="ls-head">
+          {loginPage ? <div className="ls-login">
+            <Sticker name="mood-wave" size={128} />
+            <p className="ds-kicker mt-4">欢迎来到收集日</p>
+            <h2 className="ls-title">先登录微信</h2>
+            <p className="ls-sub">换手机、重装都能接着学。</p>
+          </div> : <header className="ls-head">
             <Sticker name={giftPage ? "mood-yay" : "mood-wave"} size={84} className="ls-head-mascot" />
             <div className="min-w-0 flex-1">
               <p className="ds-kicker">{giftPage ? "计划排好了" : dismissible ? "调整学习计划" : "欢迎来到收集日"}</p>
@@ -189,10 +205,10 @@ export function LevelSetup({ open, dismissible = false, isAuthenticated = false,
                 : "四件事，选完就排好每天学什么。之后随时能改。"}</p>
             </div>
             {dismissible && <button className="ds-icon-btn focus-ring grid h-10 w-10 shrink-0 place-items-center rounded-full" onClick={onClose} aria-label="关闭"><X size={18} /></button>}
-          </header>
+          </header>}
 
           {/* 一屏一只吉祥物：头部那只已经在笑了，正文只列会员多了什么；领取失败才让吉祥物出来说原因 */}
-          {giftPage ? giftClaimed ? null : (
+          {loginPage ? null : giftPage ? giftClaimed ? null : (
             <section className="ds-card mt-2 p-4">
               <p className="text-sm font-bold">会员能用</p>
               <p className="mt-1 text-sm leading-6">疑难辨析、一字多音、混合学习等全部会员功能。</p>
@@ -256,7 +272,10 @@ export function LevelSetup({ open, dismissible = false, isAuthenticated = false,
           </>}
         </ScrollArea>
         <div className="ls-foot">
-          {giftPage ? giftClaimed ? <button onClick={finish} className="ds-btn focus-ring w-full">开始学习 →</button> : <div className="grid gap-2 sm:grid-cols-2">
+          {loginPage ? <div className="grid gap-2 sm:grid-cols-2">
+            <button disabled={isAuthenticated} onClick={() => onRequireAuth?.()} className="ds-btn focus-ring w-full disabled:opacity-50">{isAuthenticated ? "正在找回进度…" : "微信登录"}</button>
+            <button onClick={() => setLoginPage(false)} className="ds-btn-soft focus-ring w-full">先不登录</button>
+          </div> : giftPage ? giftClaimed ? <button onClick={finish} className="ds-btn focus-ring w-full">开始学习 →</button> : <div className="grid gap-2 sm:grid-cols-2">
             <button disabled={claiming} onClick={() => void claimGift()} className="ds-btn focus-ring w-full disabled:opacity-50">{claiming ? "领取中…" : isAuthenticated ? "领取首月会员" : "微信登录领取"}</button>
             <button onClick={finish} className="ds-btn-soft focus-ring w-full">先不领，开始学习</button>
           </div> : <>

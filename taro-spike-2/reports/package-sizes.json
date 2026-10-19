@@ -2,13 +2,13 @@
   "limitBytes": 2097152,
   "packages": {
     "main": {
-      "bytes": 1869020,
-      "mib": 1.782,
+      "bytes": 1869377,
+      "mib": 1.783,
       "passes": true
     },
     "study": {
-      "bytes": 1021353,
-      "mib": 0.974,
+      "bytes": 1022417,
+      "mib": 0.975,
       "passes": true
     },
     "account": {
@@ -17,7 +17,7 @@
       "passes": true
     },
     "content-pages": {
-      "bytes": 1173923,
+      "bytes": 1173908,
       "mib": 1.12,
       "passes": true
     },
@@ -42,7 +42,7 @@
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 303755,
+      "bytes": 303743,
       "mib": 0.29,
       "passes": true
     },
@@ -52,8 +52,8 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 909549,
-      "mib": 0.867,
+      "bytes": 910612,
+      "mib": 0.868,
       "passes": true
     },
     "jlpt-bank": {
@@ -67,17 +67,17 @@
       "passes": true
     }
   },
-  "totalBytes": 10647300,
+  "totalBytes": 10649757,
   "files": [
     {
       "path": "lazy/tabs.js",
       "package": "lazy",
-      "bytes": 874104
+      "bytes": 875167
     },
     {
       "path": "common.js",
       "package": "main",
-      "bytes": 770590
+      "bytes": 770850
     },
     {
       "path": "grammar-foundation/grammar.js",
@@ -137,7 +137,7 @@
     {
       "path": "study/talk/index.js",
       "package": "study",
-      "bytes": 249736
+      "bytes": 249734
     },
     {
       "path": "jlpt-bank-2/jlpt-n5.js",
@@ -152,7 +152,7 @@
     {
       "path": "app.wxss",
       "package": "main",
-      "bytes": 224433
+      "bytes": 224532
     },
     {
       "path": "features/content/kanji-variants.js",
@@ -177,7 +177,7 @@
     {
       "path": "content-pages/weekly-report/index.js",
       "package": "content-pages",
-      "bytes": 78758
+      "bytes": 78757
     },
     {
       "path": "content-pages/weekly-report/index.wxss",
@@ -205,19 +205,19 @@
       "bytes": 46508
     },
     {
-      "path": "content-pages/sub-common/5537accafc5d77341cf2821a339b6563.js",
+      "path": "content-pages/sub-common/b50975cdaeb56b53138d14cbcd258a5e.js",
       "package": "content-pages",
-      "bytes": 46457
+      "bytes": 46455
     },
     {
-      "path": "grammar-pages/sub-common/5537accafc5d77341cf2821a339b6563.js",
+      "path": "grammar-pages/sub-common/b50975cdaeb56b53138d14cbcd258a5e.js",
       "package": "grammar-pages",
-      "bytes": 46457
+      "bytes": 46455
     },
     {
-      "path": "study/sub-common/5537accafc5d77341cf2821a339b6563.js",
+      "path": "study/sub-common/b50975cdaeb56b53138d14cbcd258a5e.js",
       "package": "study",
-      "bytes": 46457
+      "bytes": 46455
     },
     {
       "path": "content-pages/assets/brand/decor-set.png",
@@ -265,12 +265,12 @@
       "bytes": 34896
     },
     {
-      "path": "content-pages/sub-common/a545789eae9183a5c19f8e4e4e0bf0d5.js",
+      "path": "content-pages/sub-common/cc4b7a520e2440cf8feb28687bd974ee.js",
       "package": "content-pages",
       "bytes": 32891
     },
     {
-      "path": "grammar-pages/sub-common/a545789eae9183a5c19f8e4e4e0bf0d5.js",
+      "path": "grammar-pages/sub-common/cc4b7a520e2440cf8feb28687bd974ee.js",
       "package": "grammar-pages",
       "bytes": 32891
     },
@@ -292,12 +292,12 @@
     {
       "path": "account/settings/index.js",
       "package": "account",
-      "bytes": 31565
+      "bytes": 31566
     },
     {
       "path": "study/jlpt-practice/index.js",
       "package": "study",
-      "bytes": 27120
+      "bytes": 27116
     },
     {
       "path": "assets/brand/walk-strip.png",
@@ -327,37 +327,37 @@
     {
       "path": "study/team/index.js",
       "package": "study",
-      "bytes": 24612
+      "bytes": 24613
     },
     {
       "path": "study/vocab-test/index.js",
       "package": "study",
-      "bytes": 22780
+      "bytes": 22779
     },
     {
       "path": "study/quick-study/index.js",
       "package": "study",
-      "bytes": 21716
+      "bytes": 21715
     },
     {
-      "path": "content-pages/sub-common/69b7ffb5f01862b1ca64583914b31ecf.js",
+      "path": "content-pages/sub-common/bf2b954fe8ca656ca244943c58721a45.js",
       "package": "content-pages",
       "bytes": 21370
     },
     {
-      "path": "grammar-pages/sub-common/69b7ffb5f01862b1ca64583914b31ecf.js",
+      "path": "grammar-pages/sub-common/bf2b954fe8ca656ca244943c58721a45.js",
       "package": "grammar-pages",
       "bytes": 21370
     },
     {
-      "path": "study/sub-common/69b7ffb5f01862b1ca64583914b31ecf.js",
+      "path": "study/sub-common/bf2b954fe8ca656ca244943c58721a45.js",
       "package": "study",
       "bytes": 21370
     },
     {
       "path": "study/jlpt-plan/index.js",
       "package": "study",
-      "bytes": 21341
+      "bytes": 21343
     },
     {
       "path": "study/assets/brand/mood-shocked.png",
@@ -365,12 +365,12 @@
       "bytes": 19082
     },
     {
-      "path": "content-pages/sub-common/5f33dee7584ea8a68aaf643a1d1a7b10.js",
+      "path": "content-pages/sub-common/bbb247a10b6ccd4eec26055bafab49f4.js",
       "package": "content-pages",
       "bytes": 19056
     },
     {
-      "path": "grammar-pages/sub-common/5f33dee7584ea8a68aaf643a1d1a7b10.js",
+      "path": "grammar-pages/sub-common/bbb247a10b6ccd4eec26055bafab49f4.js",
       "package": "grammar-pages",
       "bytes": 19056
     },
@@ -402,7 +402,7 @@
     {
       "path": "study/duel/index.js",
       "package": "study",
-      "bytes": 17116
+      "bytes": 17117
     },
     {
       "path": "assets/brand/scene-laptop.png",
@@ -430,12 +430,12 @@
       "bytes": 16448
     },
     {
-      "path": "grammar-pages/sub-common/1bc0116113f1d1f4c7bb2f9f4e5b32f1.js",
+      "path": "grammar-pages/sub-common/15c2cdb82e78e5490114f2b5d97aec6a.js",
       "package": "grammar-pages",
       "bytes": 16314
     },
     {
-      "path": "study/sub-common/1bc0116113f1d1f4c7bb2f9f4e5b32f1.js",
+      "path": "study/sub-common/15c2cdb82e78e5490114f2b5d97aec6a.js",
       "package": "study",
       "bytes": 16314
     },
@@ -460,9 +460,9 @@
       "bytes": 15801
     },
     {
-      "path": "grammar-pages/sub-common/484fc622a26c39d70b3eebc4b7e034f9.js",
+      "path": "grammar-pages/sub-common/28e2dfed2928f6b7bf6ae18192fb26d1.js",
       "package": "grammar-pages",
-      "bytes": 15616
+      "bytes": 15617
     },
     {
       "path": "content-pages/assets/brand/empty-box.png",
@@ -510,7 +510,7 @@
       "bytes": 14124
     },
     {
-      "path": "account/sub-common/8f513ab755d1302742eb6a9def1dad4e.js",
+      "path": "account/sub-common/11f9cde6e6ebee19a27283a2b2fb61ea.js",
       "package": "account",
       "bytes": 13693
     },
@@ -518,6 +518,11 @@
       "path": "lazy/word-list-import.js",
       "package": "lazy",
       "bytes": 13693
+    },
+    {
+      "path": "study/sub-common/87cd7c28476df26ae1c52d5e00651364.js",
+      "package": "study",
+      "bytes": 13685
     },
     {
       "path": "account/assets/brand/mood-ask.png",
@@ -530,7 +535,7 @@
       "bytes": 13465
     },
     {
-      "path": "content-pages/sub-common/d101fe9737570a9e50e9e85aca942bf7.js",
+      "path": "content-pages/sub-common/f01208b745b678ec69efaca3081bf6b3.js",
       "package": "content-pages",
       "bytes": 13022
     },
@@ -538,11 +543,6 @@
       "path": "account/personal-info/index.js",
       "package": "account",
       "bytes": 12846
-    },
-    {
-      "path": "study/sub-common/8b2c44d6d3b03a061688a42e6fee2e07.js",
-      "package": "study",
-      "bytes": 12615
     },
     {
       "path": "assets/brand/mood-wave.png",
@@ -560,12 +560,12 @@
       "bytes": 12202
     },
     {
-      "path": "content-pages/sub-common/2ba0e67b677e343dc5e44d385c6c4016.wxss",
+      "path": "content-pages/sub-common/b9729b6160a2178a68d800b6c6b815f1.wxss",
       "package": "content-pages",
       "bytes": 12061
     },
     {
-      "path": "study/sub-common/2ba0e67b677e343dc5e44d385c6c4016.wxss",
+      "path": "study/sub-common/b9729b6160a2178a68d800b6c6b815f1.wxss",
       "package": "study",
       "bytes": 12061
     },
@@ -575,7 +575,7 @@
       "bytes": 11976
     },
     {
-      "path": "account/sub-common/bd8262b9534f5a523a84f1ca66fbdea2.js",
+      "path": "account/sub-common/a514419c8e31924b02fea23ee527246b.js",
       "package": "account",
       "bytes": 11261
     },
@@ -605,22 +605,22 @@
       "bytes": 10458
     },
     {
-      "path": "account/sub-common/0d3f9e2aa778fec294e42b3468e4c88e.js",
+      "path": "account/sub-common/0c3b069d7995617bccce63438dfde57d.js",
       "package": "account",
       "bytes": 10277
     },
     {
-      "path": "content-pages/sub-common/0d3f9e2aa778fec294e42b3468e4c88e.js",
+      "path": "content-pages/sub-common/0c3b069d7995617bccce63438dfde57d.js",
       "package": "content-pages",
       "bytes": 10277
     },
     {
-      "path": "grammar-pages/sub-common/0d3f9e2aa778fec294e42b3468e4c88e.js",
+      "path": "grammar-pages/sub-common/0c3b069d7995617bccce63438dfde57d.js",
       "package": "grammar-pages",
       "bytes": 10277
     },
     {
-      "path": "study/sub-common/0d3f9e2aa778fec294e42b3468e4c88e.js",
+      "path": "study/sub-common/0c3b069d7995617bccce63438dfde57d.js",
       "package": "study",
       "bytes": 10277
     },
@@ -645,17 +645,17 @@
       "bytes": 9300
     },
     {
-      "path": "content-pages/sub-common/d5e72a9d57b048d555e715caa136ce6b.js",
+      "path": "content-pages/sub-common/2ea4deefcc6ef0248ff123ec832455a4.js",
       "package": "content-pages",
       "bytes": 9292
     },
     {
-      "path": "grammar-pages/sub-common/d5e72a9d57b048d555e715caa136ce6b.js",
+      "path": "grammar-pages/sub-common/2ea4deefcc6ef0248ff123ec832455a4.js",
       "package": "grammar-pages",
       "bytes": 9292
     },
     {
-      "path": "study/sub-common/d5e72a9d57b048d555e715caa136ce6b.js",
+      "path": "study/sub-common/2ea4deefcc6ef0248ff123ec832455a4.js",
       "package": "study",
       "bytes": 9292
     },
@@ -665,14 +665,14 @@
       "bytes": 9098
     },
     {
-      "path": "account/sub-common/9a15d4b4ddea31f048cb15b11b3a5a8b.js",
+      "path": "account/sub-common/0a313bfca21d55aeb57f0cae00a253d2.js",
       "package": "account",
       "bytes": 9078
     },
     {
       "path": "study/distinction-quiz/index.js",
       "package": "study",
-      "bytes": 8996
+      "bytes": 8994
     },
     {
       "path": "study/confusion/index.wxss",
@@ -685,27 +685,27 @@
       "bytes": 8578
     },
     {
-      "path": "grammar-pages/sub-common/579cb60572370181988b0608ecb3c98a.js",
+      "path": "grammar-pages/sub-common/ca11211d68bb0cce2d31e41f152876f1.js",
       "package": "grammar-pages",
       "bytes": 8514
     },
     {
-      "path": "study/sub-common/579cb60572370181988b0608ecb3c98a.js",
+      "path": "study/sub-common/ca11211d68bb0cce2d31e41f152876f1.js",
       "package": "study",
       "bytes": 8514
     },
     {
-      "path": "grammar-pages/sub-common/f04581c09a22c88b58a2896644285a3a.js",
+      "path": "grammar-pages/sub-common/ad0f35ad38aa99bf95e3408d5228dc04.js",
       "package": "grammar-pages",
-      "bytes": 8387
+      "bytes": 8385
     },
     {
-      "path": "account/sub-common/56721a0919c7d5a4652457131253faf3.js",
+      "path": "account/sub-common/8bfd8181f1597f9d17b9137a60e85d17.js",
       "package": "account",
       "bytes": 8265
     },
     {
-      "path": "study/sub-common/56721a0919c7d5a4652457131253faf3.js",
+      "path": "study/sub-common/8bfd8181f1597f9d17b9137a60e85d17.js",
       "package": "study",
       "bytes": 8265
     },
@@ -720,29 +720,29 @@
       "bytes": 8179
     },
     {
-      "path": "content-pages/sub-common/562187a12860962cf824019f2d7eb605.js",
+      "path": "content-pages/sub-common/f419b0206f70f6de4a98ce0d8fdce467.js",
       "package": "content-pages",
-      "bytes": 8160
+      "bytes": 8161
     },
     {
-      "path": "grammar-pages/sub-common/562187a12860962cf824019f2d7eb605.js",
+      "path": "grammar-pages/sub-common/f419b0206f70f6de4a98ce0d8fdce467.js",
       "package": "grammar-pages",
-      "bytes": 8160
+      "bytes": 8161
     },
     {
-      "path": "content-pages/sub-common/7d2140635e7aeb8e9a6ef35b932f3002.js",
+      "path": "content-pages/sub-common/a3e7fd8f5570a16c739951f15aa5c5db.js",
       "package": "content-pages",
-      "bytes": 7741
+      "bytes": 7742
     },
     {
-      "path": "grammar-pages/sub-common/7d2140635e7aeb8e9a6ef35b932f3002.js",
+      "path": "grammar-pages/sub-common/a3e7fd8f5570a16c739951f15aa5c5db.js",
       "package": "grammar-pages",
-      "bytes": 7741
+      "bytes": 7742
     },
     {
-      "path": "study/sub-common/7d2140635e7aeb8e9a6ef35b932f3002.js",
+      "path": "study/sub-common/a3e7fd8f5570a16c739951f15aa5c5db.js",
       "package": "study",
-      "bytes": 7741
+      "bytes": 7742
     },
     {
       "path": "content-pages/assets/brand/mood-proud.png",
@@ -750,17 +750,17 @@
       "bytes": 7706
     },
     {
-      "path": "content-pages/sub-common/3f0567ff7a9e163c31bbca9b65374a4b.js",
+      "path": "content-pages/sub-common/c360dadc0a70624309c2521116cb19f4.js",
       "package": "content-pages",
       "bytes": 7468
     },
     {
-      "path": "content-pages/sub-common/10071bcad7513948b7bb9b2b9c48fef3.js",
+      "path": "content-pages/sub-common/ff0054cc27b804b11e3fc545a9cca80e.js",
       "package": "content-pages",
       "bytes": 7373
     },
     {
-      "path": "grammar-pages/sub-common/10071bcad7513948b7bb9b2b9c48fef3.js",
+      "path": "grammar-pages/sub-common/ff0054cc27b804b11e3fc545a9cca80e.js",
       "package": "grammar-pages",
       "bytes": 7373
     },
@@ -785,7 +785,7 @@
       "bytes": 6898
     },
     {
-      "path": "account/sub-common/f92954bf0e72eb9e0209e9f49a8dcc2d.js",
+      "path": "account/sub-common/c278aa75e3cce6dd3a777c8f137cadce.js",
       "package": "account",
       "bytes": 6870
     },
@@ -795,17 +795,17 @@
       "bytes": 6870
     },
     {
-      "path": "content-pages/sub-common/f92954bf0e72eb9e0209e9f49a8dcc2d.js",
+      "path": "content-pages/sub-common/c278aa75e3cce6dd3a777c8f137cadce.js",
       "package": "content-pages",
       "bytes": 6870
     },
     {
-      "path": "grammar-pages/sub-common/f92954bf0e72eb9e0209e9f49a8dcc2d.js",
+      "path": "grammar-pages/sub-common/c278aa75e3cce6dd3a777c8f137cadce.js",
       "package": "grammar-pages",
       "bytes": 6870
     },
     {
-      "path": "study/sub-common/f92954bf0e72eb9e0209e9f49a8dcc2d.js",
+      "path": "study/sub-common/c278aa75e3cce6dd3a777c8f137cadce.js",
       "package": "study",
       "bytes": 6870
     },
@@ -817,22 +817,22 @@
     {
       "path": "content-pages/streak/index.js",
       "package": "content-pages",
-      "bytes": 6695
+      "bytes": 6694
     },
     {
-      "path": "content-pages/sub-common/5651c0dfbd0e6c8a317df37137b7efe6.js",
+      "path": "content-pages/sub-common/07288e6236e49cae7a5bc447c3c1f716.js",
       "package": "content-pages",
-      "bytes": 6608
+      "bytes": 6607
     },
     {
-      "path": "study/sub-common/5651c0dfbd0e6c8a317df37137b7efe6.js",
+      "path": "study/sub-common/07288e6236e49cae7a5bc447c3c1f716.js",
       "package": "study",
-      "bytes": 6608
+      "bytes": 6607
     },
     {
       "path": "runtime.js",
       "package": "main",
-      "bytes": 6543
+      "bytes": 6541
     },
     {
       "path": "content-pages/streak/index.wxss",
@@ -840,52 +840,52 @@
       "bytes": 6507
     },
     {
-      "path": "account/sub-common/f1b615ba4463e320165ce1b0522e00f5.js",
+      "path": "account/sub-common/adda20e7d21c478bb200552e431b6b4f.js",
       "package": "account",
       "bytes": 6460
     },
     {
-      "path": "study/sub-common/f1b615ba4463e320165ce1b0522e00f5.js",
+      "path": "study/sub-common/adda20e7d21c478bb200552e431b6b4f.js",
       "package": "study",
       "bytes": 6460
     },
     {
-      "path": "content-pages/sub-common/58ee36dc7f40c73659fb0d3e31187e0b.js",
+      "path": "content-pages/sub-common/975b77ba0202c1d83501dcf6c2a93ba5.js",
       "package": "content-pages",
       "bytes": 6401
     },
     {
-      "path": "grammar-pages/sub-common/58ee36dc7f40c73659fb0d3e31187e0b.js",
+      "path": "grammar-pages/sub-common/975b77ba0202c1d83501dcf6c2a93ba5.js",
       "package": "grammar-pages",
       "bytes": 6401
     },
     {
-      "path": "study/sub-common/58ee36dc7f40c73659fb0d3e31187e0b.js",
+      "path": "study/sub-common/975b77ba0202c1d83501dcf6c2a93ba5.js",
       "package": "study",
       "bytes": 6401
     },
     {
-      "path": "content-pages/sub-common/1601a398c33aeffdc614693f16957950.js",
+      "path": "content-pages/sub-common/b492d544924bf376bc9b32ba590e5106.js",
       "package": "content-pages",
-      "bytes": 6264
+      "bytes": 6265
     },
     {
-      "path": "study/sub-common/1601a398c33aeffdc614693f16957950.js",
+      "path": "study/sub-common/b492d544924bf376bc9b32ba590e5106.js",
       "package": "study",
-      "bytes": 6264
+      "bytes": 6265
     },
     {
-      "path": "content-pages/sub-common/f06bedc2f74ca488312c28c686330bdd.js",
+      "path": "content-pages/sub-common/7b901a5efd9cf994f3552fc6a410d1b0.js",
       "package": "content-pages",
       "bytes": 6230
     },
     {
-      "path": "grammar-pages/sub-common/f06bedc2f74ca488312c28c686330bdd.js",
+      "path": "grammar-pages/sub-common/7b901a5efd9cf994f3552fc6a410d1b0.js",
       "package": "grammar-pages",
       "bytes": 6230
     },
     {
-      "path": "study/sub-common/f06bedc2f74ca488312c28c686330bdd.js",
+      "path": "study/sub-common/7b901a5efd9cf994f3552fc6a410d1b0.js",
       "package": "study",
       "bytes": 6230
     },
@@ -900,32 +900,32 @@
       "bytes": 6120
     },
     {
-      "path": "content-pages/sub-common/ef6584ad5f41c204daac01799040fa98.js",
+      "path": "content-pages/sub-common/f3b074607511f5eb118bb4ea4fbc55e4.js",
       "package": "content-pages",
       "bytes": 6110
     },
     {
-      "path": "account/sub-common/5d31750df513fc619248691f83640a51.js",
+      "path": "account/sub-common/799a29ce0df8fe599b08a923b17d1577.js",
       "package": "account",
       "bytes": 5927
     },
     {
-      "path": "study/sub-common/5d31750df513fc619248691f83640a51.js",
+      "path": "study/sub-common/799a29ce0df8fe599b08a923b17d1577.js",
       "package": "study",
       "bytes": 5927
     },
     {
-      "path": "content-pages/sub-common/6fecc13258fa196f8fc924a34e70de45.js",
+      "path": "content-pages/sub-common/3b4b99bd9fa91f93485c0af445a06ee2.js",
       "package": "content-pages",
       "bytes": 5889
     },
     {
-      "path": "grammar-pages/sub-common/6fecc13258fa196f8fc924a34e70de45.js",
+      "path": "grammar-pages/sub-common/3b4b99bd9fa91f93485c0af445a06ee2.js",
       "package": "grammar-pages",
       "bytes": 5889
     },
     {
-      "path": "study/sub-common/6fecc13258fa196f8fc924a34e70de45.js",
+      "path": "study/sub-common/3b4b99bd9fa91f93485c0af445a06ee2.js",
       "package": "study",
       "bytes": 5889
     },
@@ -935,17 +935,17 @@
       "bytes": 5757
     },
     {
-      "path": "content-pages/sub-common/fa511e5425a8d62cba61725bb61eed90.js",
+      "path": "content-pages/sub-common/f21f193c0c47fc66184930d560463258.js",
       "package": "content-pages",
       "bytes": 5737
     },
     {
-      "path": "grammar-pages/sub-common/fa511e5425a8d62cba61725bb61eed90.js",
+      "path": "grammar-pages/sub-common/f21f193c0c47fc66184930d560463258.js",
       "package": "grammar-pages",
       "bytes": 5737
     },
     {
-      "path": "study/sub-common/fa511e5425a8d62cba61725bb61eed90.js",
+      "path": "study/sub-common/f21f193c0c47fc66184930d560463258.js",
       "package": "study",
       "bytes": 5737
     },
@@ -965,9 +965,9 @@
       "bytes": 5433
     },
     {
-      "path": "study/sub-common/97f977be87966f4bf5a366d0042e8e47.js",
+      "path": "study/sub-common/855a54c60f7ce0ba502982ac4f1ab06c.js",
       "package": "study",
-      "bytes": 5426
+      "bytes": 5425
     },
     {
       "path": "content-pages/assets/brand/icon-shop.png",
@@ -982,7 +982,7 @@
     {
       "path": "account/help/index.js",
       "package": "account",
-      "bytes": 5286
+      "bytes": 5285
     },
     {
       "path": "account/personal-info/index.wxss",
@@ -1000,22 +1000,22 @@
       "bytes": 5156
     },
     {
-      "path": "account/sub-common/ed18f86fe66d78dd66098e2f27b1cd9b.js",
+      "path": "account/sub-common/5e8e3250163708fd8c402eac6c406c4d.js",
       "package": "account",
       "bytes": 5092
     },
     {
-      "path": "content-pages/sub-common/ed18f86fe66d78dd66098e2f27b1cd9b.js",
+      "path": "content-pages/sub-common/5e8e3250163708fd8c402eac6c406c4d.js",
       "package": "content-pages",
       "bytes": 5092
     },
     {
-      "path": "grammar-pages/sub-common/ed18f86fe66d78dd66098e2f27b1cd9b.js",
+      "path": "grammar-pages/sub-common/5e8e3250163708fd8c402eac6c406c4d.js",
       "package": "grammar-pages",
       "bytes": 5092
     },
     {
-      "path": "study/sub-common/ed18f86fe66d78dd66098e2f27b1cd9b.js",
+      "path": "study/sub-common/5e8e3250163708fd8c402eac6c406c4d.js",
       "package": "study",
       "bytes": 5092
     },
@@ -1025,12 +1025,12 @@
       "bytes": 5090
     },
     {
-      "path": "grammar-pages/sub-common/9b8df15e63241bb5db5b1031ccf851de.js",
+      "path": "grammar-pages/sub-common/7801c0b877e43da0dab1e86f84f29380.js",
       "package": "grammar-pages",
       "bytes": 5087
     },
     {
-      "path": "study/sub-common/9b8df15e63241bb5db5b1031ccf851de.js",
+      "path": "study/sub-common/7801c0b877e43da0dab1e86f84f29380.js",
       "package": "study",
       "bytes": 5087
     },
@@ -1050,29 +1050,29 @@
       "bytes": 4823
     },
     {
-      "path": "content-pages/sub-common/3902248e2349693e936189edc2aa0686.js",
+      "path": "content-pages/sub-common/f25b992d0c416df557397d322135cc4b.js",
       "package": "content-pages",
       "bytes": 4762
     },
     {
-      "path": "grammar-pages/sub-common/3902248e2349693e936189edc2aa0686.js",
+      "path": "grammar-pages/sub-common/f25b992d0c416df557397d322135cc4b.js",
       "package": "grammar-pages",
       "bytes": 4762
     },
     {
-      "path": "grammar-pages/sub-common/9bc3f8a445e4a477b5319e868b675dc4.js",
+      "path": "grammar-pages/sub-common/d0d01711a35c75c522683dab1e320eb9.js",
       "package": "grammar-pages",
       "bytes": 4687
-    },
-    {
-      "path": "grammar-pages/compile/index.js",
-      "package": "grammar-pages",
-      "bytes": 4678
     },
     {
       "path": "assets/tabs/profile-on.png",
       "package": "main",
       "bytes": 4676
+    },
+    {
+      "path": "grammar-pages/compile/index.js",
+      "package": "grammar-pages",
+      "bytes": 4672
     },
     {
       "path": "assets/brand/tool-kanji-readings-capy.png",
@@ -1110,7 +1110,7 @@
       "bytes": 4413
     },
     {
-      "path": "account/sub-common/bf0bd82d754a6ef57bd4aae6f822e823.js",
+      "path": "account/sub-common/17acc8fcab7fddee5588a0f73bacf07f.js",
       "package": "account",
       "bytes": 4391
     },
@@ -1120,12 +1120,12 @@
       "bytes": 4391
     },
     {
-      "path": "account/sub-common/fe124866461ab0faf162db480cd42ced.js",
+      "path": "account/sub-common/d5c097a63db4424ed16e8007b4dcf529.js",
       "package": "account",
       "bytes": 4386
     },
     {
-      "path": "study/sub-common/fe124866461ab0faf162db480cd42ced.js",
+      "path": "study/sub-common/d5c097a63db4424ed16e8007b4dcf529.js",
       "package": "study",
       "bytes": 4386
     },
@@ -1170,7 +1170,7 @@
       "bytes": 4028
     },
     {
-      "path": "study/sub-common/a0bdd93c2c1343e847e283e744e4ed31.js",
+      "path": "study/sub-common/7e6c83f1f0139ef59989fbf482da5d72.js",
       "package": "study",
       "bytes": 3968
     },
@@ -1200,17 +1200,17 @@
       "bytes": 3775
     },
     {
-      "path": "content-pages/sub-common/7f885a148728fd54a23f3a26d7099384.js",
+      "path": "content-pages/sub-common/c7d13ed71475168c5ba9b6391029736c.js",
       "package": "content-pages",
       "bytes": 3686
     },
     {
-      "path": "grammar-pages/sub-common/7f885a148728fd54a23f3a26d7099384.js",
+      "path": "grammar-pages/sub-common/c7d13ed71475168c5ba9b6391029736c.js",
       "package": "grammar-pages",
       "bytes": 3686
     },
     {
-      "path": "study/sub-common/7f885a148728fd54a23f3a26d7099384.js",
+      "path": "study/sub-common/c7d13ed71475168c5ba9b6391029736c.js",
       "package": "study",
       "bytes": 3686
     },
@@ -1225,24 +1225,24 @@
       "bytes": 3621
     },
     {
-      "path": "account/sub-common/dedf872c389e8d0b7ad255f44ddd0284.js",
+      "path": "account/sub-common/ab53fb277bd88079917372e2c225f2e9.js",
       "package": "account",
-      "bytes": 3579
+      "bytes": 3578
     },
     {
-      "path": "content-pages/sub-common/dedf872c389e8d0b7ad255f44ddd0284.js",
+      "path": "content-pages/sub-common/ab53fb277bd88079917372e2c225f2e9.js",
       "package": "content-pages",
-      "bytes": 3579
+      "bytes": 3578
     },
     {
-      "path": "grammar-pages/sub-common/dedf872c389e8d0b7ad255f44ddd0284.js",
+      "path": "grammar-pages/sub-common/ab53fb277bd88079917372e2c225f2e9.js",
       "package": "grammar-pages",
-      "bytes": 3579
+      "bytes": 3578
     },
     {
-      "path": "study/sub-common/dedf872c389e8d0b7ad255f44ddd0284.js",
+      "path": "study/sub-common/ab53fb277bd88079917372e2c225f2e9.js",
       "package": "study",
-      "bytes": 3579
+      "bytes": 3578
     },
     {
       "path": "account/privacy-policy/index.js",
@@ -1265,12 +1265,12 @@
       "bytes": 3311
     },
     {
-      "path": "grammar-pages/sub-common/704dc6c37c94ed96b8829fa758811905.js",
+      "path": "grammar-pages/sub-common/18b84cd0d0f88bd389905d17e111f156.js",
       "package": "grammar-pages",
       "bytes": 3285
     },
     {
-      "path": "study/sub-common/704dc6c37c94ed96b8829fa758811905.js",
+      "path": "study/sub-common/18b84cd0d0f88bd389905d17e111f156.js",
       "package": "study",
       "bytes": 3285
     },
@@ -1305,22 +1305,22 @@
       "bytes": 3163
     },
     {
-      "path": "account/sub-common/06d07c0a03d684655fc8401163818ba4.js",
+      "path": "account/sub-common/5ce99c1378417c58f7cb92f3bc3167e6.js",
       "package": "account",
       "bytes": 3131
     },
     {
-      "path": "content-pages/sub-common/06d07c0a03d684655fc8401163818ba4.js",
+      "path": "content-pages/sub-common/5ce99c1378417c58f7cb92f3bc3167e6.js",
       "package": "content-pages",
       "bytes": 3131
     },
     {
-      "path": "grammar-pages/sub-common/06d07c0a03d684655fc8401163818ba4.js",
+      "path": "grammar-pages/sub-common/5ce99c1378417c58f7cb92f3bc3167e6.js",
       "package": "grammar-pages",
       "bytes": 3131
     },
     {
-      "path": "study/sub-common/06d07c0a03d684655fc8401163818ba4.js",
+      "path": "study/sub-common/5ce99c1378417c58f7cb92f3bc3167e6.js",
       "package": "study",
       "bytes": 3131
     },
@@ -1342,7 +1342,7 @@
     {
       "path": "content-pages/detail/index.js",
       "package": "content-pages",
-      "bytes": 3066
+      "bytes": 3062
     },
     {
       "path": "assets/brand/shushugo-icon.png",
@@ -1360,7 +1360,7 @@
       "bytes": 2814
     },
     {
-      "path": "study/sub-common/2ae18caefb17de2826d98e733cbd6508.js",
+      "path": "study/sub-common/01c686b8af6b8988307d8c97b47f9d5e.js",
       "package": "study",
       "bytes": 2795
     },
@@ -1400,12 +1400,12 @@
       "bytes": 2707
     },
     {
-      "path": "content-pages/sub-common/94e35e386d9bff20b722bb7f48969dda.js",
+      "path": "content-pages/sub-common/e3878aca6b4a938960868081b5fa8988.js",
       "package": "content-pages",
       "bytes": 2695
     },
     {
-      "path": "study/sub-common/94e35e386d9bff20b722bb7f48969dda.js",
+      "path": "study/sub-common/e3878aca6b4a938960868081b5fa8988.js",
       "package": "study",
       "bytes": 2695
     },
@@ -1420,17 +1420,17 @@
       "bytes": 2665
     },
     {
-      "path": "content-pages/sub-common/5c7f04455ada194127ee553e3292d872.js",
+      "path": "content-pages/sub-common/3d98a2093a0bba3c6c545db970af47de.js",
       "package": "content-pages",
       "bytes": 2651
     },
     {
-      "path": "grammar-pages/sub-common/5c7f04455ada194127ee553e3292d872.js",
+      "path": "grammar-pages/sub-common/3d98a2093a0bba3c6c545db970af47de.js",
       "package": "grammar-pages",
       "bytes": 2651
     },
     {
-      "path": "study/sub-common/5c7f04455ada194127ee553e3292d872.js",
+      "path": "study/sub-common/3d98a2093a0bba3c6c545db970af47de.js",
       "package": "study",
       "bytes": 2651
     },
@@ -1440,9 +1440,9 @@
       "bytes": 2640
     },
     {
-      "path": "grammar-pages/sub-common/f7114928494640432bc7a050ad158253.js",
+      "path": "grammar-pages/sub-common/85a9d5fd68791514284b7c7ecc2b92e6.js",
       "package": "grammar-pages",
-      "bytes": 2593
+      "bytes": 2592
     },
     {
       "path": "assets/brand/tool-team.png",
@@ -1450,14 +1450,14 @@
       "bytes": 2526
     },
     {
-      "path": "study/sub-common/d025dc40531ae36202e23c352b1a2c0d.js",
+      "path": "study/sub-common/2e344b0b489848e5b5e3b3944c318242.js",
       "package": "study",
       "bytes": 2475
     },
     {
       "path": "content-pages/favorites/index.js",
       "package": "content-pages",
-      "bytes": 2473
+      "bytes": 2469
     },
     {
       "path": "assets/brand/mode-picked.png",
@@ -1475,17 +1475,17 @@
       "bytes": 2309
     },
     {
-      "path": "account/sub-common/75204419feff7eb717df9dc73198a043.js",
+      "path": "account/sub-common/77af97764e43e00f135bb939519ba483.js",
       "package": "account",
       "bytes": 2298
     },
     {
-      "path": "content-pages/sub-common/25ef3a2f4e61a67f041b28b128cb607b.js",
+      "path": "content-pages/sub-common/02d30ad3f61dc82b3c91362a947a99dc.js",
       "package": "content-pages",
       "bytes": 2289
     },
     {
-      "path": "study/sub-common/25ef3a2f4e61a67f041b28b128cb607b.js",
+      "path": "study/sub-common/02d30ad3f61dc82b3c91362a947a99dc.js",
       "package": "study",
       "bytes": 2289
     },
@@ -1495,17 +1495,17 @@
       "bytes": 2268
     },
     {
-      "path": "account/sub-common/81acc9eb75297559662ed467ab60a847.js",
+      "path": "account/sub-common/12f2067011c556dc610b0924296488bc.js",
       "package": "account",
       "bytes": 2254
     },
     {
-      "path": "content-pages/sub-common/81acc9eb75297559662ed467ab60a847.js",
+      "path": "content-pages/sub-common/12f2067011c556dc610b0924296488bc.js",
       "package": "content-pages",
       "bytes": 2254
     },
     {
-      "path": "study/sub-common/81acc9eb75297559662ed467ab60a847.js",
+      "path": "study/sub-common/12f2067011c556dc610b0924296488bc.js",
       "package": "study",
       "bytes": 2254
     },
@@ -1532,30 +1532,30 @@
     {
       "path": "study/confusion/index.js",
       "package": "study",
-      "bytes": 1861
+      "bytes": 1862
     },
     {
-      "path": "content-pages/sub-common/06d831343c1d4fe79615dcc47fe873c2.js",
+      "path": "content-pages/sub-common/867d57b17ef3f88e59c137364bc309d9.js",
       "package": "content-pages",
-      "bytes": 1847
+      "bytes": 1848
     },
     {
-      "path": "grammar-pages/sub-common/06d831343c1d4fe79615dcc47fe873c2.js",
+      "path": "grammar-pages/sub-common/867d57b17ef3f88e59c137364bc309d9.js",
       "package": "grammar-pages",
-      "bytes": 1847
+      "bytes": 1848
     },
     {
-      "path": "study/sub-common/06d831343c1d4fe79615dcc47fe873c2.js",
+      "path": "study/sub-common/867d57b17ef3f88e59c137364bc309d9.js",
       "package": "study",
-      "bytes": 1847
+      "bytes": 1848
     },
     {
-      "path": "account/sub-common/a34ec8207d51b83a8d4bcc481112af9f.js",
+      "path": "account/sub-common/be2dd35ba7df38ec9765355abf12be8e.js",
       "package": "account",
       "bytes": 1776
     },
     {
-      "path": "study/sub-common/a34ec8207d51b83a8d4bcc481112af9f.js",
+      "path": "study/sub-common/be2dd35ba7df38ec9765355abf12be8e.js",
       "package": "study",
       "bytes": 1776
     },
@@ -1570,39 +1570,39 @@
       "bytes": 1696
     },
     {
-      "path": "content-pages/sub-common/873c7a74c925b21605ed4a0485306fc0.js",
+      "path": "content-pages/sub-common/b58d32ad5bf9f492fd68c68123f15179.js",
       "package": "content-pages",
       "bytes": 1570
     },
     {
-      "path": "grammar-pages/sub-common/873c7a74c925b21605ed4a0485306fc0.js",
+      "path": "grammar-pages/sub-common/b58d32ad5bf9f492fd68c68123f15179.js",
       "package": "grammar-pages",
       "bytes": 1570
     },
     {
-      "path": "study/sub-common/873c7a74c925b21605ed4a0485306fc0.js",
+      "path": "study/sub-common/b58d32ad5bf9f492fd68c68123f15179.js",
       "package": "study",
       "bytes": 1570
     },
     {
-      "path": "content-pages/sub-common/cb399fa5331c5aa43a61850da471073e.js",
+      "path": "content-pages/sub-common/4feca95407b2d61b86bee71334947d87.js",
       "package": "content-pages",
       "bytes": 1470
     },
     {
-      "path": "grammar-pages/sub-common/cb399fa5331c5aa43a61850da471073e.js",
+      "path": "grammar-pages/sub-common/4feca95407b2d61b86bee71334947d87.js",
       "package": "grammar-pages",
       "bytes": 1470
     },
     {
-      "path": "study/sub-common/cb399fa5331c5aa43a61850da471073e.js",
+      "path": "study/sub-common/4feca95407b2d61b86bee71334947d87.js",
       "package": "study",
       "bytes": 1470
     },
     {
       "path": "content-pages/grammar-foundation/index.js",
       "package": "content-pages",
-      "bytes": 1465
+      "bytes": 1464
     },
     {
       "path": "assets/brand/mood-ask.png",
@@ -1610,27 +1610,27 @@
       "bytes": 1450
     },
     {
-      "path": "study/sub-common/c53e460fd539b1c1bc3405b73c1dc90e.js",
+      "path": "study/sub-common/6152872ab0d100754bc7ea5849551cd2.js",
       "package": "study",
       "bytes": 1391
     },
     {
-      "path": "account/sub-common/cf9908f15e3e53269c22f176db05f3b4.js",
+      "path": "account/sub-common/d773ea2463c98bbef77dfab2a2f02492.js",
       "package": "account",
       "bytes": 1371
     },
     {
-      "path": "study/sub-common/cf9908f15e3e53269c22f176db05f3b4.js",
+      "path": "study/sub-common/d773ea2463c98bbef77dfab2a2f02492.js",
       "package": "study",
       "bytes": 1371
     },
     {
-      "path": "grammar-pages/sub-common/b5b008a3b85e84eeafd5dcc881b3c7a5.js",
+      "path": "grammar-pages/sub-common/db3ae2e5c07b677535c1962cd4efcff2.js",
       "package": "grammar-pages",
       "bytes": 1345
     },
     {
-      "path": "study/sub-common/b5b008a3b85e84eeafd5dcc881b3c7a5.js",
+      "path": "study/sub-common/db3ae2e5c07b677535c1962cd4efcff2.js",
       "package": "study",
       "bytes": 1345
     },
@@ -1645,7 +1645,7 @@
       "bytes": 1298
     },
     {
-      "path": "content-pages/sub-common/0e89669a66bcfef2403b94ff77d245af.js",
+      "path": "content-pages/sub-common/7f086cf55cf9c43bafff70e31b83f4fe.js",
       "package": "content-pages",
       "bytes": 1257
     },
@@ -1655,112 +1655,112 @@
       "bytes": 1220
     },
     {
-      "path": "content-pages/sub-common/8dcda1045a99641c81e4eece3e7c96a2.js",
+      "path": "content-pages/sub-common/ed1707904a9dd415168b1a097eb9a183.js",
       "package": "content-pages",
       "bytes": 1217
     },
     {
-      "path": "grammar-pages/sub-common/8dcda1045a99641c81e4eece3e7c96a2.js",
+      "path": "grammar-pages/sub-common/ed1707904a9dd415168b1a097eb9a183.js",
       "package": "grammar-pages",
       "bytes": 1217
     },
     {
-      "path": "content-pages/sub-common/878c5ed8dcd0bb6bc4be4a5fc69b471f.js",
+      "path": "content-pages/sub-common/240a61b7e391bc7ec7decb96c3dfe061.js",
       "package": "content-pages",
       "bytes": 1209
     },
     {
-      "path": "study/sub-common/878c5ed8dcd0bb6bc4be4a5fc69b471f.js",
+      "path": "study/sub-common/240a61b7e391bc7ec7decb96c3dfe061.js",
       "package": "study",
       "bytes": 1209
     },
     {
-      "path": "account/sub-common/5541d78172a70c108c0487e51a0f90de.js",
+      "path": "account/sub-common/91d7a1f4beed3d9d4b44bb2a197db56b.js",
       "package": "account",
       "bytes": 1077
     },
     {
-      "path": "content-pages/sub-common/5541d78172a70c108c0487e51a0f90de.js",
+      "path": "content-pages/sub-common/91d7a1f4beed3d9d4b44bb2a197db56b.js",
       "package": "content-pages",
       "bytes": 1077
     },
     {
-      "path": "grammar-pages/sub-common/5541d78172a70c108c0487e51a0f90de.js",
+      "path": "grammar-pages/sub-common/91d7a1f4beed3d9d4b44bb2a197db56b.js",
       "package": "grammar-pages",
       "bytes": 1077
     },
     {
-      "path": "study/sub-common/5541d78172a70c108c0487e51a0f90de.js",
+      "path": "study/sub-common/91d7a1f4beed3d9d4b44bb2a197db56b.js",
       "package": "study",
       "bytes": 1077
     },
     {
-      "path": "account/sub-common/61c189ee9fdba1a6c87bc5d32115c99a.js",
+      "path": "account/sub-common/c4a7aab923c6152cf7927ca214d691ec.js",
       "package": "account",
       "bytes": 1053
     },
     {
-      "path": "content-pages/sub-common/61c189ee9fdba1a6c87bc5d32115c99a.js",
+      "path": "content-pages/sub-common/c4a7aab923c6152cf7927ca214d691ec.js",
       "package": "content-pages",
       "bytes": 1053
     },
     {
-      "path": "grammar-pages/sub-common/61c189ee9fdba1a6c87bc5d32115c99a.js",
+      "path": "grammar-pages/sub-common/c4a7aab923c6152cf7927ca214d691ec.js",
       "package": "grammar-pages",
       "bytes": 1053
     },
     {
-      "path": "study/sub-common/61c189ee9fdba1a6c87bc5d32115c99a.js",
+      "path": "study/sub-common/c4a7aab923c6152cf7927ca214d691ec.js",
       "package": "study",
       "bytes": 1053
     },
     {
-      "path": "account/sub-common/c14754fec7809e9b40588d1767a9517b.js",
+      "path": "account/sub-common/ea28519cc33d9084ecee728fd1a4d67a.js",
       "package": "account",
-      "bytes": 1017
+      "bytes": 1016
     },
     {
-      "path": "content-pages/sub-common/c14754fec7809e9b40588d1767a9517b.js",
+      "path": "content-pages/sub-common/ea28519cc33d9084ecee728fd1a4d67a.js",
       "package": "content-pages",
-      "bytes": 1017
+      "bytes": 1016
     },
     {
-      "path": "grammar-pages/sub-common/c14754fec7809e9b40588d1767a9517b.js",
+      "path": "grammar-pages/sub-common/ea28519cc33d9084ecee728fd1a4d67a.js",
       "package": "grammar-pages",
-      "bytes": 1017
+      "bytes": 1016
     },
     {
-      "path": "study/sub-common/c14754fec7809e9b40588d1767a9517b.js",
+      "path": "study/sub-common/ea28519cc33d9084ecee728fd1a4d67a.js",
       "package": "study",
-      "bytes": 1017
+      "bytes": 1016
     },
     {
-      "path": "account/sub-common/570463cc712c576bd8c29951604b5f70.js",
+      "path": "account/sub-common/f0b14937b3a5f644c9bbb4feab018b01.js",
       "package": "account",
       "bytes": 1005
     },
     {
-      "path": "content-pages/sub-common/570463cc712c576bd8c29951604b5f70.js",
+      "path": "content-pages/sub-common/f0b14937b3a5f644c9bbb4feab018b01.js",
       "package": "content-pages",
       "bytes": 1005
     },
     {
-      "path": "grammar-pages/sub-common/570463cc712c576bd8c29951604b5f70.js",
+      "path": "grammar-pages/sub-common/f0b14937b3a5f644c9bbb4feab018b01.js",
       "package": "grammar-pages",
       "bytes": 1005
     },
     {
-      "path": "study/sub-common/570463cc712c576bd8c29951604b5f70.js",
+      "path": "study/sub-common/f0b14937b3a5f644c9bbb4feab018b01.js",
       "package": "study",
       "bytes": 1005
     },
     {
-      "path": "account/sub-common/887e90c220de5449e7ea97fe58cf80a9.js",
+      "path": "account/sub-common/b9f7fc8f4ef768bd9ffdab16f99824e5.js",
       "package": "account",
       "bytes": 1000
     },
     {
-      "path": "study/sub-common/887e90c220de5449e7ea97fe58cf80a9.js",
+      "path": "study/sub-common/b9f7fc8f4ef768bd9ffdab16f99824e5.js",
       "package": "study",
       "bytes": 1000
     },
@@ -1770,22 +1770,22 @@
       "bytes": 997
     },
     {
-      "path": "account/sub-common/70494c8a81b80dcdee2926dd226d812b.js",
+      "path": "account/sub-common/4ac08f9c4564e272789b20b1abb6d7c9.js",
       "package": "account",
       "bytes": 875
     },
     {
-      "path": "content-pages/sub-common/70494c8a81b80dcdee2926dd226d812b.js",
+      "path": "content-pages/sub-common/4ac08f9c4564e272789b20b1abb6d7c9.js",
       "package": "content-pages",
       "bytes": 875
     },
     {
-      "path": "grammar-pages/sub-common/70494c8a81b80dcdee2926dd226d812b.js",
+      "path": "grammar-pages/sub-common/4ac08f9c4564e272789b20b1abb6d7c9.js",
       "package": "grammar-pages",
       "bytes": 875
     },
     {
-      "path": "study/sub-common/70494c8a81b80dcdee2926dd226d812b.js",
+      "path": "study/sub-common/4ac08f9c4564e272789b20b1abb6d7c9.js",
       "package": "study",
       "bytes": 875
     },
@@ -1810,57 +1810,57 @@
       "bytes": 836
     },
     {
-      "path": "study/sub-common/4ea4c24c8cfa711e4ff7b4867310dda9.js",
+      "path": "study/sub-common/6a688da2fb66fde9d3ef6d651ba1d945.js",
       "package": "study",
       "bytes": 827
     },
     {
-      "path": "content-pages/sub-common/661bc0cc4a5e8139a96e722edc480dbe.js",
+      "path": "content-pages/sub-common/c8c1ade855c56e6e0ec96ed8dbedd6b2.js",
       "package": "content-pages",
       "bytes": 821
     },
     {
-      "path": "grammar-pages/sub-common/661bc0cc4a5e8139a96e722edc480dbe.js",
+      "path": "grammar-pages/sub-common/c8c1ade855c56e6e0ec96ed8dbedd6b2.js",
       "package": "grammar-pages",
       "bytes": 821
     },
     {
-      "path": "study/sub-common/661bc0cc4a5e8139a96e722edc480dbe.js",
+      "path": "study/sub-common/c8c1ade855c56e6e0ec96ed8dbedd6b2.js",
       "package": "study",
       "bytes": 821
     },
     {
-      "path": "content-pages/sub-common/a8b5103eabc314b3d967efd03f5221a4.js",
+      "path": "content-pages/sub-common/036c3374545cd02c11cb526e68e9e5eb.js",
       "package": "content-pages",
       "bytes": 817
     },
     {
-      "path": "grammar-pages/sub-common/a8b5103eabc314b3d967efd03f5221a4.js",
+      "path": "grammar-pages/sub-common/036c3374545cd02c11cb526e68e9e5eb.js",
       "package": "grammar-pages",
       "bytes": 817
     },
     {
-      "path": "content-pages/sub-common/0b4753001c81df0cd6e5828fd0f93868.js",
+      "path": "content-pages/sub-common/08680d42b2a1c9038b1f9081fff8b560.js",
       "package": "content-pages",
       "bytes": 782
     },
     {
-      "path": "grammar-pages/sub-common/0b4753001c81df0cd6e5828fd0f93868.js",
+      "path": "grammar-pages/sub-common/08680d42b2a1c9038b1f9081fff8b560.js",
       "package": "grammar-pages",
       "bytes": 782
     },
     {
-      "path": "study/sub-common/0b4753001c81df0cd6e5828fd0f93868.js",
+      "path": "study/sub-common/08680d42b2a1c9038b1f9081fff8b560.js",
       "package": "study",
       "bytes": 782
     },
     {
-      "path": "content-pages/sub-common/6296e2ac2506eb515ad5cdd9e83a402d.js",
+      "path": "content-pages/sub-common/761f2bcdc20576a751f3db3dab6f5199.js",
       "package": "content-pages",
       "bytes": 780
     },
     {
-      "path": "study/sub-common/6296e2ac2506eb515ad5cdd9e83a402d.js",
+      "path": "study/sub-common/761f2bcdc20576a751f3db3dab6f5199.js",
       "package": "study",
       "bytes": 780
     },
@@ -1885,19 +1885,19 @@
       "bytes": 762
     },
     {
-      "path": "study/sub-common/a1a5de8d306a615e268d8645b211de6b.js",
+      "path": "study/sub-common/c51a6ace1bed537692e25676b2092009.js",
       "package": "study",
       "bytes": 740
     },
     {
-      "path": "content-pages/sub-common/6145328cefe54b213d921f10a64adf55.js",
+      "path": "content-pages/sub-common/89dd51a28531d883804b85515b9e1f90.js",
       "package": "content-pages",
-      "bytes": 716
+      "bytes": 715
     },
     {
-      "path": "grammar-pages/sub-common/6145328cefe54b213d921f10a64adf55.js",
+      "path": "grammar-pages/sub-common/89dd51a28531d883804b85515b9e1f90.js",
       "package": "grammar-pages",
-      "bytes": 716
+      "bytes": 715
     },
     {
       "path": "assets/lucide/puzzle-ink.svg",
@@ -1920,7 +1920,7 @@
       "bytes": 679
     },
     {
-      "path": "study/sub-common/162b8b5c255e63888b820f35e7aefb19.js",
+      "path": "study/sub-common/35afcb2c62206947857b090e359ffc29.js",
       "package": "study",
       "bytes": 630
     },
@@ -1950,12 +1950,12 @@
       "bytes": 601
     },
     {
-      "path": "account/sub-common/cc5b3f3e6b1232099ec0a6ce50d5b2f5.js",
+      "path": "account/sub-common/abb717707c572c6cb495e6bbd25d339e.js",
       "package": "account",
       "bytes": 597
     },
     {
-      "path": "study/sub-common/cc5b3f3e6b1232099ec0a6ce50d5b2f5.js",
+      "path": "study/sub-common/abb717707c572c6cb495e6bbd25d339e.js",
       "package": "study",
       "bytes": 597
     },
@@ -2030,12 +2030,12 @@
       "bytes": 536
     },
     {
-      "path": "grammar-pages/sub-common/55c4a961a9174af1c4e6045561b09714.js",
+      "path": "grammar-pages/sub-common/9e7373a75d4c268f5fe19d4b58bfd5f5.js",
       "package": "grammar-pages",
       "bytes": 533
     },
     {
-      "path": "study/sub-common/55c4a961a9174af1c4e6045561b09714.js",
+      "path": "study/sub-common/9e7373a75d4c268f5fe19d4b58bfd5f5.js",
       "package": "study",
       "bytes": 533
     },
@@ -2050,7 +2050,7 @@
       "bytes": 530
     },
     {
-      "path": "account/sub-common/150a06fcdc1a7736228c3145ae241542.js",
+      "path": "account/sub-common/7d06c3cb60707e5983fece847ddd05ae.js",
       "package": "account",
       "bytes": 523
     },
@@ -2115,6 +2115,11 @@
       "bytes": 515
     },
     {
+      "path": "account/sub-common/173550d7f965a0d5978286c4ab0c1a13.js",
+      "package": "account",
+      "bytes": 513
+    },
+    {
       "path": "content-pages/assets/lucide/sunmoon-ink.svg",
       "package": "content-pages",
       "bytes": 513
@@ -2122,6 +2127,11 @@
     {
       "path": "content-pages/assets/lucide/sunmoon-light.svg",
       "package": "content-pages",
+      "bytes": 513
+    },
+    {
+      "path": "study/sub-common/173550d7f965a0d5978286c4ab0c1a13.js",
+      "package": "study",
       "bytes": 513
     },
     {
@@ -2133,16 +2143,6 @@
       "path": "content-pages/assets/lucide/castle-light.svg",
       "package": "content-pages",
       "bytes": 512
-    },
-    {
-      "path": "account/sub-common/407a5dc8c4cc1b2e22757b45ea7be87a.js",
-      "package": "account",
-      "bytes": 511
-    },
-    {
-      "path": "study/sub-common/407a5dc8c4cc1b2e22757b45ea7be87a.js",
-      "package": "study",
-      "bytes": 511
     },
     {
       "path": "account/assets/lucide/sun-ink.svg",
@@ -2165,12 +2165,12 @@
       "bytes": 506
     },
     {
-      "path": "content-pages/sub-common/b37533c045956f308e37d58864ad16ca.js",
+      "path": "content-pages/sub-common/f7ae01c8f86052a6919828d7441228f8.js",
       "package": "content-pages",
       "bytes": 502
     },
     {
-      "path": "study/sub-common/b37533c045956f308e37d58864ad16ca.js",
+      "path": "study/sub-common/f7ae01c8f86052a6919828d7441228f8.js",
       "package": "study",
       "bytes": 502
     },
@@ -2240,12 +2240,12 @@
       "bytes": 471
     },
     {
-      "path": "content-pages/sub-common/36c924e50e723e4c54dd3cbff77966c2.js",
+      "path": "content-pages/sub-common/1e2b1d58b7195b31badb49139652bd38.js",
       "package": "content-pages",
       "bytes": 462
     },
     {
-      "path": "grammar-pages/sub-common/36c924e50e723e4c54dd3cbff77966c2.js",
+      "path": "grammar-pages/sub-common/1e2b1d58b7195b31badb49139652bd38.js",
       "package": "grammar-pages",
       "bytes": 462
     },
@@ -2670,17 +2670,17 @@
       "bytes": 381
     },
     {
-      "path": "content-pages/sub-common/07ed54139a116c2e0d0dce97f9c2b6a7.js",
+      "path": "content-pages/sub-common/d6d38b24d2e0a371b8cd8f8c60349048.js",
       "package": "content-pages",
       "bytes": 371
     },
     {
-      "path": "grammar-pages/sub-common/07ed54139a116c2e0d0dce97f9c2b6a7.js",
+      "path": "grammar-pages/sub-common/d6d38b24d2e0a371b8cd8f8c60349048.js",
       "package": "grammar-pages",
       "bytes": 371
     },
     {
-      "path": "study/sub-common/07ed54139a116c2e0d0dce97f9c2b6a7.js",
+      "path": "study/sub-common/d6d38b24d2e0a371b8cd8f8c60349048.js",
       "package": "study",
       "bytes": 371
     },
@@ -2990,12 +2990,12 @@
       "bytes": 330
     },
     {
-      "path": "content-pages/sub-common/d2313a8106e4add41dfd8c7214f52f23.js",
+      "path": "content-pages/sub-common/9a4cbc39bb3b8cbd4344dde7b84c73bd.js",
       "package": "content-pages",
       "bytes": 330
     },
     {
-      "path": "grammar-pages/sub-common/d2313a8106e4add41dfd8c7214f52f23.js",
+      "path": "grammar-pages/sub-common/9a4cbc39bb3b8cbd4344dde7b84c73bd.js",
       "package": "grammar-pages",
       "bytes": 330
     },
@@ -3050,7 +3050,7 @@
       "bytes": 317
     },
     {
-      "path": "account/sub-common/8640518de383021f9dc8ecc38bf45948.js",
+      "path": "account/sub-common/7f1272847336c6c78a92fdb81ba23c69.js",
       "package": "account",
       "bytes": 316
     },
@@ -3065,12 +3065,12 @@
       "bytes": 316
     },
     {
-      "path": "content-pages/sub-common/8640518de383021f9dc8ecc38bf45948.js",
+      "path": "content-pages/sub-common/7f1272847336c6c78a92fdb81ba23c69.js",
       "package": "content-pages",
       "bytes": 316
     },
     {
-      "path": "study/sub-common/8640518de383021f9dc8ecc38bf45948.js",
+      "path": "study/sub-common/7f1272847336c6c78a92fdb81ba23c69.js",
       "package": "study",
       "bytes": 316
     },
@@ -3155,12 +3155,12 @@
       "bytes": 301
     },
     {
-      "path": "account/sub-common/bdf38ca9d74b5f85691a7ab17881e23e.js",
+      "path": "account/sub-common/23457998a8a3d71bd03c237cfd36fd1e.js",
       "package": "account",
       "bytes": 297
     },
     {
-      "path": "study/sub-common/bdf38ca9d74b5f85691a7ab17881e23e.js",
+      "path": "study/sub-common/23457998a8a3d71bd03c237cfd36fd1e.js",
       "package": "study",
       "bytes": 297
     },
@@ -3385,24 +3385,24 @@
       "bytes": 237
     },
     {
-      "path": "content-pages/sub-common/9fc5434126f69a6750a77a44934d6825.js",
+      "path": "content-pages/sub-common/bc1b6accd6c62571563a3004bf23520e.js",
       "package": "content-pages",
       "bytes": 206
     },
     {
-      "path": "grammar-pages/sub-common/9fc5434126f69a6750a77a44934d6825.js",
+      "path": "grammar-pages/sub-common/bc1b6accd6c62571563a3004bf23520e.js",
       "package": "grammar-pages",
       "bytes": 206
     },
     {
-      "path": "content-pages/sub-common/b3212cf45b1d175e312d414501e1ce9d.js",
+      "path": "content-pages/sub-common/33f5d32627924dbdd24c8afc2b383ef7.js",
       "package": "content-pages",
-      "bytes": 193
+      "bytes": 191
     },
     {
-      "path": "grammar-pages/sub-common/b3212cf45b1d175e312d414501e1ce9d.js",
+      "path": "grammar-pages/sub-common/33f5d32627924dbdd24c8afc2b383ef7.js",
       "package": "grammar-pages",
-      "bytes": 193
+      "bytes": 191
     },
     {
       "path": "comp.js",
@@ -3420,12 +3420,12 @@
       "bytes": 140
     },
     {
-      "path": "content-pages/sub-common/2fe7c02a9f64da0da32fc507f29cb5ac.js",
+      "path": "content-pages/sub-common/54d935b2302dac8fb7084c87da58a17c.js",
       "package": "content-pages",
       "bytes": 121
     },
     {
-      "path": "grammar-pages/sub-common/2fe7c02a9f64da0da32fc507f29cb5ac.js",
+      "path": "grammar-pages/sub-common/54d935b2302dac8fb7084c87da58a17c.js",
       "package": "grammar-pages",
       "bytes": 121
     },

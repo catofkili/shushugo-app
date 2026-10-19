@@ -600,6 +600,8 @@
 .ls-step-title { display: flex; align-items: center; gap: 8px; color: var(--ds-ink); font-size: 16px; font-weight: 900; }
 .ls-step-n { display: grid; flex: none; width: 24px; height: 24px; place-items: center; border-radius: 50%; background: var(--ds-primary); color: var(--ds-on-primary); font-size: 13px; font-weight: 900; }
 .ls-step-hint { margin: 4px 0 0 32px; color: var(--ds-ink-3); font-size: 12px; font-weight: 600; }
+/* 小程序首次设定的第一页（登录）：只有一只水豚和一句话，放在屏幕中上，别贴顶留下大片空白 */
+.ls-login { display: flex; flex-direction: column; align-items: center; padding-top: 14vh; text-align: center; }
 .ls-option { display: flex; min-height: 48px; align-items: center; justify-content: center; padding: 0 6px; border: 0; border-radius: 14px; background: var(--ds-inset); color: var(--ds-ink); font-size: 15px; font-weight: 800; transition: background-color .15s, color .15s, transform .1s; }
 .ls-option:not(:disabled):hover { background: var(--ds-inset-2); }
 .ls-option:not(:disabled):active { transform: scale(.97); }

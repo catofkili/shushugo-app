@@ -758,3 +758,14 @@ App 里没有接微信 OpenSDK（没有开放平台移动应用 AppID、Universa
 `design.css` 的 `:root` 重定义了一批老变量（`--zoo-surface`、`--zoo-ink`、`--zoo-muted`、`--color-border*`…），而 `design.css` 比 `styles.css` 后加载、`:root` 和 `[data-theme="dark"]` 同权重——
 **在 `:root` 里给老变量定了浅色值，就必须在 `design.css` 自己的深色段也给一个**，否则 `styles.css` 里的深色值被盖掉。2026-10-16 `--zoo-surface` 就这样让快速复习在深色下整块白底浅字。
 深色专用的修补写在 design.css 末尾「W12 深色」节；改深色前后用 `_codex/v3-w12/audit.cjs` 一类的整站截图对照，并核对浅色逐像素不变。
+
+## 小程序首次设定：先登录，选项按下就变绿（2026-10-19）
+
+作者真机反馈的原话要点：「首先应该是登录」「选等级有点卡，变绿就能盖过去」。前者是让老用户先找回进度，避免重复设定；后者是让按下的反馈不再被逻辑线程忙碌拖住，并不表示查库、排计划或实际选中已经完成。
+
+- `frontend/src/components/LevelSetup.tsx`：增加 `loginPage`，只在 `wechat` 平台、非 `dismissible`、未登录的首次设定中出现；「微信登录」调用 `onRequireAuth`，「先不登录」进入选等级。登录成功后先等第一次 `CLOUD_SYNC_EVENT`，或最多 5 秒，再进选等级，免得老用户设定点到一半，弹窗又因云端进度找回而关闭；网页 / App 和主动调整计划的入口沿用原流程。
+- `frontend/src/design.css`：增加 `.ls-login`，将水豚和简短登录说明居中放在屏幕中上部（`padding-top: 14vh`），避免贴顶后留下大片空白；只作用于新增登录页。
+- `taro-spike-2/src/platform/WeappPage.tsx`：用 `firstRunSetup` 区分新装首次设定和用户主动打开的设定。收到 `downloaded` / `merged` 且 `!shouldShowLevelSetup()` 时，只关闭仍开着的首次设定，提示「已找回你的学习进度。」；已有云端计划的老用户不必再设一次，也不会误关主动调整计划。
+- `taro-spike-2/src/platform/press-feedback-jsx-runtime.weapp.cjs`：未选中按钮（`aria-pressed === false`）使用 `hover-class="attr-aria-pressed-true"`，`hoverStayTime=1000`。微信 `hover-class` 在渲染层执行，不等逻辑线程，按下即可借用选中样式变绿；已选中的再点是取消，不能继续用绿色假装选中，因此仍用 `is-pressed`，禁用按钮仍是 `none`。
+
+开发者工具验收结果（收尾前已验，按交接记录）：首屏为登录页；点「先不登录」进入选等级；未选中选项的 `hover-class=attr-aria-pressed-true`，已选中为 `is-pressed`，禁用为 `none`。自动化在逻辑线程忙时截不了图，因此这些结果只能证明流程和属性配置；逻辑线程忙时是否立即变绿，仍待作者用计时版预览码在真机看，不能拿模拟器截图当作真机通过。

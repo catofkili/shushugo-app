@@ -30,6 +30,12 @@ const withPressFeedback = (type, props) => {
   const switchRow = type === 'div' && (Array.isArray(props?.children) ? props.children : [props?.children])
     .some((child) => child?.type === 'label' && hasCheckbox(child.props?.children));
   if (!button && !clickableView && !switchRow) return props;
+  // 没选中的选项按钮（aria-pressed=false）一按下就由渲染层换上选中样式，并停 1 秒。hover-class 不经过逻辑线程：
+  // 首装那几秒逻辑线程忙，点了要等它空下来才真的选中，作者 10-19 真机「选等级始终有点卡，变成绿色就能盖过去」。
+  // 选中的那个不这样：再点是取消，按下变绿就反了。
+  if (button && props['aria-pressed'] === false) {
+    return { ...props, hoverClass: 'attr-aria-pressed-true', hoverStopPropagation: true, hoverStartTime: 20, hoverStayTime: 1000 };
+  }
   // hoverStopPropagation：微信的 hover-class 默认会一路激活祖先，按一个按钮外面的卡片也跟着变淡。
   return { ...props, hoverClass: 'is-pressed', hoverStopPropagation: true, hoverStartTime: 20, hoverStayTime: 70 };
 };

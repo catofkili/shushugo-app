@@ -46,6 +46,8 @@ let activeNavigate: (page: Page, params?: AppNavigationParams) => void = () => u
 let activeRefreshOverview = () => undefined;
 let globalEventsInstalled = false;
 let levelSetupChecked = false;
+/** 这次弹的是新装的首次设定（不是从备考页主动打开的）。只有它会在云端进度找回后自动关掉。 */
+let firstRunSetup = false;
 let syncConflictNotice = '';
 // 外壳只含渲染组件；在原有数据载入期并行预加载，不能给每个弹层增加一次点击后的下载等待。
 let shellPromise: Promise<typeof import('../../../frontend/src/app/AppShell')> | null = null;
@@ -71,6 +73,12 @@ function installGlobalEvents() {
     if (detail.status === 'downloaded' || detail.status === 'merged') {
       syncConflictNotice = '';
       activeRefreshOverview();
+      // 首次设定第一页是登录：老用户登录后进度拉回来了，就不用再设一遍（LevelSetup 那边会等这一次同步）。
+      if (firstRunSetup && getUiState().levelSetupOpen && !shouldShowLevelSetup()) {
+        firstRunSetup = false;
+        setLevelSetupOpen(false);
+        showNotice('已找回你的学习进度。', 3200);
+      }
     } else if (detail.status === 'conflict' || detail.status === 'signed-out') {
       const message = detail.message ?? '两台设备都有新进度，请到设置中手动处理。';
       if (message !== syncConflictNotice) {
@@ -154,7 +162,10 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
         // 对战直达先应战，和网页一致；不标记已检查，之后回首页仍走首次设定。
         if (!levelSetupChecked && !(page === 'duel' && getAppState().duelId)) {
           levelSetupChecked = true;
-          try { setLevelSetupOpen(shouldShowLevelSetup()); } catch { /* 旧库可能尚无计划设置 */ }
+          try {
+            firstRunSetup = shouldShowLevelSetup();
+            setLevelSetupOpen(firstRunSetup);
+          } catch { /* 旧库可能尚无计划设置 */ }
         }
       })
       .catch((cause) => {
@@ -353,6 +364,7 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
       onClosePaywall={closePaywall}
       onCloseAuth={context.closeAuth}
       onLevelSetupComplete={(message) => {
+        firstRunSetup = false;
         setLevelSetupOpen(false);
         showNotice(message, 5200);
         // 选了「暂不备考」就留在原页，不进备考页（和网页 App.tsx 一致）
