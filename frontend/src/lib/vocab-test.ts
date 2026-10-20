@@ -1,3 +1,4 @@
+import kanjiReadings from "../data/kanji_readings.json";
 import { ensureUserTables, firstValue, persistSoon, rowsFor, setState, getState, type DbRow } from "./study-core";
 import { getDatabase } from "./database";
 import { classifyPos, type PosBucket } from "./word-library";
@@ -38,7 +39,7 @@ export interface VocabTestResponse {
 export interface VocabTestSession {
   version: 1;
   /** 旧会话按旧口径完成；新会话才使用更严格的扣分。 */
-  scoreVersion: 1 | 2;
+  scoreVersion: 1 | 2 | 3;
   runId: string;
   startedAt: number;
   finishedAt: number | null;
@@ -63,7 +64,7 @@ export interface VocabTestLevelResult {
 }
 
 export interface VocabTestResult {
-  scoreVersion: 1 | 2;
+  scoreVersion: 1 | 2 | 3;
   estimated: number;
   lower: number;
   upper: number;
@@ -82,9 +83,18 @@ export interface VocabTestResult {
 
 const SESSION_KEY = "vocab_test_session_v1";
 export const VOCAB_TEST_LEVELS = ["N5", "N4", "N3", "N2", "N1"] as const;
-export const VOCAB_TEST_QUESTION_COUNT = 60;
+export const VOCAB_TEST_QUESTION_COUNT = 80;
 /** 2026-09 校准：四个答案里的有依据猜测常高于随机的 25%，每次答错扣 1.15。 */
 const PENALTY = 1.15;
+
+/** 未知题期望 e=h−(1−h)p，零点 p=h/(1−h)。线索中性后仍须为真人语义推断
+ * 留余量：h=.27–.45 对应 p≈.37–.82。三档各 200 场扫描按整体均值 3190–3790、
+ * strict/semantic40 各≤3990 取最大可行 p=.80。完整80题各200场均值
+ * strict/eager/semantic40=3148/3055/3514，三档平均3239；.50语义档4328超上界，
+ * 1.15三档平均2995不足下界。完整扫描、区间与局限见同日文档。
+ * 以后改 p 必须重跑模拟器，包含依赖罚分的完整自适应补题流程。
+ * shortcut: 仅一个用户的模拟参考，仍缺多人真人标定与中文音迁移。 */
+export const PENALTY_V3 = 0.80;
 
 /**
  * 每题的秒数按题型分：读音题要在四个假名串里逐拍比对，天然比读中文释义慢。
@@ -295,6 +305,67 @@ const answerIndexBySurface = (rows: WordRow[]): {
 
 type AnswerIndex = ReturnType<typeof answerIndexBySurface>;
 
+/** Taro/原生小程序现有 kanji-readings shim 指向 features 内容分包；测验入口
+ * 已先加载该数据。不要移除 shim 或把数据内联主包，见 2026-10-19 校准记录。
+ * 按本次词库需要的汉字取小表，不在模块初始化展开尚未加载的懒代理。 */
+const readingClues = (rows: WordRow[]): Map<string, Set<string>> => {
+  const readings: Record<string, { on?: string[]; kun?: string[] }> = kanjiReadings.readings;
+  const out = new Map<string, Set<string>>();
+  for (const row of rows) {
+    for (const char of hanChars(row.core?.core ?? row.readingSurface)) {
+      if (out.has(char)) continue;
+      const entry = readings[char];
+      out.set(char, new Set([...(entry?.on ?? []), ...(entry?.kun ?? []).map((r) => r.split(".")[0])].filter(Boolean)));
+    }
+  }
+  return out;
+};
+
+// 日文/繁体到简体的近似字形，不做语义推断；一对多字形仍有漏判。
+const CLUE_SHAPES = new Map(`
+魚鱼 気气 経经 時时 間间 関关 見见 聞闻 読读 書书 話话 語语
+電电 車车 東东 楽乐 強强 広广 長长 門门 開开 閉闭 問问 題题 頭头 顔颜
+風风 雲云 馬马 鳥鸟 鶏鸡 竜龙 貝贝 買买 売卖 貸贷 貨货 費费 資资
+産产 業业 動动 転转 運运 進进 遠远 過过 達达 連连 辺边 選选 週周
+帰归 帯带 満满 済济 漢汉 湯汤 無无 熱热 焼烧
+紙纸 線线 組组 終终 結结 続续 練练 緑绿 縁缘 績绩 総总 給给 絵绘 統统 約约 細细
+記记 計计 設设 許许 試试 認认 説说 調调 論论 議议 護护 訳译 証证 評评 課课 謝谢
+駅驿 鉄铁 銀银 銅铜 銭钱 録录 鏡镜 鍵键 鎖锁 鈴铃 鉱矿 針针 釣钓 鋭锐 鑑鉴
+飯饭 飲饮 館馆 飼饲 餓饿 飾饰 餅饼 養养 験验 駆驱 騒骚 駐驻 髪发 黒黑 黄黄
+愛爱 悪恶 悩恼 応应 憶忆 態态 慣惯 憤愤 懐怀 夢梦 実实 対对 専专
+戦战 単单 労劳 勝胜 負负 効效 勧劝 勢势 協协 圧压 厳严 変变
+復复 複复 発发 弁辩 減减 増增 覚觉 観观 規规 視视 親亲 現现
+節节 葉叶 芸艺 薬药 華华 蔵藏 伝传 仏佛 価价 値值 側侧 優优 備备
+`.trim().split(/\s+/).map((pair) => [pair[0], pair[1]]));
+const clueShape = (text: string): string => [...text].map((c) => CLUE_SHAPES.get(c) ?? c).join("");
+const hanChars = (text: string): string[] => [...text].filter((c) => /\p{Script=Han}/u.test(c));
+const meaningClueScore = (surface: string, meaning: string): number => {
+  const normalized = clueShape(meaning);
+  return hanChars(clueShape(surface)).filter((c) => normalized.includes(c)).length;
+};
+const readingClueScore = (surface: string, reading: string, clues: Map<string, Set<string>>): number =>
+  hanChars(surface).filter((c) => [...(clues.get(c) ?? [])].some((r) => reading.includes(r))).length;
+
+/** 合成只改一个读音成分；合法读音、答案子串和线索不足的项仍须由调用方挡掉。 */
+const syntheticReadings = (row: WordRow, clues: Map<string, Set<string>>): string[] => {
+  const answer = row.readingValue;
+  const out = new Set<string>();
+  for (const char of hanChars(row.core?.core ?? row.readingSurface)) {
+    const stems = [...(clues.get(char) ?? [])];
+    for (const stem of stems) {
+      if (!answer.includes(stem)) continue;
+      for (const other of stems) out.add(answer.replace(stem, other));
+    }
+  }
+  // 同行近音（け→き等），保留拍数；不拿完全无关的假名串充数。
+  const groups = ["あいうえお", "かきくけこ", "がぎぐげご", "さしすせそ", "ざじずぜぞ", "たちつてと", "だぢづでど", "なにぬねの", "はひふへほ", "ばびぶべぼ", "ぱぴぷぺぽ", "まみむめも", "らりるれろ"];
+  [...answer].forEach((char, i) => {
+    const group = groups.find((g) => g.includes(char));
+    for (const other of group ?? "") out.add(answer.slice(0, i) + other + answer.slice(i + 1));
+  });
+  return [...out];
+};
+
 /** 目标词在 confusion-groups 里的同组词 —— 最强的干扰项，排在候选池最前面。 */
 const confusionPeerIds = (wordId: number): Set<number> => {
   try {
@@ -360,19 +431,26 @@ const distractorTiers = (
   target: WordRow,
   allRows: WordRow[],
   kind: VocabTestQuestionKind,
-  index: AnswerIndex
+  index: AnswerIndex,
+  clues: Map<string, Set<string>>
 ): WordRow[][] => {
   const answer = optionValue(target, kind);
   const key = kind === "meaning" ? meaningKeyOf(target.id) : undefined;
   const prompt = promptFor(target, kind);
   // 这个题面下的全部合法答案（含同音异义、同形异读、老库重复词条）
   const alsoCorrect = (kind === "reading" ? index.readings : index.meanings).get(prompt) ?? new Set<string>();
+  const stems = hanChars(target.core?.core ?? prompt).map((c) => [...(clues.get(c) ?? [])]);
+  const clueScore = (value: string) => stems.filter((rs) => rs.some((r) => value.includes(r))).length;
+  const minimum = kind === "reading" ? clueScore(answer) : 0;
   const base = allRows.filter((row) => {
     if (row.id === target.id) return false;
     const value = optionValue(row, kind);
     if (!value || value === answer) return false;
     if (alsoCorrect.has(value)) return false;
-    if (kind === "reading" && nestedReading(answer, value)) return false;
+    if (kind === "reading") {
+      const score = clueScore(value);
+      if (nestedReading(answer, value) || score < minimum || score > minimum + 1) return false;
+    }
     if (key && meaningKeyOf(row.id) === key) return false;
     return true;
   });
@@ -424,7 +502,8 @@ const makeQuestion = (
   row: WordRow,
   allRows: WordRow[],
   random: () => number,
-  index: AnswerIndex
+  index: AnswerIndex,
+  clues: Map<string, Set<string>>
 ): VocabTestQuestion | null => {
   const kind: VocabTestQuestionKind = isReadingQuestion(row) ? "reading" : "meaning";
   const answer = optionValue(row, kind);
@@ -432,7 +511,7 @@ const makeQuestion = (
   const peers = confusionPeerIds(row.id);
   const chosen: string[] = [];
   const seen = new Set<string>([answer]);
-  const tiers = distractorTiers(row, allRows, kind, index);
+  const tiers = distractorTiers(row, allRows, kind, index, clues);
 
   const alsoCorrect = (kind === "reading" ? index.readings : index.meanings).get(promptFor(row, kind)) ?? new Set<string>();
   /**
@@ -451,32 +530,64 @@ const makeQuestion = (
   if (kind === "reading") {
     // 槽位在**放宽后的池子**上找：音位约束比同词性/同级更重要，
     // 供给不够时宁可换个词性，也不要给出一个靠首拍就能排除的选项。
-    const pool = tiers[2].length >= 12 ? tiers[2] : tiers[4];
-    const preferred = (a: WordRow, b: WordRow) =>
-      Number(sharesKanji(row.kanji, b.kanji)) - Number(sharesKanji(row.kanji, a.kanji))
-      || Number(b.posBucket === row.posBucket) - Number(a.posBucket === row.posBucket);
-    readingSlots(row, answer, pool).forEach((slot) => {
-      if (chosen.length >= DISTRACTOR_COUNT) return;
-      const candidate = shuffle(pool.filter(slot), random).sort(preferred)
-        .find((item) => !seen.has(item.readingValue) && !nestedReading(answer, item.readingValue));
+    const surface = row.core?.core ?? row.readingSurface;
+    const minimum = readingClueScore(surface, answer, clues);
+    const synthetic = syntheticReadings(row, clues).filter((value) =>
+      !seen.has(value) && !nestedReading(answer, value)
+      && Math.abs(moraCount(value) - row.morae) <= 1
+      && readingClueScore(surface, value, clues) >= minimum
+      && readingClueScore(surface, value, clues) <= minimum + 1);
+    // 音位槽也吃合成选项，先保留首尾，再按词性/拍数偏好补齐；不放松线索约束。
+    const pool = [...tiers[2], ...synthetic.map((value) => ({ ...row, id: -1, readingValue: value }))];
+    // 等分供给优先于音位槽与词性；只有凑不够三个时才允许 +1，不能系统性诱导选错。
+    const scores = new Map<string, number>();
+    const score = (value: string) => {
+      if (!scores.has(value)) scores.set(value, readingClueScore(surface, value, clues));
+      return scores.get(value)!;
+    };
+    const equalPool = pool.filter((item) => score(item.readingValue) === minimum);
+    const preferredPool = new Set(equalPool.map((item) => item.readingValue)).size >= DISTRACTOR_COUNT ? equalPool : pool;
+    readingSlots(row, answer, preferredPool).forEach((slot) => {
+      const candidate = shuffle(preferredPool.filter(slot), random).sort((a, b) =>
+        score(a.readingValue) - score(b.readingValue) || Number(b.posBucket === row.posBucket) - Number(a.posBucket === row.posBucket))
+        .find((item) => !seen.has(item.readingValue));
       if (!candidate) return;
       seen.add(candidate.readingValue);
       chosen.push(candidate.readingValue);
     });
+    for (const item of shuffle(preferredPool, random).sort((a, b) => score(a.readingValue) - score(b.readingValue))) {
+      if (chosen.length >= DISTRACTOR_COUNT) break;
+      const value = item.readingValue;
+      if (!seen.has(value)) { seen.add(value); chosen.push(value); }
+    }
   }
 
-  for (const tier of tiers) {
-    if (chosen.length >= DISTRACTOR_COUNT) break;
-    // 先 shuffle 再把易混词提到前面：sort 是稳定的，所以同类内部仍然是随机序
-    const ordered = shuffle(tier, random)
-      .sort((left, right) => Number(peers.has(right.id)) - Number(peers.has(left.id)));
-    for (const candidate of ordered) {
+  const surface = kind === "reading" ? row.core?.core ?? row.readingSurface : promptFor(row, kind);
+  const scores = new Map<string, number>();
+  const score = (value: string) => {
+    if (!scores.has(value)) scores.set(value, kind === "reading" ? readingClueScore(surface, value, clues) : meaningClueScore(surface, value));
+    return scores.get(value)!;
+  };
+  const targetScore = score(answer);
+  // 释义有同字线索的题若退到更少共享字，strict 会只在这些题作答并系统性选对。
+  // 三个等分选项都凑不齐便跳过该题；不拼凑假释义，也不拿更高分的选项诱导选错。
+  if (kind === "meaning" && new Set(tiers[4].filter((item) => score(item.meaning) === targetScore).map((item) => item.meaning)).size < DISTRACTOR_COUNT) return null;
+  // 先走完等分供给，再允许 +1（读音）或最近差值（释义），层级偏好不能盖过中性约束。
+  const differences = [...new Set(tiers[4].map((item) => Math.abs(score(optionValue(item, kind)) - targetScore)))].sort((a, b) => a - b);
+  for (const difference of differences) {
+    for (const tier of tiers) {
       if (chosen.length >= DISTRACTOR_COUNT) break;
-      const value = optionValue(candidate, kind);
-      if (seen.has(value)) continue;
-      seen.add(value);
-      chosen.push(value);
+      const ordered = shuffle(tier.filter((item) => Math.abs(score(optionValue(item, kind)) - targetScore) === difference), random)
+        .sort((left, right) => Number(peers.has(right.id)) - Number(peers.has(left.id)));
+      for (const candidate of ordered) {
+        if (chosen.length >= DISTRACTOR_COUNT) break;
+        const value = optionValue(candidate, kind);
+        if (seen.has(value)) continue;
+        seen.add(value);
+        chosen.push(value);
+      }
     }
+    if (chosen.length >= DISTRACTOR_COUNT) break;
   }
   if (chosen.length < DISTRACTOR_COUNT) return null;
 
@@ -505,7 +616,7 @@ const LEVEL_WEIGHT: Record<string, number> = { N5: 261, N4: 334, N3: 934, N2: 15
  *
  * 纯 Neyman 会把题几乎全给 N2/N1（那两带词最多、方差贡献最大），低带只剩五六题，
  * **「建议学习等级」对初学者就废了**。保底 9 是这两者的折中：
- * 60 题下总区间只比纯 Neyman 宽一点，但每个等级都还有话可说。
+ * 80 题下总区间只比纯 Neyman 宽一点，但每个等级都还有话可说。
  */
 const LEVEL_FLOOR = 9;
 
@@ -529,7 +640,7 @@ const levelTargets = (total: number = VOCAB_TEST_QUESTION_COUNT): Record<string,
   return out;
 };
 
-/** 摸底阶段每级几题。5×4=20 题，占 60 题的三分之一。 */
+/** 摸底阶段每级几题。5×4=20 题，占 80 题的四分之一。 */
 export const VOCAB_TEST_PROBE_PER_LEVEL = 4;
 
 /**
@@ -584,6 +695,7 @@ export const buildVocabTestQuestions = (
     meaning: reviewedQuestionMeaning(row.kanji, row.kana) ?? row.meaning
   })).map(enrichRow);
   const index = answerIndexBySurface(allRows);
+  const clues = readingClues(allRows);
   const populationByLevel = Object.fromEntries(VOCAB_TEST_LEVELS.map((level) => [
     level,
     allRows.filter((row) => row.level === level).length
@@ -597,7 +709,7 @@ export const buildVocabTestQuestions = (
     for (const row of shuffle(rows, random)) {
       if (questions.length >= total || questions.filter((item) => item.level === row.level).length >= target) break;
       if (used.has(row.id)) continue;
-      const question = makeQuestion(row, allRows, random, index);
+      const question = makeQuestion(row, allRows, random, index, clues);
       if (!question) continue;
       used.add(row.id);
       questions.push(question);
@@ -628,7 +740,7 @@ const parseSession = (raw: string): VocabTestSession | null => {
     if (!questions.length) return null;
     return {
       version: 1,
-      scoreVersion: parsed.scoreVersion === 2 ? 2 : 1,
+      scoreVersion: parsed.scoreVersion === 3 ? 3 : parsed.scoreVersion === 2 ? 2 : 1,
       runId: asText(parsed.runId) || `vocab-${Date.now()}`,
       startedAt: Number(parsed.startedAt) || Date.now(),
       finishedAt: parsed.finishedAt == null ? null : Number(parsed.finishedAt),
@@ -664,7 +776,7 @@ export const getVocabTestSession = (): VocabTestSession | null => {
 /**
  * 开一场测验：**先只出摸底那 20 道**（每级 4 题）。
  *
- * 剩下 40 道等摸底答完再按实测水平分配（`extendVocabTestPlan`）—— 这就是
+ * 剩下 60 道等摸底答完再按实测水平分配（`extendVocabTestPlan`）—— 这就是
  * 「先大概估出水平，再在那个区间多出题」，只不过每一带都仍有实测数据，
  * 因为最终估计是 Σ(该级词数 × 该级答对率)，某一带没题就只能靠假设填，那不是测出来的。
  */
@@ -680,7 +792,7 @@ export const startVocabTest = (random: () => number = Math.random): VocabTestSes
   if (questions.length < 10) throw new Error("当前词库可用于测验的词太少，无法开始测量。");
   return saveSession({
     version: 1,
-    scoreVersion: 2,
+    scoreVersion: 3,
     runId: `vocab-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     startedAt: Date.now(),
     finishedAt: null,
@@ -719,7 +831,7 @@ export const extendVocabTestPlan = (
   return saveSession({
     ...session,
     questions: merged,
-    // ⚠️ 词库出不满 60 道时，总数就降到实际能出的题数。
+    // ⚠️ 词库出不满计划题数时，总数就降到实际能出的题数。
     // 分母是「这一场一共出了几题」，不是「我们本来想出几题」——
     // 否则小词库的用户答完了所有题，可信度还要因为「没答满」被扣一截。
     plannedTotal: Math.min(session.plannedTotal, merged.length)
@@ -796,8 +908,9 @@ const levelResult = (level: string, session: VocabTestSession): VocabTestLevelRe
   const wrong = rows.filter((row) => row.answerState === "wrong").length;
   const unknown = rows.filter((row) => row.answerState === "unknown").length;
   const timeout = rows.filter((row) => row.answerState === "timeout").length;
-  const penalty = session.scoreVersion === 2 ? PENALTY : 1 / DISTRACTOR_COUNT;
-  const score = rows.length ? clamp((correct - wrong * penalty) / rows.length, 0, 1) : null;
+  const penalty = session.scoreVersion === 3 ? PENALTY_V3 : session.scoreVersion === 2 ? PENALTY : 1 / DISTRACTOR_COUNT;
+  const raw = rows.length ? (correct - wrong * penalty) / rows.length : null;
+  const score = raw == null ? null : clamp(raw, 0, 1);
   return {
     level,
     total: session.populationByLevel[level] ?? 0,
@@ -827,9 +940,10 @@ export const getVocabTestResult = (session: VocabTestSession | null): VocabTestR
       variance += total * total * (rate * (1 - rate) + (1 - rate) * gamma / DISTRACTOR_COUNT) / answered;
       return;
     }
-    // 用 +1 / -1.15 / 0 的实际逐题得分算样本方差；旧的 /3 方差不适用于新扣分。
-    const sum = correct - wrong * PENALTY;
-    const squares = correct + wrong * PENALTY ** 2;
+    // 用 +1 / −p / 0 的实际逐题得分算样本方差，v2 仍用 1.15；不做额外缩放。
+    const penalty = session.scoreVersion === 3 ? PENALTY_V3 : PENALTY;
+    const sum = correct - wrong * penalty;
+    const squares = correct + wrong * penalty ** 2;
     variance += total * total * (answered < 2 ? 1 : Math.max(0, squares - sum ** 2 / answered) / (answered * (answered - 1)));
   });
   const margin = session.responses.length ? Math.ceil(1.96 * Math.sqrt(Math.max(0, variance))) : population;
@@ -907,7 +1021,7 @@ export interface VocabTestHistoryRow {
   upper: number;
   confidence: number;
   recommendation: string;
-  scoreVersion: 1 | 2;
+  scoreVersion: 1 | 2 | 3;
   /** 各级答对率，给分享图画横条用 */
   levels: { level: string; rate: number | null; answered: number }[];
 }
@@ -960,8 +1074,8 @@ export const recordVocabTestRun = (session: VocabTestSession | null): void => {
     result.upper,
     result.confidence,
     result.recommendation,
-    session.scoreVersion === 2
-      ? JSON.stringify({ version: 2, levels: result.levels.map((level) => [level.level, level.rate, level.answered]) })
+    session.scoreVersion >= 2
+      ? JSON.stringify({ version: session.scoreVersion, levels: result.levels.map((level) => [level.level, level.rate, level.answered]) })
       : JSON.stringify(result.levels.map((level) => [level.level, level.rate, level.answered]))
   ]);
   persistSoon();
@@ -970,7 +1084,7 @@ export const recordVocabTestRun = (session: VocabTestSession | null): void => {
 const parseLevels = (raw: string): Pick<VocabTestHistoryRow, "levels" | "scoreVersion"> => {
   try {
     const parsed = JSON.parse(raw || "[]");
-    const scoreVersion = parsed?.version === 2 ? 2 : 1;
+    const scoreVersion = parsed?.version === 3 ? 3 : parsed?.version === 2 ? 2 : 1;
     const items = Array.isArray(parsed) ? parsed : parsed?.levels;
     if (!Array.isArray(items)) return { scoreVersion, levels: [] };
     const levels = items.map((item) => ({

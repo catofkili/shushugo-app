@@ -14,6 +14,7 @@ vi.mock("./storage", () => ({ scheduleSave: () => undefined, requestFullSnapshot
 
 import {
   buildVocabTestQuestions,
+  PENALTY_V3,
   finishVocabTest,
   getVocabTestHistory,
   getVocabTestResult,
@@ -122,7 +123,7 @@ describe("⚠️ 计分的无偏性", () => {
     expect(result?.estimated).toBe(0);
   });
 
-  it("新场次按答对 +1、答错 −1.15、不认识 0 逐级折算", () => {
+  it("新场次按答对 +1、答错 −PENALTY_V3、不认识 0 逐级折算", () => {
     const session = startVocabTest(() => 0.3);
     const firstLevel = session.questions[0].level;
     const questions = session.questions.map((question, index) => ({ question, index }))
@@ -136,8 +137,8 @@ describe("⚠️ 计分的无偏性", () => {
       answeredAt: 0
     }));
     const result = getVocabTestResult({ ...session, responses });
-    expect(session.scoreVersion).toBe(2);
-    expect(result?.levels.find((level) => level.level === firstLevel)?.rate).toBe(0.46);
+    expect(session.scoreVersion).toBe(3);
+    expect(result?.levels.find((level) => level.level === firstLevel)?.rate).toBe(Math.round((3 - PENALTY_V3) / 4 * 100) / 100);
   });
 
   it("旧场次仍用 −1/3，不会升级后变成新分数", () => {
@@ -244,7 +245,12 @@ describe("⚠️ 干扰项要挑近的", () => {
     expect(distractors).not.toContain("よみかえす");
     expect(distractors).not.toContain("どれぐらい");
     expect(distractors).not.toContain("コーチ");
-    distractors.forEach((option) => expect(["かんち", "しゅくじ", "げんば"]).toContain(option));
+    // 小词表里没有同汉字读音候选时，允许同拍数近音合成，仍不能含答案。
+    distractors.forEach((option) => {
+      expect(option).toMatch(/^[ぁ-ん]+$/);
+      expect(Math.abs(option.length - target!.answer.length)).toBeLessThanOrEqual(1);
+      expect(option.includes(target!.answer) || target!.answer.includes(option)).toBe(false);
+    });
   });
 });
 
@@ -315,7 +321,7 @@ describe("自适应出题", () => {
     startVocabTest(() => 0.3);
     const probe = getVocabTestSession()!;
     expect(probe.questions.length).toBe(VOCAB_TEST_PROBE_PER_LEVEL * 5);
-    expect(probe.plannedTotal).toBe(60);
+    expect(probe.plannedTotal).toBe(80);
 
     // 摸底：N5/N4 全对，N1 全错，N3/N2 一半
     for (let index = 0; index < probe.questions.length; index += 1) {
@@ -353,21 +359,22 @@ describe("历史成绩", () => {
     expect(history).toHaveLength(1);
     expect(history[0].runId).toBe(finished?.runId);
     expect(history[0].answered).toBe(1);
-    expect(history[0].scoreVersion).toBe(2);
-    // 这一场原本要出 60 题（分母是计划题数，不是「已经出好的那 20 道」）
+    expect(history[0].scoreVersion).toBe(3);
+    // 这一场原本要出 80 题（分母是计划题数，不是「已经出好的那 20 道」）
     expect(history[0].totalQuestions).toBe(finished?.plannedTotal);
   });
 
-  it("旧会话与旧历史继续保留旧计分标记", () => {
+  it.each([1, 2] as const)("v%s 旧会话与历史保留旧计分标记", (scoreVersion) => {
     const started = startVocabTest(() => 0.35);
-    const oldSession = { ...started, scoreVersion: 1 as const, runId: "old-vocab-test" };
+    const oldSession = { ...started, scoreVersion, plannedTotal: 60, runId: `old-vocab-test-${scoreVersion}` };
     testDb.run("UPDATE app_state SET value = ? WHERE key = 'vocab_test_session_v1'", [JSON.stringify(oldSession)]);
     const first = getVocabTestSession()!.questions[0];
     submitVocabTestAnswer("correct", first.answerIndex, 1000);
     const finished = finishVocabTest();
-    expect(getVocabTestResult(finished)?.scoreVersion).toBe(1);
+    expect(getVocabTestResult(finished)?.scoreVersion).toBe(scoreVersion);
     recordVocabTestRun(finished);
-    expect(getVocabTestHistory()[0].scoreVersion).toBe(1);
+    expect(getVocabTestHistory()[0].scoreVersion).toBe(scoreVersion);
+    expect(getVocabTestHistory()[0].totalQuestions).toBe(60); // 未完成旧会话仍保留历史题数
   });
 
   // ⚠️ 用时 = 真正花在答题上的秒数，不是墙上时间。实测出过「2 题 · 用时 4160 分 36 秒」：
@@ -391,5 +398,46 @@ describe("历史成绩", () => {
     startVocabTest(() => 0.45);
     recordVocabTestRun(finishVocabTest());
     expect(getVocabTestHistory().filter((row) => row.answered === 0)).toEqual([]);
+  });
+});
+
+
+describe("v3 罚分与兼容性", () => {
+  it("新会话完成 80 题后，历史 version=3 与逐级结果一致", () => {
+    // 假名词保留释义题，测流程而非依赖小型夹具能合成多少读音干扰项。
+    for (let i = 0; i < 120; i++) testDb.run(
+      "INSERT INTO words VALUES (?, '', ?, ?, ?, '名词')",
+      [30000 + i, `てすと${i}`, `测试释义${i}`, levels[i % 5]]
+    );
+    let session = startVocabTest(() => 0.3);
+    expect(session.scoreVersion).toBe(3);
+    expect(session.plannedTotal).toBe(80);
+    while (!session.finishedAt) session = submitVocabTestAnswer("correct", session.questions[session.currentIndex].answerIndex, 1000)!;
+    expect(session.responses).toHaveLength(80);
+    expect(new Set(session.questions.map((q) => q.id)).size).toBe(80);
+    recordVocabTestRun(session);
+    const result = getVocabTestResult(session)!;
+    const history = getVocabTestHistory()[0];
+    expect(history.scoreVersion).toBe(3);
+    expect(history.estimated).toBe(result.estimated);
+    expect(history.levels).toEqual(result.levels.map(({ level, rate, answered }) => ({ level, rate, answered })));
+    expect(JSON.parse(String(testDb.exec("SELECT levels_json FROM vocab_test_history")[0].values[0][0])).version).toBe(3);
+  });
+
+  it("v2/v3 各用自己的逐题样本方差，不缩放", () => {
+    const started = startVocabTest(() => 0.35);
+    const questions = Array.from({ length: 40 }, (_, i) => ({ ...started.questions[0], id: i + 1, level: "N3" }));
+    const responses = questions.map((q, i) => ({ questionIndex: i, questionId: q.id,
+      answerState: i < 25 ? "correct" as const : i < 30 ? "wrong" as const : "unknown" as const,
+      selectedOption: null, responseMs: 1000, answeredAt: 1 }));
+    const session = { ...started, questions, responses, populationByLevel: { N3: 1000 }, plannedTotal: 40 };
+    const v2 = getVocabTestResult({ ...session, scoreVersion: 2 })!;
+    const v3 = getVocabTestResult({ ...session, scoreVersion: 3 })!;
+    const variance = (25 + 5 * 1.15 ** 2 - (25 - 5 * 1.15) ** 2 / 40) / (40 * 39);
+    expect(v2.upper - v2.estimated).toBe(Math.ceil(1.96 * 1000 * Math.sqrt(variance)));
+    const varianceV3 = (25 + 5 * PENALTY_V3 ** 2 - (25 - 5 * PENALTY_V3) ** 2 / 40) / (40 * 39);
+    expect(v3.levels.find((b) => b.level === "N3")?.rate).toBe(Math.round((25 - 5 * PENALTY_V3) / 40 * 100) / 100);
+    expect(v2.levels.find((b) => b.level === "N3")?.rate).toBe(0.48);
+    expect(v3.upper - v3.estimated).toBe(Math.ceil(1.96 * 1000 * Math.sqrt(varianceV3)));
   });
 });

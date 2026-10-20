@@ -10,6 +10,7 @@ import {
   startVocabTest,
   submitVocabTestAnswer,
   secondsForQuestion,
+  PENALTY_V3,
   VOCAB_TEST_LEVELS,
   VOCAB_TEST_SECONDS,
   type VocabTestAnswerState,
@@ -179,7 +180,7 @@ const VocabTestHome = ({
               <>
                 <p className="ds-kicker">上次测出 · {formatShort(latest.finishedAt)}</p>
                 <p className="vt-big">{latest.estimated.toLocaleString()}<small>词</small></p>
-                {latest.scoreVersion === 1 && <p className="mt-1 text-xs font-semibold text-[#F0C68A]">旧版计分；重测后使用较严格的答错扣分</p>}
+                {latest.scoreVersion < 3 && <p className="mt-1 text-xs font-semibold text-[#F0C68A]">旧版计分；请重测后再参考</p>}
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   <span className="ds-pill">{latest.answered} 题 · {formatDuration(latest.durationSeconds)}</span>
                   <span className="ds-pill ds-pill-primary">可信度 {latest.confidence}%</span>
@@ -197,7 +198,7 @@ const VocabTestHome = ({
         </div>
 
         <div className="vt-facts">
-          <span className="ds-pill"><ListChecks size={13} />约 60 题 · 随时交卷</span>
+          <span className="ds-pill"><ListChecks size={13} />约 80 题 · 随时交卷</span>
           <span className="ds-pill"><Timer size={13} />每题 {VOCAB_TEST_SECONDS.reading} / {VOCAB_TEST_SECONDS.meaning} 秒 · 切走暂停</span>
           <span className="ds-pill"><ShieldCheck size={13} />不影响学习记录</span>
         </div>
@@ -251,7 +252,7 @@ const VocabTestHome = ({
                   <div className="min-w-0 flex-1">
                     <p className="vt-hist-num">
                       {valid ? <>{row.estimated.toLocaleString()}<small>词</small></> : <span className="ds-pill ds-pill-warn">题太少，没出数</span>}
-                      {valid && row.scoreVersion === 1 && <span className="ds-pill">旧版计分</span>}
+                      {valid && row.scoreVersion < 3 && <span className="ds-pill">旧版计分</span>}
                       {delta !== 0 && <span className={`ds-pill ${delta > 0 ? "ds-pill-primary" : ""}`}>{delta > 0 ? "+" : "−"}{Math.abs(delta).toLocaleString()}</span>}
                       {valid && <span className="ds-pill">可信度 {row.confidence}%</span>}
                     </p>
@@ -282,8 +283,8 @@ const VocabTestHome = ({
           </div>
         </div>
         <ul className="vt-rules">
-          <li><b>抽样外推</b>：N5–N1 每级抽十几道，各级答对率乘以该级词表规模再相加。所以它是<b>当前 JLPT 词表范围内</b>的估计，不是「全日语词汇量」。</li>
-          <li><b>四个答案 + 不认识</b>：答对 +1，答错 −1.15，不认识或超时 0。错题扣得更重，是为了减少靠选项线索猜对造成的虚高。</li>
+          <li><b>抽样外推</b>：N5–N1 分级抽样，各级答对率乘以该级词表规模再相加。所以它是<b>当前 JLPT 词表范围内</b>的估计，不是「全日语词汇量」。</li>
+          <li><b>四个答案 + 不认识</b>：答对 +1，答错 −{PENALTY_V3.toFixed(2)}，不认识或超时 0。各级平均得分乘以该级词数再相加；干扰项尽量保持汉字线索中性。</li>
           <li><b>不认识就点「不认识」</b>：它不扣分，也不算你蒙。真不会却硬猜，反而会同时拉低词汇量和可信度。</li>
           <li><b>可信度</b> = 答题量（60）+ 没在赶进度（40），再<b>乘以</b>「有多少作答其实是蒙的」的补数；越难的级别反而答得越好，每处再扣 8 分。所以全靠蒙的话，题答得再多可信度也接近 0。</li>
           <li><b>超时按不认识记</b>，超时太多同样降可信度。切到别的页面会自动暂停，不算你超时。</li>
@@ -299,7 +300,7 @@ const confidenceHint = (result: VocabTestResult): string | null => {
   if (result.confidence >= 60) return null;
   if (result.timeoutShare >= 0.2) return `可信度只有 ${result.confidence}%：超时的题有点多。下次不会的题直接点「不认识」，别等它倒数完。`;
   if (result.guessedShare >= 0.2) return `可信度只有 ${result.confidence}%：看起来蒙的题不少。不会就点「不认识」——它不扣分，结果反而更准。`;
-  return `可信度只有 ${result.confidence}%：题答得还不够多。答满 60 题，数字会稳很多。`;
+  return `可信度只有 ${result.confidence}%：题答得还不够多。答满 ${result.totalQuestions} 题，数字会稳很多。`;
 };
 
 const ResultView = ({ result, row, onRestart, onBack, onShare, shareBusy }: {
@@ -324,7 +325,7 @@ const ResultView = ({ result, row, onRestart, onBack, onShare, shareBusy }: {
                     「3,860 – 6,402」这种宽度读不出任何东西，用户宁可要一个具体数字。 */}
                 <p className="vt-big">{result.estimated.toLocaleString()}<small>词</small></p>
                 <p className="vt-sub"><span className="whitespace-nowrap">区间 {result.lower.toLocaleString()}–{result.upper.toLocaleString()}</span> · <span className="whitespace-nowrap">JLPT 词表范围内</span></p>
-                {result.scoreVersion === 1 && <p className="mt-1 text-xs font-semibold text-[#F0C68A]">旧版计分；重测后使用较严格的答错扣分</p>}
+                {result.scoreVersion < 3 && <p className="mt-1 text-xs font-semibold text-[#F0C68A]">旧版计分；请重测后再参考</p>}
               </>
             ) : (
               <h2 className="vt-title">答得还太少</h2>

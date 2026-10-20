@@ -72,12 +72,13 @@ assert.equal(status.examDateSource, 'auto');
 assert.ok(status.plan.daysLeft > 0 && 'newWordsDone' in status.done && 'clear' in status.shortfall);
 assert.equal(JSON.parse(globalThis.localStorage.getItem('mn-study-preferences')).jlptTarget, 'N3', 'studyPreferences 落在 localStorage 替身（wx 存储）里');
 
-/* ---- 词汇量：网页算法（摸底 20 → 补到 60、四选一 + 不认识、猜测修正），一个字都不碰学习进度 ---- */
+/* ---- 词汇量：网页算法（摸底 20 → 补到 80、四选一 + 不认识、猜测修正），一个字都不碰学习进度 ---- */
 const beforeProgress = Number(core.firstValue(db, 'SELECT SUM(seen_count) FROM progress', [], 0));
 const beforeReviews = Number(core.firstValue(db, 'SELECT COUNT(*) FROM reviews', [], 0));
 let session = features.vocabTest.start();
 assert.equal(session.questions.length, 20, '先只出摸底 20 道');
-assert.equal(session.plannedTotal, 60);
+assert.equal(session.plannedTotal, 80);
+assert.equal(session.scoreVersion, 3);
 assert.ok(session.questions.every((question) => question.options.length === 4));
 while (session && !session.finishedAt && session.currentIndex < session.questions.length) {
   const question = session.questions[session.currentIndex];

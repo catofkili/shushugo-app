@@ -21,7 +21,7 @@ export interface VocabShareInput {
   totalQuestions: number;
   durationSeconds: number;
   confidence: number;
-  scoreVersion: 1 | 2;
+  scoreVersion: 1 | 2 | 3;
   recommendation: string;
   levels: { level: string; rate: number | null; answered: number }[];
 }
@@ -107,7 +107,7 @@ export const renderVocabShareCard = async (input: VocabShareInput): Promise<Blob
   drawFooter(
     ctx,
     "「知らない言葉は、まだ会っていない友達」",
-    input.scoreVersion === 1 ? "旧版计分 · 请重测后再参考" : "JLPT 词表覆盖范围内的抽样估计 · 仅供参考",
+    input.scoreVersion < 3 ? "旧版计分 · 请重测后再参考" : "JLPT 词表覆盖范围内的抽样估计 · 仅供参考",
     "收集日 · 查词汇量"
   );
   return toPngBlob(canvas);

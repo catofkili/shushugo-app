@@ -29,7 +29,7 @@ const vocabShare = (result) => {
   const tooFew = answered < 15;
   const values = {
     share: 'vocab',
-    scoringVersion: result.scoreVersion === 2 ? 2 : 1,
+    scoringVersion: result.scoreVersion === 3 ? 3 : result.scoreVersion === 2 ? 2 : 1,
     answered,
     total: safeCount(result.totalQuestions),
     estimate: safeCount(result.estimated),
@@ -65,6 +65,7 @@ const resultView = (result) => result && ({
 
 Page({
   data: {
+    penalty: vocabTest.PENALTY_V3.toFixed(2),
     view: 'intro',
     ready: false,
     error: '',
@@ -95,7 +96,7 @@ Page({
         sharedResult: {
           answered,
           totalQuestions: safeCount(options.total),
-          scoreVersion: Number(options.scoringVersion) === 2 ? 2 : 1,
+          scoreVersion: Number(options.scoringVersion) === 3 ? 3 : Number(options.scoringVersion) === 2 ? 2 : 1,
           estimated: safeCount(options.estimate),
           lower: safeCount(options.lower),
           upper: safeCount(options.upper),
