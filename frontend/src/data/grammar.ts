@@ -8855,15 +8855,15 @@ const GRAMMAR_POINTS: GrammarPoint[] = [
     ],
     "examples": [
       {
-        "jp": "この靴は長く歩くのにいいです。",
-        "furigana": [{"start":2,"length":1,"reading":"くつ"},{"start":4,"length":1,"reading":"なが"},{"start":6,"length":1,"reading":"ある"}],
-        "tokenLengths": "2,1,-1,2,2,-1,-1,4,-1",
-        "tokenLemmas": "{\"3\":\"長い\",\"7\":\"いい\"}",
+        "jp": "公園もスーパーも近くにあり、子育て世代にも住みよい町です。",
+        "furigana": [{"start":0,"length":2,"reading":"こうえん"},{"start":8,"length":1,"reading":"ちか"},{"start":14,"length":2,"reading":"こそだ"},{"start":17,"length":2,"reading":"せだい"},{"start":21,"length":1,"reading":"す"},{"start":25,"length":1,"reading":"まち"}],
+        "tokenLengths": "2,-1,4,-1,2,-1,2,-1,3,2,-1,-1,4,3,-1",
+        "tokenLemmas": "{\"6\":\"ある\",\"12\":\"住む\",\"13\":\"町\"}",
         "reading": "",
-        "cn": "这双鞋适合长时间走路。",
+        "cn": "附近既有公园也有超市，是个适合育儿家庭居住的城镇。",
         "breakdown": [],
-        "japanese": "この靴は長く歩くのにいいです。",
-        "chinese": "这双鞋适合长时间走路。",
+        "japanese": "公園もスーパーも近くにあり、子育て世代にも住みよい町です。",
+        "chinese": "附近既有公园也有超市，是个适合育儿家庭居住的城镇。",
         "notes": []
       }
     ],
@@ -9863,15 +9863,15 @@ const GRAMMAR_POINTS: GrammarPoint[] = [
     ],
     "examples": [
       {
-        "jp": "何度も確認はするが、まだ不安です。",
-        "furigana": [{"start":0,"length":1,"reading":"なん"},{"start":1,"length":1,"reading":"ど"},{"start":3,"length":2,"reading":"かくにん"},{"start":12,"length":2,"reading":"ふあん"}],
-        "tokenLengths": "2,-1,2,-1,2,-1,-1,2,4,-1",
-        "tokenLemmas": "{\"0\":{\"lemma\":\"何\",\"morphs\":[{\"surface\":\"何\",\"lemma\":\"何\",\"reading\":\"ナン\",\"pos\":\"名詞\",\"detail\":\"数\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"度\",\"lemma\":\"度\",\"reading\":\"ド\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"8\":\"不安\"}",
+        "jp": "説明書は最後まで読みはしたが、細かい操作までは分からなかった。",
+        "furigana": [{"start":0,"length":2,"reading":"せつめい"},{"start":2,"length":1,"reading":"しょ"},{"start":4,"length":2,"reading":"さいご"},{"start":8,"length":1,"reading":"よ"},{"start":15,"length":1,"reading":"こま"},{"start":18,"length":2,"reading":"そうさ"},{"start":23,"length":1,"reading":"わ"}],
+        "tokenLengths": "3,-1,2,-2,2,-1,2,-1,-1,3,2,-2,-1,7,-1",
+        "tokenLemmas": "{\"0\":{\"lemma\":\"説明\",\"morphs\":[{\"surface\":\"説明\",\"lemma\":\"説明\",\"reading\":\"セツメイ\",\"pos\":\"名詞\",\"detail\":\"サ変接続\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"書\",\"lemma\":\"書\",\"reading\":\"ショ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"6\":\"する\",\"13\":{\"lemma\":\"分かる\",\"morphs\":[{\"surface\":\"分から\",\"lemma\":\"分かる\",\"reading\":\"ワカラ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ラ行\",\"conjugatedForm\":\"未然形\"},{\"surface\":\"なかっ\",\"lemma\":\"ない\",\"reading\":\"ナカッ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・ナイ\",\"conjugatedForm\":\"連用タ接続\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}",
         "reading": "",
-        "cn": "倒是确认了很多次，但还是不安。",
+        "cn": "说明书倒是读完了，但具体操作还是没弄明白。",
         "breakdown": [],
-        "japanese": "何度も確認はするが、まだ不安です。",
-        "chinese": "倒是确认了很多次，但还是不安。",
+        "japanese": "説明書は最後まで読みはしたが、細かい操作までは分からなかった。",
+        "chinese": "说明书倒是读完了，但具体操作还是没弄明白。",
         "notes": []
       }
     ],
@@ -12215,15 +12215,15 @@ const GRAMMAR_POINTS: GrammarPoint[] = [
     ],
     "examples": [
       {
-        "jp": "みんなが元気でありますように。",
-        "furigana": [{"start":4,"length":2,"reading":"げんき"}],
-        "tokenLengths": "3,-1,7,-2,-1,-1",
-        "tokenLemmas": "{\"2\":{\"lemma\":\"元気\",\"morphs\":[{\"surface\":\"元気\",\"lemma\":\"元気\",\"reading\":\"ゲンキ\",\"pos\":\"名詞\",\"detail\":\"形容動詞語幹\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"で\",\"lemma\":\"だ\",\"reading\":\"デ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・ダ\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"あり\",\"lemma\":\"ある\",\"reading\":\"アリ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"五段・ラ行アル\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"ます\",\"lemma\":\"ます\",\"reading\":\"マス\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"基本形\"}]}}",
+        "jp": "字幕なしで日本語の映画を楽しめるように、毎日少しずつ勉強しています。",
+        "furigana": [{"start":0,"length":2,"reading":"じまく"},{"start":5,"length":3,"reading":"にほんご"},{"start":9,"length":2,"reading":"えいが"},{"start":12,"length":1,"reading":"たの"},{"start":20,"length":2,"reading":"まいにち"},{"start":22,"length":1,"reading":"すこ"},{"start":26,"length":2,"reading":"べんきょう"}],
+        "tokenLengths": "2,3,3,-1,2,-1,4,-2,-1,-1,2,2,-2,2,5,-1",
+        "tokenLemmas": "{\"1\":\"ない\",\"14\":{\"lemma\":\"する\",\"morphs\":[{\"surface\":\"し\",\"lemma\":\"する\",\"reading\":\"シ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"サ変・スル\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"い\",\"lemma\":\"いる\",\"reading\":\"イ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"ます\",\"lemma\":\"ます\",\"reading\":\"マス\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"基本形\"}]}}",
         "reading": "",
-        "cn": "愿大家都健康。",
+        "cn": "为了能不看字幕也享受日语电影，我每天都在一点点学习。",
         "breakdown": [],
-        "japanese": "みんなが元気でありますように。",
-        "chinese": "愿大家都健康。",
+        "japanese": "字幕なしで日本語の映画を楽しめるように、毎日少しずつ勉強しています。",
+        "chinese": "为了能不看字幕也享受日语电影，我每天都在一点点学习。",
         "notes": []
       }
     ],
@@ -14203,15 +14203,15 @@ const GRAMMAR_POINTS: GrammarPoint[] = [
     ],
     "examples": [
       {
-        "jp": "あの頑固な人が謝るっこないです。",
-        "furigana": [{"start":2,"length":2,"reading":"がんこ"},{"start":5,"length":1,"reading":"ひと"},{"start":7,"length":1,"reading":"あやま"}],
-        "tokenLengths": "2,3,1,-1,8,-1",
-        "tokenLemmas": "{\"1\":\"頑固\",\"4\":{\"lemma\":\"謝る\",\"morphs\":[{\"surface\":\"謝る\",\"lemma\":\"謝る\",\"reading\":\"アヤマル\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ラ行\",\"conjugatedForm\":\"基本形\"},{\"surface\":\"っ\",\"lemma\":\"く\",\"reading\":\"ッ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"五段・カ行促音便\",\"conjugatedForm\":\"連用タ接続\"},{\"surface\":\"こ\",\"lemma\":\"くる\",\"reading\":\"コ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"カ変・クル\",\"conjugatedForm\":\"未然形\"},{\"surface\":\"ない\",\"lemma\":\"ない\",\"reading\":\"ナイ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・ナイ\",\"conjugatedForm\":\"基本形\"},{\"surface\":\"です\",\"lemma\":\"です\",\"reading\":\"デス\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・デス\",\"conjugatedForm\":\"基本形\"}]}}",
+        "jp": "彼が約束の時間を忘れっこないよ。",
+        "furigana": [{"start":0,"length":1,"reading":"かれ"},{"start":2,"length":2,"reading":"やくそく"},{"start":5,"length":2,"reading":"じかん"},{"start":8,"length":1,"reading":"わす"}],
+        "tokenLengths": "1,-1,2,-1,2,-1,6,-1,-1",
+        "tokenLemmas": "{\"6\":{\"lemma\":\"忘れる\",\"morphs\":[{\"surface\":\"忘れ\",\"lemma\":\"忘れる\",\"reading\":\"ワスレ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"っ\",\"lemma\":\"く\",\"reading\":\"ッ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"五段・カ行促音便\",\"conjugatedForm\":\"連用タ接続\"},{\"surface\":\"こ\",\"lemma\":\"くる\",\"reading\":\"コ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"カ変・クル\",\"conjugatedForm\":\"未然形\"},{\"surface\":\"ない\",\"lemma\":\"ない\",\"reading\":\"ナイ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・ナイ\",\"conjugatedForm\":\"基本形\"}]}}",
         "reading": "",
-        "cn": "那个顽固的人绝不可能道歉。",
+        "cn": "他绝不可能忘记约好的时间。",
         "breakdown": [],
-        "japanese": "あの頑固な人が謝るっこないです。",
-        "chinese": "那个顽固的人绝不可能道歉。",
+        "japanese": "彼が約束の時間を忘れっこないよ。",
+        "chinese": "他绝不可能忘记约好的时间。",
         "notes": []
       }
     ],
@@ -15071,15 +15071,15 @@ const GRAMMAR_POINTS: GrammarPoint[] = [
     ],
     "examples": [
       {
-        "jp": "彼の意見に賛成できないではありませんが、条件を確認したいです。",
-        "furigana": [{"start":0,"length":1,"reading":"かれ"},{"start":2,"length":2,"reading":"いけん"},{"start":5,"length":2,"reading":"さんせい"},{"start":20,"length":2,"reading":"じょうけん"},{"start":23,"length":2,"reading":"かくにん"}],
-        "tokenLengths": "1,-1,2,-1,2,5,-1,5,-1,-1,2,-1,2,5,-1",
-        "tokenLemmas": "{\"5\":{\"lemma\":\"できる\",\"morphs\":[{\"surface\":\"でき\",\"lemma\":\"できる\",\"reading\":\"デキ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"未然形\"},{\"surface\":\"ない\",\"lemma\":\"ない\",\"reading\":\"ナイ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・ナイ\",\"conjugatedForm\":\"基本形\"},{\"surface\":\"で\",\"lemma\":\"だ\",\"reading\":\"デ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・ダ\",\"conjugatedForm\":\"連用形\"}]},\"7\":{\"lemma\":\"ある\",\"morphs\":[{\"surface\":\"あり\",\"lemma\":\"ある\",\"reading\":\"アリ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ラ行\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"ませ\",\"lemma\":\"ます\",\"reading\":\"マセ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"未然形\"},{\"surface\":\"ん\",\"lemma\":\"ん\",\"reading\":\"ン\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"不変化型\",\"conjugatedForm\":\"基本形\"}]},\"13\":{\"lemma\":\"する\",\"morphs\":[{\"surface\":\"し\",\"lemma\":\"する\",\"reading\":\"シ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"サ変・スル\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"たい\",\"lemma\":\"たい\",\"reading\":\"タイ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タイ\",\"conjugatedForm\":\"基本形\"},{\"surface\":\"です\",\"lemma\":\"です\",\"reading\":\"デス\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・デス\",\"conjugatedForm\":\"基本形\"}]}}",
+        "jp": "この町にも魅力がないではないが、冬の寒さは少し気になる。",
+        "furigana": [{"start":2,"length":1,"reading":"まち"},{"start":5,"length":2,"reading":"みりょく"},{"start":16,"length":1,"reading":"ふゆ"},{"start":18,"length":1,"reading":"さむ"},{"start":21,"length":1,"reading":"すこ"},{"start":23,"length":1,"reading":"き"}],
+        "tokenLengths": "2,1,-1,-1,2,-1,3,-1,2,-1,-1,1,-1,2,-1,2,1,-1,2,-1",
+        "tokenLemmas": "{\"6\":\"ない\",\"13\":{\"lemma\":\"寒い\",\"morphs\":[{\"surface\":\"寒\",\"lemma\":\"寒い\",\"reading\":\"サム\",\"pos\":\"形容詞\",\"detail\":\"自立\",\"conjugatedType\":\"形容詞・アウオ段\",\"conjugatedForm\":\"ガル接続\"},{\"surface\":\"さ\",\"lemma\":\"さ\",\"reading\":\"サ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]}}",
         "reading": "",
-        "cn": "也不是完全不能赞成他的意见，但想确认条件。",
+        "cn": "这座城镇也并非没有魅力，只是冬天确实有点冷。",
         "breakdown": [],
-        "japanese": "彼の意見に賛成できないではありませんが、条件を確認したいです。",
-        "chinese": "也不是完全不能赞成他的意见，但想确认条件。",
+        "japanese": "この町にも魅力がないではないが、冬の寒さは少し気になる。",
+        "chinese": "这座城镇也并非没有魅力，只是冬天确实有点冷。",
         "notes": []
       }
     ],
@@ -16695,15 +16695,15 @@ const GRAMMAR_POINTS: GrammarPoint[] = [
     ],
     "examples": [
       {
-        "jp": "準備不足のようでは、試験に合格できません。",
-        "furigana": [{"start":0,"length":2,"reading":"じゅんび"},{"start":2,"length":2,"reading":"ふそく"},{"start":10,"length":2,"reading":"しけん"},{"start":13,"length":2,"reading":"ごうかく"}],
-        "tokenLengths": "2,2,-1,-2,-1,-1,-1,2,-1,2,5,-1",
-        "tokenLemmas": "{\"10\":{\"lemma\":\"できる\",\"morphs\":[{\"surface\":\"でき\",\"lemma\":\"できる\",\"reading\":\"デキ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"ませ\",\"lemma\":\"ます\",\"reading\":\"マセ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"未然形\"},{\"surface\":\"ん\",\"lemma\":\"ん\",\"reading\":\"ン\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"不変化型\",\"conjugatedForm\":\"基本形\"}]}}",
+        "jp": "相手の話を最後まで聞かないようでは、信頼関係は築けません。",
+        "furigana": [{"start":0,"length":2,"reading":"あいて"},{"start":3,"length":1,"reading":"はなし"},{"start":5,"length":2,"reading":"さいご"},{"start":9,"length":1,"reading":"き"},{"start":18,"length":2,"reading":"しんらい"},{"start":20,"length":2,"reading":"かんけい"},{"start":23,"length":1,"reading":"きづ"}],
+        "tokenLengths": "2,-1,1,-1,2,-2,4,-2,-1,-1,-1,2,2,-1,5,-1",
+        "tokenLemmas": "{\"6\":\"聞く\",\"14\":{\"lemma\":\"築ける\",\"morphs\":[{\"surface\":\"築け\",\"lemma\":\"築ける\",\"reading\":\"キヅケ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"ませ\",\"lemma\":\"ます\",\"reading\":\"マセ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"未然形\"},{\"surface\":\"ん\",\"lemma\":\"ん\",\"reading\":\"ン\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"不変化型\",\"conjugatedForm\":\"基本形\"}]}}",
         "reading": "",
-        "cn": "如果准备不足，就无法通过考试。",
+        "cn": "如果连对方的话都听不到最后，就无法建立信任关系。",
         "breakdown": [],
-        "japanese": "準備不足のようでは、試験に合格できません。",
-        "chinese": "如果准备不足，就无法通过考试。",
+        "japanese": "相手の話を最後まで聞かないようでは、信頼関係は築けません。",
+        "chinese": "如果连对方的话都听不到最后，就无法建立信任关系。",
         "notes": []
       }
     ],
@@ -17031,15 +17031,15 @@ const GRAMMAR_POINTS: GrammarPoint[] = [
     ],
     "examples": [
       {
-        "jp": "皆様に心より感謝を申し上げます。",
-        "furigana": [{"start":0,"length":2,"reading":"みなさま"},{"start":3,"length":1,"reading":"こころ"},{"start":6,"length":2,"reading":"かんしゃ"},{"start":9,"length":1,"reading":"もう"},{"start":11,"length":1,"reading":"あ"}],
-        "tokenLengths": "2,-1,1,-2,2,-1,6,-1",
-        "tokenLemmas": "{\"6\":\"申し上げる\"}",
+        "jp": "審査結果が出ましたので、取り急ぎご報告申し上げます。",
+        "furigana": [{"start":0,"length":2,"reading":"しんさ"},{"start":2,"length":2,"reading":"けっか"},{"start":5,"length":1,"reading":"で"},{"start":12,"length":1,"reading":"と"},{"start":14,"length":1,"reading":"いそ"},{"start":17,"length":2,"reading":"ほうこく"},{"start":19,"length":1,"reading":"もう"},{"start":21,"length":1,"reading":"あ"}],
+        "tokenLengths": "2,2,-1,4,-2,-1,4,-1,2,6,-1",
+        "tokenLemmas": "{\"3\":{\"lemma\":\"出る\",\"morphs\":[{\"surface\":\"出\",\"lemma\":\"出る\",\"reading\":\"デ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]},\"9\":\"申し上げる\"}",
         "reading": "",
-        "cn": "向各位表示衷心感谢。",
+        "cn": "审核结果已经出来了，先向您报告。",
         "breakdown": [],
-        "japanese": "皆様に心より感謝を申し上げます。",
-        "chinese": "向各位表示衷心感谢。",
+        "japanese": "審査結果が出ましたので、取り急ぎご報告申し上げます。",
+        "chinese": "审核结果已经出来了，先向您报告。",
         "notes": []
       }
     ],
@@ -17479,15 +17479,15 @@ const GRAMMAR_POINTS: GrammarPoint[] = [
     ],
     "examples": [
       {
-        "jp": "どれほど困難であろうとも、最後まで続けます。",
-        "furigana": [{"start":4,"length":2,"reading":"こんなん"},{"start":13,"length":2,"reading":"さいご"},{"start":17,"length":1,"reading":"つづ"}],
-        "tokenLengths": "4,6,-2,-1,2,-2,4,-1",
-        "tokenLemmas": "{\"1\":{\"lemma\":\"困難\",\"morphs\":[{\"surface\":\"困難\",\"lemma\":\"困難\",\"reading\":\"コンナン\",\"pos\":\"名詞\",\"detail\":\"形容動詞語幹\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"で\",\"lemma\":\"だ\",\"reading\":\"デ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・ダ\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"あろ\",\"lemma\":\"ある\",\"reading\":\"アロ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"五段・ラ行アル\",\"conjugatedForm\":\"未然ウ接続\"},{\"surface\":\"う\",\"lemma\":\"う\",\"reading\":\"ウ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"不変化型\",\"conjugatedForm\":\"基本形\"}]},\"6\":\"続ける\"}",
+        "jp": "どれほど時間がかかろうとも、最後までやり遂げます。",
+        "furigana": [{"start":4,"length":2,"reading":"じかん"},{"start":14,"length":2,"reading":"さいご"},{"start":20,"length":1,"reading":"と"}],
+        "tokenLengths": "4,2,-1,4,-2,-1,2,-2,6,-1",
+        "tokenLemmas": "{\"3\":\"かかる\",\"8\":\"やり遂げる\"}",
         "reading": "",
-        "cn": "无论多么困难，都会坚持到最后。",
+        "cn": "无论要花多长时间，我都会坚持完成。",
         "breakdown": [],
-        "japanese": "どれほど困難であろうとも、最後まで続けます。",
-        "chinese": "无论多么困难，都会坚持到最后。",
+        "japanese": "どれほど時間がかかろうとも、最後までやり遂げます。",
+        "chinese": "无论要花多长时间，我都会坚持完成。",
         "notes": []
       }
     ],
@@ -17927,15 +17927,15 @@ const GRAMMAR_POINTS: GrammarPoint[] = [
     ],
     "examples": [
       {
-        "jp": "専門家の助言なしに、この判断はできません。",
-        "furigana": [{"start":0,"length":2,"reading":"せんもん"},{"start":2,"length":1,"reading":"か"},{"start":4,"length":2,"reading":"じょげん"},{"start":12,"length":2,"reading":"はんだん"}],
-        "tokenLengths": "3,-1,2,2,-1,-1,2,2,-1,5,-1",
-        "tokenLemmas": "{\"0\":{\"lemma\":\"専門\",\"morphs\":[{\"surface\":\"専門\",\"lemma\":\"専門\",\"reading\":\"センモン\",\"pos\":\"名詞\",\"detail\":\"一般\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"家\",\"lemma\":\"家\",\"reading\":\"カ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"3\":\"ない\",\"9\":{\"lemma\":\"できる\",\"morphs\":[{\"surface\":\"でき\",\"lemma\":\"できる\",\"reading\":\"デキ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"ませ\",\"lemma\":\"ます\",\"reading\":\"マセ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"未然形\"},{\"surface\":\"ん\",\"lemma\":\"ん\",\"reading\":\"ン\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"不変化型\",\"conjugatedForm\":\"基本形\"}]}}",
+        "jp": "現場を確認することなしに、原因を断定するべきではない。",
+        "furigana": [{"start":0,"length":2,"reading":"げんば"},{"start":3,"length":2,"reading":"かくにん"},{"start":13,"length":2,"reading":"げんいん"},{"start":16,"length":2,"reading":"だんてい"}],
+        "tokenLengths": "2,-1,2,2,-2,2,-1,-1,2,-1,2,5,-1,-2,-1",
+        "tokenLemmas": "{\"5\":\"ない\",\"11\":{\"lemma\":\"する\",\"morphs\":[{\"surface\":\"する\",\"lemma\":\"する\",\"reading\":\"スル\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"サ変・スル\",\"conjugatedForm\":\"基本形\"},{\"surface\":\"べき\",\"lemma\":\"べし\",\"reading\":\"ベキ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"文語・ベシ\",\"conjugatedForm\":\"体言接続\"},{\"surface\":\"で\",\"lemma\":\"だ\",\"reading\":\"デ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・ダ\",\"conjugatedForm\":\"連用形\"}]}}",
         "reading": "",
-        "cn": "没有专家的建议，无法作出这个判断。",
+        "cn": "不去现场确认，就不应该断定原因。",
         "breakdown": [],
-        "japanese": "専門家の助言なしに、この判断はできません。",
-        "chinese": "没有专家的建议，无法作出这个判断。",
+        "japanese": "現場を確認することなしに、原因を断定するべきではない。",
+        "chinese": "不去现场确认，就不应该断定原因。",
         "notes": []
       }
     ],
@@ -19971,15 +19971,15 @@ const GRAMMAR_POINTS: GrammarPoint[] = [
     ],
     "examples": [
       {
-        "jp": "全部は無理でも、半分は終わらせます。",
-        "furigana": [{"start":0,"length":2,"reading":"ぜんぶ"},{"start":3,"length":2,"reading":"むり"},{"start":8,"length":2,"reading":"はんぶん"},{"start":11,"length":1,"reading":"お"}],
-        "tokenLengths": "2,-1,2,-2,-1,2,-1,6,-1",
-        "tokenLemmas": "{\"7\":{\"lemma\":\"終わる\",\"morphs\":[{\"surface\":\"終わら\",\"lemma\":\"終わる\",\"reading\":\"オワラ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ラ行\",\"conjugatedForm\":\"未然形\"},{\"surface\":\"せ\",\"lemma\":\"せる\",\"reading\":\"セ\",\"pos\":\"動詞\",\"detail\":\"接尾\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"ます\",\"lemma\":\"ます\",\"reading\":\"マス\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"基本形\"}]}}",
+        "jp": "専門家に相談しないまでも、まずは公式サイトの案内を確認してください。",
+        "furigana": [{"start":0,"length":2,"reading":"せんもん"},{"start":2,"length":1,"reading":"か"},{"start":4,"length":2,"reading":"そうだん"},{"start":16,"length":2,"reading":"こうしき"},{"start":22,"length":2,"reading":"あんない"},{"start":25,"length":2,"reading":"かくにん"}],
+        "tokenLengths": "3,-1,2,3,-2,-1,-1,-3,2,3,-1,2,-1,2,6,-1",
+        "tokenLemmas": "{\"0\":{\"lemma\":\"専門\",\"morphs\":[{\"surface\":\"専門\",\"lemma\":\"専門\",\"reading\":\"センモン\",\"pos\":\"名詞\",\"detail\":\"一般\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"家\",\"lemma\":\"家\",\"reading\":\"カ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"3\":\"する\",\"14\":{\"lemma\":\"する\",\"morphs\":[{\"surface\":\"し\",\"lemma\":\"する\",\"reading\":\"シ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"サ変・スル\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"ください\",\"lemma\":\"くださる\",\"reading\":\"クダサイ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"五段・ラ行特殊\",\"conjugatedForm\":\"命令ｉ\"}]}}",
         "reading": "",
-        "cn": "即使做不完全部，至少也完成一半。",
+        "cn": "即使不请教专家，至少也请先查看官网上的说明。",
         "breakdown": [],
-        "japanese": "全部は無理でも、半分は終わらせます。",
-        "chinese": "即使做不完全部，至少也完成一半。",
+        "japanese": "専門家に相談しないまでも、まずは公式サイトの案内を確認してください。",
+        "chinese": "即使不请教专家，至少也请先查看官网上的说明。",
         "notes": []
       }
     ],
@@ -21119,15 +21119,15 @@ const GRAMMAR_POINTS: GrammarPoint[] = [
     ],
     "examples": [
       {
-        "jp": "兄の落ち着きぶりにひきかえ、私は緊張していました。",
-        "furigana": [{"start":0,"length":1,"reading":"あに"},{"start":2,"length":1,"reading":"お"},{"start":4,"length":1,"reading":"つ"},{"start":14,"length":1,"reading":"わたし"},{"start":16,"length":2,"reading":"きんちょう"}],
-        "tokenLengths": "1,-1,6,-1,4,-1,1,-1,2,6,-1",
-        "tokenLemmas": "{\"2\":{\"lemma\":\"落ち着き\",\"morphs\":[{\"surface\":\"落ち着き\",\"lemma\":\"落ち着き\",\"reading\":\"オチツキ\",\"pos\":\"名詞\",\"detail\":\"一般\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"ぶり\",\"lemma\":\"ぶり\",\"reading\":\"ブリ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"4\":\"ひきかえる\",\"9\":{\"lemma\":\"する\",\"morphs\":[{\"surface\":\"し\",\"lemma\":\"する\",\"reading\":\"シ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"サ変・スル\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"い\",\"lemma\":\"いる\",\"reading\":\"イ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"まし\",\"lemma\":\"ます\",\"reading\":\"マシ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・マス\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]}}",
+        "jp": "前任者が慎重に判断していたのにひきかえ、彼はすぐ結論を出した。",
+        "furigana": [{"start":0,"length":2,"reading":"ぜんにん"},{"start":2,"length":1,"reading":"しゃ"},{"start":4,"length":2,"reading":"しんちょう"},{"start":7,"length":2,"reading":"はんだん"},{"start":20,"length":1,"reading":"かれ"},{"start":24,"length":2,"reading":"けつろん"},{"start":27,"length":1,"reading":"だ"}],
+        "tokenLengths": "3,-1,2,-1,2,4,-1,-1,4,-1,1,-1,2,2,-1,3,-1",
+        "tokenLemmas": "{\"0\":{\"lemma\":\"前任\",\"morphs\":[{\"surface\":\"前任\",\"lemma\":\"前任\",\"reading\":\"ゼンニン\",\"pos\":\"名詞\",\"detail\":\"一般\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"者\",\"lemma\":\"者\",\"reading\":\"シャ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"5\":{\"lemma\":\"する\",\"morphs\":[{\"surface\":\"し\",\"lemma\":\"する\",\"reading\":\"シ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"サ変・スル\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"て\",\"lemma\":\"て\",\"reading\":\"テ\",\"pos\":\"助詞\",\"detail\":\"接続助詞\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"},{\"surface\":\"い\",\"lemma\":\"いる\",\"reading\":\"イ\",\"pos\":\"動詞\",\"detail\":\"非自立\",\"conjugatedType\":\"一段\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"た\",\"lemma\":\"た\",\"reading\":\"タ\",\"pos\":\"助動詞\",\"detail\":\"*\",\"conjugatedType\":\"特殊・タ\",\"conjugatedForm\":\"基本形\"}]},\"8\":\"ひきかえる\",\"15\":\"出す\"}",
         "reading": "",
-        "cn": "与哥哥的镇定相反，我很紧张。",
+        "cn": "与前任者一直谨慎判断相反，他很快就下了结论。",
         "breakdown": [],
-        "japanese": "兄の落ち着きぶりにひきかえ、私は緊張していました。",
-        "chinese": "与哥哥的镇定相反，我很紧张。",
+        "japanese": "前任者が慎重に判断していたのにひきかえ、彼はすぐ結論を出した。",
+        "chinese": "与前任者一直谨慎判断相反，他很快就下了结论。",
         "notes": []
       }
     ],
@@ -22099,15 +22099,15 @@ const GRAMMAR_POINTS: GrammarPoint[] = [
     ],
     "examples": [
       {
-        "jp": "使い方によっては、古い道具も役に立ちます。",
-        "furigana": [{"start":0,"length":1,"reading":"つか"},{"start":2,"length":1,"reading":"かた"},{"start":9,"length":1,"reading":"ふる"},{"start":11,"length":2,"reading":"どうぐ"},{"start":14,"length":1,"reading":"やく"},{"start":16,"length":1,"reading":"た"}],
-        "tokenLengths": "3,-4,-1,-1,2,2,-1,6,-1",
-        "tokenLemmas": "{\"7\":\"役に立つ\"}",
+        "jp": "言いようによっては、率直な意見でも相手を傷つけることがある。",
+        "furigana": [{"start":0,"length":1,"reading":"い"},{"start":10,"length":2,"reading":"そっちょく"},{"start":13,"length":2,"reading":"いけん"},{"start":17,"length":2,"reading":"あいて"},{"start":20,"length":1,"reading":"きず"}],
+        "tokenLengths": "4,-4,-1,-1,3,2,-1,-1,2,-1,4,-2,-1,2,-1",
+        "tokenLemmas": "{\"0\":{\"lemma\":\"言う\",\"morphs\":[{\"surface\":\"言い\",\"lemma\":\"言う\",\"reading\":\"イイ\",\"pos\":\"動詞\",\"detail\":\"自立\",\"conjugatedType\":\"五段・ワ行促音便\",\"conjugatedForm\":\"連用形\"},{\"surface\":\"よう\",\"lemma\":\"よう\",\"reading\":\"ヨウ\",\"pos\":\"名詞\",\"detail\":\"接尾\",\"conjugatedType\":\"*\",\"conjugatedForm\":\"*\"}]},\"4\":\"率直\"}",
         "reading": "",
-        "cn": "根据使用方式不同，旧工具也能派上用场。",
+        "cn": "说法不同时，即使是坦率的意见也可能伤害对方。",
         "breakdown": [],
-        "japanese": "使い方によっては、古い道具も役に立ちます。",
-        "chinese": "根据使用方式不同，旧工具也能派上用场。",
+        "japanese": "言いようによっては、率直な意見でも相手を傷つけることがある。",
+        "chinese": "说法不同时，即使是坦率的意见也可能伤害对方。",
         "notes": []
       }
     ],

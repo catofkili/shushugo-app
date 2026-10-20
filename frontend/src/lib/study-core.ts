@@ -114,7 +114,7 @@ const JLPT_WORD_METADATA_VERSION = `2026-10-12-atatameru-example-v1-${FURIGANA_V
 const JLPT_LEVEL_OVERRIDE_VERSION = "2026-08-21-unleveled-v1";
 // 与 src/data/grammar_seed.json 的 version 字段保持一致。种子 JSON 只在版本
 // 不匹配需要迁移时才动态加载,避免打进主 bundle。
-export const GRAMMAR_SEED_VERSION = "2026-09-18-grammar-split-variants-v1";
+export const GRAMMAR_SEED_VERSION = "2026-10-20-grammar-connection-examples-v1";
 /**
  * 种子里有多少条语法点。⚠️ 它不是装饰,是**版本戳撒谎时的唯一兜底**。
  *

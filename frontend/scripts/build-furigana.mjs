@@ -42,7 +42,7 @@ const dbPaths = [
 // 这里、scripts/bake-seed-db.mjs、src/lib/study-core.ts,外加
 // src/data/furigana_overrides.json 的 version(对不上会直接抛错,是有意的)。
 export const FURIGANA_VERSION = "2026-08-15-kuromoji-ipadic-v5-bunsetsu-morph-v1";
-const GRAMMAR_DATASET_VERSION = "2026-09-18-grammar-split-variants-v1";
+const GRAMMAR_DATASET_VERSION = "2026-10-20-grammar-connection-examples-v1";
 
 const hasKanji = (text) => /[\u3400-\u9fff々〇]/u.test(String(text ?? ""));
 // 语法标题里有少量为中文解释的括号（例如「基数詞（基数词）」）。

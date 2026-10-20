@@ -1,5 +1,5 @@
 {
-  "sourceBytes": 1509579,
+  "sourceBytes": 1511024,
   "totalEntries": 769,
   "packages": [
     {
@@ -15,7 +15,7 @@
         "N3": 146
       },
       "entries": 409,
-      "bytes": 667905
+      "bytes": 669479
     },
     {
       "root": "grammar-advanced",
@@ -28,7 +28,7 @@
         "N1": 205
       },
       "entries": 360,
-      "bytes": 546833
+      "bytes": 546682
     }
   ]
 }
