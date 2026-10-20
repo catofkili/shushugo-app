@@ -4,7 +4,6 @@ const databasePath = require.resolve('../src/runtime/database-store');
 const featuresPath = require.resolve('../src/runtime/extended-features');
 require.cache[databasePath] = { exports: { ensureDatabase: async () => undefined, getStatus: () => ({ ready: true }) } };
 require.cache[featuresPath] = { exports: { vocabTest: {
-  PENALTY_V3: 0.80,
   history: () => [
     { runId: 'short', answered: 8, estimated: 0, finishedAt: Date.now(), lower: 0, upper: 100, durationSeconds: 60, confidence: 5 },
     { runId: 'valid', answered: 24, estimated: 4200, scoreVersion: 3, finishedAt: Date.now() - 86_400_000, lower: 3900, upper: 4500, durationSeconds: 240, confidence: 80 }

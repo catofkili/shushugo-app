@@ -14,7 +14,11 @@ vi.mock("./storage", () => ({ scheduleSave: () => undefined, requestFullSnapshot
 
 import {
   buildVocabTestQuestions,
-  PENALTY_V3,
+  PENALTY,
+  GUESS_FLOOR_CAP,
+  CONFIDENCE_BONUS,
+  calibrateLevelsV3,
+  type VocabTestSession,
   finishVocabTest,
   getVocabTestHistory,
   getVocabTestResult,
@@ -29,6 +33,24 @@ import {
 } from "./vocab-test";
 
 const levels = ["N5", "N4", "N3", "N2", "N1"];
+
+// 真人回放固定原始计数；历史中已舍入的 rate 不能冒充逐题作答。
+const todayCounts = [[7, 0, 7], [7, 0, 8], [12, 1, 14], [9, 1, 24], [9, 2, 27]];
+const replaySession = (counts = todayCounts): VocabTestSession => {
+  const questions = counts.flatMap(([, , answered], band) => Array.from({ length: answered }, () => ({
+    id: band, level: levels[band], kind: "reading" as const, prompt: "詞",
+    options: ["し", "じ", "ち", "に"], answerIndex: 0, answer: "し"
+  })));
+  let questionIndex = 0;
+  const responses = counts.flatMap(([correct, wrong, answered]) => Array.from({ length: answered }, (_, i) => ({
+    questionIndex: questionIndex++, questionId: 0,
+    answerState: i < correct ? "correct" as const : i < correct + wrong ? "wrong" as const : "unknown" as const,
+    selectedOption: null, responseMs: 1000, answeredAt: 1
+  })));
+  return { version: 1, scoreVersion: 3, runId: "replay-2026-10-20", startedAt: 0, finishedAt: 80000,
+    currentIndex: responses.length, questions, responses, plannedTotal: 80,
+    populationByLevel: { N5: 888, N4: 873, N3: 2096, N2: 3606, N1: 4215 } };
+};
 
 const sampleRows = (): VocabTestWordRow[] => levels.flatMap((level) => Array.from({ length: 8 }, (_, index) => ({
   id: levels.indexOf(level) * 100 + index + 1,
@@ -123,7 +145,7 @@ describe("⚠️ 计分的无偏性", () => {
     expect(result?.estimated).toBe(0);
   });
 
-  it("新场次按答对 +1、答错 −PENALTY_V3、不认识 0 逐级折算", () => {
+  it("新场次保留答对得分、答错罚分，再校准和奖励", () => {
     const session = startVocabTest(() => 0.3);
     const firstLevel = session.questions[0].level;
     const questions = session.questions.map((question, index) => ({ question, index }))
@@ -138,7 +160,7 @@ describe("⚠️ 计分的无偏性", () => {
     }));
     const result = getVocabTestResult({ ...session, responses });
     expect(session.scoreVersion).toBe(3);
-    expect(result?.levels.find((level) => level.level === firstLevel)?.rate).toBe(Math.round((3 - PENALTY_V3) / 4 * 100) / 100);
+    expect(result?.levels.find((level) => level.level === firstLevel)?.rate).toBe(0.51);
   });
 
   it("旧场次仍用 −1/3，不会升级后变成新分数", () => {
@@ -402,7 +424,98 @@ describe("历史成绩", () => {
 });
 
 
-describe("v3 罚分与兼容性", () => {
+describe("v3 自校准与兼容性", () => {
+  it.each([
+    { old: 6199, rates: [1, 1, 0.82, 0.38, 0.32], counts: [7, 6, 11, 18, 18],
+      population: [888, 873, 2096, 3606, 4215], estimated: 4075 },
+    { old: 4779, rates: [1, 1, 0.83, 0.19, 0.13], counts: [7, 7, 12, 16, 18],
+      population: [888, 876, 2144, 3617, 4215], estimated: 3962 }
+  ])("旧场 $old 用历史 rate/词数参考回放，不能编造原始对错数", ({ old, rates, counts, population, estimated }) => {
+    const raw = getVocabTestResult({ ...replaySession(), scoreVersion: 2 })!.levels
+      .map((b, i) => ({ ...b, rate: rates[i], answered: counts[i], total: population[i] }));
+    expect(Math.round(raw.reduce((sum, b) => sum + b.total * b.rate, 0))).toBe(old);
+    const result = calibrateLevelsV3(raw);
+    expect(Math.round(result.levels.reduce((sum, b) => sum + b.total * b.rate!, 0))).toBe(estimated);
+  });
+
+  it("同一份原始作答的 v1/v2 估计、区间及推荐完全保留", () => {
+    const session = replaySession();
+    const v1 = getVocabTestResult({ ...session, scoreVersion: 1 })!;
+    const v2 = getVocabTestResult({ ...session, scoreVersion: 2 })!;
+    expect(v1.levels.map((b) => b.rate)).toEqual([1, 0.88, 0.83, 0.36, 0.31]);
+    expect(v2.levels.map((b) => b.rate)).toEqual([1, 0.88, 0.78, 0.33, 0.25]);
+    expect([v1.estimated, v1.lower, v1.upper, v1.recommendation]).toEqual([6001, 4822, 7180, "N2"]);
+    expect([v2.estimated, v2.lower, v2.upper, v2.recommendation]).toEqual([5535, 4060, 7010, "N2"]);
+  });
+
+  it("今天 5697 那场回放为 3600–3800，底噪来自最难带，推荐 N2，区间放大", () => {
+    const session = replaySession();
+    const raw = getVocabTestResult({ ...session, scoreVersion: 2 })!;
+    const calibrated = calibrateLevelsV3(raw.levels);
+    expect((9 - 2 * PENALTY) / 27).toBeCloseTo(0.248148);
+    // 保留原始带 rate 的既有两位小数口径，0.248148 在这里为 0.25。
+    expect(calibrated.floor).toBe(raw.levels[4].rate);
+    expect(calibrated.floor).toBe(0.25);
+    const result = getVocabTestResult(session)!;
+    expect(result.levels.map((b) => b.rate)).toEqual([1, 0.92, 0.78, 0.12, 0]);
+    expect(result.levels).toEqual(calibrated.levels);
+    expect(result.estimated).toBe(3759);
+    expect(result.estimated).toBeGreaterThanOrEqual(3600);
+    expect(result.estimated).toBeLessThanOrEqual(3800);
+    expect(result.recommendation).toBe("N2");
+    expect(result.upper - result.estimated).toBeGreaterThanOrEqual(raw.upper - raw.estimated);
+    recordVocabTestRun(session);
+    expect(getVocabTestHistory()[0].levels.map((b) => b.rate)).toEqual([1, 0.92, 0.78, 0.12, 0]);
+  });
+
+  it("强者最难带 0.9 时底噪封顶 0.3，各带保留正值，估计随水平单调", () => {
+    const raw = getVocabTestResult({ ...replaySession(), scoreVersion: 2 })!.levels;
+    const estimates = [0.85, 0.9, 0.95, 1].map((rate) => {
+      const calibrated = calibrateLevelsV3(raw.map((b) => ({ ...b, rate })));
+      expect(calibrated.floor).toBe(GUESS_FLOOR_CAP);
+      expect(calibrated.levels.every((b) => b.rate! > 0)).toBe(true);
+      return calibrated.levels.reduce((sum, b) => sum + b.total * b.rate!, 0);
+    });
+    expect(estimates.every((estimate, i) => i === 0 || estimate >= estimates[i - 1])).toBe(true);
+    expect(estimates[2]).toBeGreaterThan(estimates[1]);
+  });
+
+  it("初学者最难带为零时只给 10% 奖励，夹到 [0,1]，不改输入", () => {
+    const raw = getVocabTestResult({ ...replaySession(), scoreVersion: 2 })!.levels
+      .map((b, i) => ({ ...b, rate: [1, 0.5, 0.2, 0.1, 0][i] }));
+    const calibrated = calibrateLevelsV3(raw);
+    expect(calibrated.floor).toBe(0);
+    expect(calibrated.levels.map((b) => b.rate)).toEqual([1, 0.55, 0.22, 0.11, 0]);
+    expect(raw.map((b) => b.rate)).toEqual([1, 0.5, 0.2, 0.1, 0]);
+  });
+
+  it("最难带少于五题不参与底噪；五题即可参与", () => {
+    const raw = getVocabTestResult({ ...replaySession(), scoreVersion: 2 })!.levels;
+    raw[3] = { ...raw[3], rate: 0.2 };
+    raw[4] = { ...raw[4], answered: 4, rate: 0 };
+    expect(calibrateLevelsV3(raw).floor).toBe(raw[3].rate);
+    raw[4].answered = 5;
+    expect(calibrateLevelsV3(raw).floor).toBe(0);
+  });
+
+  it("没有合格样本时底噪为零，未答带保留 null，空数组可处理", () => {
+    const raw = getVocabTestResult({ ...replaySession(), scoreVersion: 2 })!.levels
+      .map((b, i) => ({ ...b, answered: 4, rate: i === 4 ? null : 0.5 }));
+    const calibrated = calibrateLevelsV3(raw);
+    expect(calibrated.floor).toBe(0);
+    expect(calibrated.levels.map((b) => b.rate)).toEqual([0.55, 0.55, 0.55, 0.55, null]);
+    expect(calibrateLevelsV3([])).toEqual({ floor: 0, levels: [] });
+  });
+
+  it("未作答带的区间不确定性也按 v3 倍率放大", () => {
+    const session = replaySession([[2, 0, 2], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]]);
+    session.populationByLevel = { N5: 10000, N1: 100 };
+    const v2 = getVocabTestResult({ ...session, scoreVersion: 2 })!;
+    const v3 = getVocabTestResult(session)!;
+    expect(v2.estimated - v2.lower).toBe(196);
+    expect(v3.estimated - v3.lower).toBe(Math.ceil(196 * CONFIDENCE_BONUS));
+  });
+
   it("新会话完成 80 题后，历史 version=3 与逐级结果一致", () => {
     // 假名词保留释义题，测流程而非依赖小型夹具能合成多少读音干扰项。
     for (let i = 0; i < 120; i++) testDb.run(
@@ -424,7 +537,7 @@ describe("v3 罚分与兼容性", () => {
     expect(JSON.parse(String(testDb.exec("SELECT levels_json FROM vocab_test_history")[0].values[0][0])).version).toBe(3);
   });
 
-  it("v2/v3 各用自己的逐题样本方差，不缩放", () => {
+  it("v2 保留逐题样本方差，v3 按底噪和信心奖励放大", () => {
     const started = startVocabTest(() => 0.35);
     const questions = Array.from({ length: 40 }, (_, i) => ({ ...started.questions[0], id: i + 1, level: "N3" }));
     const responses = questions.map((q, i) => ({ questionIndex: i, questionId: q.id,
@@ -435,8 +548,8 @@ describe("v3 罚分与兼容性", () => {
     const v3 = getVocabTestResult({ ...session, scoreVersion: 3 })!;
     const variance = (25 + 5 * 1.15 ** 2 - (25 - 5 * 1.15) ** 2 / 40) / (40 * 39);
     expect(v2.upper - v2.estimated).toBe(Math.ceil(1.96 * 1000 * Math.sqrt(variance)));
-    const varianceV3 = (25 + 5 * PENALTY_V3 ** 2 - (25 - 5 * PENALTY_V3) ** 2 / 40) / (40 * 39);
-    expect(v3.levels.find((b) => b.level === "N3")?.rate).toBe(Math.round((25 - 5 * PENALTY_V3) / 40 * 100) / 100);
+    const varianceV3 = variance * (CONFIDENCE_BONUS / (1 - GUESS_FLOOR_CAP)) ** 2;
+    expect(v3.levels.find((b) => b.level === "N3")?.rate).toBe(0.28);
     expect(v2.levels.find((b) => b.level === "N3")?.rate).toBe(0.48);
     expect(v3.upper - v3.estimated).toBe(Math.ceil(1.96 * 1000 * Math.sqrt(varianceV3)));
   });

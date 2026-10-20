@@ -84,17 +84,24 @@ export interface VocabTestResult {
 const SESSION_KEY = "vocab_test_session_v1";
 export const VOCAB_TEST_LEVELS = ["N5", "N4", "N3", "N2", "N1"] as const;
 export const VOCAB_TEST_QUESTION_COUNT = 80;
-/** 2026-09 校准：四个答案里的有依据猜测常高于随机的 25%，每次答错扣 1.15。 */
-const PENALTY = 1.15;
+/** 2026-09 校准：四个答案里的有依据猜测常高于随机的 25%，每次答错扣 1.15。v2、v3 共用。 */
+export const PENALTY = 1.15;
 
-/** 未知题期望 e=h−(1−h)p，零点 p=h/(1−h)。线索中性后仍须为真人语义推断
- * 留余量：h=.27–.45 对应 p≈.37–.82。三档各 200 场扫描按整体均值 3190–3790、
- * strict/semantic40 各≤3990 取最大可行 p=.80。完整80题各200场均值
- * strict/eager/semantic40=3148/3055/3514，三档平均3239；.50语义档4328超上界，
- * 1.15三档平均2995不足下界。完整扫描、区间与局限见同日文档。
- * 以后改 p 必须重跑模拟器，包含依赖罚分的完整自适应补题流程。
- * shortcut: 仅一个用户的模拟参考，仍缺多人真人标定与中文音迁移。 */
-export const PENALTY_V3 = 0.80;
+/**
+ * ⚠️ v3 的「自校准底噪」（2026-10-20，用户定；证据见 docs/claude/interface-and-design-system.md 同日一节）。
+ *
+ * 中文母语者靠汉字能把没学过的词**推断**出来，而且只在有把握时才答 → 答得准，罚分罚不到
+ * （用户 N2/N1 答的题 ~85% 是对的，真实只学过 3%）。没有现成算法管这件事，
+ * 所以用这一场自己的数据估底噪：**最难（答题 ≥5）那一带的原始得分率就是这个人的「推断底噪」**，
+ * 封顶 GUESS_FLOOR_CAP（真有 N1 水平的人最难带得分高，不能把他的真实掌握全当底噪扣掉）。
+ * 每带 g = (r − 底噪) / (1 − 底噪)，再乘 CONFIDENCE_BONUS（给用户一点信心，封顶 1）。
+ *
+ * 用户三场实测（旧题型）：6199 / 4779 / 5697 → 3.7k 上下，真实 ≈ 3490。
+ * shortcut: 假设最难一带基本不会，对真有 N1 水平的人会略低估（偏低是想要的方向）；
+ * 底噪来自同一场数据，区间按 (奖励 / (1−底噪))² 放大。
+ */
+export const GUESS_FLOOR_CAP = 0.3;
+export const CONFIDENCE_BONUS = 1.1;
 
 /**
  * 每题的秒数按题型分：读音题要在四个假名串里逐拍比对，天然比读中文释义慢。
@@ -908,7 +915,7 @@ const levelResult = (level: string, session: VocabTestSession): VocabTestLevelRe
   const wrong = rows.filter((row) => row.answerState === "wrong").length;
   const unknown = rows.filter((row) => row.answerState === "unknown").length;
   const timeout = rows.filter((row) => row.answerState === "timeout").length;
-  const penalty = session.scoreVersion === 3 ? PENALTY_V3 : session.scoreVersion === 2 ? PENALTY : 1 / DISTRACTOR_COUNT;
+  const penalty = session.scoreVersion >= 2 ? PENALTY : 1 / DISTRACTOR_COUNT;
   const raw = rows.length ? (correct - wrong * penalty) / rows.length : null;
   const score = raw == null ? null : clamp(raw, 0, 1);
   return {
@@ -923,16 +930,34 @@ const levelResult = (level: string, session: VocabTestSession): VocabTestLevelRe
   };
 };
 
+/** v3：原始得分率 → 「真会的比例」。底噪与奖励的含义见 GUESS_FLOOR_CAP。 */
+export const calibrateLevelsV3 = (levels: VocabTestLevelResult[]): { levels: VocabTestLevelResult[]; floor: number } => {
+  const measured = levels.filter((level) => level.answered >= 5 && level.rate != null).map((level) => level.rate as number);
+  // 尚无答满 5 题的带时，没有可用的底噪证据；不能默认扣到封顶。
+  const floor = measured.length ? clamp(Math.min(GUESS_FLOOR_CAP, ...measured), 0, GUESS_FLOOR_CAP) : 0;
+  return {
+    floor,
+    levels: levels.map((level) => ({
+      ...level,
+      rate: level.rate == null ? null : Math.round(clamp((level.rate - floor) / (1 - floor) * CONFIDENCE_BONUS, 0, 1) * 100) / 100
+    }))
+  };
+};
+
 export const getVocabTestResult = (session: VocabTestSession | null): VocabTestResult | null => {
   if (!session) return null;
-  const levels = VOCAB_TEST_LEVELS.map((level) => levelResult(level, session));
+  const rawLevels = VOCAB_TEST_LEVELS.map((level) => levelResult(level, session));
+  const calibrated = session.scoreVersion === 3 ? calibrateLevelsV3(rawLevels) : null;
+  const levels = calibrated?.levels ?? rawLevels;
+  // 方差按「逐题得分 → 真会的比例」的线性缩放放大
+  const varianceScale = calibrated ? (CONFIDENCE_BONUS / (1 - calibrated.floor)) ** 2 : 1;
   const population = levels.reduce((sum, level) => sum + level.total, 0);
   const estimated = levels.reduce((sum, level) => sum + level.total * (level.rate ?? 0), 0);
   let variance = 0;
   levels.forEach((level) => {
     const { total, answered, rate, correct, wrong, unknown, timeout } = level;
     if (!answered || rate == null) {
-      variance += total * total;
+      variance += varianceScale * total * total;
       return;
     }
     if (session.scoreVersion === 1) {
@@ -941,10 +966,9 @@ export const getVocabTestResult = (session: VocabTestSession | null): VocabTestR
       return;
     }
     // 用 +1 / −p / 0 的实际逐题得分算样本方差，v2 仍用 1.15；不做额外缩放。
-    const penalty = session.scoreVersion === 3 ? PENALTY_V3 : PENALTY;
-    const sum = correct - wrong * penalty;
-    const squares = correct + wrong * penalty ** 2;
-    variance += total * total * (answered < 2 ? 1 : Math.max(0, squares - sum ** 2 / answered) / (answered * (answered - 1)));
+    const sum = correct - wrong * PENALTY;
+    const squares = correct + wrong * PENALTY ** 2;
+    variance += varianceScale * total * total * (answered < 2 ? 1 : Math.max(0, squares - sum ** 2 / answered) / (answered * (answered - 1)));
   });
   const margin = session.responses.length ? Math.ceil(1.96 * Math.sqrt(Math.max(0, variance))) : population;
   const roundedEstimate = Math.round(estimated);

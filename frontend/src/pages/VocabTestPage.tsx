@@ -10,7 +10,6 @@ import {
   startVocabTest,
   submitVocabTestAnswer,
   secondsForQuestion,
-  PENALTY_V3,
   VOCAB_TEST_LEVELS,
   VOCAB_TEST_SECONDS,
   type VocabTestAnswerState,
@@ -284,7 +283,7 @@ const VocabTestHome = ({
         </div>
         <ul className="vt-rules">
           <li><b>抽样外推</b>：N5–N1 分级抽样，各级答对率乘以该级词表规模再相加。所以它是<b>当前 JLPT 词表范围内</b>的估计，不是「全日语词汇量」。</li>
-          <li><b>四个答案 + 不认识</b>：答对 +1，答错 −{PENALTY_V3.toFixed(2)}，不认识或超时 0。各级平均得分乘以该级词数再相加；干扰项尽量保持汉字线索中性。</li>
+          <li><b>四个答案 + 不认识</b>：答对得分，答错扣分，不认识或超时不计分。按本场最难带的得分校准推断底噪，再给一点信心奖励，估算各级认识的词数。</li>
           <li><b>不认识就点「不认识」</b>：它不扣分，也不算你蒙。真不会却硬猜，反而会同时拉低词汇量和可信度。</li>
           <li><b>可信度</b> = 答题量（60）+ 没在赶进度（40），再<b>乘以</b>「有多少作答其实是蒙的」的补数；越难的级别反而答得越好，每处再扣 8 分。所以全靠蒙的话，题答得再多可信度也接近 0。</li>
           <li><b>超时按不认识记</b>，超时太多同样降可信度。切到别的页面会自动暂停，不算你超时。</li>

@@ -2,55 +2,55 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1869409,
+      "bytes": 1868997,
       "passes": true
     },
     "study": {
-      "bytes": 1028085,
+      "bytes": 1028413,
       "passes": true
     },
     "account": {
-      "bytes": 324874,
+      "bytes": 324827,
       "passes": true
     },
     "content-pages": {
-      "bytes": 1174658,
+      "bytes": 1174649,
       "passes": true
     },
     "features": {
-      "bytes": 588539,
+      "bytes": 588538,
       "passes": true
     },
     "content": {
-      "bytes": 1619465,
+      "bytes": 1619464,
       "passes": true
     },
     "grammar-foundation": {
-      "bytes": 670030,
+      "bytes": 670029,
       "passes": true
     },
     "grammar-advanced": {
-      "bytes": 547231,
+      "bytes": 547230,
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 310145,
+      "bytes": 310526,
       "passes": true
     },
     "core": {
-      "bytes": 279122,
+      "bytes": 279123,
       "passes": true
     },
     "lazy": {
-      "bytes": 916990,
+      "bytes": 917076,
       "passes": true
     },
     "jlpt-bank": {
-      "bytes": 764763,
+      "bytes": 764762,
       "passes": true
     },
     "jlpt-bank-2": {
-      "bytes": 585141,
+      "bytes": 585140,
       "passes": true
     }
   },
@@ -59,7 +59,7 @@
   "duplicatedModules": [
     {
       "source": "frontend/src/lib/vocab-test.ts",
-      "bytes": 63539,
+      "bytes": 65243,
       "packages": [
         "grammar-pages",
         "lazy",
@@ -871,7 +871,7 @@
   "duplicatedCoreModules": [
     {
       "source": "frontend/src/lib/vocab-test.ts",
-      "bytes": 63539,
+      "bytes": 65243,
       "packages": [
         "grammar-pages",
         "lazy",

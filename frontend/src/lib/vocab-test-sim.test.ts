@@ -15,8 +15,8 @@
  * clamp/四舍五入与自适应抽样均使它只是近似，不能直接用于校正单次真实测验。
  * semantic40 未知题始终作答，40% 正确、其余均匀选错；它是语义能力的敏感性档，
  * 不是使用答案线索的可部署作答器。h=C/(C+W)；e=(C−pW)/(C+W+U)，含跳过。
- * 扫描复用逐题记录；补题依赖罚分，最终 p 与 .67 都必须另跑完整 200 场。
- * 以后修改 p 必须重跑本模拟器，不能只看旧报告或固定作答扫描。
+ * 2026-10-20：撤回扫描选 p 及 final 验收；模拟者不会真人的规则音读推断，结果仅供参考。
+ * 校准常量的验收改用 vocab-test.test.ts 的真人回放，不由本模拟器选罚分。
  * 复现须保持 live.db 字节、生产代码（含其依赖）、读音表与种子一致；报告记录三个入口文件 SHA-256。
  * 仅文件读取真实快照；真实出题/计分全在独立内存库运行，写出仅限 .local/vocab-sim/。
  */
@@ -39,13 +39,12 @@ vi.mock("./storage", () => ({ scheduleSave: () => undefined, requestFullSnapshot
 
 import {
   getVocabTestResult, getVocabTestSession, startVocabTest, submitVocabTestAnswer,
-  PENALTY_V3, VOCAB_TEST_QUESTION_COUNT, VOCAB_TEST_LEVELS, type VocabTestAnswerState, type VocabTestQuestion
+  PENALTY, VOCAB_TEST_QUESTION_COUNT, VOCAB_TEST_LEVELS, type VocabTestAnswerState, type VocabTestQuestion
 } from "./vocab-test";
 
 const N = 200; // 每档完整测验场数，每场独立重置会话和种子。
 const BASE_SEED = 20261019; // Mulberry32 初始种子；第 i 场加 i*7919，三档用同一组种子。
 const SLIP = 0.03; // 已知词选错的概率；错选项从其余三个中均匀选，不会再次碰巧答对。
-const PENALTY = PENALTY_V3; // 仅用于统计未知题原始得分；正式 rate/估计一律调用生产计分。
 const RESPONSE_MS = 1200; // 正常作答时长，不触发读音/释义题时限。
 const PROFILES = { strict: { BLIND_GUESS: 0 }, eager: { BLIND_GUESS: 0.5 }, semantic40: { BLIND_GUESS: 1 } } as const;
 // 直写终端，避免测试运行器隐藏通过场次的日志；默认跳过时不会输出任何内容。
@@ -65,8 +64,6 @@ const REFERENCE = [
   // 用户未提供这场逐级 rate，保留 null，不能用其他场的 rate 填补。
   { date: "2026-09-01", rates: [null, null, null, null, null], estimated: 4493 }
 ];
-const VALIDATION_RANGES = { h: [0.22, 0.35], estimated: [3190, 3790], conservativeMaximum: 3990 } as const;
-const PENALTIES = [0.33, 0.5, 0.6, 0.67, 0.8, 1.15];
 
 // 常见日文/繁体→简体的近似字形表；仅认同字，不增加近义词、语义或答案特例。
 // 弁/発/復等存在一对多含义，此处各取常见中文写法，所以仍可能漏掉线索。
@@ -145,28 +142,14 @@ const distribution = (values: number[]) => {
   };
   return { mean: values.reduce((sum, v) => sum + v, 0) / values.length, p05: quantile(0.05), p95: quantile(0.95) };
 };
-const within = (value: number, [low, high]: readonly [number, number]) => value >= low && value <= high;
 const sha256 = (bytes: Uint8Array) => createHash("sha256").update(bytes).digest("hex");
 const display = (value: number | null) => value == null ? "—" : Number(value.toFixed(4));
 
 type Run = { seed: number; estimated: number; intervalWidth: number; rates: Record<Level, number>;
   answers: { id: number; level: string; kind: Kind; known: boolean; state: Exclude<VocabTestAnswerState, "timeout">; selected: number | null; answerIndex: number }[];
   raw: { level: string; total: number; answered: number; correct: number; wrong: number }[] };
-const replay = (runs: Run[], p: number) => {
-  const rates = runs.map((run) => Object.fromEntries(run.raw.map((b) => [b.level,
-    Math.round(Math.max(0, Math.min(1, (b.correct - p * b.wrong) / b.answered)) * 100) / 100
-  ])) as Record<Level, number>);
-  return { p, estimated: distribution(runs.map((run, i) => Math.round(run.raw.reduce((sum, b) => sum + b.total * rates[i][b.level as Level], 0)))),
-    rates: Object.fromEntries(LEVELS.map((level) => [level, distribution(rates.map((r) => r[level]))])) };
-};
 const reports: { profile: Profile; levels: Record<Level, { rate: ReturnType<typeof distribution>; estimated: ReturnType<typeof distribution>; h: number | null; e: number | null; unknown: Record<"all" | Kind, ReturnType<typeof noiseStats>> }>;
-  estimated: ReturnType<typeof distribution>; fit: ReturnType<typeof replay>[]; runs: Run[]; intervalWidth: ReturnType<typeof distribution>; unknownByKind: object }[] = [];
-const scanRows = () => PENALTIES.map((p, i) => {
-  const profiles = reports.map((r) => ({ profile: r.profile, ...r.fit[i] }));
-  const mean = profiles.reduce((sum, r) => sum + r.estimated.mean, 0) / profiles.length;
-  return { p, mean, eligible: within(mean, VALIDATION_RANGES.estimated) && profiles.filter((r) => r.profile !== "eager").every((r) => r.estimated.mean <= 3990), profiles };
-});
-
+  estimated: ReturnType<typeof distribution>; runs: Run[]; intervalWidth: ReturnType<typeof distribution>; unknownByKind: object }[] = [];
 describe.skipIf(!process.env.VOCAB_SIM)("词汇量有依据猜测模拟（只读 live.db）", () => {
   describe.skipIf(!existsSync(LIVE_DB))("本机真实快照存在时", () => {
     beforeAll(async () => {
@@ -212,11 +195,9 @@ describe.skipIf(!process.env.VOCAB_SIM)("词汇量有依据猜测模拟（只读
       mkdirSync(dirname(path), { recursive: true });
       writeFileSync(path, JSON.stringify({
         label: LABEL, source: sourceInfo, simulatorSha256: sha256(readFileSync(resolve("src/lib/vocab-test-sim.test.ts"))),
-        parameters: { N, TOTAL, PENALTY_V3, BASE_SEED, seedStride: 7919, SLIP, PENALTY, RESPONSE_MS, PROFILES, shapeMappings: shapes.size },
-        reference: REFERENCE, validationRanges: VALIDATION_RANGES,
-        note: "e 为未知题按题数加权的未截断得分；rate 为逐场生产结果的均值；分位数是场间分布；历史为旧出题。",
-        scan: scanRows(),
-        selectedPenalty: scanRows().filter((r) => r.eligible).reverse()[0]?.p ?? null,
+        parameters: { N, TOTAL, BASE_SEED, seedStride: 7919, SLIP, PENALTY, RESPONSE_MS, PROFILES, shapeMappings: shapes.size },
+        reference: REFERENCE,
+        note: "仅供参考：模拟者不会真人的规则音读推断，不能用于选择罚分或验收。e 为未知题未截断得分；rate 为校准后结果；分位数是场间分布，历史为旧出题。",
         profiles: reports
       }, null, 2) + "\n");
       console.log(`模拟报告：${path}`);
@@ -323,30 +304,14 @@ describe.skipIf(!process.env.VOCAB_SIM)("词汇量有依据猜测模拟（只读
           return { level, kind, n: s.n, h: display(s.h), e: display(s.e), correct: display(s.correctRate), wrong: display(s.wrongRate), unknown: display(s.unknownRate) };
         })));
         console.table(Object.entries(byKind).map(([kind, counts]) => ({ kind, ...noiseStats(counts) })));
-        const fit = PENALTIES.map((p) => replay(runs, p));
-        console.table(fit.map((r) => ({ p: r.p, mean: display(r.estimated.mean), p05: display(r.estimated.p05), p95: display(r.estimated.p95),
-          ...Object.fromEntries(LEVELS.map((level) => [level, display(r.rates[level].mean)])) })));
-        reports.push({ profile, levels, estimated, unknownByKind: Object.fromEntries(Object.entries(byKind).map(([kind, counts]) => [kind, noiseStats(counts)])), fit, intervalWidth: distribution(runs.map((r) => r.intervalWidth)), runs });
+        reports.push({ profile, levels, estimated, unknownByKind: Object.fromEntries(Object.entries(byKind).map(([kind, counts]) => [kind, noiseStats(counts)])), intervalWidth: distribution(runs.map((r) => r.intervalWidth)), runs });
       }, 1_200_000);
     }
-    it("最终完整流程：均值、保守上界及 N2/N1 线索中性", () => {
-      console.table(scanRows().flatMap((row) => row.profiles.map((r) => ({ p: row.p, profile: r.profile, mean: display(r.estimated.mean),
-        p05: display(r.estimated.p05), p95: display(r.estimated.p95), eligible: row.eligible }))));
-      // 60 题只作宽度对照；本次选 p 与八项 h 的交付闸门针对现行 80 题。
-      if (LABEL !== "final") return;
-      expect(TOTAL).toBe(80);
-      expect(reports).toHaveLength(3);
-      if (LABEL === "final") expect(scanRows().filter((r) => r.eligible).reverse()[0]?.p).toBe(PENALTY_V3);
-      expect(within(reports.reduce((sum, r) => sum + r.estimated.mean, 0) / 3, VALIDATION_RANGES.estimated)).toBe(true);
+    it("参考模拟完整记录三档流程，不作为真人校准验收", () => {
+      expect(reports).toHaveLength(Object.keys(PROFILES).length);
       for (const report of reports) {
-        if (report.profile === "eager") continue;
-        expect(report.estimated.mean).toBeLessThanOrEqual(VALIDATION_RANGES.conservativeMaximum);
-      }
-      for (const report of reports.filter((r) => r.profile !== "semantic40")) {
-        for (const level of ["N2", "N1"] as const) for (const kind of ["reading", "meaning"] as const) {
-          expect(report.levels[level].unknown[kind].h, `${report.profile}/${level}/${kind} h`).not.toBeNull();
-          expect(within(report.levels[level].unknown[kind].h!, VALIDATION_RANGES.h), `${report.profile}/${level}/${kind} h`).toBe(true);
-        }
+        expect(report.runs).toHaveLength(N);
+        expect(report.runs.every((run) => run.answers.length === TOTAL)).toBe(true);
       }
     });
   });

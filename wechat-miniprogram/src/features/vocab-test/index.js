@@ -65,7 +65,6 @@ const resultView = (result) => result && ({
 
 Page({
   data: {
-    penalty: vocabTest.PENALTY_V3.toFixed(2),
     view: 'intro',
     ready: false,
     error: '',
