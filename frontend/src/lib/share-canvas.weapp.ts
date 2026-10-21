@@ -74,11 +74,15 @@ const installCanvas = () => {
         get: () => source,
         set: (value: string) => {
           source = String(value);
-          const path = `/${normalizeImagePath(source)}`;
+          // ⚠️ 装了吉祥物皮肤时 stickerUrl / brandIconUrl 给的是本地缓存路径（wxfile://usr/skins/…），不是包内路径：
+          // 前面补 "/" 就成了 "/wxfile://…"，读不到（读码推断，没在真机上出现过；2026-10-21 截图里的缺图是下面 getImageInfo 那条）。
+          const path = /^(wxfile|https?):\/\//.test(source) ? source : `/${normalizeImagePath(source)}`;
           wx.getImageInfo({
             src: path,
-            success: (result: { path: string }) => sourceDescriptor!.set!.call(image, result.path),
-            fail: () => { image.onerror?.(new Error("分享图片素材无法读取")); }
+            // ⚠️ getImageInfo 对包内图片返回不带斜杠的 "assets/brand/x.png"，离屏画布的 Image 拿它当 src 一律 onerror（开发者工具实测 2026-10-21：
+            // 同一张图 "/assets/…" 能加载、"assets/…" 报错），分享图上图标和吉祥物因此静默缺失。本地临时文件（wxfile://）原样给。
+            success: (result: { path: string }) => sourceDescriptor!.set!.call(image, /^(\/|\w+:\/\/)/.test(result.path) ? result.path : `/${result.path}`),
+            fail: (error: { errMsg?: string }) => { console.warn("[share-canvas] 图片素材读取失败", path, error?.errMsg); image.onerror?.(new Error("分享图片素材无法读取")); }
           });
         }
       });
