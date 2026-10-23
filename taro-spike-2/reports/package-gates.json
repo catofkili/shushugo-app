@@ -2,19 +2,19 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1868997,
+      "bytes": 1871500,
       "passes": true
     },
     "study": {
-      "bytes": 1028413,
+      "bytes": 1028657,
       "passes": true
     },
     "account": {
-      "bytes": 324827,
+      "bytes": 324860,
       "passes": true
     },
     "content-pages": {
-      "bytes": 1174649,
+      "bytes": 1174835,
       "passes": true
     },
     "features": {
@@ -34,7 +34,7 @@
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 310526,
+      "bytes": 310535,
       "passes": true
     },
     "core": {
@@ -42,11 +42,11 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 917076,
+      "bytes": 921742,
       "passes": true
     },
     "jlpt-bank": {
-      "bytes": 764762,
+      "bytes": 764758,
       "passes": true
     },
     "jlpt-bank-2": {
@@ -257,19 +257,19 @@
       ]
     },
     {
-      "source": "frontend/src/components/DailyPlanRing.weapp.tsx",
-      "bytes": 13427,
+      "source": "frontend/src/lib/share-canvas.weapp.ts",
+      "bytes": 14129,
       "packages": [
-        "account",
+        "content-pages",
+        "lazy",
         "study"
       ]
     },
     {
-      "source": "frontend/src/lib/share-canvas.weapp.ts",
-      "bytes": 13191,
+      "source": "frontend/src/components/DailyPlanRing.weapp.tsx",
+      "bytes": 13427,
       "packages": [
-        "content-pages",
-        "lazy",
+        "account",
         "study"
       ]
     },
@@ -974,7 +974,7 @@
     },
     {
       "source": "frontend/src/lib/share-canvas.weapp.ts",
-      "bytes": 13191,
+      "bytes": 14129,
       "packages": [
         "content-pages",
         "lazy",
@@ -1750,11 +1750,11 @@
   "mainTopModules": [
     {
       "source": "frontend/src/app.css",
-      "bytes": 145916
+      "bytes": 144578
     },
     {
       "source": "frontend/src/lib/word-api.ts",
-      "bytes": 141975
+      "bytes": 141322
     },
     {
       "source": "frontend/src/styles.css",

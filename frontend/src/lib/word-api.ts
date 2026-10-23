@@ -105,13 +105,9 @@ export {
   rewindDailyTail
 } from "./word-api/daily-tail";
 export {
-  dailyReviewCandidateCount,
-  hasDailyReviewTriggered,
-  markDailyReviewTriggered,
-  pickDailyReviewNext,
-  shouldStartDailyReview
+  dailyReviewCandidateCount, dailyReviewBatch, getDailyReviewCard,
+  shouldInviteDailyReview, declineDailyReviewInvite, startDailyReviewRound
 } from "./word-api/daily-review";
-import { shouldStartDailyReview } from "./word-api/daily-review";
 // 首页看过「比昨天少 N 个」之后回写标记,当天不再重放
 
 // 导出分析统计功能
@@ -977,10 +973,21 @@ export function submitQuickStudyBatch(
  * **进来先把 phase 摆正**。phase 是存在 app_state 里的当天状态,昨天停在反向、
  * 今天选今日计划的话,不显式重置就会被上一次的 phase 劫持(选 A 出 B)。
  */
-export function continueTodayPlanStudy(): WordSessionResponse {
+export function continueTodayPlanStudy(resumeWordId?: number): WordSessionResponse {
   ensureProgressInitialized();
   setPhase("stage1");
-  const session = getWordSession();
+  ensureStage1Tasks();
+  // 回顾盖住的原卡可能已经毕业或跨日，只在仍属于今天未完成任务时恢复它。
+  const resumable = resumeWordId != null && firstValue<number>(`
+    SELECT COUNT(*) FROM stage1_tasks t JOIN progress p ON p.word_id = t.word_id
+    WHERE t.reviewed_on = ? AND t.word_id = ? AND p.known_forever = 0
+      AND (p.fsrs_due IS NULL OR p.fsrs_due <= ?)
+  `, [today(), resumeWordId, studyDayEnd().toISOString()], 0) > 0;
+  const resumed = resumable ? wordCardById(resumeWordId) : null;
+  if (resumed) setCurrentCard(resumed);
+  const session = resumed
+    ? { card: resumed, phase: "stage1", stats: getWordStats("stage1"), canUndo: false }
+    : getWordSession();
   // 顶栏的小路自己也读一份统计,只在进度事件上刷新。切模式会改当天的队列
   // (反向/汉字进来才建队列),不吱一声的话小路会停在上一个模式的数字上。
   notifyProgressUpdated();
@@ -1043,7 +1050,9 @@ export function submitKanjiUnitAnswer(unitKey: string, answer: WordAnswer): Word
   return getWordSession();
 }
 
-export function submitWordAnswer(wordId: number, answer: WordAnswer, options: WordSessionOptions = {}, spelling = false): WordSessionResponse {
+export function submitWordAnswer(wordId: number, answer: WordAnswer, options: WordSessionOptions = {}, spelling = false, dailyReview = false): WordSessionResponse {
+  // 锁定轮次自行选卡，正式记账前仍须声明当前卡，保留原有的防重复提交锁。
+  if (dailyReview) { setPhase("stage1"); setCurrentCard({ id: wordId }); }
   perfTime("记账", () => applyWordAnswer(wordId, answer, options, spelling));
   return getWordSession(options);
 }
@@ -1237,8 +1246,6 @@ export interface NextCardPreview {
   phase: string;
   /** 当前词按这档正常作答后是否今天毕业；没有下一张时也保留，供答前决定拼写。 */
   graduatedForDay: boolean;
-  /** 这一下「忘记」会打开当日错题回顾（UI 走同步路径，照原样处理） */
-  dailyReviewWouldStart: boolean;
   /** 同一类答法（认识↔熟知、忘记↔模糊）能不能共用这张：不在收尾阶段、下一张也不是当前这张时才行 */
   sharedWithinClass: boolean;
 }
@@ -1258,13 +1265,11 @@ export function startAnswerPreviews(wordId: number): AnswerPreviews {
 
 /**
  * 假如 previews.wordId 这张被答成 answer，下一张是谁。算完回滚，结果记进 previews。
- * checkDailyReview：UI 那边「这一下忘记会不会打开错题回顾」的前提成立（计划模式、正向、今天还没开过）。
  */
 export function addAnswerPreview(
   previews: AnswerPreviews,
   answer: WordAnswer,
-  options: WordSessionOptions = {},
-  checkDailyReview = false
+  options: WordSessionOptions = {}
 ): void {
   if (!answerPreviewsValid(previews)) return;
   const started = performance.now();
@@ -1285,7 +1290,6 @@ export function addAnswerPreview(
         card,
         phase,
         graduatedForDay,
-        dailyReviewWouldStart: checkDailyReview && answer === "forgot" && shouldStartDailyReview(true),
         // 收尾阶段（剩余 ≤ 一成）允许同一张连出，那时「忘记」和「模糊」排的重刷位置不同就可能选出不同的下一张。多留两张余量。
         sharedWithinClass: phase === "stage1" && card != null && card.id !== previews.wordId
           && dueLeft > Math.ceil(total * ENDGAME_REMAINING_RATIO) + 2
@@ -1314,14 +1318,13 @@ export const answerPreviewsFresh = (previews: AnswerPreviews | null, wordId: num
 
 const SAME_CLASS: Partial<Record<WordAnswer, WordAnswer>> = { fuzzy: "forgot", known_forever: "know" };
 
-/** 点下去那一刻：这张卡、这种答法有没有算好的下一张。没有（没算完 / 作废 / 要开错题回顾 / 今天学完了）就返回 null。 */
+/** 点下去那一刻：这张卡、这种答法有没有算好的下一张。没有（没算完 / 作废 / 今天学完了）就返回 null。 */
 export function takeAnswerPreview(previews: AnswerPreviews | null, wordId: number, answer: WordAnswer): NextCardPreview | null {
   if (!previews || previews.wordId !== wordId || !answerPreviewsValid(previews)) return null;
   const exact = previews.byAnswer[answer];
   const shared = SAME_CLASS[answer] ? previews.byAnswer[SAME_CLASS[answer]!] : undefined;
   const preview = exact ?? (shared?.sharedWithinClass ? shared : undefined);
-  // 模糊不会打开错题回顾（只有「忘记」会），借用「忘记」那份时不看这一项
-  if (!preview?.card || (exact && preview.dailyReviewWouldStart)) return null;
+  if (!preview?.card) return null;
   return preview;
 }
 

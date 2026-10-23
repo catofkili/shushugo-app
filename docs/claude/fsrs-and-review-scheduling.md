@@ -563,3 +563,34 @@ FSRS 就收到假的「记住了」，把复习排到几天后，然后必然再
 数据增补在既有 `frontend/src/data/grammar_key_points.json` 的顶层 `kanji` 键：`pattern → [假名片段, 汉字片段, 钩子]`。键与 `points` 使用同一份 DB pattern；详情页的 grammar.ts point 通过同一份 `aliases` 处理重名。复用这个 JSON 是为了小程序零接线：继续使用已经声明的 `grammarKeyPoints` 懒加载内容，不增加 JSON、懒加载入口或主包页面 import。`grammarKanjiHint` 只接受长度为 3 且每项都是字符串的数组；未加载的懒代理和异常值返回 null，避免把代理对象交给 JSX 导致整页崩溃。
 
 收录宁缺毋滥：假名必须是 pattern 中原样连续出现的片段；对应汉字必须是同一个词的通行辞典写法，至少含一字汉字，且 pattern 尚未含该汉字。中文钩子不超过 22 字，要从汉字意思连到本条语法的用法，不能只重复释义。不收纯助词、罕用汉字（如「筈」）、多种写法难定取舍或会误导的联想；拿不准就跳过，不为凑数量硬收。形式名词、补助动词的汉字仅用于记忆关联，不要求把正文中的假名改写成汉字；钩子不宣称词源，也不得编造词源。
+
+
+## 当日错题回顾 →「集中拿下」：先邀请、锁定一批、隔开再对一次才算（2026-10-23 重做，作者拍板）
+
+**起因**：作者反馈「出现之后点两下认识又不在了」。按 10-23 真实作答记录查出四件事：
+
+1. **出口太松**：轮内每个词答对一次就进 resolved，候选通常四五个，点几下就空了；退出时横幅直接消失，没有收尾。
+2. **第一张常是刚答错的词**：候选按「今天出现次数」降序，刚忘的那个次数最多，2 秒后再考 —— 答对的是工作记忆。
+3. **轮内作答从来没写进 FSRS**：旧版只在界面上 `setCard(reviewCard)`，库里的当前卡还是下一张 stage1 卡，
+   `applyWordAnswer` 的 `claimCurrentCard` 把这些作答当「过期/重复提交」静默丢掉。所以 10-23 的 `reviews` 里找不到回顾那一段。
+   新版提交前 `submitWordAnswer(..., dailyReview=true)` 先 `setCurrentCard`。
+4. **红色卡从设计系统上线（09-23）起就没显示过**：`design.css` 的 `[data-theme] .dictionary-card { background: var(--ds-surface) !important }`
+   特异度 0,2,0，盖掉了只写 `.daily-review-card` 的 !important。新样式写成 `[data-theme] .dictionary-card.daily-review-card`。
+   **往 `.dictionary-card` 上加主题色的任何类都要这样写**，否则看不出效果、也没有报错。
+
+**现行判据**（`word-api/daily-review.ts` + 纯函数 `word-api/daily-review-round.ts`，页面 `WordStudy.tsx`，组件 `features/word-study/DailyReviewRound.tsx`）：
+
+- **候选**：今天 stage1 任务里、今天正向作答 ≥3 次（`DAILY_REVIEW_MIN_SEEN`）、仍未过（`fsrs_due <= studyDayEnd` 且非熟知）。
+- **邀请**（`shouldInviteDailyReview`，计划模式 stage1 每题记账后问一次，快路径的 `pendingAnswerRef` 里也问）：
+  候选 ≥5、不疲劳、当天 <2 轮、第二轮距第一轮开始 ≥30 题、不在暂缓期。**便宜的闸放前面**——小程序每题都调，候选查询是逐词子查询。
+  不再走「60–80% 上膛 + 下一次忘记开火」，也不再需要预算里的 `dailyReviewWouldStart`（邀请盖在卡位上，不劫持已经预算好的下一张）。
+- **先不**：第一次暂缓 20 题，第二次当天不再问（`daily_review_v2.declined`）。状态按天作废，`daily_review_v1` 已弃用。
+- **一轮**：开局锁定前 8 个候选（`dailyReviewBatch`）。每词状态 pending → once → done：
+  pending 时作答**写 FSRS**（和正常作答一样），答对进 once；once 时是**复查，不写 FSRS、不进 reviews**（作者定：同一天叠评分会干扰排期），
+  答对才 done，答错退回 pending（下次再答会重新写 FSRS）。出牌跳过最近 2 张（只剩它们时放宽），邀请前刚答的那个词初始就在「最近」里。
+- **出口**：全部 done → 完成卡（「N 个都拿下了」+ 进度点全实心 +「继续」，**不自动消失**）；或顶栏「先到这」随时退，没拿下的下一轮还会是候选。
+  退出后：邀请时盖住的那张 stage1 卡若仍是今天未完成任务就恢复（`continueTodayPlanStudy(resumeWordId)`），否则 `loadNext` 重取。
+- 轮内不可撤销；撤销 / 切模式 / 跳相似词都会 `clearDailyReview()`。
+- 样式在 `DailyReviewRound.css`（暖橙，不用红色——还没拿下的词不该画成惩罚）；动效遵守 `prefers-reduced-motion` 和偏好里的动效档位。
+
+验证：网页 5233 端口走通邀请 → 一轮 → 完成 → 继续，`reviews` 里每词恰好多一条（复查那下没有写入）；「先不」后 `snoozeUntilAnswerCount = 当前题数 + 20`。

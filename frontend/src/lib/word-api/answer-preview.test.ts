@@ -94,7 +94,7 @@ describe("预算下一张", () => {
       dispatched.length = 0;
       for (const [index, answer] of (["know", "forgot"] as const).entries()) {
         reseed(1000 + step * 10 + index);
-        addAnswerPreview(previews, answer, {}, true);
+        addAnswerPreview(previews, answer, {});
       }
       expect(fingerprint(), `step ${step}: 预算之后库变了`).toBe(before);
       expect(dispatched, "预算期间不许派发进度事件（监听者会读到回滚前的假状态）").toEqual([]);

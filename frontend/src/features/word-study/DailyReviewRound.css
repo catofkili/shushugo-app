@@ -1,0 +1,35 @@
+/* 暖橙只表示本轮集中复习，避免把还没拿下的词画成惩罚。 */
+.word-study-daily-review{background:radial-gradient(circle at 50% 4%,rgba(243,171,75,.13),transparent 52%)}
+/* 必须带 [data-theme] + .dictionary-card：design.css 的 `[data-theme] .dictionary-card` 也是 !important、特异度 0,2,0，
+   只写 `.daily-review-card` 会被它整个盖掉 —— 旧版红色卡从设计系统上线（09-23）起就一直没显示出来过。
+   底色仍走 --ds-surface，只叠一层顶部暖光和暖色描边，亮 / 暗两套共用。 */
+[data-theme] .dictionary-card.daily-review-card{background:linear-gradient(180deg,rgba(243,171,75,.14),rgba(243,171,75,0) 38%),var(--ds-surface)!important;border-color:rgba(226,152,52,.55)!important;box-shadow:0 0 0 1px rgba(226,152,52,.22) inset,var(--ds-shadow)!important}
+.daily-review-sticker{display:block}
+.daily-review-scroll{min-height:0;flex:1}
+.daily-review-panel{box-sizing:border-box;display:flex;flex:1;min-height:100%;width:100%;flex-direction:column;align-items:center;justify-content:center;gap:24px;padding:24px 12px;color:var(--ds-ink);text-align:center;animation:dailyReviewCardIn .32s cubic-bezier(.2,.9,.3,1.2) both}
+.daily-review-panel-leaving{pointer-events:none;animation:dailyReviewCardOut .16s ease both}
+.daily-review-title{margin:0;font-size:22px;font-weight:800;line-height:1.5}
+.daily-review-chips{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;max-width:100%}
+.daily-review-chip{max-width:100%;overflow-wrap:anywhere;border-radius:var(--ds-radius-pill);padding:6px 12px;background:var(--ds-warn-tint);color:var(--ds-warn-ink);font-size:16px}
+.daily-review-actions{display:flex;flex-direction:column;gap:10px;width:100%;max-width:300px}
+.daily-review-topbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin:0 auto 12px;width:100%;max-width:900px;color:var(--ds-warn-ink)}
+.daily-review-heading{display:flex;align-items:center;gap:8px;font-size:14px}
+.daily-review-dots{display:flex;flex-wrap:wrap;justify-content:center;gap:5px}
+.daily-review-dot{display:block;box-sizing:border-box;width:11px;height:11px;border:2px solid var(--ds-warn-ink);border-radius:50%;flex-shrink:0;animation:dailyReviewDot .28s ease-out}
+.daily-review-dot-once{background:linear-gradient(90deg,var(--ds-warn-ink) 50%,transparent 50%)}
+.daily-review-dot-done{background:var(--ds-warn-ink)}
+.daily-review-exit{border:0;padding:8px 0;background:transparent;color:var(--ds-warn-ink);font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+[data-theme="dark"] .word-study-daily-review{background:radial-gradient(circle at 50% 4%,rgba(243,171,75,.09),transparent 52%)}
+@keyframes dailyReviewCardIn{from{opacity:0;transform:translateY(12px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes dailyReviewCardOut{from{opacity:1}to{opacity:0}}
+@keyframes dailyReviewDot{0%,100%{transform:scale(1)}50%{transform:scale(1.22)}}
+@keyframes dailyReviewFadeIn{from{opacity:0}to{opacity:1}}
+.daily-review-motion-reduced .daily-review-panel{animation-name:dailyReviewFadeIn}
+.daily-review-motion-reduced .daily-review-panel-leaving{animation-name:dailyReviewCardOut}
+.daily-review-motion-reduced .daily-review-dot{animation:none}
+.daily-review-motion-off .daily-review-panel,.daily-review-motion-off .daily-review-dot{animation:none}
+@media(prefers-reduced-motion:reduce){
+  .daily-review-panel{animation-name:dailyReviewFadeIn}
+  .daily-review-panel-leaving{animation-name:dailyReviewCardOut}
+  .daily-review-dot{animation:none}
+}

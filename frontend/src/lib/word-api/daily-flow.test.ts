@@ -29,9 +29,11 @@ import { ensureProgressInitialized } from "./bootstrap";
 import { setState, studyDayEnd, today } from "../study-core";
 import { advanceDailyRelief, ensureDailyRelief, getDailyReliefNext } from "./daily-relief";
 import { advanceDailyTail, ensureDailyTail, getDailyTailNext, getDailyTailProgress, rewindDailyTail } from "./daily-tail";
-import { pickDailyReviewNext, shouldStartDailyReview } from "./daily-review";
+import { dailyReviewBatch, dailyReviewCandidateCount, getDailyReviewCard, shouldInviteDailyReview, declineDailyReviewInvite, startDailyReviewRound } from "./daily-review";
 import { STAGE1_PLAN_VERSION } from "./stage1";
 import { getWordStats } from "./stats";
+import { continueTodayPlanStudy, submitWordAnswer } from "../word-api";
+import { answerDailyReviewRound, createDailyReviewRound, roundWritesFsrs } from "./daily-review-round";
 
 const day = "2026-08-03";
 const yesterday = "2026-08-02";
@@ -39,7 +41,7 @@ const yesterday = "2026-08-02";
 const clearFlowState = () => {
   testDb.run("DELETE FROM reviews");
   testDb.run("DELETE FROM stage1_tasks");
-  testDb.run("DELETE FROM app_state WHERE key IN ('daily_relief_v1', 'daily_relief_v2', 'daily_tail_v1', 'daily_tail_v2', 'daily_review_v1')");
+  testDb.run("DELETE FROM app_state WHERE key IN ('daily_relief_v1', 'daily_relief_v2', 'daily_tail_v1', 'daily_tail_v2', 'daily_review_v2')");
   testDb.run(`
     UPDATE progress
     SET known_forever = 1,
@@ -189,65 +191,119 @@ describe("昨日减负、当日错题与真正结尾", () => {
     expect(getDailyReliefNext()).toBeNull();
   });
 
-  it("60%-80%只上膛,要等下一次「忘记」才开回顾区", () => {
-    for (let wordId = 1; wordId <= 10; wordId += 1) {
-      testDb.run("INSERT INTO stage1_tasks (reviewed_on, word_id, task_type, order_index) VALUES (?, ?, 'review', ?)", [day, wordId, wordId]);
+  const addAnswers = (count: number, answer = "know", wordId = 1) => {
+    for (let repeat = 0; repeat < count; repeat += 1) {
+      testDb.run("INSERT INTO reviews (word_id, answer, score_after, reviewed_on, direction) VALUES (?, ?, 0, ?, 'forward')", [wordId, answer, day]);
     }
-    for (let wordId = 1; wordId <= 6; wordId += 1) {
-      testDb.run("UPDATE progress SET known_forever = 1, seen_count = 8 WHERE word_id = ?", [wordId]);
+  };
+  const reviewCandidates = (count = 5) => {
+    for (let id = 1; id <= count; id += 1) {
+      testDb.run("INSERT INTO stage1_tasks (reviewed_on, word_id, task_type, order_index) VALUES (?, ?, 'review', ?)", [day, id, id]);
+      testDb.run("UPDATE progress SET known_forever = 0, fsrs_due = ? WHERE word_id = ?", [studyDayEnd().toISOString(), id]);
+      addAnswers(3, "fuzzy", id);
     }
-    for (let wordId = 7; wordId <= 10; wordId += 1) {
-      testDb.run("UPDATE progress SET known_forever = 0, seen_count = 8, fsrs_due = ? WHERE word_id = ?", [studyDayEnd().toISOString(), wordId]);
-      for (let repeat = 0; repeat < 4; repeat += 1) {
-        testDb.run(
-          "INSERT INTO reviews (word_id, answer, score_after, reviewed_on, direction) VALUES (?, 'fuzzy', 0, ?, 'forward')",
-          [wordId, day]
-        );
-      }
-    }
-    // 完成度进了窗口,但这一下是「认识」—— 只上膛,不开火。
-    expect(shouldStartDailyReview(false)).toBe(false);
-    expect(shouldStartDailyReview(true)).toBe(true);
-    expect(pickDailyReviewNext()?.id).toBe(7);
+  };
 
-    // 最近20次全部失败且总量已达到疲劳阈值时,即使其它条件仍满足也不再开回顾区。
-    for (let repeat = 0; repeat < 24; repeat += 1) {
-      testDb.run(
-        "INSERT INTO reviews (word_id, answer, score_after, reviewed_on, direction) VALUES (1, 'know', 0, ?, 'forward')",
-        [day]
-      );
-    }
-    for (let repeat = 0; repeat < 20; repeat += 1) {
-      testDb.run(
-        "INSERT INTO reviews (word_id, answer, score_after, reviewed_on, direction) VALUES (1, 'forgot', 0, ?, 'forward')",
-        [day]
-      );
-    }
-    expect(shouldStartDailyReview(true)).toBe(false);
+  it("候选少于五个不邀请", () => {
+    reviewCandidates(4);
+    expect(shouldInviteDailyReview()).toBe(false);
+  });
+  it("五个候选即邀请，不要求完成度窗口或刚答忘记", () => {
+    reviewCandidates();
+    expect(shouldInviteDailyReview()).toBe(true);
+    expect(dailyReviewCandidateCount()).toBe(5);
+  });
+  it("候选只数今天计划中正向三次且未过的词，批次按原排序最多八个", () => {
+    reviewCandidates(11);
+    testDb.run("DELETE FROM reviews WHERE word_id = 1");
+    addAnswers(2, "fuzzy", 1);
+    testDb.run("INSERT INTO reviews (word_id, answer, score_after, reviewed_on, direction) VALUES (1, 'know', 0, ?, 'reverse')", [day]);
+    testDb.run("UPDATE progress SET known_forever = 1 WHERE word_id = 2");
+    testDb.run("UPDATE progress SET fsrs_due = '2026-08-10T12:00:00.000Z' WHERE word_id = 3");
+    testDb.run("DELETE FROM stage1_tasks WHERE word_id = 4");
+    expect(dailyReviewBatch().map((word) => word.id)).toEqual([5, 6, 7, 8, 9, 10, 11]);
+    testDb.run("UPDATE progress SET known_forever = 0 WHERE word_id = 2");
+    testDb.run("UPDATE progress SET fsrs_due = NULL WHERE word_id = 3");
+    expect(dailyReviewBatch()).toHaveLength(8);
+    expect(getDailyReviewCard(5)?.id).toBe(5);
+    expect(getDailyReviewCard(-1)).toBeNull();
+  });
+  it("疲劳时不邀请", () => {
+    reviewCandidates();
+    addAnswers(30);
+    addAnswers(20, "forgot");
+    expect(shouldInviteDailyReview()).toBe(false);
+  });
+  it("一天第三轮不再邀请", () => {
+    reviewCandidates();
+    startDailyReviewRound();
+    addAnswers(30);
+    expect(shouldInviteDailyReview()).toBe(true);
+    startDailyReviewRound();
+    addAnswers(30);
+    expect(shouldInviteDailyReview()).toBe(false);
+  });
+  it("第二轮距离开局不足三十题不邀请，满三十题可邀请", () => {
+    reviewCandidates();
+    startDailyReviewRound();
+    addAnswers(29);
+    expect(shouldInviteDailyReview()).toBe(false);
+    addAnswers(1);
+    expect(shouldInviteDailyReview()).toBe(true);
+  });
+  it("拒绝一次后二十题内不邀请，满二十题可邀请", () => {
+    reviewCandidates();
+    declineDailyReviewInvite();
+    addAnswers(19);
+    expect(shouldInviteDailyReview()).toBe(false);
+    addAnswers(1);
+    expect(shouldInviteDailyReview()).toBe(true);
+  });
+  it("拒绝两次后当天不再邀请", () => {
+    reviewCandidates();
+    declineDailyReviewInvite();
+    addAnswers(20);
+    declineDailyReviewInvite();
+    addAnswers(100);
+    expect(shouldInviteDailyReview()).toBe(false);
+  });
+  it("跨日丢弃轮数和拒绝记录，开始一轮会清掉邀请计数和暂缓", () => {
+    reviewCandidates();
+    setState("daily_review_v2", JSON.stringify({ studyDate: yesterday, declined: true, rounds: 2 }));
+    expect(shouldInviteDailyReview()).toBe(true);
+    declineDailyReviewInvite();
+    startDailyReviewRound();
+    const state = JSON.parse(String(testDb.exec("SELECT value FROM app_state WHERE key = 'daily_review_v2'")[0].values[0][0]));
+    expect(state).toMatchObject({ studyDate: day, rounds: 1, invites: 0, snoozeUntilAnswerCount: 0, lastRoundAnswerCount: 15 });
   });
 
-  it("上了膛就一直算数:完成度被答对推过80%之后,那次「忘记」照样开回顾区", () => {
-    // 25 张任务:21 张普通 + 4 张「今天已经答过四次还没清掉」的候选
-    for (let wordId = 1; wordId <= 25; wordId += 1) {
-      testDb.run("INSERT INTO stage1_tasks (reviewed_on, word_id, task_type, order_index) VALUES (?, ?, 'review', ?)", [day, wordId, wordId]);
-    }
-    testDb.run("UPDATE progress SET known_forever = 0 WHERE word_id <= 25");
-    for (let wordId = 22; wordId <= 25; wordId += 1) {
-      testDb.run("UPDATE progress SET known_forever = 0, seen_count = 8, fsrs_due = ? WHERE word_id = ?", [studyDayEnd().toISOString(), wordId]);
-      for (let repeat = 0; repeat < 4; repeat += 1) {
-        testDb.run(
-          "INSERT INTO reviews (word_id, answer, score_after, reviewed_on, direction) VALUES (?, 'forgot', 0, ?, 'forward')",
-          [wordId, day]
-        );
-      }
-    }
-    // 15/25 = 60% —— 进窗口,但这一下是答对,只上膛
-    testDb.run("UPDATE progress SET known_forever = 1 WHERE word_id <= 15");
-    expect(shouldStartDailyReview(false)).toBe(false);
-    // 又答对 6 张:21/25 = 84%,完成度已经走出窗口,而膛里那发还在
-    testDb.run("UPDATE progress SET known_forever = 1 WHERE word_id <= 21");
-    expect(shouldStartDailyReview(true)).toBe(true);
-    expect(pickDailyReviewNext()?.id).toBe(22);
+  it("轮内正式作答仍写 FSRS，复查不写库，复查错后下一次重新记账", () => {
+    reviewCandidates();
+    setState("current_card", "2");
+    let round = createDailyReviewRound([1, 2, 3, 4, 5]);
+    const answerRound = (good: boolean) => {
+      if (roundWritesFsrs(round, 1)) submitWordAnswer(1, good ? "know" : "forgot", {}, false, true);
+      round = answerDailyReviewRound(round, 1, good);
+    };
+    answerRound(true);
+    expect(Number(testDb.exec("SELECT COUNT(*) FROM reviews WHERE word_id = 1")[0].values[0][0])).toBe(4);
+    const before = testDb.exec("SELECT total_changes()")[0].values[0][0];
+    answerRound(false);
+    expect(testDb.exec("SELECT total_changes()")[0].values[0][0]).toBe(before);
+    answerRound(true);
+    expect(Number(testDb.exec("SELECT COUNT(*) FROM reviews WHERE word_id = 1")[0].values[0][0])).toBe(5);
+    const after = testDb.exec("SELECT total_changes()")[0].values[0][0];
+    answerRound(true);
+    expect(testDb.exec("SELECT total_changes()")[0].values[0][0]).toBe(after);
+    expect(round.words[0].status).toBe("done");
+  });
+  it("退出回顾恢复仍合法的原卡，已毕业或不在今日计划的原卡重新选", () => {
+    reviewCandidates();
+    expect(continueTodayPlanStudy(5).card?.id).toBe(5);
+    expect(String(testDb.exec("SELECT value FROM app_state WHERE key = 'current_card'")[0].values[0][0])).toBe("5");
+    testDb.run("UPDATE progress SET known_forever = 1 WHERE word_id = 5");
+    expect(continueTodayPlanStudy(5).card?.id).not.toBe(5);
+    expect(continueTodayPlanStudy(100).card?.id).not.toBe(100);
   });
 
   it("压轴只从高预测回忆率词中抽3-7张，并且按天保存", () => {

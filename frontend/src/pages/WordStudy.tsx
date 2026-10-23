@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { perfRecord } from "../lib/perf-marks";
 import { AlertCircle, Check, ChevronRight, Eye, GitCompareArrows, Pencil, RotateCcw, Shuffle, Sparkles, Star, StickyNote, Timer, X } from "lucide-react";
 import { WordAnswer, WordCard, WordSessionResponse, WordStats } from "../types/vocabulary";
-import { addFavorite, addWordStudySeconds, advanceDailyRelief, advanceDailyTail, rewindDailyTail, continueKanjiStudy, continueStage2Study, continueTodayPlanStudy, getDailyReliefNext, getDailyTailNext, getWordSession, getWordStats, hasDailyReviewTriggered, jumpToSimilarWord, markDailyReviewTriggered, markTodayWordCheckin, pickDailyReviewNext, shouldStartDailyReview, startEncore as startEncoreSession, submitKanjiUnitAnswer, submitWordAnswer, toggleFavorite, undoLastWordAnswer, questionMeaningRivals, updateWordNote, updateWordQuestionMeaning, addAnswerPreview, answerPreviewsFresh, startAnswerPreviews, submitWordAnswerWithPreview, takeAnswerPreview, type AnswerPreviews } from "../lib/api";
+import { addFavorite, addWordStudySeconds, advanceDailyRelief, advanceDailyTail, rewindDailyTail, continueKanjiStudy, continueStage2Study, continueTodayPlanStudy, getDailyReliefNext, getDailyTailNext, getWordSession, getWordStats, jumpToSimilarWord, markTodayWordCheckin, dailyReviewBatch, getDailyReviewCard, shouldInviteDailyReview, declineDailyReviewInvite, startDailyReviewRound, startEncore as startEncoreSession, submitKanjiUnitAnswer, submitWordAnswer, toggleFavorite, undoLastWordAnswer, questionMeaningRivals, updateWordNote, updateWordQuestionMeaning, addAnswerPreview, answerPreviewsFresh, startAnswerPreviews, submitWordAnswerWithPreview, takeAnswerPreview, type AnswerPreviews } from "../lib/api";
 import { getStudyPreferences, PREFERENCES_EVENT, STUDY_BUDDY_SHELVED, StudyPreferences } from "../lib/studyPreferences";
 import { checkAchievements } from "../lib/userProfile";
 import { claimDailyPlanYuzu, settleYuzu } from "../lib/yuzu";
@@ -61,6 +61,9 @@ import { useStudyActivity, useStudyBreakTabBar } from "../hooks/useStudyActivity
 import { SpellingCardView } from "../features/spelling/SpellingCardView";
 import { checkCardInput, spellingCard, spellingLookup } from "../lib/spelling/session";
 import { shouldSpellWord } from "../lib/spelling/study";
+import { today } from "../lib/study-core";
+import { DailyReviewInvite, DailyReviewTopBar, DailyReviewComplete } from "../features/word-study/DailyReviewRound";
+import { answerDailyReviewRound, createDailyReviewRound, dailyReviewRoundDone, nextDailyReviewId, roundWritesFsrs, type DailyReviewRound } from "../lib/word-api/daily-review-round";
 import { StreakSpark } from "../components/streak/StreakMoments";
 
 interface WordStudyProps {
@@ -108,8 +111,6 @@ const answerHotkeys: Record<string, WordAnswer> = {
   n: "know",
   m: "known_forever"
 };
-
-const DAILY_REVIEW_COOLDOWN_LENGTH = 3;
 
 const reservedRevealKeys = new Set([
   "Tab",
@@ -332,16 +333,35 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
   const [buddySession] = useState(() => createStudyBuddy());
   const [reliefActive, setReliefActive] = useState(false);
   const [reliefLeaving, setReliefLeaving] = useState(false);
-  const [dailyReviewActive, setDailyReviewActive] = useState(false);
-  const [dailyReviewIntro, setDailyReviewIntro] = useState(false);
+  const [dailyReviewRound, setDailyReviewRound] = useState<DailyReviewRound | null>(null);
+  const dailyReviewRoundRef = useRef<DailyReviewRound | null>(null);
+  const [dailyReviewInvite, setDailyReviewInvite] = useState<{ words: WordCard[]; avoidFirstId: number; studyDate: string } | null>(null);
+  const dailyReviewInviteRef = useRef(false);
+  const dailyReviewResumeRef = useRef<{ id: number; studyDate: string } | null>(null);
+  const dailyReviewActive = dailyReviewRound !== null;
+  const dailyReviewComplete = dailyReviewRound !== null && dailyReviewRoundDone(dailyReviewRound);
+  const dailyReviewOverlay = dailyReviewInvite !== null || dailyReviewComplete;
+  const dailyReviewBusy = dailyReviewActive || dailyReviewInvite !== null;
+  const clearDailyReview = useCallback(() => {
+    dailyReviewRoundRef.current = null;
+    dailyReviewInviteRef.current = false;
+    dailyReviewResumeRef.current = null;
+    setDailyReviewRound(null);
+    setDailyReviewInvite(null);
+  }, []);
+  const inviteDailyReview = useCallback((answeredId: number, next: WordCard | null, nextPhase: string) => {
+    if (!isPlanMode(initialMode) || nextPhase !== "stage1" || dailyReviewRoundRef.current || dailyReviewInviteRef.current) return;
+    if (!shouldInviteDailyReview()) return;
+    const words = dailyReviewBatch();
+    if (words.length < 5) return;
+    dailyReviewResumeRef.current = next ? { id: next.id, studyDate: today() } : null;
+    dailyReviewInviteRef.current = true;
+    setDailyReviewInvite({ words, avoidFirstId: answeredId, studyDate: today() });
+  }, [initialMode]);
   const [tailActive, setTailActive] = useState(false);
   // 刚答过的压轴卡（最多两张，和 UNDO_LIMIT 同步）：点「上一个」时要知道
   // 撤回去的是不是压轴卡，好把压轴队列一起退一格、并留在压轴模式里。
   const tailUndoIdsRef = useRef<number[]>([]);
-  const dailyReviewResolvedRef = useRef<Set<number>>(new Set());
-  const dailyReviewCooldownRef = useRef<number[]>([]);
-  const [dailyReviewTriggeredToday] = useState(() => hasDailyReviewTriggered());
-  const dailyReviewTriggeredRef = useRef(dailyReviewTriggeredToday);
   const sessionOptions = useMemo<WordSessionOptions>(
     () => initialMode === "mistakes" ? { focus: "mistakes" }
       : initialMode === "picked" ? { focus: "picked" }
@@ -363,7 +383,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     return card ? kanaToRomaji(card.kana) : "";
   }, [card, unitTarget]);
 
-  const loadNext = useCallback(async (mode: StudyMode = initialMode) => {
+  const loadNext = useCallback(async (mode: StudyMode = initialMode, resumeWordId?: number) => {
     flushPendingAnswer();
     setLoading(true);
     setError("");
@@ -395,7 +415,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
       } else {
         // 经典 = 今日计划:进来先把 phase 摆正,否则会被上一次停在反向/汉字的
         // 当天状态劫持 —— 选了经典却出反向题。
-        data = continueTodayPlanStudy();
+        data = continueTodayPlanStudy(resumeWordId);
       }
       if (isPlanMode(mode) && !data.card && data.stats.stage1Done) {
         const tailCard = getDailyTailNext();
@@ -412,8 +432,8 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
         }
       }
       // 混合模式：四种卡一条队列，单词手上没有了就由队列给下一张别的卡 —— 四种都空了才算今天完成。
-      let otherTail = false;
-      if (mode === "mixed") {
+      let otherTail = mode === "mixed" && Boolean(other);
+      if (mode === "mixed" && !other) {
         if (!mixedCardDataLoaded()) await loadMixedCardData();
         const pick = pickMixedNext({ word: Boolean(data.card) });
         if (pick && pick !== "word") { showOther(pick); otherTail = true; }
@@ -437,7 +457,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     } finally {
       setLoading(false);
     }
-  }, [flushPendingAnswer, initialMode, onDailyModeComplete, sessionOptions]);
+  }, [flushPendingAnswer, initialMode, onDailyModeComplete, other, sessionOptions]);
 
   /**
    * 答完一个单词（已经记账之后）：记下作答顺序，混合模式再问队列这一下是不是轮到别的卡。
@@ -480,10 +500,12 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     loadedModeRef.current = initialMode;
     // 切模式不换组件实例（key 只跟 wordStudyRevision 走），混合模式摆着的插播卡和作答顺序
     // 必须在这里清掉 —— 2026-10-09 真机：从混合切到经典，屏幕仍停在那张语法插播上。
+    flushPendingAnswer();
+    clearDailyReview();
     showOther(null);
     resetMixedSession();
     void loadNext(initialMode);
-  }, [initialMode, loadNext]);
+  }, [clearDailyReview, flushPendingAnswer, initialMode, loadNext]);
 
   const prefetchedAudioPlan = useRef("");
   useEffect(() => {
@@ -526,12 +548,6 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     }, RELIEF_DWELL_MS);
     return () => window.clearTimeout(dealTimer);
   }, [card?.id, initialMode, loadNext, loading, reliefActive, reliefLeaving, stats]);
-
-  useEffect(() => {
-    if (!dailyReviewIntro) return;
-    const timer = window.setTimeout(() => setDailyReviewIntro(false), 1100);
-    return () => window.clearTimeout(timer);
-  }, [dailyReviewIntro]);
 
   useEffect(() => {
     const handlePreferences = (event: Event) => {
@@ -635,11 +651,11 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
   }, [studyIdleLimitMs]);
 
   useEffect(() => {
-    trackingActiveRef.current = Boolean(card?.id || kanjiCard);
+    trackingActiveRef.current = !dailyReviewOverlay && Boolean(card?.id || kanjiCard);
     if (focusSnapshot.status !== "break") focusBreakRef.current = false;
     // 换卡本身就是一次交互(刚点过评分)，顺手把上一段结掉。
     noteActiveInteraction();
-  }, [card?.id, kanjiCard, noteActiveInteraction, unitKey, focusSnapshot.status]);
+  }, [card?.id, dailyReviewOverlay, kanjiCard, noteActiveInteraction, unitKey, focusSnapshot.status]);
 
   useEffect(() => {
     const entered = enterStudyFocus(FOCUS_SOURCE);
@@ -745,32 +761,74 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     setActivePopover(null);
   }, []);
 
+  // 原卡仍是今天未完成任务才恢复；否则让 loadNext 重取正常卡，再接压轴、混合队列和完成上报。
+  // 两个出口都走这里，复查没有 submit 返回值，也不能把本轮最后一张当成正常下一张。
+  const exitDailyReview = () => {
+    const saved = dailyReviewResumeRef.current;
+    clearDailyReview();
+    setCanUndo(false);
+    void loadNext(initialMode, saved?.studyDate === today() ? saved.id : undefined);
+  };
+  const startDailyReview = () => {
+    if (!dailyReviewInvite || dailyReviewRoundRef.current) return;
+    if (dailyReviewInvite.studyDate !== today()) { exitDailyReview(); return; }
+    try {
+      const round = createDailyReviewRound(dailyReviewInvite.words.map((word) => word.id), dailyReviewInvite.avoidFirstId);
+      const nextId = nextDailyReviewId(round);
+      const next = nextId === null ? null : getDailyReviewCard(nextId);
+      if (!next) throw new Error("无法读取本轮单词");
+      startDailyReviewRound();
+      dailyReviewRoundRef.current = round;
+      dailyReviewInviteRef.current = false;
+      setDailyReviewRound(round);
+      setDailyReviewInvite(null);
+      setTailActive(false);
+      setCanUndo(false);
+      showWordCard(next, "daily-mistakes");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "无法开始集中回顾");
+      clearDailyReview();
+    }
+  };
+  const declineDailyReview = () => {
+    try {
+      declineDailyReviewInvite();
+      clearDailyReview();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "暂缓失败");
+      clearDailyReview();
+    }
+  };
+
   const submitAnswer = useCallback(async (answer: WordAnswer, source: "pointer" | "key" | "swipe" | "spelling" = "pointer") => {
     // submittingRef is synchronous, so a second tap is blocked immediately —
     // before React can re-render the `disabled`/`submitting` state — which is
     // what the `submitting` state alone could miss on a fast double-tap.
-    if (!card || submittingRef.current || submitting || reliefActive || dailyReviewIntro || focusBreakRef.current) {
+    if (!card || submittingRef.current || submitting || reliefActive || dailyReviewOverlay || focusBreakRef.current) {
       if (source === "spelling") throw new Error("暂时无法作答");
-      return;
-    }
-    await flushActiveStudyTime(undefined, "never");
-    if (focusBreakRef.current) {
-      if (source === "spelling") throw new Error("学习已暂停");
       return;
     }
     // 刚翻面的那几十毫秒不收**手指**评分 —— 见 REVEAL_INPUT_LOCK_MS。
     // 键盘不受这道闸:那条路上「显示答案」和评分是不同的键,不存在同一个位置连击的问题,
     // 拦一下只会吃掉快手用户的合法输入。甩卡也不受:它自己要先飞 240ms,早就过去了。
     if (source === "pointer" && performance.now() - revealedAtRef.current < REVEAL_INPUT_LOCK_MS) return;
+    // 锁要在异步计时之前拿住，避免两次点击同时穿过判据。
+    submittingRef.current = true;
+    await flushActiveStudyTime(undefined, "never");
+    if (focusBreakRef.current) {
+      submittingRef.current = false;
+      if (source === "spelling") throw new Error("学习已暂停");
+      return;
+    }
     answerTappedAtRef.current = performance.now();
     // 上一题走了快路径、记账还没轮到的话，先补上：这一题的作答要排在它后面。
     flushPendingAnswer();
+    if (dailyReviewInviteRef.current) { submittingRef.current = false; return; }
     const answeredCardId = card.id;
     const answeredUnitKey = unitKey;
     const wasDailyReview = dailyReviewActive;
     const wasTail = tailActive;
     const beforeStats = stats;
-    submittingRef.current = true;
     triggerMemoryHaptic(answer);
     // 认识 → 上行两音;不认识 → 柔和下行两音。同时播按钮反馈动画。
     //
@@ -814,10 +872,8 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
           setStats(data.stats);
           setCanUndo(Boolean(data.canUndo));
           playCountdownFeedbackIfNeeded(beforeStats, data.stats);
-          // 和同步路径同一处：每答一下都要问一次，它负责在完成度进窗口时「上膛」。
-          // 这一下「忘记」会不会直接打开回顾，预算里已经判过（会的话根本不走快路径）。
-          if (isPlanMode(initialMode) && answeredPhase === "stage1" && !dailyReviewTriggeredRef.current) {
-            shouldStartDailyReview(answer === "forgot");
+          if (isPlanMode(initialMode) && answeredPhase === "stage1") {
+            inviteDailyReview(answeredCardId, preview.card, preview.phase);
           }
         } catch (err) {
           setError(err instanceof Error ? err.message : "提交失败");
@@ -831,6 +887,28 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     setSubmitting(true);
     setError("");
     try {
+      const round = dailyReviewRoundRef.current;
+      if (wasDailyReview && round) {
+        if (roundWritesFsrs(round, answeredCardId)) {
+          const data = submitWordAnswer(answeredCardId, answer, sessionOptions, false, true);
+          answerFocusedWord(answeredCardId, answer);
+          setStats(data.stats);
+        }
+        const nextRound = answerDailyReviewRound(round, answeredCardId, good);
+        dailyReviewRoundRef.current = nextRound;
+        setDailyReviewRound(nextRound);
+        setCanUndo(false);
+        setRevealed(false);
+        if (dailyReviewRoundDone(nextRound)) {
+          playComplete();
+          return;
+        }
+        const nextId = nextDailyReviewId(nextRound);
+        const next = nextId === null ? null : getDailyReviewCard(nextId);
+        if (!next) throw new Error("无法读取本轮单词，请先到这再继续学习");
+        showWordCard(next, "daily-mistakes");
+        return;
+      }
       const data = answeredUnitKey && phase === "kanji"
         ? submitKanjiUnitAnswer(answeredUnitKey, answer)
         : submitWordAnswer(answeredCardId, answer, sessionOptions, source === "spelling");
@@ -860,73 +938,6 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
       }
 
       playCountdownFeedbackIfNeeded(beforeStats, nextStats);
-
-      // 当日错题回顾只改变这一轮的出牌顺序，答题本身仍然走正式 FSRS。
-      if (wasDailyReview) {
-        if (good) dailyReviewResolvedRef.current.add(answeredCardId);
-        // **出口只有一个:这一批全答对。** 忘记/模糊都不是出口 —— 这里正是为答错的词
-        // 开的,拿答错当结束条件就成了「越错越早被赶出去」。原来还有一条 25 次上限,
-        // 已删:它是唯一一条「一个词都没记住也能走人」的路,而红色横幅说的是
-        // 「记住一张,红色就少一张」,有次数上限那句话就是假的。
-        //
-        // 不会卡死:候选集在本轮内只减不增(进候选要求「今天已经看过 ≥4 次」,
-        // 而这一轮只会答到已经在候选里的词),每答对一个就少一个,答对到空为止。
-        dailyReviewCooldownRef.current = [
-          ...dailyReviewCooldownRef.current.filter((id) => id !== answeredCardId),
-          answeredCardId
-        ].slice(-DAILY_REVIEW_COOLDOWN_LENGTH);
-        const spacedExcluded = new Set([
-          ...dailyReviewResolvedRef.current,
-          ...dailyReviewCooldownRef.current
-        ]);
-        const nextReviewCard = pickDailyReviewNext(spacedExcluded)
-          ?? pickDailyReviewNext(dailyReviewResolvedRef.current);
-        if (nextReviewCard) {
-          setCard(nextReviewCard);
-          setUnitKey(null);
-          setUnitTarget(null);
-          setStats(nextStats);
-          setPhase("daily-mistakes");
-          setCanUndo(false);
-          setRevealed(false);
-          return;
-        }
-
-        dailyReviewResolvedRef.current.clear();
-        dailyReviewCooldownRef.current = [];
-        setDailyReviewActive(false);
-        setDailyReviewIntro(false);
-        const tailCard = !data.card && nextStats.stage1Done ? getDailyTailNext() : null;
-        if (tailCard) {
-          setCard(tailCard);
-          setUnitKey(null);
-          setUnitTarget(null);
-          setStats(nextStats);
-          setPhase("daily-tail");
-          setTailActive(true);
-          setCanUndo(false);
-          setRevealed(false);
-          playComplete();
-          return;
-        }
-        if (initialMode === "mixed" && !data.card) {
-          handOffMixed(nextStats);
-          return;
-        }
-        setCard(data.card);
-        setUnitKey(data.unitKey ?? null);
-        setUnitTarget(data.unitTarget ?? null);
-        setStats(nextStats);
-        setPhase(data.phase);
-        setCanUndo(Boolean(data.canUndo));
-        setRevealed(false);
-        if (!data.card) playComplete();
-        if (!data.card && !completionReportedRef.current && isDailyModeComplete(initialMode, nextStats)) {
-          completionReportedRef.current = true;
-          onDailyModeComplete?.(initialMode);
-        }
-        return;
-      }
 
       // 压轴卡不计入今日任务，但答题依然写入原有 FSRS。只有压轴全部答完，
       // 才允许进入真正的完成页和自动错题本切换。
@@ -970,32 +981,8 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
         return;
       }
 
-      // 今日任务完成到 60%~80% 时先上膛，之后**这一次「忘记」**才把回顾区打开
-      // （完成度只会被「认识」推高，拿它直接开火的话红色横幅永远跟在答对后面）。
-      // 条件仍要有四张以上「今天已经看到四次仍没清掉」的词。
-      if (
-        isPlanMode(initialMode)
-        && phase === "stage1"
-        && !dailyReviewTriggeredRef.current
-        && shouldStartDailyReview(answer === "forgot")
-      ) {
-        const reviewCard = pickDailyReviewNext();
-        if (reviewCard) {
-          dailyReviewTriggeredRef.current = true;
-          markDailyReviewTriggered();
-          dailyReviewResolvedRef.current.clear();
-          dailyReviewCooldownRef.current = [];
-          setDailyReviewActive(true);
-          setDailyReviewIntro(true);
-          setCard(reviewCard);
-          setUnitKey(null);
-          setUnitTarget(null);
-          setStats(nextStats);
-          setPhase("daily-mistakes");
-          setCanUndo(false);
-          setRevealed(false);
-          return;
-        }
+      if (isPlanMode(initialMode) && phase === "stage1") {
+        inviteDailyReview(answeredCardId, data.card, data.phase);
       }
 
       const tailCard = !data.card && nextStats.stage1Done ? getDailyTailNext() : null;
@@ -1034,7 +1021,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
       // 落在同一个同步 tick 里(submitWordAnswer 是同步 SQLite,常见路径没有 await),
       // React 一批处理,中间态从来没渲染过。印章的收尾交给 RATE_BURST_MS 那个计时器。
     }
-  }, [buddySession, answerFocusedWord, card, dailyReviewActive, dailyReviewIntro, afterWordAnswered, flushActiveStudyTime, flushPendingAnswer, initialMode, loadNext, onDailyModeComplete, phase, reliefActive, sessionOptions, showWordCard, stats, submitting, tailActive, unitKey]);
+  }, [buddySession, answerFocusedWord, card, dailyReviewActive, dailyReviewOverlay, afterWordAnswered, flushActiveStudyTime, flushPendingAnswer, initialMode, inviteDailyReview, loadNext, onDailyModeComplete, phase, reliefActive, sessionOptions, showWordCard, stats, submitting, tailActive, unitKey]);
 
   useEffect(() => () => window.clearTimeout(rateBurstTimerRef.current), []);
 
@@ -1054,9 +1041,9 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
   }, [revealed]);
 
   const previewEligible = Boolean(card) && !loading && !submitting && !unitKey && !reliefActive && !dailyReviewActive
-    && !dailyReviewIntro && !tailActive && !grammarCard && !kanjiCard && !matchCard;
+    && !dailyReviewOverlay && !tailActive && !grammarCard && !kanjiCard && !matchCard;
   const spellingCandidate = Boolean(card) && preferences.spellingEnabled && phase === "stage1"
-    && !unitKey && !reliefActive && !dailyReviewActive && !dailyReviewIntro && !tailActive
+    && !unitKey && !reliefActive && !dailyReviewActive && !dailyReviewOverlay && !tailActive
     && !grammarCard && !kanjiCard && !matchCard;
   const spellingKey = `${card?.id}:${phase}:${wordEncounter}`;
   // 在预算出来之前不露普通作答界面；一旦出卡就固定题型，后台重算不会打断已输入的答案。
@@ -1070,7 +1057,6 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
   const spellingInputLookup = useMemo(() => spellingView ? spellingLookup(spellingView.wordId) : null, [spellingView]);
   const runPreviews = useCallback((cardId: number) => {
     const run = ++previewRunRef.current;
-    const checkDailyReview = isPlanMode(initialMode) && phase === "stage1" && !dailyReviewTriggeredRef.current;
     void (async () => {
       // 预算一旦抛错，spellingDecision 就永远不写入，开了拼写的页面会一直停在「正在取下一张…」（2026-10-13 交工前对照 R3）；
       // 出错就让这张卡按普通作答，别卡死。
@@ -1082,7 +1068,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
         for (const answer of ["know", "forgot"] as const) {
           if (answer !== "know") await new Promise((resolve) => setTimeout(resolve, 0));
           if (run !== previewRunRef.current) return;
-          addAnswerPreview(previews, answer, sessionOptions, checkDailyReview);
+          addAnswerPreview(previews, answer, sessionOptions);
           if (answer === "know" && spellingCandidate) {
             const spell = shouldSpellWord(cardId, previews.byAnswer.know?.graduatedForDay === true, true, phase);
             setSpellingDecision((current) => current?.key === spellingKey ? current : { key: spellingKey, spell });
@@ -1095,7 +1081,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
         if (spellingCandidate) setSpellingDecision((current) => current?.key === spellingKey ? current : { key: spellingKey, spell: false });
       }
     })();
-  }, [initialMode, phase, preferences.voiceId, sessionOptions, spellingCandidate, spellingKey]);
+  }, [phase, preferences.voiceId, sessionOptions, spellingCandidate, spellingKey]);
   useEffect(() => {
     previewsRef.current = null;
     // 快路径刚换卡、记账还没落库：先不算，记账之后 setStats 会让这里带着新状态再跑一遍
@@ -1105,7 +1091,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
   }, [card, stats, previewEligible, runPreviews]);
 
   const revealAnswer = useCallback(() => {
-    if (!card || loading || revealed || submitting || reliefActive || dailyReviewIntro) return;
+    if (!card || loading || revealed || submitting || reliefActive || dailyReviewOverlay) return;
     revealedAtRef.current = performance.now();
     revealTappedAtRef.current = revealedAtRef.current;
     buddySession.send({ type: "reveal" });
@@ -1125,7 +1111,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
       setActivePopover(null);
     }
     speakCard(card);
-  }, [buddySession, card, dailyReviewIntro, loading, previewEligible, reliefActive, revealed, runPreviews, speakCard, submitting]);
+  }, [buddySession, card, dailyReviewOverlay, loading, previewEligible, reliefActive, revealed, runPreviews, speakCard, submitting]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -1138,8 +1124,9 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
         || event.metaKey
         || event.altKey
         || distinctionOpen
+        || dailyReviewOverlay
         // 语法卡盖在上面时键位归它（GrammarCard 自己挂了一套一模一样的）；汉字卡、辨析卡同理
-        || grammarCard || kanjiCard || matchCard
+        || (!dailyReviewBusy && (grammarCard || kanjiCard || matchCard))
         || spellingActive || preparingSpelling
         || isEditableTarget(event.target)
       ) return;
@@ -1164,10 +1151,12 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [card, distinctionOpen, grammarCard, kanjiCard, matchCard, spellingActive, preparingSpelling, loading, revealed, submitting, submitAnswer, revealAnswer, unitKey, phase]);
+  }, [card, dailyReviewBusy, dailyReviewOverlay, distinctionOpen, grammarCard, kanjiCard, matchCard, spellingActive, preparingSpelling, loading, revealed, submitting, submitAnswer, revealAnswer, unitKey, phase]);
 
   const undo = async () => {
+    if (dailyReviewRoundRef.current) return;
     flushPendingAnswer();
+    clearDailyReview();
     // 混合模式：四种卡各有一份互不知道对方的撤销栈，按作答顺序的栈顶分派（lib/mixed-session）。
     // 栈顶是别的卡：撤掉它并重新摆出来；是单词才走下面单词那份。
     if (mixedUndoKind() && mixedUndoKind() !== "word") {
@@ -1206,8 +1195,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
       setPhase(undidTail ? "daily-tail" : data.phase);
       setReliefActive(false);
       setReliefLeaving(false);
-      setDailyReviewActive(false);
-      setDailyReviewIntro(false);
+      clearDailyReview();
       setTailActive(undidTail);
       setCanUndo(Boolean(data.canUndo));
       setRevealed(false);
@@ -1307,8 +1295,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
       setPhase(data.phase);
       setReliefActive(false);
       setReliefLeaving(false);
-      setDailyReviewActive(false);
-      setDailyReviewIntro(false);
+      clearDailyReview();
       setTailActive(false);
       setCanUndo(Boolean(data.canUndo));
       setRevealed(false);
@@ -1377,8 +1364,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
       setPhase(data.phase);
       setReliefActive(false);
       setReliefLeaving(false);
-      setDailyReviewActive(false);
-      setDailyReviewIntro(false);
+      clearDailyReview();
       setTailActive(false);
       setCanUndo(Boolean(data.canUndo));
       setRevealed(false);
@@ -1410,8 +1396,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
       setPhase(data.phase);
       setReliefActive(false);
       setReliefLeaving(false);
-      setDailyReviewActive(false);
-      setDailyReviewIntro(false);
+      clearDailyReview();
       setTailActive(false);
       setCanUndo(Boolean(data.canUndo));
       setRevealed(false);
@@ -1422,7 +1407,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     }
   };
 
-  const showStudyToolbar = loading || Boolean(card);
+  const showStudyToolbar = !dailyReviewOverlay && (loading || Boolean(card));
   const canDragWordPage = (target: EventTarget | null) => {
     const element = target instanceof Element ? target : null;
     return !element?.closest("button, input, select, textarea, a, [data-word-scrollable='true']");
@@ -1434,7 +1419,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
   };
 
   // 甩卡只在「答案已显示」时生效:没看答案就甩等于瞎评分。
-  const swipeEnabled = Boolean(card) && !spellingActive && !preparingSpelling && revealed && !submitting && !reliefActive && !dailyReviewIntro;
+  const swipeEnabled = Boolean(card) && !spellingActive && !preparingSpelling && revealed && !submitting && !reliefActive && !dailyReviewOverlay;
 
   const handleTouchStart = (event: TouchEvent<HTMLDivElement>) => {
     const touch = event.touches[0];
@@ -1535,10 +1520,10 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
   }, [dailyPlanFinished, focusSnapshot.status, updateFocusSnapshot]);
   // 「上一个」撤哪一边、亮不亮：按作答顺序的栈顶走（判据和那道「只撤这次进页面之后答的」闸都在 canUndoMixed）。
   const undoKind = mixedUndoKind() ?? "word";
-  const undoEnabled = canUndoMixed(initialMode === "mixed", canUndo);
+  const undoEnabled = !dailyReviewBusy && canUndoMixed(initialMode === "mixed", canUndo);
 
   const countdownActive = !loading
-    && !dailyReviewActive
+    && !dailyReviewBusy
     && countdownRemaining > 0
     && countdownRemaining <= 30
     && isPlanMode(initialMode);
@@ -1595,7 +1580,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     );
   }
 
-  if (kanjiCard || matchCard) {
+  if (!dailyReviewBusy && (kanjiCard || matchCard)) {
     const accent = kanjiCard ? KANJI_ACCENT : MATCH_ACCENT;
     return (
       <div style={accent} className={`word-study-shell mx-auto flex max-w-4xl flex-col justify-center lg:max-w-[1200px] ${kanjiCard ? "kanji-match-shell" : ""}`}>
@@ -1629,7 +1614,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
 
   // 混合模式的语法插播。整页换色是这里唯一要说的话：正在答的不是单词。
   // 卡片、键位、评分都和语法考题页共用一份（GrammarCard），只有配色不同。
-  if (grammarCard) {
+  if (!dailyReviewBusy && grammarCard) {
     return (
       <div
         style={QUIZ_ACCENT_AMBER}
@@ -1932,13 +1917,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
             <strong>昨日表现很棒，今日减负（{stats.dailyRelief.total}）个！</strong>
           </div>
         )}
-        {dailyReviewActive && (
-          <div className={`daily-review-banner${dailyReviewIntro ? " daily-review-banner-intro" : ""}`} role="status" aria-live="polite">
-            <span>当日错题回顾</span>
-            <strong>记住一张，红色就少一张</strong>
-            <small>答对为止</small>
-          </div>
-        )}
+        {dailyReviewRound && !dailyReviewComplete && <DailyReviewTopBar round={dailyReviewRound} onExit={exitDailyReview} />}
         {error && (
           <div className="mb-5 flex items-start gap-3 rounded-2xl border border-[#81D8CF]/40 bg-[#81D8CF]/20 p-4 text-sm text-white">
             <AlertCircle size={18} className="mt-0.5 shrink-0" />
@@ -1949,7 +1928,11 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
           </div>
         )}
 
-        {loading || preparingSpelling ? (
+        {dailyReviewInvite ? (
+          <DailyReviewInvite words={dailyReviewInvite.words} onStart={startDailyReview} onDecline={declineDailyReview} />
+        ) : dailyReviewComplete && dailyReviewRound ? (
+          <DailyReviewComplete round={dailyReviewRound} onContinue={exitDailyReview} />
+        ) : loading || preparingSpelling ? (
           <div className="grid min-h-[360px] place-items-center text-center text-sm font-semibold text-white/55"><div><CapybaraWalk size={72} className="mb-3" /><p>正在取下一张…</p></div></div>
         ) : spellingView ? (
           <div className="sbuddy-host">

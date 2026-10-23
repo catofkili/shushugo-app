@@ -160,7 +160,6 @@
 
 /* ===== 昨日减负：纸牌一样一张张飞走 ===== */
 .daily-relief-banner,
-.daily-review-banner,
 .daily-tail-banner{
   position:relative;z-index:4;display:flex;align-items:center;justify-content:center;gap:9px;flex-wrap:wrap;margin:0 auto 9px;width:min(900px,100%);border-radius:16px;padding:10px 14px;text-align:center
 }
@@ -179,14 +178,6 @@
 .daily-relief-auto-state strong{font-size:18px}.daily-relief-auto-state small{font-size:11px;color:#78975A}
 @keyframes dailyReliefStamp{0%{opacity:0;transform:scale(.76) rotate(-5deg)}65%{opacity:1;transform:scale(1.07) rotate(1deg)}100%{transform:none}}
 
-/* ===== 当日错题回顾：奶油感的红 ===== */
-.word-study-daily-review{background:radial-gradient(circle at 50% 4%,rgba(241,181,155,.13),transparent 52%)}
-.daily-review-card{background:linear-gradient(160deg,#FFF8F1,#F8E3D9)!important;border-color:rgba(207,108,91,.62)!important;box-shadow:0 18px 42px rgba(180,75,61,.16),0 0 0 1px rgba(255,255,255,.52) inset!important}
-.daily-review-banner{border:1px solid rgba(207,108,91,.58);background:linear-gradient(120deg,#FFF0E7,#F6D8CB);color:#9B4C40;box-shadow:0 7px 18px rgba(180,75,61,.12)}
-.daily-review-banner span{font-size:13px;font-weight:900;letter-spacing:.08em}.daily-review-banner strong{font-size:16px;color:#A4473C}.daily-review-banner small{font-size:11px;color:#B56C5D}
-.daily-review-banner-intro{animation:dailyReviewIntro .85s cubic-bezier(.17,1.45,.42,1)}
-@keyframes dailyReviewIntro{0%{opacity:0;transform:translateY(-15px) scale(.9)}55%{opacity:1;transform:translateY(2px) scale(1.03)}100%{transform:none}}
-
 /* ===== 真正结尾：轻松的奶油绿压轴 ===== */
 .daily-tail-card{background:linear-gradient(160deg,#FFFDF5,#EEF6DD)!important;border-color:rgba(153,191,104,.58)!important;box-shadow:0 18px 42px rgba(111,168,62,.13),0 0 0 1px rgba(255,255,255,.55) inset!important}
 .daily-tail-banner{border:1px solid rgba(153,191,104,.58);background:linear-gradient(120deg,#F3FBE9,#E4F1D1);color:#5D7B3A}
@@ -196,10 +187,6 @@
 [data-theme="dark"] .daily-relief-banner strong,[data-theme="dark"] .daily-tail-banner strong{color:#D5E9B8}
 [data-theme="dark"] .daily-relief-banner span,[data-theme="dark"] .daily-tail-banner small{color:#A9C68A}
 [data-theme="dark"] .daily-relief-card{background:linear-gradient(160deg,#3C4535,#303A2E)!important}
-[data-theme="dark"] .daily-review-card{background:linear-gradient(160deg,#4A3B35,#3B302C)!important}
-[data-theme="dark"] .daily-review-banner{background:linear-gradient(120deg,#4D3935,#44302D);color:#FFD2C3}
-[data-theme="dark"] .daily-review-banner strong{color:#FFD2C3}
-[data-theme="dark"] .daily-review-banner small{color:#E6A999}
 [data-motion="reduced"] .word-study-countdown::before,[data-motion="reduced"] .word-study-countdown::after{animation:none}
 [data-motion="reduced"] .daily-relief-banner-spark{animation:none}
 
