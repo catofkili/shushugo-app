@@ -81,7 +81,8 @@ const common = {
     'import.meta.env.MODE': '"production"',
     'import.meta.env.BASE_URL': '"/"',
     'import.meta.env.VITE_SYNC_API_URL': '""',
-    'import.meta.env.VITE_AUDIO_BASE_URL': '""'
+    'import.meta.env.VITE_AUDIO_BASE_URL': '""',
+    'import.meta.env.VITE_STUDY_FOCUS_LOCKED': '""'
   }
 };
 
