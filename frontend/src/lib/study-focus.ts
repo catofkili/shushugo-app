@@ -22,11 +22,12 @@ export const STUDY_FOCUS_MIN_WORDS = YUZU.focusMinimumWords;
 export const STUDY_FOCUS_BASELINE_DAYS = 30;
 const ARMED_KEY = "mn-study-focus-armed";
 const BOOST_KEY = "mn-study-focus-boost";
-const NUDGE_KEY = "mn-study-focus-nudge-at";
+const NUDGE_KEY = "mn-study-focus-nudge";
 /** 从主页自动弹出的邀请里开启的，专注柚子按 1.5 倍发（用户 2026-10-24 定的）；取消勾选就失效。 */
 export const STUDY_FOCUS_BOOST = 1.5;
-/** 邀请被点「不用了」之后隔这么久才再问。 */
-export const STUDY_FOCUS_NUDGE_GAP_MS = 3 * 86_400_000;
+/** 邀请是随机事件：每天最多掷一次骰子，命中概率如下；任意连续 7 天里最多出现这么多次（「一周不到三次」）。 */
+export const STUDY_FOCUS_NUDGE_CHANCE = 0.3;
+export const STUDY_FOCUS_NUDGE_MAX_PER_WEEK = 2;
 
 /**
  * 作者个人的 5173：倒计时永远开着、关不掉。只认 dev server + 本机 frontend/.env.local
@@ -55,13 +56,22 @@ export const isStudyFocusBoosted = (): boolean => {
 };
 const focusMultiplier = (): number => isStudyFocusBoosted() ? STUDY_FOCUS_BOOST : 1;
 
-/** 主页要不要弹「开启倒计时」邀请：没开、没锁，且上次被拒绝已过 STUDY_FOCUS_NUDGE_GAP_MS。 */
-export const shouldNudgeStudyFocus = (nowMs = Date.now()): boolean => {
+/**
+ * 主页要不要弹「开启倒计时」邀请。没开、没锁的前提下，每个日历日只掷一次骰子（当天再回主页不重掷、不重弹），
+ * 命中才弹，且最近 7 天已弹满 STUDY_FOCUS_NUDGE_MAX_PER_WEEK 次就不掷。调用即消耗当天的机会，所以只在主页挂载时调一次。
+ */
+export const shouldNudgeStudyFocus = (nowMs = Date.now(), random = Math.random): boolean => {
   if (isStudyFocusArmed()) return false;
-  try { return nowMs - Number(localStorage.getItem(NUDGE_KEY) ?? 0) >= STUDY_FOCUS_NUDGE_GAP_MS; } catch { return false; }
-};
-export const dismissStudyFocusNudge = (nowMs = Date.now()): void => {
-  try { localStorage.setItem(NUDGE_KEY, String(nowMs)); } catch { /* 存不下就下次再问 */ }
+  try {
+    const saved = JSON.parse(localStorage.getItem(NUDGE_KEY) ?? "{}") as { day?: string; shown?: unknown };
+    const day = new Date(nowMs).toDateString();
+    if (saved.day === day) return false;
+    const shown = (Array.isArray(saved.shown) ? saved.shown : [])
+      .filter((at): at is number => typeof at === "number" && nowMs - at < 7 * 86_400_000);
+    const hit = shown.length < STUDY_FOCUS_NUDGE_MAX_PER_WEEK && random() < STUDY_FOCUS_NUDGE_CHANCE;
+    localStorage.setItem(NUDGE_KEY, JSON.stringify({ day, shown: hit ? [...shown, nowMs] : shown }));
+    return hit;
+  } catch { return false; }
 };
 
 type Answers = Record<string, WordAnswer>;

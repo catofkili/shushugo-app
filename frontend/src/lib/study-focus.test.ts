@@ -11,7 +11,7 @@ vi.mock("./database/db-utils", async (original) => ({
 
 import {
   claimStudyFocusReward, continueStudyFocus, enterStudyFocus, getStudyFocusSnapshot, leaveStudyFocus,
-  finishStudyFocusAtDailyCompletion, recordStudyFocusAnswer, recordStudyFocusTime, resumeStudyFocus, sameStudyFocusState, startStudyFocus, stopStudyFocus,
+  finishStudyFocusAtDailyCompletion, recordStudyFocusAnswer, recordStudyFocusTime, resumeStudyFocus, sameStudyFocusState, shouldNudgeStudyFocus, startStudyFocus, stopStudyFocus,
   STUDY_FOCUS_MIN_WORDS, STUDY_FOCUS_PARTIAL_KEY, STUDY_FOCUS_REWARD_MIN_MS, STUDY_FOCUS_REWARDS, STUDY_FOCUS_WINDOW_MS, summarizeStudyFocus, undoStudyFocusAnswer
 } from "./study-focus";
 import { LOCAL_SCHEMA_SQL } from "./database/schema";
@@ -302,5 +302,25 @@ describe("倒计时的递减奖励", () => {
     expect(SYNCED_TABLES.find((entry) => entry.table === "study_focus_windows"))
       .toEqual({ table: "study_focus_windows", keys: ["id"], strategy: "union" });
     expect(DEVICE_LOCAL_STATE_KEYS.has(STUDY_FOCUS_PARTIAL_KEY)).toBe(true);
+  });
+});
+
+describe("shouldNudgeStudyFocus", () => {
+  it("每天最多掷一次，任意 7 天最多两次", () => {
+    const store = new Map<string, string>();
+    vi.stubGlobal("localStorage", {
+      getItem: (key: string) => store.get(key) ?? null,
+      setItem: (key: string, value: string) => { store.set(key, value); },
+      removeItem: (key: string) => { store.delete(key); }
+    });
+    const day = 86_400_000;
+    const start = new Date(2026, 9, 1, 12).getTime();
+    expect(shouldNudgeStudyFocus(start, () => 0)).toBe(true);
+    expect(shouldNudgeStudyFocus(start + 1000, () => 0)).toBe(false);
+    expect(shouldNudgeStudyFocus(start + day, () => 0.9)).toBe(false);
+    expect(shouldNudgeStudyFocus(start + 2 * day, () => 0)).toBe(true);
+    expect(shouldNudgeStudyFocus(start + 3 * day, () => 0)).toBe(false);
+    expect(shouldNudgeStudyFocus(start + 7 * day, () => 0)).toBe(true);
+    vi.unstubAllGlobals();
   });
 });

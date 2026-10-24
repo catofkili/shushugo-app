@@ -39,7 +39,7 @@ import { ZooProgressPanel } from "./ZooProgressPanel";
 import { StudyFocusIntro } from "./StudyFocusIntro";
 import { useZoomOpen } from "./ZoomOpen";
 import { pickCapyTools } from "./capy-tool-selection";
-import { dismissStudyFocusNudge, isStudyFocusArmed, isStudyFocusBoosted, isStudyFocusLocked, setStudyFocusArmed, shouldNudgeStudyFocus, STUDY_FOCUS_BOOST } from "../lib/study-focus";
+import { isStudyFocusArmed, isStudyFocusBoosted, isStudyFocusLocked, setStudyFocusArmed, shouldNudgeStudyFocus, STUDY_FOCUS_BOOST } from "../lib/study-focus";
 import { scrollPageToTop } from "../lib/touch-adapter";
 import "./ZooHome.css";
 
@@ -96,6 +96,18 @@ const nowSticker = (hour: number, total: number, done: number): StickerName =>
           : hour < 18 ? "scene-laptop"
             : "scene-music";
 
+/**
+ * 当天的掷骰结果在模块里记一份：shouldNudgeStudyFocus 每次调用都会消耗当天机会，
+ * StrictMode 双调初始化函数、或当天邀请还没关时回主页，都要拿到同一个结果。
+ */
+let nudgeDecision: { day: string; show: boolean } | null = null;
+const decideFocusNudge = (): boolean => {
+  const day = new Date().toDateString();
+  if (nudgeDecision?.day !== day) nudgeDecision = { day, show: shouldNudgeStudyFocus() };
+  return nudgeDecision.show;
+};
+const closeFocusNudge = () => { if (nudgeDecision) nudgeDecision.show = false; };
+
 export function ZooHome({
   overview,
   onNavigate,
@@ -118,8 +130,8 @@ export function ZooHome({
   const [focusArmed, setFocusArmed] = useState(isStudyFocusArmed);
   const [focusIntroOpen, setFocusIntroOpen] = useState(false);
   const [focusBoosted, setFocusBoosted] = useState(isStudyFocusBoosted);
-  // 没开倒计时的人，主页顺手问一句；拒绝后隔三天再问。只是大卡下面一张小条，不挡任何入口。
-  const [focusNudge, setFocusNudge] = useState(shouldNudgeStudyFocus);
+  // 没开倒计时的人，主页偶尔随机问一句（一周最多两次，见 shouldNudgeStudyFocus）。只是大卡下面一张小条，不挡任何入口。
+  const [focusNudge, setFocusNudge] = useState(decideFocusNudge);
   // 每日量在设置页也能改，所以跟着 PREFERENCES_EVENT 走，别只在挂载时读一次
   const [goals, setGoals] = useState(() => getStudyPreferences());
   // 更新日的新报告提示。只在这一份报告未读、且还在发布窗口内时为真。
@@ -388,7 +400,7 @@ export function ZooHome({
               aria-label="启用倒计时学习"
               aria-checked={focusArmed}
               disabled={isStudyFocusLocked()}
-              onClick={() => { setStudyFocusArmed(!focusArmed); setFocusArmed(!focusArmed); setFocusBoosted(false); setFocusNudge(false); }}
+              onClick={() => { setStudyFocusArmed(!focusArmed); setFocusArmed(!focusArmed); setFocusBoosted(false); closeFocusNudge(); setFocusNudge(false); }}
             >
               <span className="zoo-focus-box" aria-hidden="true">{focusArmed && <Check size={11} strokeWidth={3.2} />}</span>
             </button>
@@ -415,13 +427,13 @@ export function ZooHome({
             <button
               type="button"
               className="zoo-focus-nudge-yes"
-              onClick={() => { setStudyFocusArmed(true, true); setFocusArmed(true); setFocusBoosted(true); setFocusNudge(false); }}
+              onClick={() => { setStudyFocusArmed(true, true); setFocusArmed(true); setFocusBoosted(true); closeFocusNudge(); setFocusNudge(false); }}
             >开启</button>
             <button
               type="button"
               className="zoo-focus-nudge-no"
               aria-label="不用了"
-              onClick={() => { dismissStudyFocusNudge(); setFocusNudge(false); }}
+              onClick={() => { closeFocusNudge(); setFocusNudge(false); }}
             >×</button>
           </div>
         )}
@@ -429,7 +441,7 @@ export function ZooHome({
         {focusIntroOpen && (
           <StudyFocusIntro
             onCancel={() => setFocusIntroOpen(false)}
-            onConfirm={() => { setStudyFocusArmed(true); setFocusArmed(true); setFocusIntroOpen(false); setFocusNudge(false); }}
+            onConfirm={() => { setStudyFocusArmed(true); setFocusArmed(true); setFocusIntroOpen(false); closeFocusNudge(); setFocusNudge(false); }}
           />
         )}
 

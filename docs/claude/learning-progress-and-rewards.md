@@ -385,7 +385,7 @@ id 是全应用的语法身份（详情页、furigana 表、进度都按它走�
 
 ## 倒计时学习：主页自动邀请 + 邀请开启 ×1.5（2026-10-24，用户定的）
 
-- 没开倒计时时，主页大卡下方出一条小邀请（不是遮罩）；点 × 后隔三天（`STUDY_FOCUS_NUDGE_GAP_MS`）再问。
+- 没开倒计时时，主页大卡下方偶尔出一条小邀请（不是遮罩）。是随机事件（用户改的）：每个日历日只掷一次（命中率 `STUDY_FOCUS_NUDGE_CHANCE` 0.3），任意 7 天最多 `STUDY_FOCUS_NUDGE_MAX_PER_WEEK` = 2 次（「一周不到三次」）。当天结果在 ZooHome 模块里缓存，防 StrictMode 双调把机会掷掉。
 - 从邀请开启的，专注柚子按 `STUDY_FOCUS_BOOST`（1.5）倍发，乘在 `claimStudyFocusYuzu` 的 amount 上，账本 key 不变（一档仍只领一次）。
   手动勾选不带加成；取消勾选连加成一起清（`mn-study-focus-boost`，设备偏好不同步）。
 - **作者个人的 5173**：`frontend/.env.local`（gitignore）写 `VITE_STUDY_FOCUS_LOCKED=1` → 倒计时永远开、勾选框禁用、休息页不显示「之后不要倒计时」。
