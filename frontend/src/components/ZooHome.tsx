@@ -410,7 +410,7 @@ export function ZooHome({
             <Timer size={18} aria-hidden="true" className="zoo-focus-nudge-icon" />
             <span className="zoo-focus-nudge-text">
               <b>开倒计时学习？</b>
-              <span>每专注 10 分钟领一次柚子，现在开启奖励 <b>×{STUDY_FOCUS_BOOST}</b></span>
+              <span>专注 10 分钟领柚子，现在开启奖励 <b>×{STUDY_FOCUS_BOOST}</b></span>
             </span>
             <button
               type="button"
