@@ -1,255 +1,212 @@
 {
   "title": "转码 ML 课表",
   "phases": {
-    "1": "Python 与数据工具",
-    "2": "经典机器学习 + 数学直觉",
-    "3": "从零写神经网络（Karpathy）",
-    "4": "实用深度学习与大模型",
+    "1": "读懂 Python 与数据",
+    "2": "经典机器学习：学会验收",
+    "3": "从零手写神经网络（只练直觉）",
+    "4": "读真实项目、指挥 AI 做事",
     "5": "毕业项目：用你的复习记录挑战 FSRS"
   },
   "days": [
     { "phase": 1, "tasks": [
-      { "id": "d01-1", "m": 45, "t": "装环境", "d": "装 uv 和 VS Code 的 Python/Jupyter 插件；终端里 uv init ml && cd ml && uv add numpy pandas matplotlib jupyter scikit-learn；新建 notebook 打印 hello 就算完成。" },
-      { "id": "d01-2", "m": 15, "t": "注册 Kaggle 账号", "d": "后面大部分练习都在上面做。", "url": "https://www.kaggle.com" },
-      { "id": "d01-3", "m": 60, "t": "Kaggle Python 第 1–2 课", "d": "每课的练习题全部做完（绿勾）才算完成。", "url": "https://www.kaggle.com/learn/python" }
+      { "id": "d01-1", "m": 45, "t": "装环境（让 Claude 带你装）", "d": "目标：装好 uv 和 VS Code 的 Python/Jupyter 插件，新建一个 notebook 能跑 print('hello')。卡住就把报错原样发给 Claude。" },
+      { "id": "d01-2", "m": 15, "t": "注册 Kaggle 账号", "d": "", "url": "https://www.kaggle.com" },
+      { "id": "d01-3", "m": 60, "t": "Kaggle Python 第 1–2 课：先猜再跑", "d": "教程里每段代码，运行之前先在心里说出它会输出什么，再运行，猜错的记下来。练习题可以让 AI 帮你，但必须能讲出答案为什么对。", "url": "https://www.kaggle.com/learn/python" }
     ]},
     { "phase": 1, "tasks": [
-      { "id": "d02-1", "m": 90, "t": "Kaggle Python 第 3–4 课", "d": "练习全部绿勾。", "url": "https://www.kaggle.com/learn/python" },
-      { "id": "d02-2", "m": 45, "t": "用 Python 重写一个你熟悉的 TS 函数", "d": "从收集日里挑一个小函数（比如日期格式化、柚子计算），写成 Python 并跑通。目的是感受两种语言的差别。" }
+      { "id": "d02-1", "m": 90, "t": "Kaggle Python 第 3–5 课：先猜再跑", "d": "同昨天的规则。", "url": "https://www.kaggle.com/learn/python" },
+      { "id": "d02-2", "m": 30, "t": "TS ↔ Python 对照读", "d": "让 Claude 把收集日里一个你熟悉的小函数翻译成 Python。逐行对照，指出两种语言写法不同的 3 个地方。" }
     ]},
     { "phase": 1, "tasks": [
-      { "id": "d03-1", "m": 120, "t": "Kaggle Python 第 5–7 课", "d": "学完拿到 Kaggle 的 Python 证书。", "url": "https://www.kaggle.com/learn/python" }
+      { "id": "d03-1", "m": 60, "t": "Kaggle Python 第 6–7 课，拿证书", "d": "", "url": "https://www.kaggle.com/learn/python" },
+      { "id": "d03-2", "m": 60, "t": "第一次找 bug", "d": "对 Claude 说：「写一个 30 行左右的 Python 函数统计单词出现次数，故意埋一个不会报错、但结果错误的 bug，不要告诉我在哪。」你只靠阅读把它找出来，找到之前不许运行。" }
     ]},
     { "phase": 1, "tasks": [
-      { "id": "d04-1", "m": 90, "t": "NumPy 新手入门", "d": "跟着官方 absolute basics 把每段代码在 notebook 里敲一遍。", "url": "https://numpy.org/doc/stable/user/absolute_beginners.html" },
-      { "id": "d04-2", "m": 30, "t": "NumPy 小练习", "d": "不写任何 for 循环：生成 1000 个随机数，算均值、标准差，再归一化成均值 0、标准差 1。" }
+      { "id": "d04-1", "m": 75, "t": "NumPy：先猜形状", "d": "读官方入门。每个数组操作，运行前先说出结果的 shape。ML 里一半的 bug 都是 shape 错了。", "url": "https://numpy.org/doc/stable/user/absolute_beginners.html" },
+      { "id": "d04-2", "m": 30, "t": "shape 小测", "d": "让 Claude 出 10 道「这行代码的结果 shape 是多少」的题，目标是答对 8 道。" }
     ]},
     { "phase": 1, "tasks": [
-      { "id": "d05-1", "m": 90, "t": "Kaggle Pandas 第 1–3 课", "d": "练习全部绿勾。", "url": "https://www.kaggle.com/learn/pandas" },
-      { "id": "d05-2", "m": 45, "t": "用 pandas 打开你自己的学习数据", "d": "用 sqlite3 + pandas.read_sql 读收集日的本地库（frontend/.local/live.db），列出所有表和每张表的行数。" }
+      { "id": "d05-1", "m": 75, "t": "Kaggle Pandas 第 1–3 课：先猜再跑", "d": "", "url": "https://www.kaggle.com/learn/pandas" },
+      { "id": "d05-2", "m": 60, "t": "指挥 AI 分析你自己的数据", "d": "让 Claude 写代码读收集日的本地库（frontend/.local/live.db），列出所有表和行数。你的任务：每张表各挑 3 行，对照你在 App 里看到的数据，确认它读得对不对。" }
     ]},
     { "phase": 1, "tasks": [
-      { "id": "d06-1", "m": 90, "t": "Kaggle Pandas 第 4–6 课", "d": "学完拿证书。", "url": "https://www.kaggle.com/learn/pandas" },
-      { "id": "d06-2", "m": 60, "t": "给自己的复习记录做 3 个统计", "d": "每天复习了多少张、平均答对率、错得最多的 10 个词。" }
+      { "id": "d06-1", "m": 60, "t": "Kaggle Pandas 第 4–6 课，拿证书", "d": "", "url": "https://www.kaggle.com/learn/pandas" },
+      { "id": "d06-2", "m": 60, "t": "你出需求，AI 写，你验收", "d": "需求：每天复习量、平均答对率、错得最多的 10 个词。代码让 Claude 写。验收方法：随便挑一天，自己在 App 里数一遍，和它算出的数对不对得上。" }
     ]},
     { "phase": 1, "review": true, "tasks": [
-      { "id": "d07-1", "m": 45, "t": "画第一张图", "d": "用 matplotlib 画出你每天复习量的折线图。" },
+      { "id": "d07-1", "m": 30, "t": "让 AI 画图，你挑毛病", "d": "让 Claude 画每日复习量的折线图。挑出图上至少 2 个问题（坐标轴、单位、看起来误导人的地方），让它改好。" },
       { "id": "d07-2", "m": 60, "t": "补齐本周没做完的", "d": "没有欠的话就休息。" },
-      { "id": "d07-3", "m": 15, "t": "周复盘发给 Claude", "d": "写 3 句话：哪里卡住、哪里太简单、每天实际花了多久。发给 Claude，让它调整下周的课表。" }
+      { "id": "d07-3", "m": 15, "t": "周复盘发给 Claude", "d": "写 3 句话：哪里卡住、哪里太简单、每天实际花了多久。Claude 会据此调整下周的课表。" }
     ]},
 
     { "phase": 2, "tasks": [
-      { "id": "d08-1", "m": 45, "t": "3Blue1Brown 线性代数第 1–3 集", "d": "向量、线性组合、矩阵即变换。只看，不用记笔记。", "url": "https://www.3blue1brown.com/topics/linear-algebra" },
-      { "id": "d08-2", "m": 75, "t": "Kaggle Intro to ML 第 1–3 课", "d": "练习全部绿勾。", "url": "https://www.kaggle.com/learn/intro-to-machine-learning" }
+      { "id": "d08-1", "m": 45, "t": "3Blue1Brown 线性代数第 1–3 集", "d": "只看，建立画面感就够了。", "url": "https://www.3blue1brown.com/topics/linear-algebra" },
+      { "id": "d08-2", "m": 75, "t": "Kaggle Intro to ML 第 1–3 课", "d": "重点不在代码，而在每一步为什么要这么做。", "url": "https://www.kaggle.com/learn/intro-to-machine-learning" }
     ]},
     { "phase": 2, "tasks": [
-      { "id": "d09-1", "m": 30, "t": "线性代数第 4–5 集", "d": "矩阵乘法，三维变换。", "url": "https://www.3blue1brown.com/topics/linear-algebra" },
-      { "id": "d09-2", "m": 75, "t": "Kaggle Intro to ML 第 4–5 课", "d": "重点理解过拟合和欠拟合。", "url": "https://www.kaggle.com/learn/intro-to-machine-learning" }
+      { "id": "d09-1", "m": 30, "t": "线性代数第 4–5 集", "d": "", "url": "https://www.3blue1brown.com/topics/linear-algebra" },
+      { "id": "d09-2", "m": 75, "t": "Kaggle Intro to ML 第 4–5 课", "d": "过拟合和欠拟合。学完用一句话向 Claude 解释，让它判断你说得对不对。", "url": "https://www.kaggle.com/learn/intro-to-machine-learning" }
     ]},
     { "phase": 2, "tasks": [
-      { "id": "d10-1", "m": 90, "t": "Kaggle Intro to ML 第 6–7 课 + 第一次提交", "d": "在房价比赛里交出第一份预测，截图你的排名。", "url": "https://www.kaggle.com/learn/intro-to-machine-learning" },
-      { "id": "d10-2", "m": 15, "t": "线性代数第 6 集 行列式", "d": "", "url": "https://www.3blue1brown.com/topics/linear-algebra" }
+      { "id": "d10-1", "m": 90, "t": "Kaggle Intro to ML 第 6–7 课 + 第一次提交", "d": "在房价比赛里交出第一份预测。", "url": "https://www.kaggle.com/learn/intro-to-machine-learning" },
+      { "id": "d10-2", "m": 30, "t": "ML 验收清单 v1", "d": "自己写一份清单：拿到一个模型结果，要检查哪些东西才能相信它？写完发给 Claude，让它补你漏掉的。这份清单之后每个项目都要用，并且会不断补充。" }
     ]},
     { "phase": 2, "tasks": [
-      { "id": "d11-1", "m": 45, "t": "线性代数第 7–9 集", "d": "逆矩阵与秩、非方阵、点积。", "url": "https://www.3blue1brown.com/topics/linear-algebra" },
-      { "id": "d11-2", "m": 75, "t": "Kaggle Intermediate ML 第 1–3 课", "d": "缺失值、类别变量、Pipeline。", "url": "https://www.kaggle.com/learn/intermediate-machine-learning" }
+      { "id": "d11-1", "m": 45, "t": "线性代数第 6–9 集", "d": "", "url": "https://www.3blue1brown.com/topics/linear-algebra" },
+      { "id": "d11-2", "m": 75, "t": "Kaggle Intermediate ML 第 1–4 课", "d": "", "url": "https://www.kaggle.com/learn/intermediate-machine-learning" }
     ]},
     { "phase": 2, "tasks": [
-      { "id": "d12-1", "m": 120, "t": "Kaggle Intermediate ML 第 4–7 课", "d": "交叉验证、XGBoost、数据泄漏。学完拿证书。", "url": "https://www.kaggle.com/learn/intermediate-machine-learning" }
+      { "id": "d12-1", "m": 60, "t": "Kaggle Intermediate ML 第 5–7 课，拿证书", "d": "第 7 课「数据泄漏」是整个阶段最重要的一课。", "url": "https://www.kaggle.com/learn/intermediate-machine-learning" },
+      { "id": "d12-2", "m": 60, "t": "找 bug：数据泄漏", "d": "让 Claude 写一个完整的建模 notebook，故意埋一个数据泄漏且不告诉你。你拿验收清单把它找出来。" }
     ]},
     { "phase": 2, "tasks": [
-      { "id": "d13-1", "m": 150, "t": "Titanic 独立通关", "d": "不看任何教程：从读数据、处理缺失值、建模到提交，全部自己做，分数随意。卡住超过 20 分钟可以查文档，不能抄别人的 notebook。", "url": "https://www.kaggle.com/competitions/titanic" }
+      { "id": "d13-1", "m": 150, "t": "Titanic：你当技术负责人", "d": "代码全部让 AI 写，但每一步都由你做决定：用哪些特征、缺失值怎么处理、用什么模型、怎么评估。最后提交，并用验收清单逐条检查。", "url": "https://www.kaggle.com/competitions/titanic" }
     ]},
     { "phase": 2, "review": true, "tasks": [
       { "id": "d14-1", "m": 40, "t": "线性代数第 14 集 特征向量", "d": "", "url": "https://www.3blue1brown.com/topics/linear-algebra" },
       { "id": "d14-2", "m": 60, "t": "补齐本周没做完的", "d": "没有欠的话就休息。" },
-      { "id": "d14-3", "m": 15, "t": "周复盘发给 Claude", "d": "哪里卡住、哪里太简单、每天实际花了多久。" }
+      { "id": "d14-3", "m": 15, "t": "周复盘发给 Claude", "d": "" }
     ]},
     { "phase": 2, "tasks": [
-      { "id": "d15-1", "m": 40, "t": "3Blue1Brown 微积分第 1–2 集", "d": "", "url": "https://www.3blue1brown.com/topics/calculus" },
-      { "id": "d15-2", "m": 90, "t": "只用 NumPy 手写线性回归", "d": "造数据 y = 3x + 2 + 噪声，用梯度下降把 w、b 学出来，打印每 100 步的 loss。不许用 sklearn。" }
+      { "id": "d15-1", "m": 40, "t": "3Blue1Brown 微积分第 1–4 集", "d": "重点是链式法则，它就是反向传播的全部数学。", "url": "https://www.3blue1brown.com/topics/calculus" },
+      { "id": "d15-2", "m": 75, "t": "手写①：线性回归（这个阶段唯一一次手写）", "d": "只用 NumPy，用梯度下降拟合 y = 3x + 2 + 噪声，不许让 AI 写，可以问它概念。目的是亲手感受一次「学习」到底是什么。" }
     ]},
     { "phase": 2, "tasks": [
-      { "id": "d16-1", "m": 40, "t": "微积分第 3–4 集", "d": "导数公式，链式法则。链式法则就是后面反向传播的全部数学。", "url": "https://www.3blue1brown.com/topics/calculus" },
-      { "id": "d16-2", "m": 90, "t": "手写逻辑回归", "d": "随机生成两团二维点，用 sigmoid + 交叉熵 + 梯度下降分开它们，画出决策边界。" }
+      { "id": "d16-1", "m": 60, "t": "StatQuest 三个视频", "d": "Bias and Variance、Cross Validation、Decision Trees。", "url": "https://www.youtube.com/@statquest" },
+      { "id": "d16-2", "m": 60, "t": "调坏它，然后预测会怎样", "d": "把你的线性回归学习率调到 10 倍、100 倍。每次运行前先预测 loss 会怎么变，再验证。" }
     ]},
     { "phase": 2, "tasks": [
-      { "id": "d17-1", "m": 60, "t": "StatQuest 三个视频", "d": "Bias and Variance、Cross Validation、Decision Trees。", "url": "https://www.youtube.com/@statquest" },
-      { "id": "d17-2", "m": 60, "t": "sklearn 对照", "d": "用 sklearn 的 LinearRegression 和 LogisticRegression 跑昨天、前天的数据，结果应该和你手写的接近。" }
+      { "id": "d17-1", "m": 60, "t": "写项目需求文档", "d": "小项目：预测一个词下次会不会答对。你来写一页需求：目标、可用的数据、候选特征、评估指标、要比较的基线（比如「永远猜答对」）。写完让 Claude 挑毛病。" },
+      { "id": "d17-2", "m": 60, "t": "让 AI 实现，你逐行读懂", "d": "让 Claude 按你的需求写代码。读不懂的行就问，直到每一行都能讲出它在做什么。" }
     ]},
     { "phase": 2, "tasks": [
-      { "id": "d18-1", "m": 150, "t": "小项目：预测一个词下次会不会答对", "d": "从你的复习记录里造特征：距上次复习的天数、历史答错次数、词长等，目标是这次答对/答错。用 sklearn 训练一个模型。" }
+      { "id": "d18-1", "m": 120, "t": "验收小项目", "d": "用验收清单逐条检查：有没有用未来数据预测过去？是否比基线强？自己挑 5 个词手算核对。结论写成 5 句话。" }
     ]},
     { "phase": 2, "tasks": [
-      { "id": "d19-1", "m": 120, "t": "小项目：认真评估", "d": "5 折交叉验证，报告准确率和 AUC，再和「永远猜答对」的基线比较。你的模型赢了多少？" }
+      { "id": "d19-1", "m": 90, "t": "方向决策练习", "d": "你觉得这个模型还能怎么改进？列 3 个方向，各自估一下收益和代价，选一个让 AI 去做，看结果是否符合你的预期。" }
     ]},
     { "phase": 2, "tasks": [
-      { "id": "d20-1", "m": 60, "t": "写一页笔记", "d": "用你自己的话写：数据 → 特征 → 模型 → 评估，每一步做什么、容易错在哪。" },
-      { "id": "d20-2", "m": 40, "t": "3Blue1Brown 神经网络第 1–2 章", "d": "", "url": "https://www.3blue1brown.com/topics/neural-networks" }
+      { "id": "d20-1", "m": 60, "t": "用自己的话写 ML 流程", "d": "数据 → 特征 → 模型 → 评估，每一步最容易出什么错，你怎么发现。" },
+      { "id": "d20-2", "m": 40, "t": "3Blue1Brown 神经网络第 1–4 章", "d": "", "url": "https://www.3blue1brown.com/topics/neural-networks" }
     ]},
     { "phase": 2, "review": true, "tasks": [
       { "id": "d21-1", "m": 60, "t": "补齐本周没做完的", "d": "没有欠的话就休息。" },
-      { "id": "d21-2", "m": 15, "t": "周复盘发给 Claude", "d": "附上第 19 天小项目的分数。" }
+      { "id": "d21-2", "m": 15, "t": "周复盘发给 Claude", "d": "附上小项目的结论。" }
     ]},
 
     { "phase": 3, "tasks": [
-      { "id": "d22-1", "m": 40, "t": "神经网络第 3–4 章 反向传播", "d": "", "url": "https://www.3blue1brown.com/topics/neural-networks" },
-      { "id": "d22-2", "m": 90, "t": "Karpathy 第 1 集 micrograd（前 1/3）", "d": "视频边看边敲，每一段代码都在自己的 notebook 里跑通。", "url": "https://karpathy.ai/zero-to-hero.html" }
+      { "id": "d22-1", "m": 120, "t": "Karpathy 第 1 集 micrograd（前半）跟敲", "d": "这一阶段的手敲是故意安排的：只有亲手写过反向传播，以后才能看出 AI 的训练代码哪里不对。", "url": "https://karpathy.ai/zero-to-hero.html" }
     ]},
     { "phase": 3, "tasks": [
-      { "id": "d23-1", "m": 120, "t": "micrograd（中段）", "d": "跟敲到手动、自动反向传播都能跑通。", "url": "https://karpathy.ai/zero-to-hero.html" }
+      { "id": "d23-1", "m": 120, "t": "micrograd（后半）跟敲", "d": "训练出一个小 MLP。", "url": "https://karpathy.ai/zero-to-hero.html" }
     ]},
     { "phase": 3, "tasks": [
-      { "id": "d24-1", "m": 120, "t": "micrograd（后段）", "d": "训练出一个小 MLP，loss 降下来就算完成。", "url": "https://karpathy.ai/zero-to-hero.html" }
+      { "id": "d24-1", "m": 150, "t": "手写②：凭记忆重写 micrograd", "d": "关掉视频，从空文件写出 Value 类和 backward()，不许用 AI。整份课表里这一天最难，也最值。" }
     ]},
     { "phase": 3, "tasks": [
-      { "id": "d25-1", "m": 150, "t": "凭记忆重写 micrograd", "d": "关掉视频，从空文件写出 Value 类、加法乘法 tanh 和 backward()。这一天最难，也最值。卡住可以回看，但只看卡住的那一段。" }
+      { "id": "d25-1", "m": 90, "t": "PyTorch 基础：读懂即可", "d": "官方 Learn the Basics。代码不用敲，每段都用「先猜再跑」的方式过一遍。", "url": "https://pytorch.org/tutorials/beginner/basics/intro.html" },
+      { "id": "d25-2", "m": 45, "t": "找 bug：训练循环", "d": "让 Claude 写一个 PyTorch 训练循环，埋一个常见 bug（比如忘了 zero_grad、在 eval 时还开着 dropout），你来找。" }
     ]},
     { "phase": 3, "tasks": [
-      { "id": "d26-1", "m": 90, "t": "PyTorch：Tensors 与 Autograd", "d": "官方 Learn the Basics 的前两节。", "url": "https://pytorch.org/tutorials/beginner/basics/intro.html" },
-      { "id": "d26-2", "m": 45, "t": "用 PyTorch 验证你的 micrograd", "d": "同一个算式，你的梯度和 PyTorch 算出的梯度应该一致。" }
+      { "id": "d26-1", "m": 120, "t": "makemore 1：bigram（看懂，不敲）", "d": "看视频。之后让 Claude 把训练数据换成你词库的假名读音，生成 20 个「像日语」的假词。", "url": "https://karpathy.ai/zero-to-hero.html" }
     ]},
     { "phase": 3, "tasks": [
-      { "id": "d27-1", "m": 120, "t": "PyTorch Learn the Basics 剩余部分", "d": "Datasets、搭模型、优化循环、保存模型。", "url": "https://pytorch.org/tutorials/beginner/basics/intro.html" }
+      { "id": "d27-1", "m": 120, "t": "makemore 2：MLP（看懂，不敲）", "d": "看视频。让 AI 在假名数据上跑一遍，运行前先预测它的 loss 比 bigram 低多少。", "url": "https://karpathy.ai/zero-to-hero.html" }
     ]},
     { "phase": 3, "review": true, "tasks": [
       { "id": "d28-1", "m": 60, "t": "补齐本周没做完的", "d": "没有欠的话就休息。" },
-      { "id": "d28-2", "m": 15, "t": "周复盘发给 Claude", "d": "重点说第 25 天卡在哪里。" }
+      { "id": "d28-2", "m": 15, "t": "周复盘发给 Claude", "d": "重点说第 24 天卡在哪。" }
     ]},
     { "phase": 3, "tasks": [
-      { "id": "d29-1", "m": 100, "t": "Karpathy 第 2 集 makemore 1（前半）", "d": "bigram 计数模型。", "url": "https://karpathy.ai/zero-to-hero.html" }
+      { "id": "d29-1", "m": 120, "t": "设计实验，交给 AI 去跑", "d": "你来决定改什么（嵌入维度、层宽、学习率），先写下每组的预期，再让 Claude 跑出结果表。预期和结果差得远的那一组，要弄清楚为什么。" }
     ]},
     { "phase": 3, "tasks": [
-      { "id": "d30-1", "m": 100, "t": "makemore 1（后半）", "d": "把计数模型改写成神经网络。", "url": "https://karpathy.ai/zero-to-hero.html" }
+      { "id": "d30-1", "m": 120, "t": "makemore 3：激活值与 BatchNorm（看）", "d": "重点学会看「训练有没有出问题」的那些诊断图。", "url": "https://karpathy.ai/zero-to-hero.html" }
     ]},
     { "phase": 3, "tasks": [
-      { "id": "d31-1", "m": 120, "t": "换成日语：生成「像日语的假名词」", "d": "把训练数据从英文名字换成你词库里所有单词的假名读音，训练 bigram，生成 20 个不存在但看起来像日语的词。" }
+      { "id": "d31-1", "m": 150, "t": "手写③：Backprop Ninja 练习 1–2", "d": "手推反向传播，和 PyTorch 对答案，不许用 AI。", "url": "https://karpathy.ai/zero-to-hero.html" }
     ]},
     { "phase": 3, "tasks": [
-      { "id": "d32-1", "m": 100, "t": "Karpathy 第 3 集 makemore 2：MLP（前半）", "d": "", "url": "https://karpathy.ai/zero-to-hero.html" }
+      { "id": "d32-1", "m": 90, "t": "诊断练习", "d": "让 Claude 给你 3 张出了问题的训练曲线或激活分布图（梯度消失、学习率过大、过拟合），你来判断各是什么病、该怎么治。" }
     ]},
     { "phase": 3, "tasks": [
-      { "id": "d33-1", "m": 120, "t": "makemore 2（后半）+ 假名数据", "d": "在假名数据上跑 MLP 版，比较它和 bigram 的 loss。", "url": "https://karpathy.ai/zero-to-hero.html" }
+      { "id": "d33-1", "m": 120, "t": "Let's build GPT（前半）：看", "d": "self-attention 是 Claude 这类大模型的核心，慢慢看。", "url": "https://karpathy.ai/zero-to-hero.html" }
     ]},
     { "phase": 3, "tasks": [
-      { "id": "d34-1", "m": 60, "t": "读第一篇论文：Bengio 2003（前 4 页）", "d": "就是你昨天写的那个模型的原始论文。看不懂的公式跳过。", "url": "https://www.jmlr.org/papers/volume3/bengio03a/bengio03a.pdf" },
-      { "id": "d34-2", "m": 60, "t": "调参实验表", "d": "改嵌入维度、隐藏层大小、学习率，每组记下验证集 loss，做成表格。" }
+      { "id": "d34-1", "m": 150, "t": "手写④：跟敲一个最小的 GPT", "d": "跟着视频后半段完整敲出来。这是最后一次手写。", "url": "https://karpathy.ai/zero-to-hero.html" }
     ]},
     { "phase": 3, "review": true, "tasks": [
-      { "id": "d35-1", "m": 60, "t": "补齐本周没做完的", "d": "没有欠的话就休息。" },
-      { "id": "d35-2", "m": 15, "t": "周复盘发给 Claude", "d": "附上调参表。" }
+      { "id": "d35-1", "m": 40, "t": "3Blue1Brown Transformer / Attention 两章", "d": "", "url": "https://www.3blue1brown.com/topics/neural-networks" },
+      { "id": "d35-2", "m": 15, "t": "周复盘发给 Claude", "d": "" }
     ]},
     { "phase": 3, "tasks": [
-      { "id": "d36-1", "m": 100, "t": "Karpathy 第 4 集 激活值与 BatchNorm（前半）", "d": "", "url": "https://karpathy.ai/zero-to-hero.html" }
+      { "id": "d36-1", "m": 150, "t": "指挥 AI 训练日语小 GPT", "d": "你定数据（词库例句）、模型大小、训练多久，让 Claude 在 Colab 上跑起来。生成结果不像日语的话，你来诊断原因。" }
     ]},
     { "phase": 3, "tasks": [
-      { "id": "d37-1", "m": 100, "t": "第 4 集（后半）", "d": "", "url": "https://karpathy.ai/zero-to-hero.html" }
+      { "id": "d37-1", "m": 120, "t": "Karpathy 分词器那一集（看）", "d": "理解为什么日语比英语更费 token。", "url": "https://karpathy.ai/zero-to-hero.html" }
     ]},
     { "phase": 3, "tasks": [
-      { "id": "d38-1", "m": 150, "t": "第 5 集 Backprop Ninja：练习 1–2", "d": "自己推导、手写反向传播，和 PyTorch 对答案。", "url": "https://karpathy.ai/zero-to-hero.html" }
+      { "id": "d38-1", "m": 90, "t": "写「我理解的 GPT」", "d": "不贴代码，用画图加文字讲清楚一个字从输入到输出经过了什么。发到 GitHub，这是你的第一件作品。" }
     ]},
-    { "phase": 3, "tasks": [
-      { "id": "d39-1", "m": 150, "t": "Backprop Ninja：练习 3–4", "d": "", "url": "https://karpathy.ai/zero-to-hero.html" }
+
+    { "phase": 4, "tasks": [
+      { "id": "d39-1", "m": 150, "t": "读真实项目：nanoGPT", "d": "不跑，只读。画出 train.py 的流程图：数据从哪里进、在哪里算 loss、在哪里更新参数、在哪里存模型。", "url": "https://github.com/karpathy/nanoGPT" }
     ]},
-    { "phase": 3, "tasks": [
-      { "id": "d40-1", "m": 120, "t": "第 6 集 WaveNet", "d": "", "url": "https://karpathy.ai/zero-to-hero.html" }
+    { "phase": 4, "tasks": [
+      { "id": "d40-1", "m": 120, "t": "nanoGPT：回答 5 个问题", "d": "让 Claude 就 nanoGPT 出 5 道「改了 X 会怎样」的题，你只靠读代码作答，再让它批改。" }
     ]},
-    { "phase": 3, "tasks": [
-      { "id": "d41-1", "m": 90, "t": "三个模型对比", "d": "在假名数据上比较 bigram、MLP、WaveNet 的验证集 loss 和生成样例，写成一张表。" }
+    { "phase": 4, "tasks": [
+      { "id": "d41-1", "m": 150, "t": "fast.ai 第 1–2 课", "d": "看视频。部署那一步让 AI 帮你做，目标是拿到一个别人能打开的模型网址。", "url": "https://course.fast.ai" }
     ]},
-    { "phase": 3, "review": true, "tasks": [
+    { "phase": 4, "review": true, "tasks": [
       { "id": "d42-1", "m": 60, "t": "补齐本周没做完的", "d": "没有欠的话就休息。" },
       { "id": "d42-2", "m": 15, "t": "周复盘发给 Claude", "d": "" }
     ]},
-    { "phase": 3, "tasks": [
-      { "id": "d43-1", "m": 100, "t": "Let's build GPT（前段）", "d": "数据准备，bigram 基线。", "url": "https://karpathy.ai/zero-to-hero.html" }
+    { "phase": 4, "tasks": [
+      { "id": "d43-1", "m": 120, "t": "Hugging Face LLM 课程第 1–2 章", "d": "", "url": "https://huggingface.co/learn/llm-course" }
     ]},
-    { "phase": 3, "tasks": [
-      { "id": "d44-1", "m": 120, "t": "Let's build GPT：self-attention", "d": "这一段是现代大模型（包括 Claude）的核心，慢慢看。", "url": "https://karpathy.ai/zero-to-hero.html" }
+    { "phase": 4, "tasks": [
+      { "id": "d44-1", "m": 120, "t": "第一次调用 Claude API", "d": "让 Claude 写一个脚本，给 10 个日语单词各生成一句例句。你来验收：例句是否自然、难度是否合适，再改提示词让它变好。这就是 vibe 时代的核心工作方式。", "url": "https://docs.claude.com" }
     ]},
-    { "phase": 3, "tasks": [
-      { "id": "d45-1", "m": 120, "t": "Let's build GPT：多头、残差、LayerNorm", "d": "", "url": "https://karpathy.ai/zero-to-hero.html" }
+    { "phase": 4, "tasks": [
+      { "id": "d45-1", "m": 120, "t": "精读 Attention Is All You Need", "d": "你已经亲手写过它了，这次应该能看懂大部分。", "url": "https://arxiv.org/abs/1706.03762" }
     ]},
-    { "phase": 3, "tasks": [
-      { "id": "d46-1", "m": 90, "t": "Let's build GPT：跑完训练", "d": "", "url": "https://karpathy.ai/zero-to-hero.html" },
-      { "id": "d46-2", "m": 40, "t": "3Blue1Brown Transformer / Attention 两章", "d": "换个角度再理解一遍 attention。", "url": "https://www.3blue1brown.com/topics/neural-networks" }
+    { "phase": 4, "tasks": [
+      { "id": "d46-1", "m": 90, "t": "读 Hugging Face 微调章节", "d": "", "url": "https://huggingface.co/learn/llm-course" },
+      { "id": "d46-2", "m": 30, "t": "找 bug：微调脚本", "d": "让 Claude 写一个微调脚本并埋一个 bug（比如标签错位、测试集参与训练），你来找。" }
     ]},
-    { "phase": 3, "tasks": [
-      { "id": "d47-1", "m": 150, "t": "训练一个会写日语的小 GPT", "d": "收集日语文本（你词库的例句就够起步），在 Google Colab 的免费 GPU 上训练，生成一段日语。" }
+    { "phase": 4, "tasks": [
+      { "id": "d47-1", "m": 90, "t": "项目：日语句子难度分级，写需求", "d": "目标、数据来源（收集日的语法题、例句、JLPT 级别）、指标、基线。写完让 Claude 挑毛病。" }
     ]},
-    { "phase": 3, "tasks": [
-      { "id": "d48-1", "m": 120, "t": "Karpathy 分词器那一集（前半）", "d": "理解为什么大模型数不清字母，以及日语为什么费 token。", "url": "https://karpathy.ai/zero-to-hero.html" }
+    { "phase": 4, "tasks": [
+      { "id": "d48-1", "m": 150, "t": "项目：让 AI 实现，你来审", "d": "代码全部由 Claude 写。你逐段读，确认数据切分没有泄漏、标签没有错位。" }
     ]},
-    { "phase": 3, "review": true, "tasks": [
-      { "id": "d49-1", "m": 90, "t": "写一篇「我从零写了 GPT」", "d": "写给一年前的自己看。放到 GitHub 上，这是你的第一件作品。" },
+    { "phase": 4, "review": true, "tasks": [
+      { "id": "d49-1", "m": 120, "t": "项目：验收 + README", "d": "看混淆矩阵：最容易混淆的是哪两个级别，为什么？写好 README 发到 GitHub。" },
       { "id": "d49-2", "m": 15, "t": "周复盘发给 Claude", "d": "" }
     ]},
 
-    { "phase": 4, "tasks": [
-      { "id": "d50-1", "m": 150, "t": "fast.ai 第 1 课", "d": "看视频，跑通 is-it-a-bird notebook。", "url": "https://course.fast.ai" }
-    ]},
-    { "phase": 4, "tasks": [
-      { "id": "d51-1", "m": 150, "t": "fast.ai 第 2 课：部署", "d": "把一个图像分类模型部署到 Hugging Face Spaces，拿到一个别人能打开的网址。", "url": "https://course.fast.ai" }
-    ]},
-    { "phase": 4, "tasks": [
-      { "id": "d52-1", "m": 120, "t": "fast.ai 第 3 课", "d": "", "url": "https://course.fast.ai" }
-    ]},
-    { "phase": 4, "tasks": [
-      { "id": "d53-1", "m": 150, "t": "fast.ai 第 4 课：NLP", "d": "用 Hugging Face transformers 微调一个文本模型。", "url": "https://course.fast.ai" }
-    ]},
-    { "phase": 4, "tasks": [
-      { "id": "d54-1", "m": 120, "t": "Hugging Face LLM 课程第 1–2 章", "d": "", "url": "https://huggingface.co/learn/llm-course" }
-    ]},
-    { "phase": 4, "tasks": [
-      { "id": "d55-1", "m": 120, "t": "第一次调用 Claude API", "d": "写一个 Python 脚本：给 10 个日语单词各生成一句例句，再让模型自评难度。读官方文档的 Quickstart。", "url": "https://docs.claude.com" }
-    ]},
-    { "phase": 4, "review": true, "tasks": [
-      { "id": "d56-1", "m": 60, "t": "补齐本周没做完的", "d": "没有欠的话就休息。" },
-      { "id": "d56-2", "m": 15, "t": "周复盘发给 Claude", "d": "" }
-    ]},
-    { "phase": 4, "tasks": [
-      { "id": "d57-1", "m": 120, "t": "fast.ai 第 5 课", "d": "从零写一个模型，和之前学的串起来。", "url": "https://course.fast.ai" }
-    ]},
-    { "phase": 4, "tasks": [
-      { "id": "d58-1", "m": 120, "t": "精读 Attention Is All You Need", "d": "你已经亲手写过它了，这次应该能看懂大部分。", "url": "https://arxiv.org/abs/1706.03762" }
-    ]},
-    { "phase": 4, "tasks": [
-      { "id": "d59-1", "m": 150, "t": "Hugging Face LLM 课程第 3 章：微调", "d": "", "url": "https://huggingface.co/learn/llm-course" }
-    ]},
-    { "phase": 4, "tasks": [
-      { "id": "d60-1", "m": 150, "t": "项目：日语句子难度分级（准备数据）", "d": "收集带 JLPT 级别的句子（收集日的语法题、例句可以用），整理成「句子, 级别」的数据集，划分训练集和测试集。" }
-    ]},
-    { "phase": 4, "tasks": [
-      { "id": "d61-1", "m": 150, "t": "项目：微调并评估", "d": "微调一个小型日语 BERT 类模型，报告测试集准确率和混淆矩阵。" }
-    ]},
-    { "phase": 4, "tasks": [
-      { "id": "d62-1", "m": 90, "t": "项目：写 README，发到 GitHub", "d": "说清楚问题、数据、方法、结果、局限。" }
-    ]},
-    { "phase": 4, "review": true, "tasks": [
-      { "id": "d63-1", "m": 60, "t": "补齐本周没做完的", "d": "没有欠的话就休息。" },
-      { "id": "d63-2", "m": 15, "t": "周复盘发给 Claude", "d": "" }
-    ]},
-
     { "phase": 5, "tasks": [
-      { "id": "d64-1", "m": 120, "t": "读懂 FSRS", "d": "看 open-spaced-repetition 的算法说明，弄懂 D、S、R 三个量。你天天在用它，现在去看它怎么算。", "url": "https://github.com/open-spaced-repetition/fsrs4anki/wiki" }
+      { "id": "d50-1", "m": 120, "t": "读懂 FSRS", "d": "弄懂 D、S、R 三个量。你天天在用它，现在去看它怎么算。", "url": "https://github.com/open-spaced-repetition/fsrs4anki/wiki" }
     ]},
     { "phase": 5, "tasks": [
-      { "id": "d65-1", "m": 150, "t": "导出复习日志", "d": "从 live.db 导出每一次作答（词、时间、评分），整理成按词分组的时间序列。" }
+      { "id": "d51-1", "m": 120, "t": "毕业项目：写研究计划", "d": "问题：一个序列模型能不能比 FSRS 更准地预测你会不会忘？写清楚数据、怎么按时间切分、用什么指标、怎样才算赢。让 Claude 挑毛病，改到它挑不出来为止。" }
     ]},
     { "phase": 5, "tasks": [
-      { "id": "d66-1", "m": 150, "t": "基线：FSRS 预测得有多准", "d": "对每次复习，用 FSRS 算出的回忆概率和实际结果比，计算 log loss 和 AUC。" }
+      { "id": "d52-1", "m": 150, "t": "让 AI 导出数据，你验收", "d": "把复习日志导出成按词分组的时间序列。随机抽 5 个词，和 App 里的记录逐条核对。" }
     ]},
     { "phase": 5, "tasks": [
-      { "id": "d67-1", "m": 150, "t": "挑战者：用 GRU 预测回忆", "d": "用 PyTorch 写一个 GRU，输入一个词的复习历史，输出这次答对的概率。" }
+      { "id": "d53-1", "m": 150, "t": "基线：FSRS 预测得有多准", "d": "让 AI 算出 FSRS 的 log loss 和 AUC。你来检查：它用的是否只有当时已知的信息？" }
     ]},
     { "phase": 5, "tasks": [
-      { "id": "d68-1", "m": 150, "t": "对比和调参", "d": "按时间切分训练集和测试集（不能用未来预测过去），GRU 和 FSRS 正面比一比。" }
+      { "id": "d54-1", "m": 150, "t": "挑战者：GRU", "d": "由你决定模型的输入特征和大小，让 AI 实现。训练前先写下你预测的结果。" }
     ]},
     { "phase": 5, "tasks": [
-      { "id": "d69-1", "m": 120, "t": "写研究报告", "d": "不管谁赢，都写清楚为什么。这是你简历上最有分量的一项。" }
+      { "id": "d55-1", "m": 150, "t": "对比 + 找出自己的错", "d": "GRU 和 FSRS 正面比较。结果如果好得可疑，先怀疑泄漏，用验收清单全部过一遍。" }
     ]},
     { "phase": 5, "review": true, "tasks": [
-      { "id": "d70-1", "m": 30, "t": "把整份课表的完成情况发给 Claude", "d": "让它根据你的进度和兴趣排下一阶段（求职准备 / 更深的 LLM / 做产品）。" }
+      { "id": "d56-1", "m": 120, "t": "写研究报告", "d": "不管谁赢都写清楚为什么。这是你简历上最有分量的一项。" },
+      { "id": "d56-2", "m": 30, "t": "把整份课表的完成情况发给 Claude", "d": "让它根据你的进度和兴趣排下一阶段（求职准备 / 更深的 LLM / 做产品）。" }
     ]}
   ]
 }
