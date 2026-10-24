@@ -39,7 +39,7 @@ import { ZooProgressPanel } from "./ZooProgressPanel";
 import { StudyFocusIntro } from "./StudyFocusIntro";
 import { useZoomOpen } from "./ZoomOpen";
 import { pickCapyTools } from "./capy-tool-selection";
-import { isStudyFocusArmed, setStudyFocusArmed } from "../lib/study-focus";
+import { dismissStudyFocusNudge, isStudyFocusArmed, isStudyFocusBoosted, isStudyFocusLocked, setStudyFocusArmed, shouldNudgeStudyFocus, STUDY_FOCUS_BOOST } from "../lib/study-focus";
 import { scrollPageToTop } from "../lib/touch-adapter";
 import "./ZooHome.css";
 
@@ -117,6 +117,9 @@ export function ZooHome({
   const [modeSheetOpen, setModeSheetOpen] = useState(false);
   const [focusArmed, setFocusArmed] = useState(isStudyFocusArmed);
   const [focusIntroOpen, setFocusIntroOpen] = useState(false);
+  const [focusBoosted, setFocusBoosted] = useState(isStudyFocusBoosted);
+  // 没开倒计时的人，主页顺手问一句；拒绝后隔三天再问。只是大卡下面一张小条，不挡任何入口。
+  const [focusNudge, setFocusNudge] = useState(shouldNudgeStudyFocus);
   // 每日量在设置页也能改，所以跟着 PREFERENCES_EVENT 走，别只在挂载时读一次
   const [goals, setGoals] = useState(() => getStudyPreferences());
   // 更新日的新报告提示。只在这一份报告未读、且还在发布窗口内时为真。
@@ -384,12 +387,13 @@ export function ZooHome({
               role="checkbox"
               aria-label="启用倒计时学习"
               aria-checked={focusArmed}
-              onClick={() => { setStudyFocusArmed(!focusArmed); setFocusArmed(!focusArmed); }}
+              disabled={isStudyFocusLocked()}
+              onClick={() => { setStudyFocusArmed(!focusArmed); setFocusArmed(!focusArmed); setFocusBoosted(false); setFocusNudge(false); }}
             >
               <span className="zoo-focus-box" aria-hidden="true">{focusArmed && <Check size={11} strokeWidth={3.2} />}</span>
             </button>
             <button className="zoo-focus-label" type="button" onClick={() => setFocusIntroOpen(true)}>
-              <Timer size={12} aria-hidden="true" /> 倒计时学习
+              <Timer size={12} aria-hidden="true" /> 倒计时学习{focusBoosted && <b className="zoo-focus-boost"> ×{STUDY_FOCUS_BOOST}</b>}
             </button>
           </div>
           <button
@@ -401,10 +405,31 @@ export function ZooHome({
           </button>
         </div>
 
+        {focusNudge && !focusArmed && (
+          <div className="zoo-focus-nudge" role="dialog" aria-label="开启倒计时学习">
+            <Timer size={18} aria-hidden="true" className="zoo-focus-nudge-icon" />
+            <span className="zoo-focus-nudge-text">
+              <b>开倒计时学习？</b>
+              <span>每专注 10 分钟领一次柚子，现在开启奖励 <b>×{STUDY_FOCUS_BOOST}</b></span>
+            </span>
+            <button
+              type="button"
+              className="zoo-focus-nudge-yes"
+              onClick={() => { setStudyFocusArmed(true, true); setFocusArmed(true); setFocusBoosted(true); setFocusNudge(false); }}
+            >开启</button>
+            <button
+              type="button"
+              className="zoo-focus-nudge-no"
+              aria-label="不用了"
+              onClick={() => { dismissStudyFocusNudge(); setFocusNudge(false); }}
+            >×</button>
+          </div>
+        )}
+
         {focusIntroOpen && (
           <StudyFocusIntro
             onCancel={() => setFocusIntroOpen(false)}
-            onConfirm={() => { setStudyFocusArmed(true); setFocusArmed(true); setFocusIntroOpen(false); }}
+            onConfirm={() => { setStudyFocusArmed(true); setFocusArmed(true); setFocusIntroOpen(false); setFocusNudge(false); }}
           />
         )}
 

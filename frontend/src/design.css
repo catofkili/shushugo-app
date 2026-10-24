@@ -1235,3 +1235,13 @@ button.fin-row:hover { background: var(--ds-inset-2); }
 /* 组队成员称号：浅底主色字；窄屏可换行，保留完整称号与右侧加油按钮。 */
 .zoo-tm-name-line { flex-wrap: wrap; }
 .zoo-tm-title { flex: none; max-width: 100%; padding: 2px 7px; border-radius: var(--ds-radius-pill); background: var(--ds-primary-tint); color: var(--ds-primary-ink); font-size: 11px; font-weight: 700; line-height: 1.5; white-space: nowrap; }
+/* 主页「开倒计时」邀请：大卡下面一条，不是遮罩弹窗（2026-10-24） */
+[data-theme] .zoo-focus-boost { color: var(--ds-primary-deep, #7a4a20); font-weight: 850; }
+[data-theme] .zoo-focus-nudge { display: flex; align-items: center; gap: 10px; margin-top: 10px; padding: 10px 8px 10px 12px; border-radius: 16px; background: color-mix(in srgb, var(--ds-primary) 12%, var(--ds-surface)); box-shadow: var(--ds-shadow); color: var(--ds-ink); animation: zoo-focus-nudge-in .28s ease-out; }
+[data-theme] .zoo-focus-nudge-icon { flex: none; color: var(--ds-primary-deep, #7a4a20); }
+[data-theme] .zoo-focus-nudge-text { display: flex; flex-direction: column; flex: 1; min-width: 0; font-size: 12px; line-height: 1.45; color: var(--ds-ink-2); }
+[data-theme] .zoo-focus-nudge-text > b { font-size: 14px; color: var(--ds-ink); }
+[data-theme] .zoo-focus-nudge-text span b { color: var(--ds-primary-deep, #7a4a20); }
+[data-theme] .zoo-focus-nudge-yes { flex: none; border: 0; border-radius: 999px; padding: 7px 14px; background: var(--ds-primary); color: var(--ds-on-primary, #fff); font-size: 13px; font-weight: 800; }
+[data-theme] .zoo-focus-nudge-no { flex: none; border: 0; background: transparent; color: var(--ds-ink-2); font-size: 18px; line-height: 1; padding: 4px 6px; }
+@keyframes zoo-focus-nudge-in { from { opacity: 0; transform: translateY(-4px); } }

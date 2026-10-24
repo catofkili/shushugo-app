@@ -55,7 +55,7 @@ import { warmConfusionGroups } from "../lib/confusion-groups";
 import { yieldToPaint } from "../lib/yield-to-paint";
 import { CapybaraWalk } from "../components/CapybaraMascot";
 import { accrueStudyTime, createStudyClock, drainStudySeconds, noteStudyInteraction, STUDY_IDLE_LIMIT_MS } from "../lib/study-clock";
-import { claimStudyFocusReward, continueStudyFocus, enterStudyFocus, finishStudyFocusAtDailyCompletion, getStudyFocusSnapshot, isStudyFocusArmed, recordStudyFocusAnswer, recordStudyFocusTime, leaveStudyFocus, resumeStudyFocus, sameStudyFocusState, setStudyFocusArmed, startStudyFocus, stopStudyFocus, STUDY_FOCUS_BASELINE_DAYS, STUDY_FOCUS_MIN_WORDS, STUDY_FOCUS_WINDOW_MS, undoStudyFocusAnswer, type StudyFocusSnapshot } from "../lib/study-focus";
+import { claimStudyFocusReward, isStudyFocusLocked, continueStudyFocus, enterStudyFocus, finishStudyFocusAtDailyCompletion, getStudyFocusSnapshot, isStudyFocusArmed, recordStudyFocusAnswer, recordStudyFocusTime, leaveStudyFocus, resumeStudyFocus, sameStudyFocusState, setStudyFocusArmed, startStudyFocus, stopStudyFocus, STUDY_FOCUS_BASELINE_DAYS, STUDY_FOCUS_MIN_WORDS, STUDY_FOCUS_WINDOW_MS, undoStudyFocusAnswer, type StudyFocusSnapshot } from "../lib/study-focus";
 import { useStudyActivity, useStudyBreakTabBar } from "../hooks/useStudyActivity";
 
 import { SpellingCardView } from "../features/spelling/SpellingCardView";
@@ -1583,7 +1583,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
                 <p className="study-focus-chest-hint">先领取本段奖励，再选择之后的学习方式。</p>
               )}
               <div className="study-focus-actions">
-                <button className="study-focus-secondary" onClick={stopFocusCountdown} disabled={summary?.qualified && reward > 0 && !focusSnapshot.rewardClaimed}>之后不要倒计时</button>
+                {!isStudyFocusLocked() && <button className="study-focus-secondary" onClick={stopFocusCountdown} disabled={summary?.qualified && reward > 0 && !focusSnapshot.rewardClaimed}>之后不要倒计时</button>}
                 <button className="study-focus-primary" onClick={continueFocusCountdown} disabled={summary?.qualified && reward > 0 && !focusSnapshot.rewardClaimed}>
                   继续倒计时
                 </button>

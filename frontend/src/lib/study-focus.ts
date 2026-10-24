@@ -21,16 +21,47 @@ export const STUDY_FOCUS_MIN_WORDS = YUZU.focusMinimumWords;
 /** 对比只看最近这么多天的基线：半年前的自己不是「平时」。 */
 export const STUDY_FOCUS_BASELINE_DAYS = 30;
 const ARMED_KEY = "mn-study-focus-armed";
+const BOOST_KEY = "mn-study-focus-boost";
+const NUDGE_KEY = "mn-study-focus-nudge-at";
+/** 从主页自动弹出的邀请里开启的，专注柚子按 1.5 倍发（用户 2026-10-24 定的）；取消勾选就失效。 */
+export const STUDY_FOCUS_BOOST = 1.5;
+/** 邀请被点「不用了」之后隔这么久才再问。 */
+export const STUDY_FOCUS_NUDGE_GAP_MS = 3 * 86_400_000;
+
+/**
+ * 作者个人的 5173：倒计时永远开着、关不掉。只认 dev server + 本机 frontend/.env.local
+ * 里的 VITE_STUDY_FOCUS_LOCKED=1（.env.local 已被 gitignore，不进仓库）；生产构建和小程序里 DEV 恒为 false，整段失效。
+ */
+export const isStudyFocusLocked = (): boolean =>
+  import.meta.env.DEV && import.meta.env.VITE_STUDY_FOCUS_LOCKED === "1";
 
 /** 主页那个勾：这台设备上进背词页时要不要自动开倒计时。设备偏好，不同步。 */
 export const isStudyFocusArmed = (): boolean => {
+  if (isStudyFocusLocked()) return true;
   try { return localStorage.getItem(ARMED_KEY) === "1"; } catch { return false; }
 };
-export const setStudyFocusArmed = (armed: boolean): void => {
+/** boost 只在从自动邀请开启时传 true；手动勾上不带加成，取消勾选连加成一起清掉。 */
+export const setStudyFocusArmed = (armed: boolean, boost = false): void => {
+  if (!armed && isStudyFocusLocked()) return;
   try {
     if (armed) localStorage.setItem(ARMED_KEY, "1");
     else localStorage.removeItem(ARMED_KEY);
+    if (armed && boost) localStorage.setItem(BOOST_KEY, "1");
+    else if (!armed) localStorage.removeItem(BOOST_KEY);
   } catch { /* 存不下就只在这一次生效 */ }
+};
+export const isStudyFocusBoosted = (): boolean => {
+  try { return isStudyFocusArmed() && localStorage.getItem(BOOST_KEY) === "1"; } catch { return false; }
+};
+const focusMultiplier = (): number => isStudyFocusBoosted() ? STUDY_FOCUS_BOOST : 1;
+
+/** 主页要不要弹「开启倒计时」邀请：没开、没锁，且上次被拒绝已过 STUDY_FOCUS_NUDGE_GAP_MS。 */
+export const shouldNudgeStudyFocus = (nowMs = Date.now()): boolean => {
+  if (isStudyFocusArmed()) return false;
+  try { return nowMs - Number(localStorage.getItem(NUDGE_KEY) ?? 0) >= STUDY_FOCUS_NUDGE_GAP_MS; } catch { return false; }
+};
+export const dismissStudyFocusNudge = (nowMs = Date.now()): void => {
+  try { localStorage.setItem(NUDGE_KEY, String(nowMs)); } catch { /* 存不下就下次再问 */ }
 };
 
 type Answers = Record<string, WordAnswer>;
@@ -169,7 +200,7 @@ const previousFocusBaselines = (source: string, startedAt: number): StudyFocusCo
 
 const cachedNextReward = (current: Runtime, day: string): number => {
   if (current.reward?.day !== day) current.reward = { day, value: nextStudyFocusYuzu(day) };
-  return current.reward.value;
+  return Math.round(current.reward.value * focusMultiplier());
 };
 
 export const getStudyFocusSnapshot = (nowMs = Date.now()): StudyFocusSnapshot => {
@@ -300,7 +331,7 @@ export const claimStudyFocusReward = (): number => {
   if (!current.source || !current.focus || !current.summary?.qualified || current.rewardClaimed) return 0;
   const now = getStudyFocusSnapshot().nextReward;
   if (now <= 0) return 0;
-  const earned = claimStudyFocusYuzu(current.focus.id);
+  const earned = claimStudyFocusYuzu(current.focus.id, focusMultiplier());
   current.rewardClaimed = true;
   return earned;
 };

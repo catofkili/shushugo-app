@@ -116,7 +116,8 @@ export const nextStudyFocusYuzu = (day = today()): number => {
 };
 
 /** 专注窗口至少 5 分钟且背过 10 个词，才能从休息页或每日完成宝箱领取。 */
-export const claimStudyFocusYuzu = (windowId: string): number => {
+/** multiplier：自动邀请开启的倒计时按 1.5 倍发；账本 key 不变，一档仍只能领一次。 */
+export const claimStudyFocusYuzu = (windowId: string, multiplier = 1): number => {
   ensureYuzuScale();
   const window = rowsFor(`SELECT completed_at FROM study_focus_windows
     WHERE id = ? AND kind = 'focus' AND active_ms >= ? AND words >= ?`,
@@ -128,7 +129,7 @@ export const claimStudyFocusYuzu = (windowId: string): number => {
   db.run("SAVEPOINT claim_study_focus");
   try {
     const tier = firstValue<number>("SELECT COUNT(*) FROM yuzu_ledger WHERE kind = 'focus' AND day = ?", [day], 0);
-    const amount = YUZU.focus[tier] ?? 0;
+    const amount = Math.round((YUZU.focus[tier] ?? 0) * multiplier);
     if (amount > 0) {
       // 日 + 档位是稳定身份。两台设备同时领同一档时同步取并集，不会翻倍。
       db.run("INSERT OR IGNORE INTO yuzu_ledger(kind, key, amount, day) VALUES ('focus', ?, ?, ?)", [`${day}:${tier + 1}`, amount, day]);
