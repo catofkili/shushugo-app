@@ -1,0 +1,255 @@
+{
+  "title": "转码 ML 课表",
+  "phases": {
+    "1": "Python 与数据工具",
+    "2": "经典机器学习 + 数学直觉",
+    "3": "从零写神经网络（Karpathy）",
+    "4": "实用深度学习与大模型",
+    "5": "毕业项目：用你的复习记录挑战 FSRS"
+  },
+  "days": [
+    { "phase": 1, "tasks": [
+      { "id": "d01-1", "m": 45, "t": "装环境", "d": "装 uv 和 VS Code 的 Python/Jupyter 插件；终端里 uv init ml && cd ml && uv add numpy pandas matplotlib jupyter scikit-learn；新建 notebook 打印 hello 就算完成。" },
+      { "id": "d01-2", "m": 15, "t": "注册 Kaggle 账号", "d": "后面大部分练习都在上面做。", "url": "https://www.kaggle.com" },
+      { "id": "d01-3", "m": 60, "t": "Kaggle Python 第 1–2 课", "d": "每课的练习题全部做完（绿勾）才算完成。", "url": "https://www.kaggle.com/learn/python" }
+    ]},
+    { "phase": 1, "tasks": [
+      { "id": "d02-1", "m": 90, "t": "Kaggle Python 第 3–4 课", "d": "练习全部绿勾。", "url": "https://www.kaggle.com/learn/python" },
+      { "id": "d02-2", "m": 45, "t": "用 Python 重写一个你熟悉的 TS 函数", "d": "从收集日里挑一个小函数（比如日期格式化、柚子计算），写成 Python 并跑通。目的是感受两种语言的差别。" }
+    ]},
+    { "phase": 1, "tasks": [
+      { "id": "d03-1", "m": 120, "t": "Kaggle Python 第 5–7 课", "d": "学完拿到 Kaggle 的 Python 证书。", "url": "https://www.kaggle.com/learn/python" }
+    ]},
+    { "phase": 1, "tasks": [
+      { "id": "d04-1", "m": 90, "t": "NumPy 新手入门", "d": "跟着官方 absolute basics 把每段代码在 notebook 里敲一遍。", "url": "https://numpy.org/doc/stable/user/absolute_beginners.html" },
+      { "id": "d04-2", "m": 30, "t": "NumPy 小练习", "d": "不写任何 for 循环：生成 1000 个随机数，算均值、标准差，再归一化成均值 0、标准差 1。" }
+    ]},
+    { "phase": 1, "tasks": [
+      { "id": "d05-1", "m": 90, "t": "Kaggle Pandas 第 1–3 课", "d": "练习全部绿勾。", "url": "https://www.kaggle.com/learn/pandas" },
+      { "id": "d05-2", "m": 45, "t": "用 pandas 打开你自己的学习数据", "d": "用 sqlite3 + pandas.read_sql 读收集日的本地库（frontend/.local/live.db），列出所有表和每张表的行数。" }
+    ]},
+    { "phase": 1, "tasks": [
+      { "id": "d06-1", "m": 90, "t": "Kaggle Pandas 第 4–6 课", "d": "学完拿证书。", "url": "https://www.kaggle.com/learn/pandas" },
+      { "id": "d06-2", "m": 60, "t": "给自己的复习记录做 3 个统计", "d": "每天复习了多少张、平均答对率、错得最多的 10 个词。" }
+    ]},
+    { "phase": 1, "review": true, "tasks": [
+      { "id": "d07-1", "m": 45, "t": "画第一张图", "d": "用 matplotlib 画出你每天复习量的折线图。" },
+      { "id": "d07-2", "m": 60, "t": "补齐本周没做完的", "d": "没有欠的话就休息。" },
+      { "id": "d07-3", "m": 15, "t": "周复盘发给 Claude", "d": "写 3 句话：哪里卡住、哪里太简单、每天实际花了多久。发给 Claude，让它调整下周的课表。" }
+    ]},
+
+    { "phase": 2, "tasks": [
+      { "id": "d08-1", "m": 45, "t": "3Blue1Brown 线性代数第 1–3 集", "d": "向量、线性组合、矩阵即变换。只看，不用记笔记。", "url": "https://www.3blue1brown.com/topics/linear-algebra" },
+      { "id": "d08-2", "m": 75, "t": "Kaggle Intro to ML 第 1–3 课", "d": "练习全部绿勾。", "url": "https://www.kaggle.com/learn/intro-to-machine-learning" }
+    ]},
+    { "phase": 2, "tasks": [
+      { "id": "d09-1", "m": 30, "t": "线性代数第 4–5 集", "d": "矩阵乘法，三维变换。", "url": "https://www.3blue1brown.com/topics/linear-algebra" },
+      { "id": "d09-2", "m": 75, "t": "Kaggle Intro to ML 第 4–5 课", "d": "重点理解过拟合和欠拟合。", "url": "https://www.kaggle.com/learn/intro-to-machine-learning" }
+    ]},
+    { "phase": 2, "tasks": [
+      { "id": "d10-1", "m": 90, "t": "Kaggle Intro to ML 第 6–7 课 + 第一次提交", "d": "在房价比赛里交出第一份预测，截图你的排名。", "url": "https://www.kaggle.com/learn/intro-to-machine-learning" },
+      { "id": "d10-2", "m": 15, "t": "线性代数第 6 集 行列式", "d": "", "url": "https://www.3blue1brown.com/topics/linear-algebra" }
+    ]},
+    { "phase": 2, "tasks": [
+      { "id": "d11-1", "m": 45, "t": "线性代数第 7–9 集", "d": "逆矩阵与秩、非方阵、点积。", "url": "https://www.3blue1brown.com/topics/linear-algebra" },
+      { "id": "d11-2", "m": 75, "t": "Kaggle Intermediate ML 第 1–3 课", "d": "缺失值、类别变量、Pipeline。", "url": "https://www.kaggle.com/learn/intermediate-machine-learning" }
+    ]},
+    { "phase": 2, "tasks": [
+      { "id": "d12-1", "m": 120, "t": "Kaggle Intermediate ML 第 4–7 课", "d": "交叉验证、XGBoost、数据泄漏。学完拿证书。", "url": "https://www.kaggle.com/learn/intermediate-machine-learning" }
+    ]},
+    { "phase": 2, "tasks": [
+      { "id": "d13-1", "m": 150, "t": "Titanic 独立通关", "d": "不看任何教程：从读数据、处理缺失值、建模到提交，全部自己做，分数随意。卡住超过 20 分钟可以查文档，不能抄别人的 notebook。", "url": "https://www.kaggle.com/competitions/titanic" }
+    ]},
+    { "phase": 2, "review": true, "tasks": [
+      { "id": "d14-1", "m": 40, "t": "线性代数第 14 集 特征向量", "d": "", "url": "https://www.3blue1brown.com/topics/linear-algebra" },
+      { "id": "d14-2", "m": 60, "t": "补齐本周没做完的", "d": "没有欠的话就休息。" },
+      { "id": "d14-3", "m": 15, "t": "周复盘发给 Claude", "d": "哪里卡住、哪里太简单、每天实际花了多久。" }
+    ]},
+    { "phase": 2, "tasks": [
+      { "id": "d15-1", "m": 40, "t": "3Blue1Brown 微积分第 1–2 集", "d": "", "url": "https://www.3blue1brown.com/topics/calculus" },
+      { "id": "d15-2", "m": 90, "t": "只用 NumPy 手写线性回归", "d": "造数据 y = 3x + 2 + 噪声，用梯度下降把 w、b 学出来，打印每 100 步的 loss。不许用 sklearn。" }
+    ]},
+    { "phase": 2, "tasks": [
+      { "id": "d16-1", "m": 40, "t": "微积分第 3–4 集", "d": "导数公式，链式法则。链式法则就是后面反向传播的全部数学。", "url": "https://www.3blue1brown.com/topics/calculus" },
+      { "id": "d16-2", "m": 90, "t": "手写逻辑回归", "d": "随机生成两团二维点，用 sigmoid + 交叉熵 + 梯度下降分开它们，画出决策边界。" }
+    ]},
+    { "phase": 2, "tasks": [
+      { "id": "d17-1", "m": 60, "t": "StatQuest 三个视频", "d": "Bias and Variance、Cross Validation、Decision Trees。", "url": "https://www.youtube.com/@statquest" },
+      { "id": "d17-2", "m": 60, "t": "sklearn 对照", "d": "用 sklearn 的 LinearRegression 和 LogisticRegression 跑昨天、前天的数据，结果应该和你手写的接近。" }
+    ]},
+    { "phase": 2, "tasks": [
+      { "id": "d18-1", "m": 150, "t": "小项目：预测一个词下次会不会答对", "d": "从你的复习记录里造特征：距上次复习的天数、历史答错次数、词长等，目标是这次答对/答错。用 sklearn 训练一个模型。" }
+    ]},
+    { "phase": 2, "tasks": [
+      { "id": "d19-1", "m": 120, "t": "小项目：认真评估", "d": "5 折交叉验证，报告准确率和 AUC，再和「永远猜答对」的基线比较。你的模型赢了多少？" }
+    ]},
+    { "phase": 2, "tasks": [
+      { "id": "d20-1", "m": 60, "t": "写一页笔记", "d": "用你自己的话写：数据 → 特征 → 模型 → 评估，每一步做什么、容易错在哪。" },
+      { "id": "d20-2", "m": 40, "t": "3Blue1Brown 神经网络第 1–2 章", "d": "", "url": "https://www.3blue1brown.com/topics/neural-networks" }
+    ]},
+    { "phase": 2, "review": true, "tasks": [
+      { "id": "d21-1", "m": 60, "t": "补齐本周没做完的", "d": "没有欠的话就休息。" },
+      { "id": "d21-2", "m": 15, "t": "周复盘发给 Claude", "d": "附上第 19 天小项目的分数。" }
+    ]},
+
+    { "phase": 3, "tasks": [
+      { "id": "d22-1", "m": 40, "t": "神经网络第 3–4 章 反向传播", "d": "", "url": "https://www.3blue1brown.com/topics/neural-networks" },
+      { "id": "d22-2", "m": 90, "t": "Karpathy 第 1 集 micrograd（前 1/3）", "d": "视频边看边敲，每一段代码都在自己的 notebook 里跑通。", "url": "https://karpathy.ai/zero-to-hero.html" }
+    ]},
+    { "phase": 3, "tasks": [
+      { "id": "d23-1", "m": 120, "t": "micrograd（中段）", "d": "跟敲到手动、自动反向传播都能跑通。", "url": "https://karpathy.ai/zero-to-hero.html" }
+    ]},
+    { "phase": 3, "tasks": [
+      { "id": "d24-1", "m": 120, "t": "micrograd（后段）", "d": "训练出一个小 MLP，loss 降下来就算完成。", "url": "https://karpathy.ai/zero-to-hero.html" }
+    ]},
+    { "phase": 3, "tasks": [
+      { "id": "d25-1", "m": 150, "t": "凭记忆重写 micrograd", "d": "关掉视频，从空文件写出 Value 类、加法乘法 tanh 和 backward()。这一天最难，也最值。卡住可以回看，但只看卡住的那一段。" }
+    ]},
+    { "phase": 3, "tasks": [
+      { "id": "d26-1", "m": 90, "t": "PyTorch：Tensors 与 Autograd", "d": "官方 Learn the Basics 的前两节。", "url": "https://pytorch.org/tutorials/beginner/basics/intro.html" },
+      { "id": "d26-2", "m": 45, "t": "用 PyTorch 验证你的 micrograd", "d": "同一个算式，你的梯度和 PyTorch 算出的梯度应该一致。" }
+    ]},
+    { "phase": 3, "tasks": [
+      { "id": "d27-1", "m": 120, "t": "PyTorch Learn the Basics 剩余部分", "d": "Datasets、搭模型、优化循环、保存模型。", "url": "https://pytorch.org/tutorials/beginner/basics/intro.html" }
+    ]},
+    { "phase": 3, "review": true, "tasks": [
+      { "id": "d28-1", "m": 60, "t": "补齐本周没做完的", "d": "没有欠的话就休息。" },
+      { "id": "d28-2", "m": 15, "t": "周复盘发给 Claude", "d": "重点说第 25 天卡在哪里。" }
+    ]},
+    { "phase": 3, "tasks": [
+      { "id": "d29-1", "m": 100, "t": "Karpathy 第 2 集 makemore 1（前半）", "d": "bigram 计数模型。", "url": "https://karpathy.ai/zero-to-hero.html" }
+    ]},
+    { "phase": 3, "tasks": [
+      { "id": "d30-1", "m": 100, "t": "makemore 1（后半）", "d": "把计数模型改写成神经网络。", "url": "https://karpathy.ai/zero-to-hero.html" }
+    ]},
+    { "phase": 3, "tasks": [
+      { "id": "d31-1", "m": 120, "t": "换成日语：生成「像日语的假名词」", "d": "把训练数据从英文名字换成你词库里所有单词的假名读音，训练 bigram，生成 20 个不存在但看起来像日语的词。" }
+    ]},
+    { "phase": 3, "tasks": [
+      { "id": "d32-1", "m": 100, "t": "Karpathy 第 3 集 makemore 2：MLP（前半）", "d": "", "url": "https://karpathy.ai/zero-to-hero.html" }
+    ]},
+    { "phase": 3, "tasks": [
+      { "id": "d33-1", "m": 120, "t": "makemore 2（后半）+ 假名数据", "d": "在假名数据上跑 MLP 版，比较它和 bigram 的 loss。", "url": "https://karpathy.ai/zero-to-hero.html" }
+    ]},
+    { "phase": 3, "tasks": [
+      { "id": "d34-1", "m": 60, "t": "读第一篇论文：Bengio 2003（前 4 页）", "d": "就是你昨天写的那个模型的原始论文。看不懂的公式跳过。", "url": "https://www.jmlr.org/papers/volume3/bengio03a/bengio03a.pdf" },
+      { "id": "d34-2", "m": 60, "t": "调参实验表", "d": "改嵌入维度、隐藏层大小、学习率，每组记下验证集 loss，做成表格。" }
+    ]},
+    { "phase": 3, "review": true, "tasks": [
+      { "id": "d35-1", "m": 60, "t": "补齐本周没做完的", "d": "没有欠的话就休息。" },
+      { "id": "d35-2", "m": 15, "t": "周复盘发给 Claude", "d": "附上调参表。" }
+    ]},
+    { "phase": 3, "tasks": [
+      { "id": "d36-1", "m": 100, "t": "Karpathy 第 4 集 激活值与 BatchNorm（前半）", "d": "", "url": "https://karpathy.ai/zero-to-hero.html" }
+    ]},
+    { "phase": 3, "tasks": [
+      { "id": "d37-1", "m": 100, "t": "第 4 集（后半）", "d": "", "url": "https://karpathy.ai/zero-to-hero.html" }
+    ]},
+    { "phase": 3, "tasks": [
+      { "id": "d38-1", "m": 150, "t": "第 5 集 Backprop Ninja：练习 1–2", "d": "自己推导、手写反向传播，和 PyTorch 对答案。", "url": "https://karpathy.ai/zero-to-hero.html" }
+    ]},
+    { "phase": 3, "tasks": [
+      { "id": "d39-1", "m": 150, "t": "Backprop Ninja：练习 3–4", "d": "", "url": "https://karpathy.ai/zero-to-hero.html" }
+    ]},
+    { "phase": 3, "tasks": [
+      { "id": "d40-1", "m": 120, "t": "第 6 集 WaveNet", "d": "", "url": "https://karpathy.ai/zero-to-hero.html" }
+    ]},
+    { "phase": 3, "tasks": [
+      { "id": "d41-1", "m": 90, "t": "三个模型对比", "d": "在假名数据上比较 bigram、MLP、WaveNet 的验证集 loss 和生成样例，写成一张表。" }
+    ]},
+    { "phase": 3, "review": true, "tasks": [
+      { "id": "d42-1", "m": 60, "t": "补齐本周没做完的", "d": "没有欠的话就休息。" },
+      { "id": "d42-2", "m": 15, "t": "周复盘发给 Claude", "d": "" }
+    ]},
+    { "phase": 3, "tasks": [
+      { "id": "d43-1", "m": 100, "t": "Let's build GPT（前段）", "d": "数据准备，bigram 基线。", "url": "https://karpathy.ai/zero-to-hero.html" }
+    ]},
+    { "phase": 3, "tasks": [
+      { "id": "d44-1", "m": 120, "t": "Let's build GPT：self-attention", "d": "这一段是现代大模型（包括 Claude）的核心，慢慢看。", "url": "https://karpathy.ai/zero-to-hero.html" }
+    ]},
+    { "phase": 3, "tasks": [
+      { "id": "d45-1", "m": 120, "t": "Let's build GPT：多头、残差、LayerNorm", "d": "", "url": "https://karpathy.ai/zero-to-hero.html" }
+    ]},
+    { "phase": 3, "tasks": [
+      { "id": "d46-1", "m": 90, "t": "Let's build GPT：跑完训练", "d": "", "url": "https://karpathy.ai/zero-to-hero.html" },
+      { "id": "d46-2", "m": 40, "t": "3Blue1Brown Transformer / Attention 两章", "d": "换个角度再理解一遍 attention。", "url": "https://www.3blue1brown.com/topics/neural-networks" }
+    ]},
+    { "phase": 3, "tasks": [
+      { "id": "d47-1", "m": 150, "t": "训练一个会写日语的小 GPT", "d": "收集日语文本（你词库的例句就够起步），在 Google Colab 的免费 GPU 上训练，生成一段日语。" }
+    ]},
+    { "phase": 3, "tasks": [
+      { "id": "d48-1", "m": 120, "t": "Karpathy 分词器那一集（前半）", "d": "理解为什么大模型数不清字母，以及日语为什么费 token。", "url": "https://karpathy.ai/zero-to-hero.html" }
+    ]},
+    { "phase": 3, "review": true, "tasks": [
+      { "id": "d49-1", "m": 90, "t": "写一篇「我从零写了 GPT」", "d": "写给一年前的自己看。放到 GitHub 上，这是你的第一件作品。" },
+      { "id": "d49-2", "m": 15, "t": "周复盘发给 Claude", "d": "" }
+    ]},
+
+    { "phase": 4, "tasks": [
+      { "id": "d50-1", "m": 150, "t": "fast.ai 第 1 课", "d": "看视频，跑通 is-it-a-bird notebook。", "url": "https://course.fast.ai" }
+    ]},
+    { "phase": 4, "tasks": [
+      { "id": "d51-1", "m": 150, "t": "fast.ai 第 2 课：部署", "d": "把一个图像分类模型部署到 Hugging Face Spaces，拿到一个别人能打开的网址。", "url": "https://course.fast.ai" }
+    ]},
+    { "phase": 4, "tasks": [
+      { "id": "d52-1", "m": 120, "t": "fast.ai 第 3 课", "d": "", "url": "https://course.fast.ai" }
+    ]},
+    { "phase": 4, "tasks": [
+      { "id": "d53-1", "m": 150, "t": "fast.ai 第 4 课：NLP", "d": "用 Hugging Face transformers 微调一个文本模型。", "url": "https://course.fast.ai" }
+    ]},
+    { "phase": 4, "tasks": [
+      { "id": "d54-1", "m": 120, "t": "Hugging Face LLM 课程第 1–2 章", "d": "", "url": "https://huggingface.co/learn/llm-course" }
+    ]},
+    { "phase": 4, "tasks": [
+      { "id": "d55-1", "m": 120, "t": "第一次调用 Claude API", "d": "写一个 Python 脚本：给 10 个日语单词各生成一句例句，再让模型自评难度。读官方文档的 Quickstart。", "url": "https://docs.claude.com" }
+    ]},
+    { "phase": 4, "review": true, "tasks": [
+      { "id": "d56-1", "m": 60, "t": "补齐本周没做完的", "d": "没有欠的话就休息。" },
+      { "id": "d56-2", "m": 15, "t": "周复盘发给 Claude", "d": "" }
+    ]},
+    { "phase": 4, "tasks": [
+      { "id": "d57-1", "m": 120, "t": "fast.ai 第 5 课", "d": "从零写一个模型，和之前学的串起来。", "url": "https://course.fast.ai" }
+    ]},
+    { "phase": 4, "tasks": [
+      { "id": "d58-1", "m": 120, "t": "精读 Attention Is All You Need", "d": "你已经亲手写过它了，这次应该能看懂大部分。", "url": "https://arxiv.org/abs/1706.03762" }
+    ]},
+    { "phase": 4, "tasks": [
+      { "id": "d59-1", "m": 150, "t": "Hugging Face LLM 课程第 3 章：微调", "d": "", "url": "https://huggingface.co/learn/llm-course" }
+    ]},
+    { "phase": 4, "tasks": [
+      { "id": "d60-1", "m": 150, "t": "项目：日语句子难度分级（准备数据）", "d": "收集带 JLPT 级别的句子（收集日的语法题、例句可以用），整理成「句子, 级别」的数据集，划分训练集和测试集。" }
+    ]},
+    { "phase": 4, "tasks": [
+      { "id": "d61-1", "m": 150, "t": "项目：微调并评估", "d": "微调一个小型日语 BERT 类模型，报告测试集准确率和混淆矩阵。" }
+    ]},
+    { "phase": 4, "tasks": [
+      { "id": "d62-1", "m": 90, "t": "项目：写 README，发到 GitHub", "d": "说清楚问题、数据、方法、结果、局限。" }
+    ]},
+    { "phase": 4, "review": true, "tasks": [
+      { "id": "d63-1", "m": 60, "t": "补齐本周没做完的", "d": "没有欠的话就休息。" },
+      { "id": "d63-2", "m": 15, "t": "周复盘发给 Claude", "d": "" }
+    ]},
+
+    { "phase": 5, "tasks": [
+      { "id": "d64-1", "m": 120, "t": "读懂 FSRS", "d": "看 open-spaced-repetition 的算法说明，弄懂 D、S、R 三个量。你天天在用它，现在去看它怎么算。", "url": "https://github.com/open-spaced-repetition/fsrs4anki/wiki" }
+    ]},
+    { "phase": 5, "tasks": [
+      { "id": "d65-1", "m": 150, "t": "导出复习日志", "d": "从 live.db 导出每一次作答（词、时间、评分），整理成按词分组的时间序列。" }
+    ]},
+    { "phase": 5, "tasks": [
+      { "id": "d66-1", "m": 150, "t": "基线：FSRS 预测得有多准", "d": "对每次复习，用 FSRS 算出的回忆概率和实际结果比，计算 log loss 和 AUC。" }
+    ]},
+    { "phase": 5, "tasks": [
+      { "id": "d67-1", "m": 150, "t": "挑战者：用 GRU 预测回忆", "d": "用 PyTorch 写一个 GRU，输入一个词的复习历史，输出这次答对的概率。" }
+    ]},
+    { "phase": 5, "tasks": [
+      { "id": "d68-1", "m": 150, "t": "对比和调参", "d": "按时间切分训练集和测试集（不能用未来预测过去），GRU 和 FSRS 正面比一比。" }
+    ]},
+    { "phase": 5, "tasks": [
+      { "id": "d69-1", "m": 120, "t": "写研究报告", "d": "不管谁赢，都写清楚为什么。这是你简历上最有分量的一项。" }
+    ]},
+    { "phase": 5, "review": true, "tasks": [
+      { "id": "d70-1", "m": 30, "t": "把整份课表的完成情况发给 Claude", "d": "让它根据你的进度和兴趣排下一阶段（求职准备 / 更深的 LLM / 做产品）。" }
+    ]}
+  ]
+}
