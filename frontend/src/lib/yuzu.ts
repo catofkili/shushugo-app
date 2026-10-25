@@ -7,6 +7,7 @@
  * 数字是拿作者 102 天真实流水回放定的(见 CLAUDE.md「柚子」一节):
  * 奖励和商店价格同时乘 10，保持攒到首件主题所需的学习时间不变。
  */
+import { YUZU_TITLE_IDS } from "./yuzu-titles";
 import { getDatabase } from "./database";
 import { firstValue, persistSoon, rowsFor, getState, setState, studyDate, today } from "./database/db-utils";
 import { stage1ProgressCounts } from "./word-api/stage1";
@@ -95,6 +96,23 @@ export const bookTeamReward = (kind: "team_checkin" | "team_period" | "duel_win"
   persistSoon();
   emit();
   return true;
+};
+
+/** 邀请账本与组队同样按 (kind, key) 幂等，不经过购买自动装备。 */
+export const bookReferralReward = (kind: "referral_invitee" | "referral_inviter", key: string, amount: number): boolean => {
+  if (!key || !Number.isSafeInteger(amount) || amount <= 0) return false;
+  ensureYuzuScale();
+  if (!book(kind, key, amount)) return false;
+  persistSoon();
+  emit();
+  return true;
+};
+
+export const grantReferralSet = (): void => {
+  ensureYuzuScale();
+  const theme = book("buy", "theme-dusk", 0);
+  const title = book("buy", YUZU_TITLE_IDS.yuyou, 0);
+  if (theme || title) { persistSoon(); emit(); }
 };
 
 export const yuzuBalance = (): number => {
@@ -187,7 +205,7 @@ export const ownsItem = (id: string): boolean =>
 
 export const buyItem = (id: string): boolean => {
   const item = itemById(id);
-  if (!item || item.soon || ownsItem(id) || yuzuBalance() < item.price) return false;
+  if (!item || item.soon || item.invite || ownsItem(id) || yuzuBalance() < item.price) return false;
   if (item.category === "icon" && !appIconAvailable()) return false;
   book("buy", id, -item.price);
   if (EQUIPPABLE.has(item.category) && !equippedItem(item.category)) equipItem(id);

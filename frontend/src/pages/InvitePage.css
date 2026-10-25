@@ -1,0 +1,8 @@
+.invite-page{display:flex;flex-direction:column;gap:20px;max-width:620px;margin:0 auto;color:var(--ds-ink)}
+.invite-panel{display:flex;flex-direction:column;gap:14px;padding:20px}
+.invite-stats{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;font-size:14px;color:var(--ds-ink-2)}
+.invite-claim-row{display:flex;gap:10px;align-items:center}
+.invite-claim-row input{width:0;min-width:0;flex:1;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:1px}
+.invite-claim-row button{flex:none;min-height:44px}
+.invite-rules{font-size:13px;line-height:1.8;color:var(--ds-ink-2)}
+.invite-message{font-size:14px;color:var(--ds-ink-2)}

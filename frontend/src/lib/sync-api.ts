@@ -907,7 +907,7 @@ export async function updateCloudUserProfile(profile: {
   return result;
 }
 
-const teamRequest = async <T>(path: string, method: "GET" | "POST" | "PUT" = "GET", body?: unknown): Promise<T> => {
+export const teamRequest = async <T>(path: string, method: "GET" | "POST" | "PUT" = "GET", body?: unknown): Promise<T> => {
   const { token } = await getCloudSession();
   if (!token) throw new Error("请先登录账号。");
   return requestJson<T>(path, {

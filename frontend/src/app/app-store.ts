@@ -25,12 +25,17 @@ export interface AppState {
   weeklyReportEntry: WeeklyReportEntry;
   pendingAccountPage: Page | null;
   duelId: string | null;
+  referralCode: string;
+  referralFocus: boolean;
 }
 
 const initialMode = getStudyMode() || defaultStudyMode;
 const initialDuelId = typeof window === "undefined" ? null : duelIdFromUrl(window.location.href);
+const initialRef = (() => {
+  try { return new URL(window.location.href).searchParams.get("ref"); } catch { return null; }
+})();
 let state: AppState = {
-  page: initialDuelId ? "duel" : "home",
+  page: initialRef !== null ? "invite" : initialDuelId ? "duel" : "home",
   pageHistory: [],
   grammarMode: "learn",
   selectedGrammarId: "wa",
@@ -45,6 +50,8 @@ let state: AppState = {
   weeklyReportStart: null,
   weeklyReportEntry: "button",
   pendingAccountPage: null,
+  referralCode: initialRef ?? "",
+  referralFocus: initialRef !== null,
   duelId: initialDuelId
 };
 

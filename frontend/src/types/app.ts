@@ -2,6 +2,7 @@ export type Page =
   | "home"
   | "word"
   | "team"
+  | "invite"
   | "duel"
   | "quick-study"
   | "vocab-test"

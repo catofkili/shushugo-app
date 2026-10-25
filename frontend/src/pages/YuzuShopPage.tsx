@@ -6,6 +6,7 @@ import { CrossPlatformImage } from "../components/CrossPlatformImage";
 import { getResolvedTheme, getStudyPreferences, PREFERENCES_EVENT, saveStudyPreferences } from "../lib/studyPreferences";
 import { loadVoices, prefetchVoicePreviews, prepareVoice, previewVoice, voiceDeliveryMode } from "../lib/speech";
 import { previewTimbre, type SoundTimbre } from "../lib/zoo-sounds";
+import { referralShopLink } from "../lib/referral-copy";
 import { watchTeamTitle } from "../lib/team-activity";
 import { itemAvailable } from "../lib/shop-availability";
 
@@ -37,7 +38,7 @@ const CATEGORY_ICON: Record<YuzuCategory, ComponentType<LucideProps>> = {
 const KIND_LABEL: Record<string, string> = {
   study: "今天学了 100 词", plan: "清完今日计划", streak: "连击满 7 天", encore: "加餐", achievement: "成就", focus: "倒计时学习", buy: "购买", repair: "补签",
   card: "获得补签卡", card_buy: "购买补签卡", card_overflow: "补签卡折算", repair_card: "用补签卡",
-  team_checkin: "组队打卡", team_period: "组队周期", duel_win: "本周对战首胜"
+  team_checkin: "组队打卡", team_period: "组队周期", duel_win: "本周对战首胜", referral_invitee: "好友邀请", referral_inviter: "邀请好友"
 };
 type CheckoutStatus = "paying" | "preparing" | "done" | "deferred" | "failed";
 
@@ -86,7 +87,7 @@ const Art = ({ item, size }: { item: YuzuItem; size: "s" | "l" }) => {
   );
 };
 
-export const YuzuShopPage = ({ onOpenPro }: { onOpenPro?: () => void }) => {
+export const YuzuShopPage = ({ onOpenPro, onOpenInvite }: { onOpenPro?: () => void; onOpenInvite?: () => void }) => {
   const [, bump] = useState(0);
   const [tab, setTab] = useState<YuzuCategory | "all" | "owned" | "repair">("all");
   const [picked, setPicked] = useState<string>(REPAIR_ID);
@@ -193,6 +194,7 @@ export const YuzuShopPage = ({ onOpenPro }: { onOpenPro?: () => void }) => {
   };
 
   const act = () => {
+    if (item.invite && !owned) { if (referralShopLink) onOpenInvite?.(); return; }
     if (!itemAvailable(item)) return;
     if (inUse) {
       if (item.category === "voice") chooseVoice("");
@@ -295,10 +297,10 @@ export const YuzuShopPage = ({ onOpenPro }: { onOpenPro?: () => void }) => {
         ) : (
           <button
             className={`yz-cta ${inUse ? "is-on" : owned ? "is-owned" : confirming ? "is-confirm" : ""}`}
-            disabled={busy || !available || (!owned && balance < item.price)}
+            disabled={busy || !available || (!owned && (item.invite ? !referralShopLink : balance < item.price))}
             onClick={act}
           >
-            {busy ? <><LoaderCircle className="yz-spin" size={15} /> 正在结账…</>
+            {item.invite && !owned ? "邀请获得" : busy ? <><LoaderCircle className="yz-spin" size={15} /> 正在结账…</>
               : !available ? owned ? "此设备暂不可用" : item.category === "icon" && !item.soon ? "仅 iOS App 可用" : "即将上架"
               : inUse ? <><Check size={15} /> 使用中 · 点击换回</>
                 : owned ? (item.category === "voice" || EQUIPPABLE.has(item.category) ? "使用" : <><Check size={15} /> 已拥有</>)
@@ -337,7 +339,7 @@ export const YuzuShopPage = ({ onOpenPro }: { onOpenPro?: () => void }) => {
               {!itemIsAvailable && !has ? <span className="yz-tag is-soon">{it.category === "icon" && !it.soon ? "仅 iOS App" : "即将上架"}</span>
                 : on ? <span className="yz-tag is-on"><Check size={11} /> 使用中</span>
                 : has ? <span className="yz-tag"><Check size={11} /> 已拥有</span>
-                  : <span className="yz-price"><Sticker name="yuzu-coin" size={11} />{formatYuzu(it.price)}</span>}
+                  : it.invite ? <span className="yz-tag">邀请获得</span> : <span className="yz-price"><Sticker name="yuzu-coin" size={11} />{formatYuzu(it.price)}</span>}
             </button>
           );
         })}

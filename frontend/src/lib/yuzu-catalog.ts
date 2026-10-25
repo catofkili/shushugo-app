@@ -25,6 +25,8 @@ export interface YuzuItem {
   price: number;
   /** 还没做出来(等图 / 等插件):货架上露脸但不卖,免得有人花柚子买到一个空壳 */
   soon?: true;
+  /** 只能通过邀请解锁，不可购买。 */
+  invite?: true;
   /** 商品图用总表上哪一格(见 CapybaraMascot 的 StickerName)。配色主题不用图,现场画色板;皮肤用那套皮肤的默认表情 */
   art?: StickerName;
 }
@@ -44,6 +46,7 @@ export const CATEGORY_LABEL: Record<YuzuCategory, string> = {
 export const EQUIPPABLE: ReadonlySet<YuzuCategory> = new Set(["theme", "mascot", "icon", "sound", "walk", "title"]);
 
 export const YUZU_ITEMS: YuzuItem[] = [
+  { id: "theme-dusk", name: "晚霞", description: "橙粉暖调的配色", category: "theme", price: 0, invite: true },
   { id: "theme-matcha", name: "抹茶", description: "青绿主色换成抹茶绿", category: "theme", price: 2000 },
   { id: "theme-sakura", name: "樱", description: "粉底樱色", category: "theme", price: 2000 },
   { id: "theme-night", name: "深夜食堂", description: "暗琥珀暖调的夜间配色", category: "theme", price: 2000 },
@@ -61,6 +64,7 @@ export const YUZU_ITEMS: YuzuItem[] = [
   { id: "walk-alt", name: "滚着走", description: "学习页小路和加载时，水豚改成滚着走", category: "walk", price: 4000, art: "roll-frame" },
   { id: "report-cover", name: "周报封面", description: "周报封面换一张", category: "misc", price: 3000, soon: true, art: "card-daily" },
   // 队伍称号：队友的名单里挂在名字旁边。每个称号单独买、单独装备（槽位 yuzu_equipped:title）
+  { id: YUZU_TITLE_IDS.yuyou, name: "柚友", description: "队伍名单里，名字旁挂上「柚友」", category: "title", price: 0, invite: true },
   { id: YUZU_TITLE_IDS.early, name: "晨读派", description: "队伍名单里，名字旁挂上「晨读派」", category: "title", price: 3000 },
   { id: YUZU_TITLE_IDS.night, name: "夜读派", description: "队伍名单里，名字旁挂上「夜读派」", category: "title", price: 3000 },
   { id: YUZU_TITLE_IDS.hunter, name: "单词猎人", description: "队伍名单里，名字旁挂上「单词猎人」", category: "title", price: 3000 },

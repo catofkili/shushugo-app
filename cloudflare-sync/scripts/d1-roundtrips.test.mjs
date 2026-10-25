@@ -209,6 +209,11 @@ try {
   assert.equal(results[8].payload.team.members.find((member) => member.isMe).completed, true);
   assert.deepEqual(results[8].payload.plaza.map((team) => team.id), ["team-2"]);
   assert.equal(results[9].payload.migrationsApplied, true);
+  for (const table of ["referral_codes", "referral_claims", "referral_earnings"]) {
+    assert.equal(results[9].payload.migrations[table], true, `${table} is included in the single-query health gate`);
+  }
+  db.exec("DROP TABLE referral_earnings");
+  assert.equal((await (await worker.fetch(new Request("https://worker.test/api/health"), env, {})).json()).migrationsApplied, false);
   assert.equal(results[10].payload.isPro, true);
   assert.equal((await worker.fetch(authed(`/api/teams/me?day=${studyDay}`), env, {})).status, 200);
   const activity = db.prepare("SELECT study_count, completed FROM team_daily_activity WHERE team_id = 'team-1' AND user_id = 'u1' AND study_day = ?").get(studyDay);

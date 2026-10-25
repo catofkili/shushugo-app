@@ -27,7 +27,7 @@ const isGrammarPage = (page: Page) => page === "grammar" || page === "detail";
 // 组队/学习模式/收藏都是从主页的格子进去的，导航上仍高亮「主页」。
 // 2026-10-15：「我的」下面的子页同理高亮「我的」。底栏方案 A 里选中格才画水豚，一格都不亮 = 底栏零水豚（作者：水豚是主角）。
 const isHomePage = (page: Page) =>
-  ["home", "team", "duel", "quick-study", "vocab-test", "talk", "jlpt-practice", "grammar-foundation", "favorites", "distinction-quiz", "yuzu-shop",
+  ["home", "team", "invite", "duel", "quick-study", "vocab-test", "talk", "jlpt-practice", "grammar-foundation", "favorites", "distinction-quiz", "yuzu-shop",
     "confusion", "kanji-readings", "word-list", "jlpt-plan", "streak", "weekly-report"].includes(page);
 const isProfilePage = (page: Page) =>
   ["profile", "pro", "account", "personal-info", "notifications", "settings", "privacy", "privacy-policy", "user-agreement", "help", "achievements", "about"].includes(page);

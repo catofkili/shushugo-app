@@ -9,6 +9,7 @@ const maxUnapprovedPageComponentBytes = 100_000;
 const coreModule = (source) => /(?:^frontend\/src\/lib\/|\/node_modules\/ts-fsrs\/)/.test(source);
 const pageComponent = (source) => /^frontend\/src\/(?:components|pages)\//.test(source);
 const allowedCoreDuplicates = {
+  'frontend/src/lib/referral-copy.weapp.ts': 'Invite and shop routes share only immutable platform copy and a link capability flag; this module stores no session, throttle, claim or database state.',
   // W1: 异步外壳与独立页面共享以下无用户缓存的模块；反馈、支付运行态、词性缓存仍固定在主包。
   'frontend/src/lib/word-list-import.ts': 'The account import page and lazy sync replay use the same deterministic parser/materializer; all writes and cache invalidation go through the shared database and main-package word-library singleton, with no module-local user state.',
   'frontend/src/lib/profile-sync.ts': 'The lazy post-login callback and independent account routes read account-keyed pending flags and avatar signatures from shared Preferences on every call; this module retains no session, profile or retry queue in memory.',

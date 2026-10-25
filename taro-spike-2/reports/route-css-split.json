@@ -1,6 +1,6 @@
 {
-  "appWxssBytesBefore": 284863,
-  "appWxssBytesAfter": 226329,
+  "appWxssBytesBefore": 285674,
+  "appWxssBytesAfter": 227558,
   "movedRuleBytesByRoute": {
     "account/personal-info/index.wxss": 5155,
     "content-pages/achievements/index.wxss": 5155,
@@ -8,6 +8,7 @@
     "content-pages/yuzu-shop/index.wxss": 16363,
     "pages/word/index.wxss": 3066,
     "study/confusion/index.wxss": 8574,
+    "study/invite/index.wxss": 11944,
     "study/jlpt-practice/index.wxss": 5361,
     "study/kanji-readings/index.wxss": 12170,
     "study/quick-study/index.wxss": 12123,
@@ -19,6 +20,7 @@
     "content-pages/yuzu-shop/index.wxss": 148,
     "study/word-list/index.wxss": 128,
     "study/team/index.wxss": 120,
+    "study/invite/index.wxss": 120,
     "content-pages/weekly-report/index.wxss": 2,
     "study/quick-study/index.wxss": 100,
     "content-pages/achievements/index.wxss": 60,
@@ -32,6 +34,7 @@
   "routes": {
     "vocabTest": "study/vocab-test/index.wxss",
     "team": "study/team/index.wxss",
+    "invite": "study/invite/index.wxss",
     "yuzuShop": "content-pages/yuzu-shop/index.wxss",
     "weeklyReport": "content-pages/weekly-report/index.wxss",
     "wordList": "study/word-list/index.wxss",

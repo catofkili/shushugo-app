@@ -5,5 +5,7 @@ export const YUZU_TITLE_IDS = {
   hunter: "title-hunter",
   slow: "title-slow",
   grove: "title-grove",
-  capy: "title-capy"
+  capy: "title-capy",
+  // 只能邀请获得：Worker 要校验账号确实解锁过邀请套装，见 docs/claude/learning-progress-and-rewards.md「拉新邀请码」
+  yuyou: "title-yuyou"
 } as const;

@@ -5,6 +5,7 @@ const definitions = [
   ['word', 'pages/word/index', true],
   ['grammar', 'pages/grammar/index', true],
   ['profile', 'pages/profile/index', true],
+  ['invite', 'study/invite/index', false, 'study'],
   ['team', 'study/team/index', false, 'study'],
   ['quick-study', 'study/quick-study/index', false, 'study'],
   ['vocab-test', 'study/vocab-test/index', false, 'study'],

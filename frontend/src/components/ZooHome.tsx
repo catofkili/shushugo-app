@@ -1,4 +1,8 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent as ReactMouseEvent } from "react";
+import type { AppNavigationParams } from "../app/AppContext";
+import { collectTeamRewards } from "../lib/team-activity";
+import { CLOUD_AUTH_EVENT, CLOUD_SYNC_EVENT } from "../lib/sync-api";
+import { REFERRAL_BANNER_KEY, REFERRAL_EVENT, referralBannerVisible } from "../lib/referral";
 import { perfTime } from "../lib/perf-marks";
 import { Capacitor } from "@capacitor/core";
 // 图标统一走 lucide（ISC 协议，线性、单色、跟随 currentColor）。
@@ -58,7 +62,7 @@ import "./ZooHome.css";
 
 type Props = {
   overview: ProgressOverview;
-  onNavigate: (page: Page) => void;
+  onNavigate: (page: Page, params?: AppNavigationParams) => void;
   /** 打开词库/选词页，可以预设一个等级（进度概览的柱子就是这么下钻的） */
   onOpenWordList: (level?: string) => void;
   /** 语法柱下钻：打开语法库并预设等级 */
@@ -109,6 +113,26 @@ export function ZooHome({
   onMergeDuplicates,
   onOpenWeeklyReport
 }: Props) {
+  const [referralBanner, setReferralBanner] = useState(false);
+  useEffect(() => {
+    let active = true;
+    let revision = 0;
+    const refresh = () => {
+      const version = ++revision;
+      void referralBannerVisible().then((visible) => { if (active && version === revision) setReferralBanner(visible); });
+    };
+    const collect = () => { refresh(); void collectTeamRewards().catch(() => undefined); };
+    collect();
+    window.addEventListener(REFERRAL_EVENT, refresh);
+    window.addEventListener(CLOUD_AUTH_EVENT, collect);
+    window.addEventListener(CLOUD_SYNC_EVENT, collect);
+    return () => {
+      active = false;
+      window.removeEventListener(REFERRAL_EVENT, refresh);
+      window.removeEventListener(CLOUD_AUTH_EVENT, collect);
+      window.removeEventListener(CLOUD_SYNC_EVENT, collect);
+    };
+  }, []);
   const entitlements = useEntitlements();
   const [stats, setStats] = useState<WordStats | null>(null);
   const [jlpt, setJlpt] = useState<JlptPlanStatus | null>(null);
@@ -320,6 +344,13 @@ export function ZooHome({
           </button>
         )}
       </div>
+      {referralBanner && <div className="zoo-referral-banner">
+        <button onClick={() => onNavigate("invite", { referralCode: "", referralFocus: true })}>有邀请码？ <span aria-hidden="true">→</span></button>
+        <button aria-label="不再显示邀请码提示" onClick={() => {
+          try { localStorage.setItem(REFERRAL_BANNER_KEY, "1"); } catch { /* 本次仍关闭。 */ }
+          setReferralBanner(false);
+        }}>×</button>
+      </div>}
 
       {recovery && !recoveryChoice && (
         <section className="zoo-post-exam" aria-label="考后提醒">
@@ -438,7 +469,7 @@ export function ZooHome({
             并排放在同一个盘子里 —— 各自独立成卡时，视觉重量和大卡是一个量级。 */}
         <div className="zoo-duo ds-stagger">
           {jlpt && (
-            <button className="zoo-duo-cell" onClick={() => onNavigate("jlpt-plan")} style={staggerStyle(0)}>
+            <button className="zoo-duo-cell zoo-duo-plan" onClick={() => onNavigate("jlpt-plan")} style={staggerStyle(0)}>
               <span className="zoo-duo-kick">{jlpt.examKind === "jlpt" ? `${jlpt.target} 备考` : examLabel(jlpt.examKind)}</span>
               <b>{examDateMissing ? "先选考试日期" : jlpt.finished ? "已考完" : `还有 ${jlpt.plan.daysLeft} 天`}</b>
               <small>{examDateMissing ? "选择日期后生成每日计划" : recovery ? recoveryChoice === "usual" ? "已恢复平时学习量，可设置新目标" : `考后轻量期还剩 ${recovery.daysLeft} 天` : jlpt.finished ? "可设置下一场目标" : kanaGatePending() ? "先学五十音，完成后开始新词" : shortfallText(availableShortfall(jlpt.shortfall, entitlements.isPro))}</small>
@@ -452,6 +483,11 @@ export function ZooHome({
               <Sticker name={capyTools.has("tool-team") ? "tool-team-capy" : "tool-team"} size={34} className={`zoo-duo-team${pokedTool === "tool-team" ? " zoo-tool-capy-poke" : ""}`} />
               <em>建队，或凭邀请码加入</em>
             </small>
+          </button>
+          <button className="zoo-duo-cell" onClick={() => onNavigate("invite", { referralCode: "", referralFocus: false })} style={staggerStyle(jlpt ? 2 : 1)}>
+            <span className="zoo-duo-kick">邀请好友</span>
+            <b>一起学日语</b>
+            <small>我的邀请码 →</small>
           </button>
         </div>
         {/* 每日量的圆环收在备考页里（用户定的「收纳到备考入口里」），主页只留上面那格入口。 */}

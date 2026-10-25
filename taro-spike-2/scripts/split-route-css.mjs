@@ -14,6 +14,7 @@ const byteTotals = new Map();
 const routes = {
   vocabTest: 'study/vocab-test/index.wxss',
   team: 'study/team/index.wxss',
+  invite: 'study/invite/index.wxss',
   yuzuShop: 'content-pages/yuzu-shop/index.wxss',
   weeklyReport: 'content-pages/weekly-report/index.wxss',
   wordList: 'study/word-list/index.wxss',
@@ -30,7 +31,8 @@ const routes = {
 
 const prefixRoutes = [
   [['yz-'], [routes.yuzuShop]],
-  [['zoo-tm-'], [routes.team]],
+  [['zoo-tm-'], [routes.team, routes.invite]],
+  [['invite-'], [routes.invite]],
   [['weekly-report', 'wr-'], [routes.weeklyReport]],
   [['vt-'], [routes.vocabTest]],
   [['talk-'], [routes.talk]],

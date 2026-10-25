@@ -7,6 +7,7 @@ const repoRoot = path.resolve(root, '..');
 const frontend = path.join(repoRoot, 'frontend');
 
 const platformAdapters = new Map([
+  ['frontend/src/lib/referral-copy', path.join(frontend, 'src/lib/referral-copy.weapp.ts')],
   ['frontend/src/lib/haptics', path.join(frontend, 'src/lib/haptics.weapp.ts')],
   ['frontend/src/lib/pick-image', path.join(frontend, 'src/lib/pick-image.weapp.ts')],
   ['frontend/src/lib/notifications', path.join(frontend, 'src/lib/notifications.weapp.ts')],

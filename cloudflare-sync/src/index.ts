@@ -1933,12 +1933,12 @@ interface TeamRow {
   streak_start: string | null;
 }
 
-const validStudyDay = (value: unknown): string | null => {
+const validStudyDay = (value: unknown, maxDistanceMs = 2 * 24 * 60 * 60 * 1000): string | null => {
   const day = String(value ?? "");
   if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return null;
   const timestamp = Date.parse(`${day}T00:00:00Z`);
   if (!Number.isFinite(timestamp) || new Date(timestamp).toISOString().slice(0, 10) !== day) return null;
-  return Math.abs(timestamp - Date.now()) <= 2 * 24 * 60 * 60 * 1000 ? day : null;
+  return Math.abs(timestamp - Date.now()) <= maxDistanceMs ? day : null;
 };
 
 const dayBefore = (day: string) => {
@@ -2508,6 +2508,170 @@ const updateTeam = async (request: Request, env: Env) => {
   return json({ team: await teamSnapshot(env, userId, teamStudyDay()) });
 };
 
+const REFERRAL_INVITER_CAP = 10000;
+const REFERRAL_ROW_MAX: Readonly<Record<string, number>> = { study: 50, plan: 50, streak: 300, encore: 50, focus: 100 };
+interface ReferralClaimRow {
+  claimed_day: string;
+  set_unlocked_at: string | null;
+}
+
+const referralClaimView = (claim: ReferralClaimRow) => ({
+  claimedDay: claim.claimed_day,
+  windowEndDay: shiftTeamDay(claim.claimed_day, 29),
+  setUnlocked: Boolean(claim.set_unlocked_at)
+});
+
+const referralSetUnlocked = async (env: Env, userId: string) => {
+  const row = await env.DB.prepare(`SELECT
+    EXISTS(SELECT 1 FROM referral_codes WHERE user_id = ? AND set_unlocked_at IS NOT NULL)
+    OR EXISTS(SELECT 1 FROM referral_claims WHERE invitee_user_id = ? AND set_unlocked_at IS NOT NULL) AS unlocked
+  `).bind(userId, userId).first<{ unlocked: number }>();
+  return Boolean(row?.unlocked);
+};
+
+const referralDeviceId = (value: unknown) => {
+  if (value === undefined || value === null) return null;
+  if (typeof value !== "string" || value.length > 64) throw json({ detail: "设备标识无效。" }, 400);
+  return value || null;
+};
+
+const referralAccountIsNew = (createdAt: string) => {
+  const age = Date.now() - Date.parse(createdAt);
+  return age >= 0 && age <= 7 * 86400000;
+};
+
+const getMyReferral = async (request: Request, env: Env) => {
+  const userId = await requireVerifiedUser(request, env);
+  const url = new URL(request.url);
+  const deviceId = referralDeviceId(url.searchParams.get("deviceId"));
+  let codeRow = await env.DB.prepare("SELECT code, set_unlocked_at FROM referral_codes WHERE user_id = ?")
+    .bind(userId).first<{ code: string; set_unlocked_at: string | null }>();
+  for (let attempt = 0; !codeRow && attempt < 10; attempt += 1) {
+    const bytes = crypto.getRandomValues(new Uint8Array(6));
+    const code = Array.from(bytes, (value) => TEAM_INVITE_ALPHABET[value % TEAM_INVITE_ALPHABET.length]).join("");
+    // Both UNIQUE constraints arbitrate concurrent first GETs and code collisions.
+    await env.DB.prepare("INSERT OR IGNORE INTO referral_codes (user_id, code, device_id, created_at) VALUES (?, ?, ?, ?)")
+      .bind(userId, code, deviceId, new Date().toISOString()).run();
+    codeRow = await env.DB.prepare("SELECT code, set_unlocked_at FROM referral_codes WHERE user_id = ?")
+      .bind(userId).first<{ code: string; set_unlocked_at: string | null }>();
+  }
+  if (!codeRow) return json({ detail: "邀请码生成失败，请稍后重试。" }, 503);
+  if (url.searchParams.has("deviceId")) {
+    await env.DB.prepare("UPDATE referral_codes SET device_id = ? WHERE user_id = ?").bind(deviceId, userId).run();
+  }
+  const claim = await env.DB.prepare("SELECT claimed_day, set_unlocked_at FROM referral_claims WHERE invitee_user_id = ?")
+    .bind(userId).first<ReferralClaimRow>();
+  const counts = await env.DB.prepare(`SELECT COUNT(*) AS invitedCount, COUNT(qualified_at) AS qualifiedCount
+    FROM referral_claims WHERE inviter_user_id = ?`).bind(userId).first<{ invitedCount: number; qualifiedCount: number }>();
+  const rewards = await env.DB.prepare(`SELECT e.id, e.inviter_amount AS amount FROM referral_earnings e
+    JOIN referral_claims c ON c.invitee_user_id = e.invitee_user_id
+    WHERE c.inviter_user_id = ? AND e.inviter_amount > 0 ORDER BY e.id`).bind(userId).all<{ id: number; amount: number }>();
+  const user = await env.DB.prepare("SELECT created_at FROM users WHERE id = ?").bind(userId).first<{ created_at: string }>();
+  return json({
+    code: codeRow.code,
+    invitedCount: counts?.invitedCount ?? 0,
+    qualifiedCount: counts?.qualifiedCount ?? 0,
+    inviterEarned: (rewards.results ?? []).reduce((sum, row) => sum + row.amount, 0),
+    inviterCap: REFERRAL_INVITER_CAP,
+    setUnlocked: Boolean(codeRow.set_unlocked_at || claim?.set_unlocked_at),
+    canClaim: !claim && Boolean(user && referralAccountIsNew(user.created_at)),
+    claim: claim ? referralClaimView(claim) : null,
+    rewards: rewards.results ?? []
+  });
+};
+
+const claimReferral = async (request: Request, env: Env) => {
+  const userId = await requireVerifiedUser(request, env);
+  await rateLimitSubject(env, "referral-claim", `user:${userId}`, 10, 3600);
+  const body = await readJson<{ code?: unknown; deviceId?: unknown; studyDay?: unknown } | null>(request);
+  const existing = await env.DB.prepare("SELECT claimed_day FROM referral_claims WHERE invitee_user_id = ?")
+    .bind(userId).first();
+  if (existing) return json({ detail: "已经填过邀请码了。" }, 409);
+  const user = await env.DB.prepare("SELECT created_at FROM users WHERE id = ?").bind(userId).first<{ created_at: string }>();
+  if (!user || !referralAccountIsNew(user.created_at)) return json({ detail: "只有新账号能填邀请码。" }, 403);
+  const code = typeof body?.code === "string" ? body.code.trim().toUpperCase() : "";
+  if (code.length !== 6 || Array.from(code).some((char) => !TEAM_INVITE_ALPHABET.includes(char))) {
+    return json({ detail: "邀请码无效。" }, 400);
+  }
+  const inviter = await env.DB.prepare("SELECT user_id, device_id FROM referral_codes WHERE code = ?")
+    .bind(code).first<{ user_id: string; device_id: string | null }>();
+  if (!inviter) return json({ detail: "邀请码无效。" }, 400);
+  const deviceId = referralDeviceId(body?.deviceId);
+  if (inviter.user_id === userId || (deviceId && deviceId === inviter.device_id)) {
+    return json({ detail: "不能填自己的邀请码。" }, 400);
+  }
+  const day = validStudyDay(body?.studyDay);
+  if (!day) return json({ detail: "学习日期无效。" }, 400);
+  const result = await env.DB.prepare(`INSERT OR IGNORE INTO referral_claims
+    (invitee_user_id, inviter_user_id, claimed_day, claimed_at)
+    SELECT ?, user_id, ?, ? FROM referral_codes
+    WHERE code = ? AND user_id <> ? AND (? IS NULL OR device_id IS NULL OR device_id <> ?)
+  `).bind(userId, day, new Date().toISOString(), code, userId, deviceId, deviceId).run();
+  if (!result.meta.changes) {
+    const claimed = await env.DB.prepare("SELECT 1 FROM referral_claims WHERE invitee_user_id = ?").bind(userId).first();
+    return claimed ? json({ detail: "已经填过邀请码了。" }, 409) : json({ detail: "不能填自己的邀请码。" }, 400);
+  }
+  return json({ claim: referralClaimView({ claimed_day: day, set_unlocked_at: null }) });
+};
+
+const reportReferralEarnings = async (request: Request, env: Env) => {
+  const userId = await requireVerifiedUser(request, env);
+  await rateLimitSubject(env, "referral-write", `user:${userId}`, 60, 3600);
+  const claim = await env.DB.prepare("SELECT claimed_day, set_unlocked_at FROM referral_claims WHERE invitee_user_id = ?")
+    .bind(userId).first<ReferralClaimRow>();
+  if (!claim) return json({ detail: "还没有填邀请码。" }, 404);
+  // 500 rows with 80-character Unicode keys can exceed the default 64 KiB JSON limit.
+  const body = await readJson<{ rows?: unknown } | null>(request, 512 * 1024);
+  if (!Array.isArray(body?.rows) || body.rows.length > 500) return json({ detail: "奖励记录无效。" }, 400);
+  const now = new Date().toISOString();
+  const endDay = shiftTeamDay(claim.claimed_day, 29);
+  const latestDay = shiftTeamDay(teamStudyDay(), 1);
+  const writes: D1PreparedStatement[] = [];
+  for (const row of body.rows) {
+    if (!row || typeof row !== "object" || typeof row.kind !== "string" || !Object.hasOwn(REFERRAL_ROW_MAX, row.kind)
+      || !Number.isInteger(row.amount) || row.amount < 1 || row.amount > REFERRAL_ROW_MAX[row.kind]
+      || typeof row.key !== "string" || !row.key || row.key.length > 80 || typeof row.day !== "string") continue;
+    // Reports can be offline for the full 30-day window; team activity's default two-day tolerance does not apply.
+    const day = validStudyDay(row.day, Infinity);
+    if (!day || day < claim.claimed_day || day > endDay || day > latestDay) continue;
+    // Read sums inside the INSERT: concurrent requests cannot overspend either cap, and duplicates spend nothing.
+    writes.push(env.DB.prepare(`INSERT OR IGNORE INTO referral_earnings
+      (invitee_user_id, kind, key, day, amount, inviter_amount, created_at)
+      SELECT c.invitee_user_id, ?, ?, ?, ?, MIN(?, MAX(0, ? - (
+        SELECT COALESCE(SUM(e.inviter_amount), 0) FROM referral_earnings e
+        JOIN referral_claims other ON other.invitee_user_id = e.invitee_user_id
+        WHERE other.inviter_user_id = c.inviter_user_id
+      ))), ? FROM referral_claims c
+      WHERE c.invitee_user_id = ? AND ? + (
+        SELECT COALESCE(SUM(amount), 0) FROM referral_earnings WHERE invitee_user_id = ? AND day = ?
+      ) <= 700
+    `).bind(row.kind, row.key, day, row.amount, Math.floor(row.amount / 2), REFERRAL_INVITER_CAP, now,
+      userId, row.amount, userId, day));
+  }
+  const insertedCount = writes.length;
+  // Commit earnings and both unlocks together, including recovery on idempotent re-reports.
+  writes.push(
+    env.DB.prepare(`UPDATE referral_claims SET set_unlocked_at = COALESCE(set_unlocked_at, ?)
+      WHERE invitee_user_id = ? AND EXISTS (
+        SELECT 1 FROM referral_earnings WHERE invitee_user_id = ? AND kind = 'plan'
+      )`).bind(now, userId, userId),
+    env.DB.prepare(`UPDATE referral_claims SET qualified_at = COALESCE(qualified_at, ?)
+      WHERE invitee_user_id = ? AND (
+        SELECT COUNT(DISTINCT day) FROM referral_earnings WHERE invitee_user_id = ?
+          AND day <= date(referral_claims.claimed_day, '+13 days')
+      ) >= 3`).bind(now, userId, userId),
+    env.DB.prepare(`UPDATE referral_codes SET set_unlocked_at = COALESCE(set_unlocked_at, ?)
+      WHERE user_id = (SELECT inviter_user_id FROM referral_claims WHERE invitee_user_id = ? AND qualified_at IS NOT NULL)
+    `).bind(now, userId),
+    env.DB.prepare("SELECT set_unlocked_at FROM referral_claims WHERE invitee_user_id = ?").bind(userId)
+  );
+  const results = await env.DB.batch(writes);
+  return json({
+    accepted: results.slice(0, insertedCount).reduce((sum, result) => sum + (result.meta.changes ?? 0), 0),
+    setUnlocked: Boolean((results[results.length - 1].results[0] as { set_unlocked_at: string | null })?.set_unlocked_at)
+  });
+};
+
 const TEAM_TITLE_KEYS: ReadonlySet<string> = new Set(Object.values(YUZU_TITLE_IDS));
 const updateTeamTitle = async (request: Request, env: Env) => {
   const userId = await requireVerifiedUser(request, env);
@@ -2516,7 +2680,10 @@ const updateTeamTitle = async (request: Request, env: Env) => {
   if (typeof body?.title !== "string" || (body.title !== "" && !TEAM_TITLE_KEYS.has(body.title))) {
     return json({ detail: "队伍称号无效。" }, 400);
   }
-  // user_id is UNIQUE: one account belongs to at most one team. Cosmetics need no purchase check.
+  if (body.title === YUZU_TITLE_IDS.yuyou && !await referralSetUnlocked(env, userId)) {
+    return json({ detail: "这个称号要邀请获得。" }, 403);
+  }
+  // user_id is UNIQUE: one account belongs to at most one team. Ordinary cosmetics need no purchase check.
   const result = await env.DB.prepare("UPDATE team_members SET title = ? WHERE user_id = ?")
     .bind(body.title || null, userId).run();
   if (!result.meta.changes) return json({ detail: "你还没有加入队伍。" }, 404);
@@ -3757,7 +3924,8 @@ const health = async (env: Env) => {
     "teams", "team_members", "team_daily_activity", "team_cheers", "team_reports", // 0014
     "trial_grants",            // 0015
     "launch_gift_grants",      // 0016
-    "feedback_reports"         // 0017
+    "feedback_reports",        // 0017
+    "referral_codes", "referral_claims", "referral_earnings" // 0021
   ];
   const found = await env.DB.prepare(`
     SELECT type, name FROM sqlite_master
@@ -3854,6 +4022,9 @@ const route = async (request: Request, env: Env) => {
   if (duelPath && request.method === "GET" && !duelPath[2]) return getDuel(request, env, duelPath[1]);
   if (duelPath && request.method === "POST" && duelPath[2] === "submit") return submitDuel(request, env, duelPath[1]);
   if (duelPath && request.method === "POST" && duelPath[2] === "claim") return claimDuel(request, env, duelPath[1]);
+  if (request.method === "GET" && url.pathname === "/api/referral/me") return getMyReferral(request, env);
+  if (request.method === "POST" && url.pathname === "/api/referral/claim") return claimReferral(request, env);
+  if (request.method === "POST" && url.pathname === "/api/referral/earnings") return reportReferralEarnings(request, env);
   if (request.method === "GET" && url.pathname === "/api/teams/me") return getMyTeam(request, env);
   if (request.method === "GET" && url.pathname === "/api/teams/plaza") return listTeamPlaza(request, env);
   if (request.method === "POST" && url.pathname === "/api/teams/overview") return teamOverview(request, env);

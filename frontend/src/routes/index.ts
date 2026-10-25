@@ -22,6 +22,7 @@ import { ProfileRoute } from "./profile";
 import { ProRoute } from "./pro";
 import { QuickStudyRoute } from "./quick-study";
 import { SettingsRoute } from "./settings";
+import { InviteRoute } from "./invite";
 import { TeamRoute } from "./team";
 import { DuelRoute } from "./duel";
 import { UserAgreementRoute } from "./user-agreement";
@@ -35,6 +36,7 @@ export const ROUTES: Record<Page, ComponentType> = {
   home: HomeRoute,
   word: WordRoute,
   team: TeamRoute,
+  invite: InviteRoute,
   duel: DuelRoute,
   "quick-study": QuickStudyRoute,
   "vocab-test": VocabTestRoute,

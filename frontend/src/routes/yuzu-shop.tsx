@@ -3,5 +3,5 @@ import { YuzuShopPage } from "../pages/YuzuShopPage";
 import { ToolSubpage } from "./shared";
 export function YuzuShopRoute() {
   const { navigate } = useApp();
-  return <ToolSubpage title="柚子商店"><YuzuShopPage onOpenPro={() => navigate("pro")} /></ToolSubpage>;
+  return <ToolSubpage title="柚子商店"><YuzuShopPage onOpenInvite={() => navigate("invite")} onOpenPro={() => navigate("pro")} /></ToolSubpage>;
 }

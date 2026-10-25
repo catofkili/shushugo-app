@@ -80,13 +80,13 @@
     },
     {
       "caller": "runtime.js",
-      "request": "./lazy/duplicate-merge.js",
-      "target": "lazy/duplicate-merge.js"
+      "request": "./lazy/mascot-skins.js",
+      "target": "lazy/mascot-skins.js"
     },
     {
       "caller": "runtime.js",
-      "request": "./lazy/mascot-skins.js",
-      "target": "lazy/mascot-skins.js"
+      "request": "./lazy/duplicate-merge.js",
+      "target": "lazy/duplicate-merge.js"
     },
     {
       "caller": "runtime.js",

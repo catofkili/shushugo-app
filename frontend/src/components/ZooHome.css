@@ -7,3 +7,9 @@
 .zoo-post-exam-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:13px}
 .zoo-post-exam-actions button{min-height:36px;padding:7px 11px;border:1px solid var(--ds-line);border-radius:12px;background:var(--ds-surface);color:var(--ds-ink);font-size:12px;font-weight:700}
 .zoo-post-exam-actions .zoo-post-exam-primary{border-color:var(--ds-primary);background:var(--ds-primary);color:#fff}
+
+.zoo-referral-banner{display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--ds-inset);border-radius:12px;color:var(--ds-ink-2)}
+.zoo-referral-banner button{padding:12px 16px;min-height:44px;background:none;color:inherit}
+.zoo-referral-banner button:first-child{flex:1;display:flex;justify-content:space-between;text-align:left;font-size:14px}
+
+.zoo-duo-plan{grid-column:1/-1}

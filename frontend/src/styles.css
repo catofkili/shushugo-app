@@ -409,6 +409,21 @@
    在哪个皮肤里都还是它们自己。每个皮肤浅色深色各一份,少一份就是换了皮肤
    之后切深色模式退回默认绿,看着像坏了。
    ====================================================================== */
+/* 晚霞：暖橙主色、粉白底；深色仍保留暖调。 */
+[data-skin="theme-dusk"] {
+  --zoo-cream: #FBECE6; --zoo-cream-2: #F4DCD4; --zoo-surface: #FFF7F2;
+  --zoo-primary: #E9A080; --zoo-primary-dark: #D88970; --zoo-primary-deep: #934D3A;
+  --zoo-primary-soft: #F8DCD0; --zoo-on-primary: #43241C;
+  --color-bg-primary: #FBECE6; --color-bg-secondary: #F4DCD4; --color-bg-card: #FFF7F2;
+  --color-accent: #E9A080; --color-accent-light: #F0B7A1; --color-accent-lighter: #F8DCD0; --color-accent-dark: #D88970;
+}
+[data-theme="dark"][data-skin="theme-dusk"] {
+  --zoo-cream: #2A2021; --zoo-cream-2: #38292A; --zoo-surface: #403031;
+  --zoo-primary: #F0AF96; --zoo-primary-dark: #F5C2AE; --zoo-primary-deep: #F9D7C8;
+  --zoo-primary-soft: #52352F; --zoo-on-primary: #301B16;
+  --color-bg-primary: #302426; --color-bg-secondary: #3B2D2F; --color-bg-card: #463638;
+  --color-accent: #F0AF96; --color-accent-light: #F5C2AE; --color-accent-lighter: #F9D7C8; --color-accent-dark: #F5C2AE;
+}
 /* 抹茶:青绿偏蓝,底色带一点绿 */
 [data-skin="theme-matcha"] {
   --zoo-cream: #EAF1E8; --zoo-cream-2: #DCE8DA; --zoo-surface: #F6FAF5;

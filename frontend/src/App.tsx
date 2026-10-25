@@ -60,7 +60,7 @@ export default function App() {
   const [authOpen, setAuthOpen] = useState(false);
   const [feedbackComposerOpen, setFeedbackComposerOpen] = useState(false);
   const [levelSetupOpen, setLevelSetupOpen] = useState(() => {
-    if (state.page === "duel") return false;
+    if (state.page === "duel" || state.page === "invite") return false;
     try { return shouldShowLevelSetup(); } catch { return false; }
   });
   const [trialEndedOpen, setTrialEndedOpen] = useState(false);

@@ -4,6 +4,7 @@ import {
   getCloudSession, getCloudTeamRewards, updateCloudTeamTitle, getLocalSyncOwnerEmail, reportCloudTeamActivity,
   type CloudTeam, type CloudTeamActivity, type CloudTeamPlazaItem
 } from "./sync-api";
+import { syncReferral } from "./referral";
 import { teamDayPassed } from "./team-rules";
 import { equippedItem, YUZU_EVENT, bookTeamReward } from "./yuzu";
 
@@ -96,6 +97,7 @@ export const claimTeamCheckin = async (): Promise<boolean> => {
 
 /** 服务端给结算行，本地账本天然幂等；切号或换库时丢弃这次响应。 */
 export const collectTeamRewards = async (): Promise<number> => {
+  void syncReferral();
   const session = await getCloudSession();
   if (!session.token || !session.email) return 0;
   const owner = await getLocalSyncOwnerEmail();

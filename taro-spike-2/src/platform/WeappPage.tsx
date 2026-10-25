@@ -1,6 +1,8 @@
 import './app-polyfills.weapp';
 // 弹层随 lazy 加载，但 createPortal 适配器必须沿用主包 renderer，不能在异步块复制 React reconciler。
 import './react-dom.weapp';
+// 首页与邀请分包必须共享登录会话的十分钟节流状态。
+import '../../../frontend/src/lib/referral';
 // 这三份分别保有反馈订阅、支付运行态、可失效词性缓存；异步外壳和分包必须共享同一实例。
 import '../../../frontend/src/lib/feedback';
 import '../../../frontend/src/lib/purchases';
@@ -160,7 +162,7 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
         setReady(true);
         perfRecord(`页面 · ${page} 就绪`, Date.now() - openedAt);
         // 对战直达先应战，和网页一致；不标记已检查，之后回首页仍走首次设定。
-        if (!levelSetupChecked && !(page === 'duel' && getAppState().duelId)) {
+        if (!levelSetupChecked && page !== 'invite' && !(page === 'duel' && getAppState().duelId)) {
           levelSetupChecked = true;
           try {
             firstRunSetup = shouldShowLevelSetup();

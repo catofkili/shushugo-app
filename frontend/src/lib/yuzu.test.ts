@@ -134,7 +134,7 @@ describe("消费", () => {
   it("称号单买：首件自动装备，换另一件只占一个槽，卸下保留所有权", () => {
     const titles = YUZU_ITEMS.filter((item) => item.category === "title");
     expect(titles.map((item) => item.id).sort()).toEqual(Object.values(YUZU_TITLE_IDS).sort());
-    expect(titles.every((item) => !item.soon && item.price === 3000)).toBe(true);
+    expect(titles.every((item) => !item.soon && item.price === (item.invite ? 0 : 3000))).toBe(true);
     fund(6000);
     expect(buyItem("title-early")).toBe(true);
     expect(equippedItem("title")).toBe("title-early");
