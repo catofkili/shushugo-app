@@ -1,6 +1,9 @@
 # 拉新邀请码：阿里云服务端部署清单
 
-本文只提供步骤，未执行线上部署。按 `docs/TEAM_TITLE_DEPLOY.md` 的增量迁移流程操作：**备份 → 执行 0021 → 验证三张表及迁移记录 → 启动新 Worker**。必须在新 Worker 接流量之前迁移，不能只更新代码。
+**2026-10-26 02:26 已由 Claude 经 ssh 按本文部署完**（0020 + 0021 一起补上，停服约 18 秒，外网 `/api/referral/me` 401、health 三张表 true）。
+⚠️ 服务器上的 `/opt/shushugo/cloudflare-sync` 没有 `package.json`，第 2 步代码备份的 tar 带上它会在服务已停的状态下中断——已从命令里去掉。
+
+本文原是部署步骤草稿：按 `docs/TEAM_TITLE_DEPLOY.md` 的增量迁移流程操作：**备份 → 执行 0021 → 验证三张表及迁移记录 → 启动新 Worker**。必须在新 Worker 接流量之前迁移，不能只更新代码。
 
 不要运行 `selfhost/migrate.mjs`、`install-migration.sh` 或 `d1:migrate:remote`：前两者是 Cloudflare 全量搬家工具，重新导入可能覆盖阿里云的新数据。本次不改 DNS、代理、密钥。
 
@@ -54,8 +57,7 @@ sudo tar -czf "/opt/shushugo/pre-referral-code-$REFERRAL_STAMP.tar.gz" -C /opt/s
   cloudflare-sync/selfhost/adapters.mjs \
   cloudflare-sync/selfhost/server.mjs \
   cloudflare-sync/migrations \
-  cloudflare-sync/wrangler.jsonc \
-  cloudflare-sync/package.json
+  cloudflare-sync/wrangler.jsonc
 ```
 
 数据库必须用 SQLite `.backup`，不能直接复制 WAL 模式的裸文件。备份保留至人工确认稳定。
