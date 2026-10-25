@@ -1,3 +1,4 @@
+// 读 dist 构建产物，只挂在 build:weapp 末尾；别放回 npm test（CI 和 ci-local 不构建 Taro，dist 不存在）。
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
