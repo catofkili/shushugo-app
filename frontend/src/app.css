@@ -1619,6 +1619,11 @@
 .study-focus-chip{display:inline-flex;align-items:center;justify-content:center;gap:5px;flex:none;border:1px solid color-mix(in srgb,var(--ds-primary) 40%,transparent);border-radius:999px;padding:7px 10px;background:color-mix(in srgb,var(--ds-primary) 12%,transparent);color:var(--ds-ink);font-size:12px;font-weight:750;white-space:nowrap}
 .study-focus-chip{color:var(--ds-primary-deep,#7a4a20);font-variant-numeric:tabular-nums}
 .study-focus-chip small{font-size:10px}
+/* 暂停中的倒计时浮标：位置同底部提示（手机在自绘底栏上方，桌面在右下），z 在页面之上、弹层之下。 */
+.study-focus-dock{position:fixed;z-index:55;right:12px;bottom:calc(env(safe-area-inset-bottom) + 5rem);display:inline-flex;align-items:center;gap:7px;border:1px solid color-mix(in srgb,var(--ds-primary) 45%,transparent);border-radius:999px;padding:9px 14px;background:var(--ds-surface);color:var(--ds-primary-deep,#7a4a20);font-size:13px;font-weight:750;box-shadow:0 8px 24px rgba(0,0,0,.18);font-variant-numeric:tabular-nums}
+.study-focus-dock b{color:var(--ds-ink);font-weight:850}
+.study-focus-dock span{color:var(--ds-ink);font-size:12px;font-weight:700}
+@media (min-width:1024px){.study-focus-dock{right:20px;bottom:20px}}
 .study-focus-veil{position:fixed;z-index:10000;inset:0;display:grid;place-items:center;padding:20px;background:rgba(22,27,25,.76);backdrop-filter:blur(8px)}
 .study-focus-dialog{box-sizing:border-box;width:min(100%,520px);max-height:min(90dvh,760px);overflow:visible;border:1px solid var(--ds-line);border-radius:26px;padding:clamp(22px,6vw,34px);background:var(--ds-surface);color:var(--ds-ink);box-shadow:0 24px 90px rgba(0,0,0,.35)}
 .study-focus-kicker{display:flex;align-items:center;gap:7px;color:var(--ds-primary-deep,#7a4a20);font-size:12px;font-weight:800;letter-spacing:.06em}

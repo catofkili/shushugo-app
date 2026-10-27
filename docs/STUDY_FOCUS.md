@@ -55,3 +55,14 @@
 - 网页与 Taro 的活动适配：`frontend/src/hooks/useStudyActivity.ts`、`taro-spike-2/src/platform/use-study-activity.weapp.ts`、`taro-spike-2/src/platform/WeappPage.tsx`。离开、切后台、空闲时必须停表；平台不应另造一份计时状态。
 - 原生小程序主页开关在 `wechat-miniprogram/src/pages/home/index.*`，背词页计时与休息层在 `wechat-miniprogram/src/pages/index/index.*`；`study-focus-chip` 单独读快照，避免每秒更新整页。切主页会作废本段，切到后台则暂停并在回前台后续上。
 - 关键回归覆盖窗口切分、独立基线、奖励领取和合并去重：`frontend/src/lib/study-focus.test.ts`、`frontend/src/lib/yuzu.test.ts`、`frontend/src/lib/sync/merge.test.ts`、`taro-spike-2/scripts/study-activity-smoke.cjs`。
+
+## 2026-10-27 离开背词页：倒计时暂停，不归零（用户要求）
+
+用户原话：倒计时不要一走就归零重计；点到 tab 栏弹一个「倒计时会继续」的提示；倒计时优先级高一点、UI 也做好，现在除了单词页哪都看不到。**覆盖上文几处「离开背词页作废本段 / 下次进来重新计」的旧说法**（旧文保留作历史，现行以本节为准）：
+
+- **暂停而不是作废**：`leaveStudyFocus(source)` 遇到「倒计时在跑、还没进休息页」时只记下 `pausedFrom` / `pausedAt` 并把 `source` 置空，`focus` 窗口留着；返回 `true` 表示是暂停。暂停期间 `recordStudyFocusTime` 因为没有 source 不收时间，所以**走的是有效学习时间，不是墙上时间**，人在别的页面时倒计时不动。
+- **接回条件**：`enterStudyFocus` 同入口、同一学习日（凌晨 4 点边界）回来就接着走，剩余秒数、已背词数、逐词自评都在；入口不同、跨过学习日，一律新开一段。小程序切 Tab 回来走 `resumeStudyFocus → enterStudyFocus`，同一条路。内存态，重启不恢复（和以前一样）。
+- **仍然作废的三种**：① 在主页取消「倒计时」勾（`setStudyFocusArmed(false)` 会顺手 `stopStudyFocus`，不然暂停段永远挂在浮标上）；② 已经进了休息页、奖励没领就离开（不暂停，照旧作废——这是「宝箱领取前离开作废」那条老规矩）；③ 上面说的换入口 / 跨日。
+- **提示**：`WordStudy` 离开时（卸载或小程序 `onLeave`）`leaveStudyFocus` 返回 `true` 才弹 `showNotice("倒计时先暂停，回背词页接着走")`。⚠️ 要晚一拍（`setTimeout 0`）并复查 `snapshot.paused` 再弹：开发模式 StrictMode 会「卸载→立刻重挂」，不延迟的话每次进背词页都误弹一次（这个坑 10-27 踩过）。`leaveStudyFocus` 对已离开的 source 是空操作，所以 `onLeave` 和卸载两次调用只弹一次。
+- **全局浮标 `StudyFocusDock`**：挂在 `AppShell` 的 `GlobalOverlays`，网页和 Taro 小程序共用；`snapshot.paused` 时显示「⏸ 9:54 已暂停 · 回去继续」，点一下 `navigate("word")`。背词页本身有自己的胶囊，浮标只在暂停时出现。位置同底部提示（手机在自绘底栏上方、桌面在右下），`z-index: 55`，在页面之上、弹层之下。快照多了 `paused` 字段。
+- 验证：`study-focus.test.ts` 新增「离开背词页：倒计时暂停，不归零」三条；网页 5199 实测进背词页 → 点主页 tab → 浮标 9:54 → 点浮标回来仍是 9:54。小程序真机 / 开发者工具未在本机看过（浮标底部偏移沿用底部提示的值，原生 tab 栏在 webview 之外，可能偏高，待看）。

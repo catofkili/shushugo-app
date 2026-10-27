@@ -2,7 +2,8 @@
  * 背词的十分钟观测与可选倒计时，共享给 Web / App / 小程序。
  * 这里只收 study-clock 算过的有效毫秒，不自己数墙上时间。隐藏、走神、休息由调用方停表。
  * baseline 独立累计，启用/关闭倒计时都不重置它。未满窗口仅本机保存，完整窗口进入同步。
- * focus 不恢复：离开学习页或重启后，未领取的奖励作废，不能从历史窗口补领。
+ * 倒计时（focus）离开学习页只是暂停，同一学习日内回来接着走；重启、跨过凌晨 4 点、
+ * 取消主页的勾、或已进休息页（summary）还没领就离开，则作废，不能从历史窗口补领。
  */
 import type { WordAnswer } from "../types/vocabulary";
 import { getDatabase } from "./database";
@@ -31,6 +32,8 @@ export const setStudyFocusArmed = (armed: boolean): void => {
     if (armed) localStorage.setItem(ARMED_KEY, "1");
     else localStorage.removeItem(ARMED_KEY);
   } catch { /* 存不下就只在这一次生效 */ }
+  // 取消勾 = 不要倒计时了：人不在背词页时留着的暂停段一起作废（在页内取消的由页面自己停）。
+  if (!armed) try { if (!runtime().source) stopStudyFocus(); } catch { /* 库还没开就没有可停的 */ }
 };
 
 type Answers = Record<string, WordAnswer>;
@@ -65,9 +68,14 @@ export interface StudyFocusSnapshot {
   summary: StudyFocusSummary | null;
   nextReward: number;
   rewardClaimed: boolean;
+  /** 倒计时还留着、但人不在背词页：时间不走，回去接着计。 */
+  paused: boolean;
 }
 interface Runtime {
   source: string | null;
+  /** 离开时倒计时是在跑的：记下哪个入口、什么时候，回到同一入口、同一学习日才接上。 */
+  pausedFrom: string | null;
+  pausedAt: number;
   baselines: Record<string, StudyWindow>;
   focus: StudyWindow | null;
   completedAt: number | null;
@@ -112,7 +120,7 @@ const runtime = (): Runtime => {
         baselines = Object.fromEntries(Object.entries(saved).filter(([, value]) => validWindow(value)));
       }
     } catch { /* 只丢损坏的未满窗口；历史记录和奖励账本不受影响。 */ }
-    current = { source: null, baselines, focus: null, completedAt: null, summary: null, unsavedMs: 0, reward: null, rewardClaimed: false, answerHistory: [] };
+    current = { source: null, pausedFrom: null, pausedAt: 0, baselines, focus: null, completedAt: null, summary: null, unsavedMs: 0, reward: null, rewardClaimed: false, answerHistory: [] };
     runtimes.set(db, current);
   }
   return current;
@@ -182,7 +190,8 @@ export const getStudyFocusSnapshot = (nowMs = Date.now()): StudyFocusSnapshot =>
     summary: current.summary,
     nextReward: current.summary && !current.summary.qualified
       ? 0 : cachedNextReward(current, studyDate(new Date(current.completedAt ?? nowMs))),
-    rewardClaimed: current.rewardClaimed
+    rewardClaimed: current.rewardClaimed,
+    paused: !current.source && !!current.focus
   };
 };
 
@@ -195,13 +204,17 @@ export const sameStudyFocusState = (a: StudyFocusSnapshot, b: StudyFocusSnapshot
 
 export const enterStudyFocus = (source: string, nowMs = Date.now()): StudyFocusSnapshot => {
   const current = runtime();
-  // A page entry is a new session even when it uses the same source. Visibility resumes
-  // use resumeStudyFocus instead, so an app background does not discard this window.
-  current.focus = null;
+  // 暂停着的倒计时（leaveStudyFocus 留下的）同入口、同学习日回来就接着走；其余一律是新的一段。
+  const resumed = current.focus && !current.summary && !current.source && current.pausedFrom === source
+    && studyDate(new Date(current.pausedAt)) === studyDate(new Date(nowMs));
+  if (!resumed) {
+    current.focus = null;
+    current.rewardClaimed = false;
+  }
+  current.pausedFrom = null;
   current.summary = null;
   current.completedAt = null;
   current.reward = null;
-  current.rewardClaimed = false;
   current.source = source;
   current.answerHistory = [];
   current.baselines[source] ??= newWindow(nowMs);
@@ -348,12 +361,21 @@ export const finishStudyFocusAtDailyCompletion = (nowMs = Date.now()): StudyFocu
 };
 
 /**
- * 回主页/离开学习页必须调用：保留无感观测，丢弃当前倒计时和待领奖励。
+ * 回主页/离开学习页必须调用：无感观测照旧收尾；正在跑的倒计时只是暂停（返回 true，
+ * 调用方据此提示「倒计时会继续」），休息页上没领的奖励和没开的倒计时一样清掉。
  * 带 source 时只离开自己：小程序里 A 页的 onShow 可能先于 B 页的卸载，
- * B 离开时不能把 A 刚接上的会话一起清掉。
+ * B 离开时不能把 A 刚接上的会话一起清掉。已经离开（source 为空）再调用是空操作，
+ * 不然卸载时的第二次调用会把刚暂停的倒计时清掉。
  */
-export const leaveStudyFocus = (source?: string): void => {
-  if (source !== undefined && runtime().source !== source) return;
-  stopStudyFocus();
-  runtime().source = null;
+export const leaveStudyFocus = (source?: string, nowMs = Date.now()): boolean => {
+  const current = runtime();
+  if (!current.source || (source !== undefined && current.source !== source)) return false;
+  const pause = !!current.focus && !current.summary;
+  if (pause) {
+    current.pausedFrom = current.source;
+    current.pausedAt = nowMs;
+    persistPartial(current);
+  } else stopStudyFocus(nowMs);
+  current.source = null;
+  return pause;
 };

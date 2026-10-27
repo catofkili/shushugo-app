@@ -11,7 +11,7 @@ vi.mock("./database/db-utils", async (original) => ({
 
 import {
   claimStudyFocusReward, continueStudyFocus, enterStudyFocus, getStudyFocusSnapshot, leaveStudyFocus,
-  finishStudyFocusAtDailyCompletion, recordStudyFocusAnswer, recordStudyFocusTime, resumeStudyFocus, sameStudyFocusState, startStudyFocus, stopStudyFocus,
+  finishStudyFocusAtDailyCompletion, recordStudyFocusAnswer, recordStudyFocusTime, resumeStudyFocus, sameStudyFocusState, setStudyFocusArmed, startStudyFocus, stopStudyFocus,
   STUDY_FOCUS_MIN_WORDS, STUDY_FOCUS_PARTIAL_KEY, STUDY_FOCUS_REWARD_MIN_MS, STUDY_FOCUS_REWARDS, STUDY_FOCUS_WINDOW_MS, summarizeStudyFocus, undoStudyFocusAnswer
 } from "./study-focus";
 import { LOCAL_SCHEMA_SQL } from "./database/schema";
@@ -191,8 +191,8 @@ describe("多个学习页同时挂着（小程序 Tab 页不卸载）", () => {
     expect(getStudyFocusSnapshot(now).remainingSeconds).toBe(540);
     recordStudyFocusTime(30_000, now, "word");
     expect(getStudyFocusSnapshot(now).remainingSeconds).toBe(510);
-    leaveStudyFocus("word");
-    expect(getStudyFocusSnapshot(now).status).toBe("off");
+    expect(leaveStudyFocus("word")).toBe(true);
+    expect(getStudyFocusSnapshot(now)).toMatchObject({ status: "running", paused: true, remainingSeconds: 510 });
   });
 
   it("离开后重新进入同一入口，观测接着记、倒计时能再开", () => {
@@ -302,5 +302,41 @@ describe("倒计时的递减奖励", () => {
     expect(SYNCED_TABLES.find((entry) => entry.table === "study_focus_windows"))
       .toEqual({ table: "study_focus_windows", keys: ["id"], strategy: "union" });
     expect(DEVICE_LOCAL_STATE_KEYS.has(STUDY_FOCUS_PARTIAL_KEY)).toBe(true);
+  });
+});
+
+describe("离开背词页：倒计时暂停，不归零", () => {
+  it("同入口同一学习日回来接着走；暂停期间不走，第二次离开是空操作", () => {
+    startStudyFocus(now); answer(1); advance(120_000);
+    expect(leaveStudyFocus("word")).toBe(true);
+    expect(leaveStudyFocus("word")).toBe(false);
+    advance(300_000);
+    expect(getStudyFocusSnapshot(now)).toMatchObject({ status: "running", paused: true, remainingSeconds: 480 });
+    enterStudyFocus("word", now);
+    expect(getStudyFocusSnapshot(now)).toMatchObject({ status: "running", paused: false, remainingSeconds: 480 });
+    advance(60_000);
+    expect(getStudyFocusSnapshot(now).remainingSeconds).toBe(420);
+  });
+
+  it("别的入口、跨过学习日、取消主页的勾，暂停的倒计时都作废", () => {
+    startStudyFocus(now); advance(60_000); leaveStudyFocus("word");
+    enterStudyFocus("quick-study", now);
+    expect(getStudyFocusSnapshot(now)).toMatchObject({ status: "off", remainingSeconds: 600 });
+    leaveStudyFocus("quick-study");
+
+    enterStudyFocus("word", now); startStudyFocus(now); leaveStudyFocus("word");
+    enterStudyFocus("word", now + 24 * 3_600_000);
+    expect(getStudyFocusSnapshot(now).status).toBe("off");
+    leaveStudyFocus("word");
+
+    enterStudyFocus("word", now); startStudyFocus(now); leaveStudyFocus("word");
+    setStudyFocusArmed(false);
+    expect(getStudyFocusSnapshot(now)).toMatchObject({ status: "off", paused: false });
+  });
+
+  it("休息页没领就离开：不暂停，照旧作废", () => {
+    startStudyFocus(now); answer(1); fill(9); complete();
+    expect(leaveStudyFocus("word")).toBe(false);
+    expect(getStudyFocusSnapshot(now).status).toBe("off");
   });
 });

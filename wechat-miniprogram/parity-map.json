@@ -664,6 +664,13 @@
       "reason": "Taro 小程序直接编译这份共享源码；不维护第二份页面。"
     },
     {
+      "web": "frontend/src/components/StudyFocusDock.tsx",
+      "mini": [
+        "frontend/src/components/StudyFocusDock.tsx"
+      ],
+      "reason": "Taro 小程序直接编译这份共享源码（经 AppShell 挂在每个页面），原生小程序页面已停止维护；登记自身让同源改动过配对检查。2026-10-27 暂停中的倒计时浮标。"
+    },
+    {
       "web": "frontend/src/components/StudyFocusChest.tsx",
       "mini": [
         "frontend/src/components/StudyFocusChest.tsx"

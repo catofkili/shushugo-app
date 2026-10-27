@@ -4,6 +4,7 @@ import { AuthDialog } from "../components/AuthDialog";
 import { CapybaraMascot } from "../components/CapybaraMascot";
 import { LevelSetup } from "../components/LevelSetup";
 import { Paywall } from "../components/Paywall";
+import { StudyFocusDock } from "../components/StudyFocusDock";
 import { getPersistenceFailure, PERSISTENCE_ERROR_EVENT, PERSISTENCE_OK_EVENT, saveDatabase } from "../lib/storage";
 import { LEVEL_PLAN_TRIAL_EXPIRES_KEY, LEVEL_PLAN_TRIAL_NOTICE_KEY, type CloudSession } from "../lib/sync-api";
 import { useApp, AppContextProvider, type AppContextValue } from "./AppContext";
@@ -114,6 +115,7 @@ function GlobalOverlays({
         </div>
       )}
       <PersistenceBanner />
+      <StudyFocusDock />
       <ReportPrompt />
       {feedbackComposerOpen && <FeedbackComposer onClose={closeFeedbackComposer} />}
       {paywallTarget && (

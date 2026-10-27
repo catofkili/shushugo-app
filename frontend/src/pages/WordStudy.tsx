@@ -55,6 +55,7 @@ import { warmConfusionGroups } from "../lib/confusion-groups";
 import { yieldToPaint } from "../lib/yield-to-paint";
 import { CapybaraWalk } from "../components/CapybaraMascot";
 import { accrueStudyTime, createStudyClock, drainStudySeconds, noteStudyInteraction, STUDY_IDLE_LIMIT_MS } from "../lib/study-clock";
+import { useApp } from "../app/AppContext";
 import { claimStudyFocusReward, continueStudyFocus, enterStudyFocus, finishStudyFocusAtDailyCompletion, getStudyFocusSnapshot, isStudyFocusArmed, recordStudyFocusAnswer, recordStudyFocusTime, leaveStudyFocus, resumeStudyFocus, sameStudyFocusState, setStudyFocusArmed, startStudyFocus, stopStudyFocus, STUDY_FOCUS_BASELINE_DAYS, STUDY_FOCUS_MIN_WORDS, STUDY_FOCUS_WINDOW_MS, undoStudyFocusAnswer, type StudyFocusSnapshot } from "../lib/study-focus";
 import { useStudyActivity, useStudyBreakTabBar } from "../hooks/useStudyActivity";
 
@@ -218,6 +219,14 @@ const StudyFocusChip = ({ nextReward }: { nextReward: number }) => {
 };
 
 export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStubbornQuickStudy, onOpenDistinctionQuiz }: WordStudyProps) => {
+  const { showNotice } = useApp();
+  /** 离开背词页：倒计时只是暂停，走的时候说一声（卸载和小程序切 Tab 都走这里，只会提示一次）。 */
+  const leaveFocusRef = useRef(() => {});
+  leaveFocusRef.current = () => {
+    if (!leaveStudyFocus(FOCUS_SOURCE)) return;
+    // 晚一拍再说：开发模式的 StrictMode 会卸载后立刻重挂，那时已经接回去了，不该提示。
+    window.setTimeout(() => { if (getStudyFocusSnapshot().paused) showNotice("倒计时先暂停，回背词页接着走", 2600); }, 0);
+  };
   const { pickFolder, picker } = useFavoriteFolderPicker();
   const [card, setCard] = useState<WordCard | null>(null);
   const [unitKey, setUnitKey] = useState<string | null>(null);
@@ -659,14 +668,14 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
 
   useEffect(() => {
     const entered = enterStudyFocus(FOCUS_SOURCE);
-    // 主页勾了「倒计时」就进门即开；离开时 leaveStudyFocus 作废这一段，下次进来重新计。
+    // 主页勾了「倒计时」就进门即开；离开只是暂停，同一学习日回来接着走（startStudyFocus 已有就不重开）。
     const initial = isStudyFocusArmed() ? startStudyFocus() : entered;
     updateFocusSnapshot(initial);
     const interval = window.setInterval(() => { void flushActiveStudyTimeRef.current(); }, 1000);
     return () => {
       window.clearInterval(interval);
       void flushActiveStudyTimeRef.current(undefined, "force");
-      leaveStudyFocus(FOCUS_SOURCE);
+      leaveFocusRef.current();
     };
   }, [updateFocusSnapshot]);
 
@@ -688,7 +697,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     },
     onLeave: () => {
       void flushActiveStudyTimeRef.current(undefined, "force");
-      leaveStudyFocus(FOCUS_SOURCE);
+      leaveFocusRef.current();
     }
   });
 

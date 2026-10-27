@@ -4,7 +4,7 @@ import { ScrollArea } from "./ScrollArea";
 import { STUDY_FOCUS_MIN_WORDS, STUDY_FOCUS_REWARDS } from "../lib/study-focus";
 
 /**
- * 勾上主页「倒计时」之前的说明。离开背词页作废奖励这条必须在开始之前说，
+ * 勾上主页「倒计时」之前的说明。暂停 / 作废的规则必须在开始之前说，
  * 所以放在勾选那一下，而不是进了背词页再弹。
  */
 export function StudyFocusIntro({ onConfirm, onCancel }: { onConfirm: () => void; onCancel: () => void }) {
@@ -14,7 +14,7 @@ export function StudyFocusIntro({ onConfirm, onCancel }: { onConfirm: () => void
         <span className="study-focus-kicker"><Timer size={16} /> 十分钟专注</span>
         <h2 id="study-focus-intro-title">开启倒计时学习？</h2>
         <p>进背词页就开始倒计时，每专注 10 分钟停下来休息一次，看看这段背得怎么样。</p>
-        <p>离开背词页，本段额外柚子作废。每段满 10 分钟可领本轮奖励；当天计划提前完成时，本轮满 5 分钟且背够 {STUDY_FOCUS_MIN_WORDS} 个词，也会放进结尾宝箱。</p>
+        <p>离开背词页倒计时会先暂停，当天回来接着走。每段满 10 分钟可领本轮奖励；当天计划提前完成时，本轮满 5 分钟且背够 {STUDY_FOCUS_MIN_WORDS} 个词，也会放进结尾宝箱。</p>
         <p className="study-focus-reward-note">全程倒计时可得超过 200 柚子</p>
         <p className="study-focus-tiers">奖励依次为：{STUDY_FOCUS_REWARDS.join("、")}，每天最多九段。</p>
         <div className="study-focus-actions">
