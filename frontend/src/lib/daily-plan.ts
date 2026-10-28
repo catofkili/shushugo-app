@@ -10,10 +10,12 @@ import { defaultStudyPreferences, getEffectiveStudyPreferences, getStudyPreferen
 import { getJlptPlanStatus } from "./jlpt/status";
 import { levelsInScope, JLPT_TARGETS, type JlptTarget } from "./jlpt/plan";
 import { firstValue, rowsFor, studyDayEnd } from "./study-core";
-import { kanjiCharPool } from "./kanji-char-cards";
-import { confusionCardPool } from "./confusion-cards";
+import { kanjiCharPool, kanjiCharPriorCount } from "./kanji-char-cards";
+import { confusionCardPool, confusionPriorCount } from "./confusion-cards";
 import { dailyReviewCap } from "./review-budget";
-import { plannedDueCount } from "./fsrs-store";
+import { plannedDueCount, WORD_FSRS } from "./fsrs-store";
+import { forecastPriorReleases, priorIdsForEntity, pendingPriorSql, PRIOR_ENTITIES } from "./prior-pacing";
+import { grammarReviewPool, PLAN_GRAMMAR_LEVEL } from "./grammar-quiz";
 import { getDailyReliefProgress } from "./word-api/daily-relief";
 import { getDailyTailProgress } from "./word-api/daily-tail";
 import { effectiveStartingLevel, getLevelPlanSettings } from "./level-plan";
@@ -52,6 +54,8 @@ export interface DailyPlanView {
   minutes: number;
   /** 单词复习那段里掺着的减负 + 压轴数（写回时要减掉的正是渲染时加上的这一份） */
   wordExtras: number;
+  /** 渲染时已加上的先验验证名额，改圆环写回普通复习 cap 时要减掉。 */
+  priorExtras?: Partial<Record<PlanKind, number>>;
 }
 
 const LEVEL_RANK: Record<string, number> = { N5: 0, N4: 1, N3: 2, N2: 3, N1: 4 };
@@ -64,10 +68,7 @@ const wordDueCount = () => plannedDueCount(studyDayEnd());
 const grammarPools = (target: JlptTarget) => {
   const levels = levelsInScope(target).map((level) => `'${level}'`).join(", ");
   return {
-    due: firstValue<number>(`
-      SELECT COUNT(*) FROM grammar_progress p JOIN grammar_points g ON g.id = p.grammar_id
-      WHERE g.level IN (${levels}) AND p.known_forever = 0 AND p.seen_count > 0 AND p.fsrs_due IS NOT NULL AND p.fsrs_due <= ?
-    `, [studyDayEnd().toISOString()], 0),
+    due: grammarReviewPool(PLAN_GRAMMAR_LEVEL).due,
     unseen: firstValue<number>(`
       SELECT COUNT(*) FROM grammar_progress p JOIN grammar_points g ON g.id = p.grammar_id
       WHERE g.level IN (${levels}) AND p.known_forever = 0 AND p.seen_count = 0
@@ -126,35 +127,37 @@ export const dailyPlanView = (prefs: StudyPreferences = getEffectiveStudyPrefere
   const grammar = grammarPools(target);
   const kanji = kanjiCharPool(rank);
   const confusion = confusionCardPool(rank);
+  const priorExtras = { words: priorIdsForEntity(WORD_FSRS).length, grammar: grammarReviewPool(PLAN_GRAMMAR_LEVEL).prior,
+    kanji: kanjiCharPriorCount(), confusion: confusionPriorCount() };
   const segments: PlanSegment[] = [
     {
       kind: "words", label: PLAN_LABELS.words,
-      fresh: kanaGatePending() ? 0 : prefs.dailyGoal, review: wordReviewCount(prefs.reviewCap, wordDue - extras) + extras,
+      fresh: kanaGatePending() ? 0 : prefs.dailyGoal, review: wordReviewCount(prefs.reviewCap, wordDue - extras - priorExtras.words) + extras + priorExtras.words,
       pool: { due: wordDue, unseen: status.coverage.words.total - status.coverage.words.seen },
       suggest: { fresh: status.plan.newWords, review: wordDue }
     },
     {
       kind: "grammar", label: PLAN_LABELS.grammar,
-      fresh: prefs.grammarDailyGoal, review: pick(prefs.grammarReviewCap, grammar.due),
+      fresh: prefs.grammarDailyGoal, review: grammarReviewPool(PLAN_GRAMMAR_LEVEL, prefs.grammarReviewCap).review,
       pool: grammar,
       suggest: { fresh: status.plan.newGrammar, review: grammar.due }
     },
     {
       kind: "kanji", label: PLAN_LABELS.kanji,
-      fresh: prefs.kanjiDailyGoal, review: pick(prefs.kanjiReviewCap, kanji.due),
+      fresh: prefs.kanjiDailyGoal, review: pick(prefs.kanjiReviewCap, kanji.due - priorExtras.kanji) + priorExtras.kanji,
       pool: kanji,
       suggest: { fresh: intakeDays > 0 ? amortize(kanji.unseen, intakeDays) : 0, review: kanji.due }
     },
     {
       kind: "confusion", label: PLAN_LABELS.confusion,
-      fresh: prefs.confusionDailyGoal, review: pick(prefs.confusionReviewCap, confusion.due),
+      fresh: prefs.confusionDailyGoal, review: pick(prefs.confusionReviewCap, confusion.due - priorExtras.confusion) + priorExtras.confusion,
       pool: confusion,
       suggest: { fresh: intakeDays > 0 ? amortize(confusion.unseen, intakeDays) : 0, review: confusion.due }
     }
   ];
   const total = segments.reduce((sum, segment) => sum + segment.fresh + segment.review, 0);
   const minutes = Math.round(segments.reduce((sum, segment) => sum + (segment.fresh + segment.review) * SECONDS_PER_CARD[segment.kind], 0) / 60);
-  return { total, segments, daysLeft: status.plan.daysLeft, minutes, wordExtras: extras };
+  return { total, segments, daysLeft: status.plan.daysLeft, minutes, wordExtras: extras, priorExtras };
 };
 
 type Fresh = Record<PlanKind, number>;
@@ -200,12 +203,13 @@ export const saveDailyPlan = (next: Record<PlanKind, { fresh: number; review: nu
     const item = next[kind];
     if (item.fresh + item.review === 0) return PLAN_REVIEW_DISABLED;
     if (item.review === shownOf(kind)) return current;
-    return item.review > 0 ? item.review : PLAN_REVIEW_DISABLED;
+    const ordinary = item.review - (shown.priorExtras?.[kind] ?? 0);
+    return ordinary > 0 ? ordinary : PLAN_REVIEW_DISABLED;
   };
   saveStudyPreferences({
     ...prefs,
     dailyGoal: next.words.fresh,
-    reviewCap: next.words.review === shownOf("words") ? prefs.reviewCap : Math.max(1, next.words.review - shown.wordExtras),
+    reviewCap: next.words.review === shownOf("words") ? prefs.reviewCap : Math.max(1, next.words.review - shown.wordExtras - (shown.priorExtras?.words ?? 0)),
     grammarDailyGoal: next.grammar.fresh,
     grammarReviewCap: keepOr("grammar", prefs.grammarReviewCap),
     kanjiDailyGoal: next.kanji.fresh,
@@ -287,6 +291,10 @@ export const examPreset = (target: JlptTarget) => {
   };
   const minutes = Math.round(PLAN_KINDS.reduce((sum, kind) => sum + (plan[kind].fresh + plan[kind].review) * SECONDS_PER_CARD[kind], 0) / 60);
   const dueTables: Record<LoadKind, string> = { words: "progress", grammar: "grammar_progress", kanji: "kanji_char_memory", confusion: "confusion_progress" };
+  const ends = Array.from({ length: 8 * 7 }, (_, index) => {
+    const end = studyDayEnd(); end.setDate(end.getDate() + index); return end;
+  });
+  const priorLoads = Object.fromEntries(PLAN_KINDS.map((kind) => [kind, forecastPriorReleases(kind, ends)])) as Record<PlanKind, number[]>;
   const existingDuePerWeek = Array.from({ length: 8 }, (_, index) => {
     const start = new Date();
     start.setHours(0, 0, 0, 0);
@@ -294,9 +302,10 @@ export const examPreset = (target: JlptTarget) => {
     const end = new Date(start);
     end.setDate(end.getDate() + 7);
     return Object.fromEntries((Object.keys(dueTables) as LoadKind[]).map((kind) => [kind, firstValue<number>(
-      `SELECT COUNT(*) FROM ${dueTables[kind]} WHERE known_forever = 0 AND fsrs_due >= ? AND fsrs_due < ?`,
+      `SELECT COUNT(*) FROM ${dueTables[kind]} WHERE known_forever = 0 AND fsrs_due >= ? AND fsrs_due < ?
+        AND NOT ${pendingPriorSql(kind, `${dueTables[kind]}.${PRIOR_ENTITIES[kind].idColumn}`)}`,
       [start.toISOString(), end.toISOString()], 0
-    )])) as Record<LoadKind, number>;
+    ) + priorLoads[kind].slice(index * 7, (index + 1) * 7).reduce((sum, value) => sum + value, 0)])) as Record<LoadKind, number>;
   });
   const load = predictLoad({
     dailyNew: Object.fromEntries(PLAN_KINDS.map((kind) => [kind, plan[kind].fresh])) as Record<LoadKind, number>,

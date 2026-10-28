@@ -236,6 +236,7 @@ export const pickKanjiCharNext = (day = today(), excluded = new Set<string>()) =
   return null;
 };
 export const kanjiCharProgress = (day = today()) => { ensureKanjiCharTables(); return log.progress(day); };
+export const kanjiCharPriorCount = log.priorCount;
 export const kanjiCharStepMode = log.stepMode;
 export const recordKanjiCharReview = (char: string, answer: WordAnswer, now = new Date(), mode?: StepMode) => { ensureKanjiCharTables(); return log.record(char, answer, now, mode); };
 /** 撤销今天最后一次汉字作答（删流水 + 重放这个字）。 */

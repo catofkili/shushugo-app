@@ -2,6 +2,7 @@ import type { WordStats } from "../../types/vocabulary";
 import { getDailyWordGoal, isPostExamLightActive } from "../studyPreferences";
 import { grammarPlanDone, grammarPlanRemaining, PLAN_GRAMMAR_LEVEL } from "../grammar-quiz";
 import { priorBaselineSql } from "../plan-level-order";
+import { priorGateSql } from "../prior-pacing";
 import { getDatabase } from "../database";
 import { loadMixedCardData, mixedCardCounts, mixedCardDataLoaded } from "../mixed-cards";
 import { firstValue, rowsFor, studyDayEnd, today } from "../study-core";
@@ -182,6 +183,7 @@ export function getWordStats(
     JOIN words w ON w.id = p.word_id
     WHERE p.known_forever = 0 AND p.seen_count > 0
       AND (p.fsrs_due IS NULL OR p.fsrs_due <= ?) ${filter.clause}
+      AND ${priorGateSql("words", "p.word_id")}
   `, [studyDayEnd().toISOString(), ...filter.params], 0));
   const unseenCount = lazy(() => firstValue<number>(
     `

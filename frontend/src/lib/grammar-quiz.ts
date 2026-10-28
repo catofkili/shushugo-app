@@ -6,9 +6,12 @@ import { dailyReviewCap } from "./review-budget";
 import { getDailyGrammarGoal, getEffectiveStudyPreferences, getReviewCapPreference, levelAdvanceNewCap, levelAdvanceTarget, PLAN_REVIEW_DISABLED } from "./studyPreferences";
 import { levelsInScope } from "./jlpt/plan";
 import { planLevelRankSql, priorBaselineSql } from "./plan-level-order";
+import { priorGateSql, priorIdsForEntity, undoPriorValidation, withPriorValidation } from "./prior-pacing";
 import {
   ensureFsrsColumns,
   fsrsDueWordIds,
+  plannedDueCount,
+  cappedDueCount,
   readFsrsState,
   recordFsrsReview,
   restoreFsrsState,
@@ -142,13 +145,24 @@ const levelSql = (level: string, column = "g.level") => {
  * 排序规则（刚栽过跟头的优先、其余 due 升序、顽固卡限流）只该有一份 ——
  * 为了传一个等级另写一遍 ORDER BY，就是在制造第二份口径。等级先过白名单。
  */
-const levelEntity = (level: string): FsrsEntity => {
+export const grammarReviewEntity = (level: string): FsrsEntity => {
   if (!scopeLevels(level).length) return GRAMMAR_FSRS;
   return {
     ...GRAMMAR_FSRS,
     eligible: `${GRAMMAR_FSRS.eligible}
       AND grammar_id IN (SELECT id FROM grammar_points WHERE ${levelSql(level, "level")})`
   };
+};
+
+/** 圆环也读计划使用的同一份池子；先验额度在普通复习上限之外。 */
+export const grammarReviewPool = (level: string, cap?: number) => {
+  ensureGrammarProgressInitialized();
+  const entity = grammarReviewEntity(level);
+  ensureFsrsColumns(entity);
+  const end = studyDayEnd();
+  const prior = priorIdsForEntity(entity, end).length;
+  return { due: plannedDueCount(end, entity), prior,
+    review: cap == null ? 0 : cappedDueCount(cap === PLAN_REVIEW_DISABLED ? 0 : cap > 0 ? cap : dailyReviewCap(getReviewCapPreference()), end, entity) };
 };
 
 const levelPointCount = (level: string) => firstValue<number>(
@@ -251,7 +265,7 @@ const planIds = (level: string, day: string): { reviewIds: number[]; newIds: num
     grammarCap === PLAN_REVIEW_DISABLED ? 0 : grammarCap > 0 ? grammarCap : dailyReviewCap(getReviewCapPreference(), day),
     levelPointCount(level)
   );
-  const reviewIds = fsrsDueWordIds(reviewLimit, studyDayEnd(), levelEntity(level));
+  const reviewIds = fsrsDueWordIds(reviewLimit, studyDayEnd(), grammarReviewEntity(level));
   const newQuota = grammarNewQuota(level, day);
   const newIds = newQuota <= 0 ? [] : rowsFor(`
     SELECT g.id
@@ -453,7 +467,8 @@ export const grammarAudioPlan = (level: string): string[] => {
   const { reviewIds, newIds } = planIds(level, today());
   // Prefetch the due candidate pool: capped reviews re-randomize, so the first sampled subset is insufficient.
   const due = reviewIds.length ? rowsFor(`SELECT g.id FROM grammar_points g JOIN grammar_progress p ON p.grammar_id=g.id
-    WHERE ${levelSql(level)} AND p.known_forever=0 AND p.seen_count>0 AND (p.fsrs_due IS NULL OR p.fsrs_due<=?)`, [studyDayEnd().toISOString()]).map(row => Number(row.id)) : [];
+    WHERE ${levelSql(level)} AND p.known_forever=0 AND p.seen_count>0 AND (p.fsrs_due IS NULL OR p.fsrs_due<=?)
+      AND ${priorGateSql("grammar", "p.grammar_id", studyDayEnd(), today(), grammarReviewEntity(level).eligible)}`, [studyDayEnd().toISOString()]).map(row => Number(row.id)) : [];
   const ids = [...new Set([...due, ...newIds])];
   if (!ids.length) return [];
   return rowsFor(`SELECT example_jp FROM grammar_points WHERE id IN (${ids.map(() => "?").join(",")})`, ids)
@@ -579,11 +594,13 @@ export const submitGrammarQuizAnswer = (
     grammarId
   ]);
 
-  db.run(`
-    INSERT INTO grammar_reviews (grammar_id, answer, score_after, reviewed_on)
-    VALUES (?, ?, 0, ?)
-  `, [grammarId, answer, day]);
-  snapshot.reviewId = firstValue<number>("SELECT last_insert_rowid()", [], 0);
+  snapshot.reviewId = withPriorValidation("grammar", grammarId, () => {
+    db.run(`
+      INSERT INTO grammar_reviews (grammar_id, answer, score_after, reviewed_on)
+      VALUES (?, ?, 0, ?)
+    `, [grammarId, answer, day]);
+    return firstValue<number>("SELECT last_insert_rowid()", [], 0);
+  });
 
   writeUndoStack(level, [...readUndoStack(level), snapshot]);
   void import("./storage").then(({ scheduleSave }) => scheduleSave());
@@ -619,6 +636,7 @@ export const undoLastGrammarQuizAnswer = (level: string): GrammarQuizSession => 
     snapshot.grammarId
   ]);
   if (snapshot.reviewId) db.run("DELETE FROM grammar_reviews WHERE id = ?", [snapshot.reviewId]);
+  undoPriorValidation("grammar", snapshot.grammarId);
   restoreFsrsState(snapshot.grammarId, snapshot.fsrs ?? null, GRAMMAR_FSRS);
   setReviewQueue(snapshot.queue ?? [], QUEUE_KEY);
   setLastAnsweredWord(snapshot.lastAnswered ?? 0, QUEUE_KEY);

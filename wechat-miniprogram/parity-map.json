@@ -19,6 +19,13 @@
   ],
   "pairs": [
     {
+      "web": "frontend/src/components/LoadCurve.tsx",
+      "mini": [
+        "frontend/src/components/LoadCurve.tsx"
+      ],
+      "reason": "网页和 Taro 备考页直接编译同一份负荷曲线；先验预测共用 frontend/src/lib/prior-pacing.ts，无独立页面实现。"
+    },
+    {
       "web": "frontend/src/components/study-buddy/StudyBuddy.css",
       "mini": [
         "frontend/src/components/study-buddy/StudyBuddy.css"

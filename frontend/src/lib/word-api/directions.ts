@@ -14,6 +14,7 @@ import {
   shouldStudyKanjiReading
 } from "../orthography";
 import { LEECH_LAPSE_THRESHOLD } from "../fsrs-scheduler";
+import { pendingPriorSql, priorGateSql } from "../prior-pacing";
 
 /**
  * 一个词 = 三张卡:正向(释义 → 日语)、反向(日语 → 释义)、汉字读音(表记 → 读音)。
@@ -141,12 +142,13 @@ export const ensureDirectionCardIds = (direction: StudyDirection, limit: number)
   ensureDirectionColumns(direction);
   const table = direction.entity.table;
   const rows = rowsFor(`
-    SELECT p.word_id, p.fsrs_lapses, w.kanji, w.kana
+    SELECT p.word_id, p.fsrs_lapses, w.kanji, w.kana, ${pendingPriorSql("words", "p.word_id")} AS pending_prior
     FROM progress p
     JOIN words w ON w.id = p.word_id
     WHERE p.seen_count > 0
       AND p.known_forever = 0
       AND COALESCE(p.fsrs_lapses, 0) < ?
+      AND ${priorGateSql("words", "p.word_id")}
       ${direction.wordFilterSql ? `AND ${direction.wordFilterSql}` : ""}
       AND NOT EXISTS (SELECT 1 FROM ${table} m WHERE m.word_id = p.word_id)
     ORDER BY p.fsrs_due ASC, p.word_id ASC
@@ -164,8 +166,8 @@ export const ensureDirectionCardIds = (direction: StudyDirection, limit: number)
   const db = getDatabase();
   const now = new Date().toISOString();
   const createdIds: number[] = [];
-  for (const row of rows) {
-    if (createdIds.length >= limit) break;
+  const ordinary = rows.filter((row) => !row.pending_prior).slice(0, limit);
+  for (const row of [...ordinary, ...rows.filter((row) => row.pending_prior)]) {
     const wordId = Number(row.word_id);
     db.run(`INSERT OR IGNORE INTO ${table} (word_id, seen_count) VALUES (?, 0)`, [wordId]);
     const forward = readFsrsState(wordId, WORD_FSRS);

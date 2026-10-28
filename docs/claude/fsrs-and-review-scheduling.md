@@ -667,3 +667,137 @@ stage1 从流水回填任务表（回填成 'new' 会占新词配额）里。
 `daily-plan.ts` / `jlpt/status.ts` 的目标口径这次保持原样，**已知缺口：备考页数字仍按备考目标算，不计入 upTo 扩展的学习内容**。
 主页三按钮和种类文案在 `ZooHome.tsx`，Taro 小程序复用同一组件；本次不重建 `web.js` / reports，提交前需统一构建共享产物。
 判据在 `level-advance.test.ts`（含语法真实流水与先验、扩范围实际出题 / 混合模式 / 例句预取、相邻回补、各自暂停、单词优先和旧状态兼容）。
+
+## 先验限速（2026-10-29）
+
+### 事故与 10-28 说明的更正
+
+10-13 将起点设为 N5 时，127 条语法写入了起点先验，稳定性 30 天，到期日撒在
+10-14 至 10-28。那两周混合模式只出目标级 N3，先验没有被验证；10-28 的
+`17c0f468` 将语法范围改成 N5 → 目标后，积压在同一天进入普通到期池，当天安排
+154 条语法、首次作答 97 条先验。问题是**把待验证先验当成普通到期债务**，不是单纯上限太大。
+单词原来也没有小额验证机制，文档中的「约 63 条/天」只是到期日均匀散开后的平均数。
+
+上节「新内容按计划级别顺推」中「受语法复习上限约束」的说法**不成立**：
+`grammarReviewCap = 0` 是沿用单词复习上限，当时约 600，挡不住这批先验。
+旧段保留作事故记录；现行露面节奏以本节为准，不能再拿普通 cap 当先验保护。
+
+### 定义、额度与到期日
+
+实现只有 `frontend/src/lib/prior-pacing.ts` 一份，单词 / 语法 / 汉字字卡 / 辨析各有独立额度。
+**待验证先验** = `level_prior_baselines` 有对应的 `(entity, entity_key)`，并且没有该卡的任何
+真实流水：`words → reviews.word_id`、`grammar → grammar_reviews.grammar_id`、
+`kanji → kanji_char_reviews.char`、`confusion → confusion_reviews.group_key`。
+单词的任一方向有一次真实作答就已经验证；虚拟 `fsrs_last_review` 和 `seen_count = 1` 不算。
+第一次真实作答验证一条，重复刷、换方向再答不重复占名额；已验证卡回到普通 FSRS。
+
+| 命名常量（集中在 prior-pacing.ts） | 值 | 用途 |
+| --- | --- | --- |
+| `PRIOR_QUOTA_INITIAL` | 5 | 每类初始每日验证额度 |
+| `PRIOR_QUOTA_MIN` | 1 | 额度下限 |
+| `PRIOR_QUOTA_MAX` | 8 | 额度上限 |
+| `PRIOR_CHECK_EVERY` | 10 | 每满一窗口先验首答后检查一次 |
+
+- 候选仍须未标熟知、`seen_count > 0`、`fsrs_due <= studyDayEnd()`，按 due 最早、主键升序放行。
+  当天已验证的不同先验条目先扣额度，再放行剩余额度。普通复习 cap 为 0 或已用完，也不能吞掉这份独立额度；先验也不挤占普通复习。
+- 每收满 `PRIOR_CHECK_EVERY` 条首答，以 `know` 占比检查：≥90% 减 1，<70% 加 1，其余不变；
+  夹在上下限内，再清空窗口。窗口只数先验首答，不数普通复习。
+- 正向、反向、旧汉字读音都用 words 的同一份放行名单；方向自己的 due 仍须到期。
+  已经生成的当天任务由 `reconcilePriorTasks` 收口，升级当天也不会继续出旧池里的整批先验。
+- **不修改库里的 due，不改先验写入、不写迁移**。基线中的稳定性、虚拟上次复习和撒开的 due
+  是 FSRS 重放起点；due 仍表示是否具备候选资格及先后顺序，不再表示待验证卡欠下了几百条债。
+  为限速把它们挪到明天，会改坏记忆状态、撤销重放和跨设备合并；等候应由候选池的闸门表达。
+  起点以下各级原有的较晚 due 也因此继续有效，不会被提前抽出来。
+- 「新学」仍按 10-28 的 `priorBaselineSql` 排除基线卡，和本节「待验证」不同：基线在验证后也保留。
+  未放行先验不计今日欠账或积压；未来负荷用 `forecastPriorReleases` 按每天额度展开，未来正确率未知，沿用当前额度预测。
+
+### 同步：状态由流水重放得出
+
+`app_state` 的 `prior_pace:words / grammar / kanji / confusion` 保存 JSON `{quota, window}`。
+`lib/sync/tables.ts` 已将整个 `app_state` 按 key 登记为 **lww**；这些键不在设备本地过滤名单，
+无需另建表或给每个 key 登记第二份同步规则。缺失或坏值只读回初始额度，不修写 FSRS。
+
+`rebuildPriorPace(kind)` 从基线卡的真实流水各取第一条，按学习日、真实时间和 `sync_uid`
+依次重放窗口；`id` 只作最后的本机兜底，同一时刻不能靠本机自增 id 决定首答。
+正常首答和撤销首答都接到重放；**`mergeDatabaseBytes` 在流水和墓碑合并、卡片记忆重放后，
+同一个事务内重建四类额度**。仅让两台设备的 JSON 做 LWW 会丢掉另一台窗口内的作答，不能替代这一步。
+流水并集相同，重放出的额度和窗口就相同；当天已用名额也从同一份首次作答流水去重计算。
+离线设备在合并前无法知道对方已答的条目，合并后按实际总数扣完，不会再补发已经用掉的名额。
+
+### 到期 / 剩余数入口对账
+
+2026-10-29 在 `frontend/src` 全量搜索 `fsrs_due`、`fsrsDue*`、`dueCount`、`*Remaining`、
+`*Progress`，并追到调用方。下表行号对应本次工作区，路径除注明外均相对 `frontend/src/`。
+「已改」含上一轮已写的接线；「未改」明确说明继承哪道闸，或为什么不属于当天待验证复习池。
+
+| 入口 文件:行 | 改了 / 没改 | 口径与原因 |
+| --- | --- | --- |
+| `lib/fsrs-store.ts:456` `fsrsDueCount` | 已改 | 到期条件后用 `priorGateSql`，只数放行的待验证先验；`now` 参数仍沿用调用方的截止时间。 |
+| `lib/fsrs-store.ts:493`、`:506` `plannedDueCount / cappedDueCount` | 已改 | 普通卡先走顽固词闸 / cap，排除 `pendingPriorSql` 后另加 `priorIdsForEntity`，先验不占普通 cap。 |
+| `lib/fsrs-store.ts:511`（到期查询 `:529 / :535 / :550 / :567`）`fsrsDueWordIds` | 已改 | 普通候选统一排除待验证先验，末尾追加同一放行名单；计数和选卡共用来源。 |
+| `lib/fsrs-store.ts:431` `DUE_SQL` | 未改 | 裸条件常量；全仓库无消费者，实际统计 / 选卡使用上面三个入口。 |
+| `lib/word-api/stage1.ts:118 / :148 / :203` 建任务、旧任务收口 | 已改 | `fsrsDueWordIds` + `reconcilePriorTasks(WORD_FSRS)`，回填的当日先验首答不扣普通 review cap。 |
+| `lib/word-api/stage1.ts:329 / :415 / :464` 进度和出卡 | 未另改查询 | 都先 `ensureStage1Tasks`，读取已经按放行名单收口的同一张任务表；完成分子只数真实任务。 |
+| `lib/word-api/stage1.ts:102` 导入词激活 | 未改 | 只更新 moji 导入批次的激活标记，不选卡、不计今日工作量；下游任务创建仍走统一闸。 |
+| `lib/word-api/stage1.ts:268 / :275 / :324` 今日音频和干扰缓存 | 未改 | 只预取现有任务的素材 / 缓存，不分配名额或出题；正式任务 / 出卡在上两行收口。 |
+| `lib/word-api/stage1.ts:295 / :375` 明日音频、续杯剩余 | 已改 | 无现成任务表的查询直接用 `priorGateSql`，明日按明日学习日和边界计算。 |
+| `lib/word-api/direction-plan.ts:65 / :80 / :97 / :133` 反向、旧汉字读音建池 | 已改 | `fsrsDueWordIds` / `priorIdsForEntity` 与正向共用 words 名单，旧方向任务也收口；先验在普通 cap 外追加。 |
+| `lib/word-api/direction-plan.ts:165 / :224 / :260` 方向进度 / 出卡 | 未另改查询 | 都经 `ensureDirectionTasks`，读同一份已收口任务。 |
+| `lib/word-api/directions.ts:140 / :151` 按需播种方向卡 | 已改 | 播种前走 words 的 `priorGateSql`，未放行卡不能借新方向入口出现。 |
+| `lib/grammar-quiz.ts:257 / :268 / :454 / :479` `planIds / grammarPlanRemaining / pickCard` | 已改共用入口 | `grammarReviewEntity` 限范围后经 `fsrsDueWordIds`；剩余数和实际取卡都从 `planIds` 取名单。 |
+| `lib/grammar-quiz.ts:158 / :463 / :470` 圆环池、完成数、例句预取 | 已改池 / 预取；完成数未改 | 圆环用 `plannedDueCount / cappedDueCount`；预取走同范围 `priorGateSql`；完成数只看今天真实作答且已毕业的卡。 |
+| `lib/word-api/stats.ts:143 / :185 / :227 / :241` `grammarRemaining / modeCounts / mixed` 分母 | 已改 low 查询，其余继承 | 单词取 stage1 任务进度，语法取 `grammarPlanRemaining(PLAN_GRAMMAR_LEVEL)`，汉字 / 辨析取 `mixedCardCounts`；混合分母为四份同口径之和。 |
+| `lib/mixed-cards.ts:75 / :81 / :83` `mixedCardCounts` | 未改 | 先创建两类任务，再读下列 progress，继承 card-log 的统一闸，不复制限速逻辑。 |
+| `lib/card-log.ts:163 / :175 / :179 / :201 / :221 / :249` 建池、取卡、进度、dueCount | 已改 | 普通到期排除待验证，另加 `priorIdsForEntity`；建池、取卡、数进度都 `reconcilePriorTasks`；dueCount 同源。 |
+| `lib/kanji-char-cards.ts:238 / :252` `kanjiCharProgress / kanjiCharPool` | progress 未改；新增 priorCount 导出 | 全部转给 card-log；汉字资格集合仍沿用既有出题判据。 |
+| `lib/confusion-cards.ts:237 / :248` `confusionCardProgress / confusionCardPool` | progress 未改；新增 priorCount 导出 | 全部转给 card-log；不匹配 / 已掌握组仍按既有资格排除。 |
+| `lib/daily-plan.ts:66 / :68 / :127 / :203` 单词池、`grammarPools`、四段圆环及写回 | 已改 | 池子取各类共享计数，普通 cap 之外加 priorExtras；写回时减去渲染时那份 extras，防止偷偷改大普通 cap。 |
+| `lib/daily-plan.ts:288 / :305` 备考预设和未来负荷 | 已改 | 今日复习用同源池；未来先排除待验证旧 due，再按 `forecastPriorReleases` 加每天放行量。 |
+| `lib/jlpt/status.ts:98 / :107 / :127 / :135` 今日复习、积压、shortfall | 已改 | 今日工作量 = 普通到期 + 放行先验 + 今日已验证；积压排除仍待验证的旧 due。已做数仍读真实流水。 |
+| `lib/level-advance.ts:27 / :72` `levelProgress / levelAdvancePrompt` | 未改 | 没有到期读入口；它检查级别覆盖和剩余新内容，不统计今日待复习数。保留原有升级 / 暂停逻辑。 |
+| `lib/kanji-unit-scheduler.ts:455 / :461 / :509 / :515` 汉字单元到期池与进度 | 未改 | 查的是 `kanji_unit_memory.unit_key`，只有单元自己的流水；四类先验没有 unit_key 基线。例词有 words 基线也不等于单元先验，测试已验证不扣 words 名额。 |
+| `components/LoadCurve.tsx:26 / :34`、`lib/study-load.ts:148 / :177` | 已改 | 今日 pending 走 `priorGateSql`；未来图排除待验证的旧 due，改加逐日放行预测，不制造积压峰。普通卡原有负荷口径保留。 |
+| `lib/progress-api.ts:30 / :41 / :62` 分级 low 数 | 已改 | 单词 / 语法的「到期薄弱」走对应 `priorGateSql`；历史覆盖率仍按真实作答判据。 |
+| `lib/word-library.ts:253 / :307 / :371 / :405 / :439` 到期筛选、列表、tally、详情 | 已改 | 动态 `dueInLibrarySql` 共用 words 闸，避免模块初始化时固定住当天名单；记忆强度色阶不变。 |
+| `lib/achievements/stats.ts:208` `dueBacklog` | 已改 | 成就的到期积压加 words 闸，未放行的先验不虚增积压；其余成就是历史事实统计。 |
+| `lib/review-budget.ts:110` `reviewBacklogCount` | 未改 | 调用已加闸的 `fsrsDueCount`，无需第二次计算。 |
+| `lib/word-api.ts:175 / :222` 筛选学习及兜底 | 本次补漏 | 在共用 filter 上加 `priorGateSql`，队列、到期和兜底路径都不能绕过；补回归测试。 |
+| `lib/word-api.ts:478 / :551` 续杯、例句词典加餐 | 续杯已改；加餐本次补漏 | 两处直接到期查询都用 words 闸；未放行的例句词不会先报告加入成功、再被任务收口清掉。 |
+| `lib/word-api.ts:396 / :988 / :1290` 一键完成、恢复计划、预算剩余 | 未另改查询 | 先 ensure / nextCard 再读当天收口任务；不会把任务外的待验证先验带入统计或批量作答。 |
+| `lib/word-api/daily-review.ts:49 / :91` 集中拿下 | 未改 | 候选必须在今日任务且今天正向真实答过至少 3 次，已不可能是待验证先验；计数和候选同条件。 |
+| `lib/word-api/mistakes.ts:57`、`lib/word-api/daily-tail.ts:101`、`lib/word-api/daily-relief.ts:60` | 未改 | 错题 / 压轴分别要求真实累计表现或 seen_count ≥3；减负来自昨日真实流水。先验初始化 seen_count=1、无流水，进不来。 |
+| `lib/word-api/picked.ts:77 / :89` 自选清单 | 未改 | 用户明确点名的临时突击，既有规则刻意不看到期、也不进每日计划；remaining 和取卡都读 pickedRows。若主动验证了先验，流水照样扣当日后续放行名额。 |
+| `lib/talk/schedule.ts:51`、`lib/kana-progress.ts:167`、`lib/spelling/store.ts:75` | 未改 | 开口 / 假名 / 拼写各有独立记忆；四类基线没有这些 entity。拼写这里仅按正向 due 排播种顺序，不统计正向待还债。 |
+| `lib/level-plan.ts:112 / :151`、`lib/models/familiarity.ts:36`、`lib/scheduler/priority.ts:110`、`lib/word-list-import.ts:517` | 未改 | 分别是先验写入、熟悉度、已入池卡排序、导入 / FSRS 修复，均不生成今日到期剩余数；保留原有数据语义。 |
+| `lib/yuzu.ts:170` 等任务完成 / 奖励消费者 | 未改 | 读取 `stage1ProgressCounts` 或真实历史流水，继承已经收口的任务分母，不独立查待验证先验。 |
+
+### 回归与构建
+
+`prior-pacing.test.ts` 中四类参数化用例分别调用 stage1、语法 `planIds → pickCard`、汉字字卡、
+辨析的实际路径，直接断言**放行名单长度 = 剩余计数 = 完整出卡集合大小**，并核对混合角标、
+圆环及两类 card pool；普通 cap 设得比先验额度小，确保不能吞名额。
+另覆盖 127 条语法事故、额度上下调和夹限、先答后重刷、撤销检查点、无先验老库、三方向、
+旧任务 / 续杯、汉字单元边界，以及筛选 / 例句加餐漏口。
+云合并回归走真正的 `mergeDatabaseBytes`，验证两边首答合成窗口、旧 LWW 值不能覆盖事实、
+重复合并不重计；四类另验证同一时刻变更本机 id 不改变首答和额度。
+
+小程序只从网页源码生成 `wechat-miniprogram/src/shared/web.js`，不手改原生 JS。
+本次新增逻辑使共享包原先约 767 KiB，超过原有 760 KiB 闸门约 7 KiB；构建脚本仅为主包
+启用 esbuild 的局部标识符压缩（导出名 / 对象属性保留），生成物为 586,974 B（约 573 KiB），没有提高预算。
+`LoadCurve` 与 Taro 仍编译同一份 TSX，已在 parity-map 登记；Taro 构建变化的 reports 要随本补丁交付。
+
+**本次机器验收（2026-10-29）**：`frontend && npx tsc --noEmit` 零错；`npx vitest run`
+183 文件通过、3 文件跳过，1,496 项通过、26 项跳过。`wechat-miniprogram && npm test`
+32 个脚本全部通过，单独的 `npm run check-shared` 也通过。Taro 完整构建链和 `npm test` 通过，
+主包 1,897,529 / 1,900,000 B，未许可的核心 / 页面重复均为 0。普通 Taro 命令重现本机已记录的
+Doctor Rust `system-configuration` NULL object panic；按既有办法只给 Taro 编译加 `--no-check`，
+资产、CSS、异步内容、API、分包预算、重复模块和 referral 检查全部照常执行，未改闸门。
+构建实际改变的报告只有 `taro-spike-2/reports/package-gates.json`、`package-sizes.json`、
+`webpack-stats.json`（后者含 worktree 绝对路径导致的大量差异），没有把构建资产副作用留在 src 下。
+
+**既有测试与运行边界**：03:54 的首次全量出现自选清单「答错的词还会在本轮回来」失败，
+在从同一 HEAD 导出的独立副本里也复现；当时接近凌晨四点，重学 due 会越过学习日边界。
+另有一次整场序列的混淆组随机断言失败；04:01 的全量运行已全部通过，没有改这两处生产逻辑或测试断言。
+独立网页端口 5247 的 Vite 及 HTTP 监听均被沙箱以 `listen EPERM` 拒绝；微信开发者工具
+`cli open` 也因自身本地监听被相同限制拒绝。因此**实际页面 / 窄屏视觉检查、Taro 开发者工具运行未完成**，
+不能拿编译和 smoke 通过替代。没有刷新 5173、写用户学习库、提交、合并或推送；改动留在本 worktree。

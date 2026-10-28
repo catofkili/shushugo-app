@@ -1,4 +1,5 @@
 import { LEECH_SQL, MASTERED_SQL, ensureFsrsColumns } from "./fsrs-store";
+import { priorGateSql } from "./prior-pacing";
 import { rowsFor, studyDayEnd, type DbRow, type SqlValue } from "./study-core";
 import { ensureProgressInitialized } from "./word-api";
 
@@ -249,8 +250,8 @@ const BAND_SQL = `
 `;
 
 /** 词库里的「到期」：只算学过的词。未学的词 fsrs_due 也是 NULL，但那不是「该复习」。 */
-const DUE_IN_LIBRARY_SQL = `
-  (p.known_forever = 0 AND p.seen_count > 0 AND (p.fsrs_due IS NULL OR p.fsrs_due <= ?))
+const dueInLibrarySql = () => `
+  (p.known_forever = 0 AND p.seen_count > 0 AND (p.fsrs_due IS NULL OR p.fsrs_due <= ?) AND ${priorGateSql("words", "p.word_id")})
 `;
 
 const LEVEL_ORDER_SQL =
@@ -303,7 +304,7 @@ const withBand = (filters: WordLibraryFilters, dayEnd: string): Where => {
   let clause = "";
   const params: SqlValue[] = [];
   if (filters.band === "due") {
-    clause = DUE_IN_LIBRARY_SQL;
+    clause = dueInLibrarySql();
     params.push(dayEnd);
   } else if (filters.band === "leech") {
     clause = LEECH_SQL.replace(/fsrs_lapses/g, "p.fsrs_lapses");
@@ -367,7 +368,7 @@ export function queryWordLibrary(
       p.known_forever,
       p.fsrs_stability, p.fsrs_due, p.fsrs_last_review, p.fsrs_lapses, p.fsrs_reps,
       ${BAND_SQL} AS band,
-      CASE WHEN ${DUE_IN_LIBRARY_SQL} THEN 1 ELSE 0 END AS is_due
+      CASE WHEN ${dueInLibrarySql()} THEN 1 ELSE 0 END AS is_due
     FROM words w
     JOIN progress p ON p.word_id = w.id
     ${where.sql}
@@ -401,7 +402,7 @@ export function tallyWordLibrary(filters: WordLibraryFilters): WordLibraryTally 
     SELECT
       ${BAND_SQL} AS band,
       COUNT(*) AS n,
-      SUM(CASE WHEN ${DUE_IN_LIBRARY_SQL} THEN 1 ELSE 0 END) AS due_n,
+      SUM(CASE WHEN ${dueInLibrarySql()} THEN 1 ELSE 0 END) AS due_n,
       SUM(CASE WHEN ${LEECH_SQL.replace(/fsrs_lapses/g, "p.fsrs_lapses")} THEN 1 ELSE 0 END) AS leech_n
     FROM words w
     JOIN progress p ON p.word_id = w.id
@@ -435,7 +436,7 @@ export function wordLibraryDetail(wordId: number): WordLibraryDetail | null {
       p.known_forever,
       p.fsrs_stability, p.fsrs_due, p.fsrs_last_review, p.fsrs_lapses, p.fsrs_reps,
       ${BAND_SQL} AS band,
-      CASE WHEN ${DUE_IN_LIBRARY_SQL} THEN 1 ELSE 0 END AS is_due,
+      CASE WHEN ${dueInLibrarySql()} THEN 1 ELSE 0 END AS is_due,
       COALESCE(n.note, '') AS note,
       CASE WHEN f.item_id IS NULL THEN 0 ELSE 1 END AS favorite
     FROM words w

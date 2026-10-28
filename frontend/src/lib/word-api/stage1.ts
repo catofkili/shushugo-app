@@ -21,7 +21,8 @@ import {
   today
 } from "../study-core";
 import { dailyReviewCap } from "../review-budget";
-import { fsrsDueWordIds, recallFromRow } from "../fsrs-store";
+import { fsrsDueWordIds, recallFromRow, WORD_FSRS } from "../fsrs-store";
+import { priorGateSql, priorIntakeSql, reconcilePriorTasks } from "../prior-pacing";
 import { LEECH_LAPSE_THRESHOLD } from "../fsrs-scheduler";
 import { newWordLevelRankSql, newWordOrderSql } from "./filters";
 import { priorBaselineSql } from "../plan-level-order";
@@ -117,7 +118,10 @@ const activateMojiMigratedReviews = (day: string) => {
 export const createStage1Tasks = (day: string, options: { topUp?: boolean } = {}) => {
   const db = getDatabase();
   if (!options.topUp) {
-    if (stage1TaskCount(day) > 0) return;
+    if (stage1TaskCount(day) > 0) {
+      reconcilePriorTasks(WORD_FSRS, "stage1_tasks", day, studyDayEnd(), "review");
+      return;
+    }
     if (firstValue<number>("SELECT 1 FROM reviews WHERE reviewed_on = ? LIMIT 1", [day], 0)) {
       backfillStage1TasksFromReviews(day);
     }
@@ -129,7 +133,8 @@ export const createStage1Tasks = (day: string, options: { topUp?: boolean } = {}
   // 到期了就自己回到轮换里,不需要额外把它们捞出来。
 
   const existingReviewTasks = firstValue<number>(
-    "SELECT COUNT(*) FROM stage1_tasks WHERE reviewed_on = ? AND task_type = 'review'",
+    `SELECT COUNT(*) FROM stage1_tasks WHERE reviewed_on = ? AND task_type = 'review'
+      AND NOT ${priorIntakeSql("words", "stage1_tasks.word_id", day)}`,
     [day],
     0
   );
@@ -195,6 +200,7 @@ export const createStage1Tasks = (day: string, options: { topUp?: boolean } = {}
     `, [day, Number(row.word_id), orderIndex]);
     orderIndex += 1;
   });
+  reconcilePriorTasks(WORD_FSRS, "stage1_tasks", day, studyDayEnd(), "review");
 };
 
 const reconcileStage1NewQuota = (day: string) => {
@@ -287,6 +293,7 @@ export const tomorrowWordAudioPlan = (): WordAudioPlan[] => {
     FROM words w JOIN progress p ON p.word_id = w.id
     WHERE p.known_forever = 0 AND p.seen_count > 0
       AND p.fsrs_due IS NOT NULL AND p.fsrs_due <= ?
+      AND ${priorGateSql("words", "p.word_id", end, today(current))}
     ORDER BY p.fsrs_due ASC, w.id ASC
   `, [end.toISOString()]).map((row) => ({
     kanji: String(row.kanji ?? ""), kana: String(row.kana ?? ""), example: String(row.example ?? "")
@@ -366,6 +373,7 @@ export const encoreRemainingCount = (day: string) => firstValue<number>(`
   WHERE p.known_forever = 0
     AND p.seen_count > 0
     AND (p.fsrs_due IS NULL OR p.fsrs_due <= ?)
+    AND ${priorGateSql("words", "p.word_id", studyDayEnd(), day)}
     -- 还没轮到激活的导入词不算积压,否则续杯会把几千个导入词一次性倒出来
     AND p.word_id NOT IN (SELECT word_id FROM moji_migrated_reviews WHERE activated_on IS NULL)
     AND p.word_id NOT IN (SELECT word_id FROM stage1_tasks WHERE reviewed_on = ?)

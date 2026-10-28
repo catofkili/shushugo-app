@@ -1,4 +1,5 @@
 import { getDatabase } from "./database";
+import { priorGateSql, undoPriorValidation } from "./prior-pacing";
 import { displayedPromptKeyOf, displayedPromptPeers } from "./models/question-meaning-index";
 import { saveUserQuestionMeaning } from "./models/user-question-meanings";
 import { resetSimilarMeaningCache } from "../data/similar_meaning_groups";
@@ -173,6 +174,7 @@ const recordCheckin = () => {
 
 const pickFilteredWordNext = (options: WordSessionOptions): WordCard | null => {
   const filter = wordFilterSql(options, "w");
+  filter.clause += ` AND ${priorGateSql("words", "p.word_id")}`;
   const dueIds = getReviewQueue().filter((item) => item.due_after <= 0).map((item) => item.word_id);
   if (dueIds.length) {
     const placeholders = dueIds.map(() => "?").join(",");
@@ -474,6 +476,7 @@ export function startEncore(customSize?: number): WordSessionResponse {
     WHERE p.known_forever = 0
       AND p.seen_count > 0
       AND (p.fsrs_due IS NULL OR p.fsrs_due <= ?)
+      AND ${priorGateSql("words", "p.word_id")}
       AND p.word_id NOT IN (SELECT word_id FROM stage1_tasks WHERE reviewed_on = ?)
     ORDER BY
       p.fsrs_due ASC,
@@ -545,7 +548,8 @@ export function addWordToTodayEncore(wordId: number): boolean {
   if (!eligible) return false;
   // 排到明天以后的词插进来是静默无效的：当日任务表的取词条件卡着 fsrs_due <= 今日边界。
   const showsToday = firstValue<number>(
-    "SELECT 1 FROM progress WHERE word_id = ? AND (fsrs_due IS NULL OR fsrs_due <= ?) LIMIT 1",
+    `SELECT 1 FROM progress WHERE word_id = ? AND (fsrs_due IS NULL OR fsrs_due <= ?)
+      AND ${priorGateSql("words", "progress.word_id")} LIMIT 1`,
     [id, studyDayEnd().toISOString()],
     0
   );
@@ -1407,6 +1411,7 @@ export function undoLastWordAnswer(options: WordSessionOptions = {}): WordSessio
     ]);
     if (snapshot.review_id != null) {
       db.run("DELETE FROM reviews WHERE id = ?", [Number(snapshot.review_id)]);
+      undoPriorValidation("words", Number(snapshot.word_id));
     }
     // FSRS 是唯一调度器,撤销必须把 due/S/D 一起放回作答前,
     // 否则这个词会带着一个凭空多出来的下次到期时间留在计划里。

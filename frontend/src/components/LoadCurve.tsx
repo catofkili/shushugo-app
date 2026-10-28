@@ -1,4 +1,5 @@
-import { firstValue } from "../lib/database/db-utils";
+import { firstValue, studyDayEnd } from "../lib/database/db-utils";
+import { forecastPriorReleases, pendingPriorSql, PRIOR_ENTITIES } from "../lib/prior-pacing";
 import { getJlptPlanStatus } from "../lib/jlpt/status";
 import { predictLoad, type LoadKind } from "../lib/plan/load-model";
 import { getStudyPreferences } from "../lib/studyPreferences";
@@ -19,6 +20,10 @@ const prediction = (isPro: boolean) => {
   if (!firstReview || Date.now() - Date.parse(firstReview) < 7 * 86_400_000) return null;
   const prefs = getStudyPreferences();
   const status = getJlptPlanStatus();
+  const ends = Array.from({ length: 8 * 7 }, (_, index) => {
+    const end = studyDayEnd(); end.setDate(end.getDate() + index); return end;
+  });
+  const priorLoads = Object.fromEntries((Object.keys(TABLES) as LoadKind[]).map((kind) => [kind, forecastPriorReleases(kind, ends)])) as Record<LoadKind, number[]>;
   const existingDuePerWeek = Array.from({ length: 8 }, (_, index) => {
     const start = new Date();
     start.setHours(0, 0, 0, 0);
@@ -26,9 +31,10 @@ const prediction = (isPro: boolean) => {
     const end = new Date(start);
     end.setDate(end.getDate() + 7);
     return Object.fromEntries((Object.keys(TABLES) as LoadKind[]).map((kind) => [kind, !isPro && kind !== "words" ? 0 : firstValue<number>(
-      `SELECT COUNT(*) FROM ${TABLES[kind]} WHERE known_forever = 0 AND fsrs_due >= ? AND fsrs_due < ?`,
+      `SELECT COUNT(*) FROM ${TABLES[kind]} WHERE known_forever = 0 AND fsrs_due >= ? AND fsrs_due < ?
+        AND NOT ${pendingPriorSql(kind, `${TABLES[kind]}.${PRIOR_ENTITIES[kind].idColumn}`)}`,
       [start.toISOString(), end.toISOString()], 0
-    )])) as Record<LoadKind, number>;
+    ) + priorLoads[kind].slice(index * 7, (index + 1) * 7).reduce((sum, value) => sum + value, 0)])) as Record<LoadKind, number>;
   });
   return predictLoad({
     dailyNew: { words: prefs.dailyGoal, grammar: isPro ? prefs.grammarDailyGoal : 0, kanji: isPro ? prefs.kanjiDailyGoal : 0, confusion: isPro ? prefs.confusionDailyGoal : 0 },

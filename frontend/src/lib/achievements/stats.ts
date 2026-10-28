@@ -1,4 +1,5 @@
 import { firstValue, rowsFor, type DbRow } from "../database/db-utils";
+import { priorGateSql } from "../prior-pacing";
 
 /**
  * 成就判据要用到的全部统计量，一次取齐。
@@ -205,7 +206,8 @@ export const achievementStats = (): AchievementStats => {
         GROUP BY word_id, reviewed_on HAVING COUNT(*) >= 3
       )
     `),
-    dueBacklog: () => num("SELECT COUNT(*) FROM progress WHERE fsrs_due IS NOT NULL AND date(fsrs_due) <= date('now','localtime')"),
+    dueBacklog: () => num(`SELECT COUNT(*) FROM progress WHERE fsrs_due IS NOT NULL AND date(fsrs_due) <= date('now','localtime')
+      AND ${priorGateSql("words", "progress.word_id")}`),
     notes: () => num("SELECT COUNT(*) FROM word_notes WHERE TRIM(note) <> ''"),
     confusionMastered: () => num("SELECT COUNT(*) FROM confusion_mastered"),
     favorites: () => num("SELECT COUNT(*) FROM content_favorites"),

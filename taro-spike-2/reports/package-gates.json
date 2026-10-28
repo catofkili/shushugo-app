@@ -2,19 +2,19 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1885278,
+      "bytes": 1897534,
       "passes": true
     },
     "study": {
-      "bytes": 1389893,
+      "bytes": 1391280,
       "passes": true
     },
     "account": {
-      "bytes": 324742,
+      "bytes": 325824,
       "passes": true
     },
     "content-pages": {
-      "bytes": 1175865,
+      "bytes": 1175846,
       "passes": true
     },
     "features": {
@@ -34,7 +34,7 @@
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 310946,
+      "bytes": 310932,
       "passes": true
     },
     "core": {
@@ -42,7 +42,7 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 924466,
+      "bytes": 929496,
       "passes": true
     },
     "jlpt-bank": {
@@ -147,7 +147,7 @@
     },
     {
       "source": "frontend/src/lib/daily-plan.ts",
-      "bytes": 21602,
+      "bytes": 23092,
       "packages": [
         "account",
         "lazy",
@@ -374,6 +374,15 @@
       ]
     },
     {
+      "source": "frontend/src/lib/jlpt/status.ts",
+      "bytes": 8488,
+      "packages": [
+        "account",
+        "lazy",
+        "study"
+      ]
+    },
+    {
       "source": "frontend/src/lib/speech.weapp.ts",
       "bytes": 8164,
       "packages": [
@@ -390,15 +399,6 @@
       "packages": [
         "content-pages",
         "grammar-pages",
-        "lazy",
-        "study"
-      ]
-    },
-    {
-      "source": "frontend/src/lib/jlpt/status.ts",
-      "bytes": 7548,
-      "packages": [
-        "account",
         "lazy",
         "study"
       ]
@@ -930,7 +930,7 @@
     },
     {
       "source": "frontend/src/lib/daily-plan.ts",
-      "bytes": 21602,
+      "bytes": 23092,
       "packages": [
         "account",
         "lazy",
@@ -1032,6 +1032,16 @@
       "reason": "The lazy auth dialog and account legal pages read the same immutable bundled policy text; consent-version constants remain shared in legal-versions.ts and no consent state is stored here."
     },
     {
+      "source": "frontend/src/lib/jlpt/status.ts",
+      "bytes": 8488,
+      "packages": [
+        "account",
+        "lazy",
+        "study"
+      ],
+      "reason": "The lazy setup panel and study plan route query current database progress and persisted preferences; this module retains no user data."
+    },
+    {
       "source": "frontend/src/lib/speech.weapp.ts",
       "bytes": 8164,
       "packages": [
@@ -1042,16 +1052,6 @@
         "study"
       ],
       "reason": "Only public voice-index content and package-local audio handles are cached; user preferences are read live and no study data is cached."
-    },
-    {
-      "source": "frontend/src/lib/jlpt/status.ts",
-      "bytes": 7548,
-      "packages": [
-        "account",
-        "lazy",
-        "study"
-      ],
-      "reason": "The lazy setup panel and study plan route query current database progress and persisted preferences; this module retains no user data."
     },
     {
       "source": "frontend/src/lib/share-image.weapp.ts",
@@ -1300,8 +1300,8 @@
     "frontend/src/lib/speech-packs.ts": "All catalog/cache/transfer state belongs to the process-wide client. Preferences and voice ownership are read live; plan arrays are not retained.",
     "frontend/src/lib/profile-sync.ts": "The lazy post-login callback and independent account routes read account-keyed pending flags and avatar signatures from shared Preferences on every call; this module retains no session, profile or retry queue in memory.",
     "frontend/src/lib/privacy-policy-content.ts": "The lazy auth dialog and account legal pages read the same immutable bundled policy text; consent-version constants remain shared in legal-versions.ts and no consent state is stored here.",
-    "frontend/src/lib/speech.weapp.ts": "Only public voice-index content and package-local audio handles are cached; user preferences are read live and no study data is cached.",
     "frontend/src/lib/jlpt/status.ts": "The lazy setup panel and study plan route query current database progress and persisted preferences; this module retains no user data.",
+    "frontend/src/lib/speech.weapp.ts": "Only public voice-index content and package-local audio handles are cached; user preferences are read live and no study data is cached.",
     "frontend/src/lib/share-image.weapp.ts": "Share and save operations use the image passed to each call and retain no mutable user state.",
     "frontend/src/lib/audio-pack-format.ts": "SAP1 encoding/catalog validation are pure functions; there is no module-level cache.",
     "frontend/src/lib/distinction-quiz.ts": "Question groups and results are derived from the shared database on demand; there is no module-level user-data cache.",
@@ -1772,7 +1772,7 @@
     },
     {
       "source": "frontend/src/lib/word-api.ts",
-      "bytes": 141484
+      "bytes": 142852
     },
     {
       "source": "frontend/src/styles.css",

@@ -9,6 +9,7 @@ import { pickNextInSequence, UNKNOWN_RECALL } from "../scheduler/sequencer";
 import { firstRow, firstValue, rowsFor, studyDayEnd, today } from "../study-core";
 import { dailyReviewCap } from "../review-budget";
 import { fsrsDueWordIds, recallFromRow } from "../fsrs-store";
+import { priorIdsForEntity, priorIntakeSql, reconcilePriorTasks } from "../prior-pacing";
 import { LEECH_LAPSE_THRESHOLD } from "../fsrs-scheduler";
 import { kanjiReadingPriorityAdjustment } from "../orthography";
 import { dailyNewQuota, getReviewQueue, lastAnsweredWord, recentAnswersToday } from "./session-state";
@@ -67,17 +68,18 @@ const eligibleDueWordIds = (
   limit: number,
   end: Date
 ): number[] => {
-  if (limit <= 0) return [];
   // Kanji metadata is a deliberately bounded second filter. Fetch a small
   // adaptive cushion so invalid spellings do not underfill the plan; the old
   // fixed +512 made every small plan scan hundreds of unrelated cards.
   const candidateLimit = direction.id === "kanji_reading"
     ? Math.max(limit * 2, 32)
     : limit;
-  return filterDirectionWordIds(
+  const priors = new Set(priorIdsForEntity(direction.entity, end).map(Number));
+  const candidates = filterDirectionWordIds(
     direction,
     fsrsDueWordIds(candidateLimit, end, direction.entity)
-  ).slice(0, limit);
+  );
+  return [...candidates.filter((id) => !priors.has(id)).slice(0, Math.max(0, limit)), ...candidates.filter((id) => priors.has(id))];
 };
 
 /**
@@ -95,13 +97,18 @@ export const createDirectionTasks = (
   ensureDirectionColumns(direction);
   const db = getDatabase();
   pruneIneligibleDirectionTasks(direction, day);
-  if (directionTaskCount(direction, day) > 0) return;
+  if (directionTaskCount(direction, day) > 0) {
+    reconcilePriorTasks(direction.entity, direction.taskTable, day);
+    return;
+  }
 
   // 今天已经答过的先回填进任务表,否则刷新页面后当日进度会归零
   backfillDirectionTasksFromToday(direction, day);
 
   const cap = dailyReviewCap(getReviewCapPreference(), day);
-  const reviewLimit = Math.max(cap - directionTaskCount(direction, day), 0);
+  const ordinaryTasks = firstValue<number>(`SELECT COUNT(*) FROM ${direction.taskTable}
+    WHERE reviewed_on = ? AND NOT ${priorIntakeSql("words", `${direction.taskTable}.word_id`, day)}`, [day], 0);
+  const reviewLimit = Math.max(cap - ordinaryTasks, 0);
   let orderIndex = directionTaskCount(direction, day) + 1;
 
   eligibleDueWordIds(direction, reviewLimit, studyDayEnd()).forEach((wordId) => {
@@ -126,6 +133,7 @@ export const createDirectionTasks = (
       orderIndex += 1;
     });
   }
+  reconcilePriorTasks(direction.entity, direction.taskTable, day);
 };
 
 /** 今天答过但不在任务表里的,补回来(刷新/换设备后接得上) */

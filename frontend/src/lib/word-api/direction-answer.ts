@@ -20,6 +20,7 @@ import {
 import { ensureDirectionColumns, type StudyDirection } from "./directions";
 import { pushUndoSnapshot } from "./undo-stack";
 import { recordReviewEvent } from "../reviews";
+import { undoPriorValidation } from "../prior-pacing";
 
 /**
  * 反向/汉字的作答 —— 和正向**同一套规则**,只是记忆表换成这个方向自己的那张。
@@ -195,5 +196,6 @@ export const undoDirectionAnswer = (
   }
   if (snapshot.review_id != null) {
     db.run("DELETE FROM reviews WHERE id = ?", [Number(snapshot.review_id)]);
+    undoPriorValidation("words", wordId);
   }
 };

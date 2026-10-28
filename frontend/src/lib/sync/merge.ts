@@ -18,6 +18,7 @@ import { resetFamiliarityCache } from "../models/familiarity";
 import { resetQuestionMeaningIndex } from "../models/question-meaning-index";
 import { resetUserQuestionMeanings } from "../models/user-question-meanings";
 import { ensureFsrsColumns } from "../fsrs-store";
+import { rebuildPriorPace } from "../prior-pacing";
 
 const ROW_SEPARATOR = "\u001f";
 const DEFAULT_ORIGIN = "legacy";
@@ -418,6 +419,8 @@ export async function mergeDatabaseBytes(remoteBytes: Uint8Array): Promise<Uint8
       replayKanjiCharReviews?.();
       replayConfusionReviews?.();
       replayKanaReviews?.();
+      // LWW 只保留一台设备的窗口；额度必须从合并后的首次作答并集重算。
+      for (const kind of ["words", "grammar", "kanji", "confusion"] as const) rebuildPriorPace(kind);
       rebuildStudyTimeAggregate();
       materializeCustomWords?.();
       localDb.run("COMMIT");

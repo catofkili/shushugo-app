@@ -1,6 +1,8 @@
 import { rowsFor, studyDate, studyDayEnd, today } from "./study-core";
 import { getDailyWordGoal } from "./studyPreferences";
 import { ensureFsrsColumns, WORD_FSRS } from "./fsrs-store";
+import { forecastPriorReleases, pendingPriorSql, priorGateSql } from "./prior-pacing";
+import { priorBaselineSql } from "./plan-level-order";
 
 /**
  * 「每日学习数量」：过去每天真的学了多少张，往后一周预计要学多少张。
@@ -110,7 +112,7 @@ const pastCounts = (firstDay: string, lastDay: string) => {
     FROM (
       SELECT word_id, MIN(reviewed_on) AS reviewed_on
       FROM reviews
-      WHERE direction = 'forward'
+      WHERE direction = 'forward' AND NOT ${priorBaselineSql("words", "reviews.word_id")}
       GROUP BY word_id
     )
     WHERE reviewed_on BETWEEN ? AND ?
@@ -144,6 +146,7 @@ const forecastDue = (dayCount: number, now: Date): number[] => {
   rowsFor(`
     SELECT fsrs_due FROM ${FORECAST_ENTITY.table}
     WHERE ${FORECAST_ENTITY.eligible} AND fsrs_due >= ? AND fsrs_due < ?
+      AND NOT ${pendingPriorSql("words", "progress.word_id")}
   `, [from, to]).forEach((row) => {
     const at = new Date(String(row.fsrs_due ?? "")).getTime();
     if (!Number.isFinite(at)) return;
@@ -152,6 +155,11 @@ const forecastDue = (dayCount: number, now: Date): number[] => {
     while (index < dayCount - 1 && at >= bounds[index + 1]) index += 1;
     buckets[index] += 1;
   });
+  const ends = Array.from({ length: dayCount + 1 }, (_, index) => {
+    const at = studyDayEnd(now); at.setDate(at.getDate() + index); return at;
+  });
+  const priors = forecastPriorReleases("words", ends);
+  buckets.forEach((_, index) => { buckets[index] += priors[index + 1]; });
   return buckets;
 };
 
@@ -167,6 +175,7 @@ const pendingDue = (now: Date): number => {
   return Number(rowsFor(`
     SELECT COUNT(*) AS n FROM ${FORECAST_ENTITY.table}
     WHERE ${FORECAST_ENTITY.eligible} AND (fsrs_due IS NULL OR fsrs_due <= ?)
+      AND ${priorGateSql("words", "progress.word_id", studyDayEnd(now), today(now))}
   `, [end])[0]?.n ?? 0);
 };
 

@@ -12,6 +12,7 @@ import { firstValue, rowsFor, studyDayEnd, today } from "./study-core";
 import { ensureFsrsColumns, recordFsrsReview, writeFsrsState, type FsrsEntity } from "./fsrs-store";
 import { STUBBORN_DAILY_MISTAKES, type FsrsState } from "./fsrs-scheduler";
 import { FSRS_PARAMS_VERSION } from "./reviews";
+import { pendingPriorSql, priorIdsForEntity, priorKindForTable, reconcilePriorTasks, undoPriorValidation, withPriorValidation } from "./prior-pacing";
 
 export type StepMode = "normal" | "stubborn" | "known";
 
@@ -38,9 +39,8 @@ export const createCardLog = (config: CardLogConfig) => {
 
   const ensure = () => ensureFsrsColumns(entity);
 
-  const priorEntity = memory === "kanji_char_memory" ? "kanji"
-    : memory === "confusion_progress" ? "confusion"
-      : "";
+  const priorEntity = priorKindForTable(memory);
+  const pacingEntity = () => ({ ...entity, eligible: `${exclude()} AND seen_count > 0` });
 
   /** 流水从用户自报水平形成的起点重放；没有起点才回到全新卡。 */
   const resetToStartingPoint = (key: string) => {
@@ -118,10 +118,12 @@ export const createCardLog = (config: CardLogConfig) => {
     const seenOn = today();
     updateCounters(key, fsrsAnswer, seenOn);
     if (answer === "known_forever") getDatabase().run(`UPDATE ${memory} SET known_forever = 1 WHERE ${id} = ?`, [key]);
-    getDatabase().run(`
+    const write = () => getDatabase().run(`
       INSERT INTO ${reviewsTable} (${columns.join(", ")})
       VALUES (${columns.map(() => "?").join(", ")})
-    `, [key, answer, seenOn, now.getTime(), mode, FSRS_PARAMS_VERSION, ...extra.map(([, value]) => value)]);
+    `, [key, answer, seenOn, now.getTime(), mode!, FSRS_PARAMS_VERSION, ...extra.map(([, value]) => value)]);
+    if (priorEntity) withPriorValidation(priorEntity, key, write);
+    else write();
     return next;
   };
 
@@ -161,6 +163,7 @@ export const createCardLog = (config: CardLogConfig) => {
     ensure();
     const db = getDatabase();
     if (firstValue<number>(`SELECT COUNT(*) FROM ${tasksTable} WHERE reviewed_on = ?`, [day], 0) > 0) {
+      reconcilePriorTasks(pacingEntity(), tasksTable, day, config.dayEnd?.(day) ?? studyDayEnd());
       const count = (cond: string) => firstValue<number>(
         `SELECT COUNT(*) FROM ${tasksTable} t JOIN ${memory} m ON m.${id} = t.${id} WHERE t.reviewed_on = ? AND ${cond}`, [day], 0
       );
@@ -170,12 +173,14 @@ export const createCardLog = (config: CardLogConfig) => {
     const due = rowsFor(`
       SELECT ${id} FROM ${memory}
       WHERE ${exclude()} AND seen_count > 0 AND fsrs_due IS NOT NULL AND fsrs_due <= ?
+        AND NOT ${priorEntity ? pendingPriorSql(priorEntity, `${memory}.${id}`) : "0"}
       ORDER BY RANDOM() LIMIT ?
     `, [dayEnd, Math.max(0, quota.review)]).map((row) => String(row[id]));
+    const priors = priorIdsForEntity(pacingEntity(), new Date(dayEnd), day);
     const fresh = freshCandidates().slice(0, Math.max(0, quota.fresh));
     db.run("BEGIN");
     try {
-      [...due, ...fresh].forEach((key, index) => {
+      [...due, ...priors, ...fresh].forEach((key, index) => {
         db.run(`INSERT OR IGNORE INTO ${tasksTable} (reviewed_on, ${id}, order_index) VALUES (?, ?, ?)`, [day, key, index]);
       });
       db.run("COMMIT");
@@ -183,7 +188,7 @@ export const createCardLog = (config: CardLogConfig) => {
       db.run("ROLLBACK");
       throw error;
     }
-    return { review: due.length, fresh: fresh.length };
+    return { review: due.length + priors.length, fresh: fresh.length };
   };
 
   /** 改了额度之后重排今天的清单：清单只是投影，删掉重建不丢任何作答（已答的卡由 FSRS 状态说话）。 */
@@ -196,6 +201,7 @@ export const createCardLog = (config: CardLogConfig) => {
   const pickNext = (day = today(), excluded = new Set<string>()): string | null => {
     ensure();
     const dayEnd = (config.dayEnd?.(day) ?? studyDayEnd()).toISOString();
+    reconcilePriorTasks(pacingEntity(), tasksTable, day, new Date(dayEnd));
     const rows = rowsFor(`
       SELECT t.${id} AS k, m.fsrs_due, m.fsrs_state
       FROM ${tasksTable} t JOIN ${memory} m ON m.${id} = t.${id}
@@ -215,6 +221,7 @@ export const createCardLog = (config: CardLogConfig) => {
   const progress = (day = today()) => {
     ensure();
     const dayEnd = (config.dayEnd?.(day) ?? studyDayEnd()).toISOString();
+    reconcilePriorTasks(pacingEntity(), tasksTable, day, new Date(dayEnd));
     const total = firstValue<number>(`SELECT COUNT(*) FROM ${tasksTable} WHERE reviewed_on = ?`, [day], 0);
     const done = firstValue<number>(`
       SELECT COUNT(*) FROM ${tasksTable} t JOIN ${memory} m ON m.${id} = t.${id}
@@ -233,6 +240,7 @@ export const createCardLog = (config: CardLogConfig) => {
     if (!last) return null;
     const key = String(last.k);
     getDatabase().run(`DELETE FROM ${reviewsTable} WHERE id = ?`, [last.id as number]);
+    if (priorEntity) undoPriorValidation(priorEntity, key);
     if (!replay([key])) resetToStartingPoint(key);
     return key;
   };
@@ -240,8 +248,11 @@ export const createCardLog = (config: CardLogConfig) => {
   /** 到期数（给圆环做池子和「复习建议下限」）。 */
   const dueCount = () => {
     ensure();
-    return firstValue<number>(`SELECT COUNT(*) FROM ${memory} WHERE ${exclude()} AND seen_count > 0 AND fsrs_due <= ?`, [studyDayEnd().toISOString()], 0);
+    return firstValue<number>(`SELECT COUNT(*) FROM ${memory} WHERE ${exclude()} AND seen_count > 0 AND fsrs_due <= ?
+      AND NOT ${priorEntity ? pendingPriorSql(priorEntity, `${memory}.${id}`) : "0"}`, [studyDayEnd().toISOString()], 0)
+      + priorIdsForEntity(pacingEntity()).length;
   };
 
-  return { ensure, stepMode, record, replay, undoLast, createTasks, clearTasks, pickNext, progress, dueCount, get exclude() { return exclude(); } };
+  const priorCount = () => { ensure(); return priorIdsForEntity(pacingEntity()).length; };
+  return { ensure, stepMode, record, replay, undoLast, createTasks, clearTasks, pickNext, progress, dueCount, priorCount, get exclude() { return exclude(); } };
 };

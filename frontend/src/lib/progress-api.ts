@@ -4,6 +4,7 @@ import { ensureProgressInitialized } from "./word-api";
 import { MASTERED_SQL } from "./fsrs-store";
 import { perfTime } from "./perf-marks";
 import type { ProgressOverview } from "./study-types";
+import { priorGateSql } from "./prior-pacing";
 
 // 自报水平写入的基线会让 seen_count=1 以进入复习队列，但它不是一次真实学习。
 // 老数据/导入数据没有 baseline，仍保留原来的 seen_count 口径。
@@ -26,7 +27,7 @@ export function getProgressOverview(): ProgressOverview {
       COUNT(*) AS total,
       SUM(CASE WHEN ${REAL_WORD} THEN 1 ELSE 0 END) AS seen,
       SUM(CASE WHEN ${REAL_WORD} AND (p.known_forever = 1 OR ${MASTERED_SQL}) THEN 1 ELSE 0 END) AS completed,
-      SUM(CASE WHEN p.known_forever = 0 AND p.seen_count > 0 AND (p.fsrs_due IS NULL OR p.fsrs_due <= ?) THEN 1 ELSE 0 END) AS low,
+      SUM(CASE WHEN p.known_forever = 0 AND p.seen_count > 0 AND (p.fsrs_due IS NULL OR p.fsrs_due <= ?) AND ${priorGateSql("words", "p.word_id")} THEN 1 ELSE 0 END) AS low,
       SUM(CASE WHEN NOT ${REAL_WORD} THEN 1 ELSE 0 END) AS unseen
     FROM words w
     JOIN progress p ON p.word_id = w.id
@@ -37,7 +38,7 @@ export function getProgressOverview(): ProgressOverview {
       COUNT(*) AS total,
       SUM(CASE WHEN ${REAL_WORD} THEN 1 ELSE 0 END) AS seen,
       SUM(CASE WHEN ${REAL_WORD} AND (p.known_forever = 1 OR ${MASTERED_SQL}) THEN 1 ELSE 0 END) AS completed,
-      SUM(CASE WHEN p.known_forever = 0 AND p.seen_count > 0 AND (p.fsrs_due IS NULL OR p.fsrs_due <= ?) THEN 1 ELSE 0 END) AS low,
+      SUM(CASE WHEN p.known_forever = 0 AND p.seen_count > 0 AND (p.fsrs_due IS NULL OR p.fsrs_due <= ?) AND ${priorGateSql("words", "p.word_id")} THEN 1 ELSE 0 END) AS low,
       SUM(CASE WHEN NOT ${REAL_WORD} THEN 1 ELSE 0 END) AS unseen
     FROM words w
     JOIN progress p ON p.word_id = w.id
@@ -58,7 +59,7 @@ export function getProgressOverview(): ProgressOverview {
       COUNT(*) AS total,
       SUM(CASE WHEN ${REAL_GRAMMAR} THEN 1 ELSE 0 END) AS seen,
       SUM(CASE WHEN ${REAL_GRAMMAR} AND (p.known_forever = 1 OR ${MASTERED_SQL}) THEN 1 ELSE 0 END) AS completed,
-      SUM(CASE WHEN p.known_forever = 0 AND p.seen_count > 0 AND (p.fsrs_due IS NULL OR p.fsrs_due <= ?) THEN 1 ELSE 0 END) AS low,
+      SUM(CASE WHEN p.known_forever = 0 AND p.seen_count > 0 AND (p.fsrs_due IS NULL OR p.fsrs_due <= ?) AND ${priorGateSql("grammar", "p.grammar_id")} THEN 1 ELSE 0 END) AS low,
       SUM(CASE WHEN NOT ${REAL_GRAMMAR} THEN 1 ELSE 0 END) AS unseen
     FROM grammar_points g
     JOIN grammar_progress p ON p.grammar_id = g.id

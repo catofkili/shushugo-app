@@ -8,6 +8,7 @@
 import { getDatabase } from "./database";
 import { rowsFor, firstValue, getState, setState, studyDate } from "./database/db-utils";
 import type { WordAnswer } from "../types/vocabulary";
+import { pendingPriorSql, priorGateSql, priorIdsForEntity, priorKindForTable } from "./prior-pacing";
 import {
   recordReview,
   retrievability,
@@ -454,9 +455,11 @@ export function fsrsMasteredCount(entity: FsrsEntity = WORD_FSRS): number {
  */
 export function fsrsDueCount(now = new Date(), entity: FsrsEntity = WORD_FSRS): number {
   ensureFsrsColumns(entity);
+  const kind = priorKindForTable(entity.table);
   return firstValue<number>(
     `SELECT COUNT(*) FROM ${entity.table}
-     WHERE ${entity.eligible} AND (fsrs_due IS NULL OR fsrs_due <= ?)`,
+     WHERE ${entity.eligible} AND (fsrs_due IS NULL OR fsrs_due <= ?)
+       AND ${kind ? priorGateSql(kind, `${entity.table}.${entity.idColumn}`, now, studyDate(), entity.table === "grammar_progress" ? entity.eligible : "1") : "1"}`,
     [now.toISOString()],
     0
   );
@@ -489,12 +492,20 @@ export const LEECH_DAILY_INTAKE = 10;
  */
 export function plannedDueCount(now = new Date(), entity: FsrsEntity = WORD_FSRS, leechIntake = LEECH_DAILY_INTAKE): number {
   ensureFsrsColumns(entity);
+  const kind = priorKindForTable(entity.table);
   const row = rowsFor(
     `SELECT SUM(COALESCE(fsrs_lapses, 0) < ?) AS normal, SUM(COALESCE(fsrs_lapses, 0) >= ?) AS leech
-     FROM ${entity.table} WHERE ${entity.eligible} AND (fsrs_due IS NULL OR fsrs_due <= ?)`,
+     FROM ${entity.table} WHERE ${entity.eligible} AND (fsrs_due IS NULL OR fsrs_due <= ?)
+       AND NOT ${kind ? pendingPriorSql(kind, `${entity.table}.${entity.idColumn}`) : "0"}`,
     [LEECH_LAPSE_THRESHOLD, LEECH_LAPSE_THRESHOLD, now.toISOString()]
   )[0];
-  return Number(row?.normal ?? 0) + Math.min(Number(row?.leech ?? 0), leechIntake);
+  return Number(row?.normal ?? 0) + Math.min(Number(row?.leech ?? 0), leechIntake) + priorIdsForEntity(entity, now).length;
+}
+
+/** 先验验证另算，不能被普通复习上限吞掉，也不能反过来挤掉普通复习。 */
+export function cappedDueCount(limit: number, now = new Date(), entity: FsrsEntity = WORD_FSRS): number {
+  const prior = priorIdsForEntity(entity, now).length;
+  return Math.min(Math.max(0, limit), plannedDueCount(now, entity) - prior) + prior;
 }
 
 export function fsrsDueWordIds(
@@ -504,7 +515,11 @@ export function fsrsDueWordIds(
   leechIntake = LEECH_DAILY_INTAKE
 ): number[] {
   ensureFsrsColumns(entity);
-  if (limit <= 0) return [];
+  const prior = priorIdsForEntity(entity, now).map(Number);
+  const kind = priorKindForTable(entity.table);
+  entity = { ...entity, eligible: `(${entity.eligible}) AND NOT ${kind ? pendingPriorSql(kind, `${entity.table}.${entity.idColumn}`) : "0"}` };
+  // 即使普通复习额度为 0，也要保留独立的先验验证名额。
+  if (limit <= 0) return prior;
   // 顽固词闸先于一切:今天的池子 = 到期的非顽固词全部 + 随机 leechIntake 个顽固词。
   // ⚠️ 2026-09-18 那版「上限装不下就纯随机、闸不生效」被用户当场否了(2026-09-20,
   // 「顽固词有 10 的上限,慢慢来」):作者库到期 587 个里 243 个是顽固词,不先挡的话
@@ -530,13 +545,13 @@ export function fsrsDueWordIds(
   // stability 5,973),中位过期天数和 due 顺序一样(17 天)。
   // 「谁先出」由 pickStage1Next 那一层的优先级 + 抖动决定,选进来之后照旧。
   if (normalCount + leechIds.length > limit) {
-    return rowsFor(
+    return [...rowsFor(
       `SELECT ${entity.idColumn} AS id FROM ${entity.table}
        WHERE ${entity.eligible} AND (fsrs_due IS NULL OR fsrs_due <= ?)
          AND (COALESCE(fsrs_lapses, 0) < ? OR ${entity.idColumn} IN (${leechIds.map(() => "?").join(",") || "NULL"}))
        ORDER BY RANDOM() LIMIT ?`,
       [now.toISOString(), LEECH_LAPSE_THRESHOLD, ...leechIds, limit]
-    ).map((row) => Number(row.id));
+    ).map((row) => Number(row.id)), ...prior];
   }
   // 装得下的话全进,下面的排序只影响 order_index。
   // 排序的第一优先级不是「谁最过期」,而是「谁刚栽过跟头」。
@@ -568,5 +583,5 @@ export function fsrsDueWordIds(
     }
     picked.push(Number(row.id));
   }
-  return picked;
+  return [...picked, ...prior];
 }

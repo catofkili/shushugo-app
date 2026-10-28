@@ -85,7 +85,8 @@ export const SYNCED_TABLES: SyncedTable[] = [
   { table: "kanji_progress", keys: ["reviewed_on", "word_id"], strategy: "lww" },
   { table: "kanji_reading_progress", keys: ["reviewed_on", "word_id"], strategy: "lww" },
 
-  // 键值状态。含设备本地键(见 DEVICE_LOCAL_STATE_KEYS),推送前会过滤。
+  // 键值状态。prior_pace:words / grammar / kanji / confusion 保存 {quota, window}，按 key 走 lww 跨端同步。
+  // 含设备本地键(见 DEVICE_LOCAL_STATE_KEYS),推送前会过滤；prior_pace:* 不属于设备本地键。
   { table: "app_state", keys: ["key"], strategy: "lww" },
   { table: "grammar_state", keys: ["key"], strategy: "lww" },
 

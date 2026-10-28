@@ -1,6 +1,7 @@
 import { firstValue } from "./database/db-utils";
 import { getDatabase } from "./database";
 import { ensureSyncSchema } from "./sync/schema";
+import { withPriorValidation } from "./prior-pacing";
 
 /** Bump when scheduler parameters change in a way that affects replay/audit. */
 export const FSRS_PARAMS_VERSION = "fsrs-v1";
@@ -31,11 +32,13 @@ export const recordReviewEvent = ({
 }: ReviewEventInput): number => {
   ensureSyncSchema();
   const db = getDatabase();
-  db.run(`
-    INSERT INTO reviews (
-      word_id, answer, score_after, reviewed_on, direction,
-      reviewed_at, scheduler_mode, fsrs_params_version, event_source
-    ) VALUES (?, ?, 0, ?, ?, ?, ?, ?, ?)
-  `, [wordId, answer, reviewedOn, direction, reviewedAt, schedulerMode, FSRS_PARAMS_VERSION, eventSource]);
-  return firstValue<number>("SELECT last_insert_rowid()", [], 0);
+  return withPriorValidation("words", wordId, () => {
+    db.run(`
+      INSERT INTO reviews (
+        word_id, answer, score_after, reviewed_on, direction,
+        reviewed_at, scheduler_mode, fsrs_params_version, event_source
+      ) VALUES (?, ?, 0, ?, ?, ?, ?, ?, ?)
+    `, [wordId, answer, reviewedOn, direction, reviewedAt, schedulerMode, FSRS_PARAMS_VERSION, eventSource]);
+    return firstValue<number>("SELECT last_insert_rowid()", [], 0);
+  });
 };

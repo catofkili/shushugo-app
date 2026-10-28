@@ -89,7 +89,8 @@ const outputs = new Map(); // 产物路径 → 内容
 
 // ---- 主包：src/shared/web.js ----
 // 2026-10-19：出题增加约 6 KiB；主包单独做语法压缩，守住 760 KiB，不提高预算。
-const main = await build({ ...common, minifySyntax: true, entryPoints: [path.join(root, 'scripts/shared/entry.ts')] });
+// 2026-10-29：先验限速后超预算约 7 KiB；压缩局部标识符，保留导出名和对象属性，不提高预算。
+const main = await build({ ...common, minifySyntax: true, minifyIdentifiers: true, entryPoints: [path.join(root, 'scripts/shared/entry.ts')] });
 const mainInputs = Object.values(main.metafile.outputs)[0].inputs;
 const leaked = Object.keys(mainInputs).filter((file) => /src\/data\/.*\.json$/.test(file) && !INLINE_DATA.has(path.basename(file)));
 if (leaked.length) throw new Error(`出厂内容 JSON 进了主包共享层：${leaked.join(', ')}`);

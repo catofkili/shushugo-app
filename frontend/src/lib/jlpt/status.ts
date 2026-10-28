@@ -3,6 +3,7 @@ import { ensureProgressInitialized } from "../word-api/bootstrap";
 import { ensureGrammarProgressInitialized } from "../grammar-api";
 import { getJlptPlanPreferences } from "../studyPreferences";
 import { priorBaselineSql } from "../plan-level-order";
+import { pendingPriorSql, priorIntakeSql, priorValidatedToday, releasedPriorIds } from "../prior-pacing";
 import { defaultExamDate, examEndAt, parseExamDate, type ExamKind } from "./exam-dates";
 import {
   computeDailyMinimum,
@@ -72,6 +73,8 @@ export function getJlptPlanStatus(now = new Date()): JlptPlanStatus {
   const dayStart = studyDayStart(now).toISOString();
   const words = wordLevelClause(target);
   const grammar = grammarLevelClause(target);
+  const wordEligible = `word_id IN (SELECT w.id FROM words w WHERE ${words})`;
+  const grammarEligible = `grammar_id IN (SELECT g.id FROM grammar_points g WHERE ${grammar})`;
 
   const wordTotal = firstValue<number>(
     `SELECT COUNT(*) FROM words w WHERE ${words}`, [], 0
@@ -93,12 +96,16 @@ export function getJlptPlanStatus(now = new Date()): JlptPlanStatus {
     JOIN progress p ON p.word_id = w.id
     WHERE ${words} AND p.seen_count > 0 AND p.known_forever = 0
       AND (p.fsrs_due IS NULL OR (p.fsrs_due <= ? AND p.fsrs_due >= ?))
-  `, [dayEnd, dayStart], 0);
+      AND NOT ${priorIntakeSql("words", "p.word_id", day)}
+  `, [dayEnd, dayStart], 0) + releasedPriorIds("words", new Date(dayEnd), day).filter((key) => firstValue<number>(
+    `SELECT 1 FROM words w WHERE w.id = ? AND ${words}`, [key], 0
+  )).length + priorValidatedToday("words", day, wordEligible);
   const wordOverdue = firstValue<number>(`
     SELECT COUNT(*) FROM words w
     JOIN progress p ON p.word_id = w.id
     WHERE ${words} AND p.seen_count > 0 AND p.known_forever = 0
       AND p.fsrs_due IS NOT NULL AND p.fsrs_due < ?
+      AND NOT ${pendingPriorSql("words", "p.word_id")}
   `, [dayStart], 0);
 
   const grammarTotal = firstValue<number>(
@@ -118,12 +125,15 @@ export function getJlptPlanStatus(now = new Date()): JlptPlanStatus {
     JOIN grammar_progress p ON p.grammar_id = g.id
     WHERE ${grammar} AND p.seen_count > 0 AND p.known_forever = 0
       AND (p.fsrs_due IS NULL OR (p.fsrs_due <= ? AND p.fsrs_due >= ?))
-  `, [dayEnd, dayStart], 0);
+      AND NOT ${priorIntakeSql("grammar", "p.grammar_id", day)}
+  `, [dayEnd, dayStart], 0) + releasedPriorIds("grammar", new Date(dayEnd), day, grammarEligible).length
+    + priorValidatedToday("grammar", day, grammarEligible);
   const grammarOverdue = firstValue<number>(`
     SELECT COUNT(*) FROM grammar_points g
     JOIN grammar_progress p ON p.grammar_id = g.id
     WHERE ${grammar} AND p.seen_count > 0 AND p.known_forever = 0
       AND p.fsrs_due IS NOT NULL AND p.fsrs_due < ?
+      AND NOT ${pendingPriorSql("grammar", "p.grammar_id")}
   `, [dayStart], 0);
 
   // 今天做过的:第一次见到的算新,见过的算复习。起点先验写进来的卡第一次答是在验证先验,算复习。

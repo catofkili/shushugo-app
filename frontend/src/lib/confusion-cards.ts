@@ -235,6 +235,7 @@ export const pickConfusionNext = (day = today(), excluded = new Set<string>()) =
   return null;
 };
 export const confusionCardProgress = (day = today()) => { ensureConfusionCardTables(); return log.progress(day); };
+export const confusionPriorCount = log.priorCount;
 export const recordConfusionReview = (groupKey: string, answer: WordAnswer, now = new Date(), mode?: StepMode) => {
   ensureConfusionCardTables();
   return log.record(groupKey, answer, now, mode);
