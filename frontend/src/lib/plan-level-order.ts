@@ -1,6 +1,6 @@
 import { firstValue, getState } from "./database/db-utils";
 import { JLPT_TARGETS, type JlptTarget } from "./jlpt/plan";
-import { getStudyPreferences } from "./studyPreferences";
+import { getStudyPreferences, levelAdvanceTarget, readLevelAdvance } from "./studyPreferences";
 
 export type PlanKind = "words" | "grammar" | "kanji" | "confusion";
 
@@ -43,7 +43,13 @@ const appliedPrior = (): { level: string; familiarity: Partial<Record<PlanKind, 
 
 export const currentPlanLevelRanks = (kind: PlanKind): number[] => {
   const prior = appliedPrior();
-  return planLevelRanks(prior.level, prior.familiarity[kind], getStudyPreferences().jlptTarget);
+  const target = kind === "words" || kind === "grammar" ? levelAdvanceTarget(kind) : getStudyPreferences().jlptTarget;
+  const ranks = planLevelRanks(prior.level, prior.familiarity[kind], target);
+  if (kind === "words" || kind === "grammar") {
+    const backfill = JLPT_TARGETS.indexOf(readLevelAdvance()[kind].backfill as JlptTarget);
+    if (backfill >= 0) ranks[backfill] = -1; // 只提紧邻回补级；比基础漏网的第 0 档还早。
+  }
+  return ranks;
 };
 
 /** 新内容实际从哪一级开始（JLPT_TARGETS 下标）；它以下的级别是先验写出来的，不算「学完」。 */

@@ -3,7 +3,7 @@ import { parseFurigana } from "./furigana-data";
 import { ensureGrammarProgressInitialized } from "./grammar-api";
 import { firstValue, rowsFor, studyDayEnd, today } from "./study-core";
 import { dailyReviewCap } from "./review-budget";
-import { getDailyGrammarGoal, getEffectiveStudyPreferences, getReviewCapPreference, getStudyPreferences, PLAN_REVIEW_DISABLED } from "./studyPreferences";
+import { getDailyGrammarGoal, getEffectiveStudyPreferences, getReviewCapPreference, levelAdvanceNewCap, levelAdvanceTarget, PLAN_REVIEW_DISABLED } from "./studyPreferences";
 import { levelsInScope } from "./jlpt/plan";
 import { planLevelRankSql, priorBaselineSql } from "./plan-level-order";
 import {
@@ -124,8 +124,8 @@ const LEVEL_PATTERN = /^N[1-5]$/;
  */
 export const PLAN_GRAMMAR_LEVEL = "plan";
 
-const scopeLevels = (level: string): string[] => (
-  level === PLAN_GRAMMAR_LEVEL ? levelsInScope(getStudyPreferences().jlptTarget)
+export const scopeLevels = (level: string): string[] => (
+  level === PLAN_GRAMMAR_LEVEL ? levelsInScope(levelAdvanceTarget("grammar"))
     : LEVEL_PATTERN.test(level) ? [level] : []
 );
 
@@ -221,8 +221,12 @@ const encoreQuota = (level: string, day: string) => {
  * 一个等级只有一百来条，按每日新词 15 排等于八天过完一级，而一条语法要记的是
  * 接续 + 用法，不是一个词形。设置页「每日学习量」里两根滑杆，各排各的一份、互不挤占。
  */
-export const grammarNewQuota = (level: string, day = today()) =>
-  Math.max(getDailyGrammarGoal() + encoreQuota(level, day) - newDoneTodayCount(level, day), 0);
+export const grammarNewQuota = (level: string, day = today()) => {
+  const quota = Math.max(getDailyGrammarGoal() + encoreQuota(level, day) - newDoneTodayCount(level, day), 0);
+  const cap = levelAdvanceNewCap("grammar");
+  // 已存在的加餐额度也不能越过「这一级收尾后只复习」的选择。
+  return cap === null ? quota : Math.min(quota, cap);
+};
 
 /**
  * 「一轮洗一遍牌」时代留下的 `quiz_round:<等级>` 键。grammar_state 是同步表，

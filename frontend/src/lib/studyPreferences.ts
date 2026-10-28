@@ -1,6 +1,6 @@
 import { daysBetween, JLPT_TARGETS, type JlptTarget } from "./jlpt/plan";
 import { defaultExamDate, formatExamDate, isExamKind, parseExamDate, type ExamKind } from "./jlpt/exam-dates";
-import { getState, setState } from "./database/db-utils";
+import { firstValue, getState, setState } from "./database/db-utils";
 
 export type ThemePreference = "system" | "light" | "dark";
 
@@ -288,9 +288,73 @@ export const isPostExamLightActive = (now = new Date()) => {
   return Boolean(recovery && postExamChoice(recovery.key) !== "usual");
 };
 
+/**
+ * 单词 / 语法各自保存「往上 / 回补 / 先不加」的回答（level-advance.ts 出题）。
+ * 选「先不加」= 先把这一级剩下的新内容学完（每日量封顶在剩余数，不溢出到下一级），
+ * 学到 100% 之后才停：覆盖层把该类每日量压成 0，停满一周自动恢复并再问一次。一周从「学到 100%」那刻起算
+ * （stoppedAt，由 levelAdvancePrompt 在主页刷新时记），不从点按钮起算。和考后轻量期同一套办法：不改用户存的每日新词数。
+ * 状态进 app_state（跟账号同步，和 post_exam_choice 一样），不能放 localStorage。
+ */
+export const LEVEL_ADVANCE_KEY = "level_advance";
+export const LEVEL_ADVANCE_PAUSE_MS = 7 * 24 * 60 * 60 * 1000;
+export type LevelAdvanceKind = "words" | "grammar";
+export interface LevelAdvanceKindState {
+  /** 已回答过「往上 / 回补」的级别 */
+  answered: string[];
+  /** 点了「先不加」的时刻（ms），0 = 没暂停过 */
+  pausedAt: number;
+  /** 那一级学到 100%、新内容真正停下的时刻（ms），0 = 还没学完 */
+  stoppedAt: number;
+  pausedLevel: string;
+  upTo: JlptTarget | "";
+  backfill: JlptTarget | "";
+}
+export type LevelAdvanceState = Record<LevelAdvanceKind, LevelAdvanceKindState>;
+export const readLevelAdvance = (): LevelAdvanceState => {
+  const readKind = (value: Partial<LevelAdvanceKindState> | null | undefined): LevelAdvanceKindState => ({
+    answered: Array.isArray(value?.answered) ? value.answered.filter((level) => JLPT_TARGETS.includes(level as JlptTarget)) : [],
+    pausedAt: Number.isFinite(value?.pausedAt) && Number(value?.pausedAt) > 0 ? Number(value?.pausedAt) : 0,
+    stoppedAt: Number.isFinite(value?.stoppedAt) && Number(value?.stoppedAt) > 0 ? Number(value?.stoppedAt) : 0,
+    pausedLevel: value?.pausedLevel && JLPT_TARGETS.includes(value.pausedLevel as JlptTarget) ? value.pausedLevel : "",
+    upTo: value?.upTo && JLPT_TARGETS.includes(value.upTo) ? value.upTo : "",
+    backfill: value?.backfill && JLPT_TARGETS.includes(value.backfill) ? value.backfill : ""
+  });
+  try {
+    const parsed = JSON.parse(getState(LEVEL_ADVANCE_KEY, "") || "null");
+    // 未发布的旧扁平格式只属于单词；语法从空状态开始。
+    return { words: readKind(parsed?.words ?? parsed), grammar: readKind(parsed?.grammar) };
+  } catch { return { words: readKind(null), grammar: readKind(null) }; }
+};
+export const writeLevelAdvance = (state: LevelAdvanceState) => setState(LEVEL_ADVANCE_KEY, JSON.stringify(state));
+/** 学习前沿只扩学习范围，不能改绑定考期与推荐量的 jlptTarget。 */
+export const levelAdvanceTarget = (kind: LevelAdvanceKind): JlptTarget => JLPT_TARGETS[Math.max(
+  JLPT_TARGETS.indexOf(getStudyPreferences().jlptTarget),
+  JLPT_TARGETS.indexOf(readLevelAdvance()[kind].upTo as JlptTarget)
+)];
+export const levelUnseenContent = (kind: LevelAdvanceKind, level: string): number => firstValue<number>(
+  kind === "words"
+    ? `SELECT COUNT(*) FROM words w LEFT JOIN progress p ON p.word_id = w.id
+       WHERE w.jlpt_level = ? AND COALESCE(p.seen_count, 0) = 0 AND COALESCE(p.known_forever, 0) = 0`
+    : `SELECT COUNT(*) FROM grammar_points g LEFT JOIN grammar_progress p ON p.grammar_id = g.id
+       WHERE g.level = ? AND COALESCE(p.seen_count, 0) = 0 AND COALESCE(p.known_forever, 0) = 0`, [level], 0);
+/** 暂停对该类新内容的封顶；null = 不封顶。没学完 100% 时封在剩余数，学完后一周内是 0。 */
+export const levelAdvanceNewCap = (kind: LevelAdvanceKind, now = new Date()): number | null => {
+  const { pausedAt, stoppedAt, pausedLevel } = readLevelAdvance()[kind];
+  if (pausedAt <= 0 || pausedLevel !== levelAdvanceTarget(kind)) return null;
+  if (stoppedAt > 0) return now.getTime() - stoppedAt < LEVEL_ADVANCE_PAUSE_MS ? 0 : null;
+  try { return levelUnseenContent(kind, pausedLevel); } catch { return null; }
+};
+
 /** 只改变实际排题额度，不改用户保存的平时额度；第 8 天自动恢复。 */
 export const getEffectiveStudyPreferences = (now = new Date()): StudyPreferences => {
-  const prefs = getStudyPreferences();
+  const saved = getStudyPreferences();
+  const wordCap = levelAdvanceNewCap("words", now);
+  const grammarCap = levelAdvanceNewCap("grammar", now);
+  const prefs = {
+    ...saved,
+    dailyGoal: wordCap === null ? saved.dailyGoal : Math.min(saved.dailyGoal, wordCap),
+    grammarDailyGoal: grammarCap === null ? saved.grammarDailyGoal : Math.min(saved.grammarDailyGoal, grammarCap)
+  };
   const recovery = postExamRecovery(now, prefs);
   if (!recovery || postExamChoice(recovery.key) === "usual") return prefs;
   const recoveryReviewCap = (cap: number, maximum: number) => cap > 0 ? Math.min(cap, maximum) : maximum;

@@ -639,3 +639,31 @@ stage1 从流水回填任务表（回填成 'new' 会占新词配额）里。
 设置页（`KanjiUnitPlanSettings`）不再有目标级别按钮，只显示「跟着备考计划」。
 **投放矩阵测试**：`plan-level-matrix.test.ts` 对起点 N5/N4/N3 × 目标 N4/N3/N2 共 9 格，逐个入口（单词 / 语法 / 汉字字卡 / 辨析 / 汉字单元）断言第一批新内容的级别。
 **新增任何挑新内容的入口都要在那里加一行。**
+
+### 2026-10-28 一级学完问三选一
+
+本节覆盖 `daily-plans-and-study-modes.md` 同日旧稿里「只问单词、只报目标、继续 / 暂停」的实现描述；旧稿保留作历史。
+状态仍放 `app_state.level_advance`，改成 `words` / `grammar` 各一份
+`{ answered, pausedAt, stoppedAt, pausedLevel, upTo, backfill }`；旧扁平状态由 `readLevelAdvance` 只读入 `words`，语法从空状态开始。
+
+- **提问**：`levelAdvancePrompt` 分别检查每类的前沿 `max(jlptTarget, upTo)`，覆盖 ≥95%、未回答才问；
+  单词用 `seen_count > 0 OR known_forever`，语法用真实 `grammar_reviews` 或 `known_forever = 1`，分母都是该级内容总数。
+  只有先验基线、没有真实流水的语法卡不计覆盖；前沿在 `currentFirstPlanLevelIndex(kind)` 之前也不问，避免把起点先验误报为学完。
+  N1 不问；同一时刻只显示一张，单词优先，但两类的暂停计时都会处理。
+- **往上**：`answerLevelAdvance(kind, level, "up")` 将 `upTo` 设为更难一级（N3 → N2）、把本级加入 `answered`，清掉该类暂停。
+  `levelAdvanceTarget` 算扩展后的范围；`currentPlanLevelRanks(kind)` 让范围内新内容逐级顺推，扩展级不再掉到 100+ 档。
+  语法还有过滤条件，因此 `scopeLevels(PLAN_GRAMMAR_LEVEL)` 必须用扩展范围，不能只改排序。
+  主页 `word-api/stats.ts` 的语法计数 / 小路、`mixed-session.ts` 的出题、`WordStudy.tsx` 的例句预取继续共用 `PLAN_GRAMMAR_LEVEL`，自然同步。
+- **回补**：`answerLevelAdvance(kind, level, "back")` 将 `backfill` 设为紧邻的较低一级（N3 → N4）、记录本级已回答并清暂停；
+  `currentPlanLevelRanks(kind)` 将该级压到 −1 档，比基础漏网的 0 档更早。只影响所选种类的新内容，复习仍走 FSRS。
+  用户明确只补紧邻一级，不把「补 N4」扩成从 N5 重学；仅当该级存在且有未学新内容时，`LevelAdvancePrompt.backfill` 才有值、主页才出按钮。
+  回补级新内容耗尽后，原顺推自然接上，不再额外清空或重排复习。
+- **先不加**：`answerLevelAdvance(kind, level, "pause")` 记录该类 `pausedAt / pausedLevel`、清 `stoppedAt`；
+  `levelAdvanceNewCap` / `getEffectiveStudyPreferences` 仅在覆盖层封顶该类 `dailyGoal` 或 `grammarDailyGoal`，不改用户保存的平时额度。
+  先把本级剩余新内容收尾，到 100% 后由 `levelAdvancePrompt` 记录 `stoppedAt`，从这一刻停一周，期满自动恢复并再次询问。
+  语法 `grammarNewQuota` 也套该封顶，防止已存在的加餐额度穿透暂停；另一类和复习额度不受影响。
+
+**不能改 `jlptTarget`**：它绑定考试目标、倒计时、计划锚点和每日量推荐；「想接着学 N2」不代表「改考 N2」。
+`daily-plan.ts` / `jlpt/status.ts` 的目标口径这次保持原样，**已知缺口：备考页数字仍按备考目标算，不计入 upTo 扩展的学习内容**。
+主页三按钮和种类文案在 `ZooHome.tsx`，Taro 小程序复用同一组件；本次不重建 `web.js` / reports，提交前需统一构建共享产物。
+判据在 `level-advance.test.ts`（含语法真实流水与先验、扩范围实际出题 / 混合模式 / 例句预取、相邻回补、各自暂停、单词优先和旧状态兼容）。

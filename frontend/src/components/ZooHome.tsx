@@ -18,6 +18,7 @@ import { choosePostExamIntensity, getStudyPreferences, kanaGatePending, postExam
 import { scheduleSave } from "../lib/storage";
 import { refreshTodayWordPlan } from "../lib/word-api";
 import { refreshMixedCardTasks } from "../lib/mixed-cards";
+import { answerLevelAdvance, levelAdvancePrompt, type LevelAdvancePrompt } from "../lib/level-advance";
 import { getDatabase } from "../lib/database";
 import { streakSnapshot } from "../lib/streak";
 import { StreakFlame, flameStateOf } from "./streak/StreakFlame";
@@ -138,6 +139,7 @@ export function ZooHome({
   const [jlpt, setJlpt] = useState<JlptPlanStatus | null>(null);
   const [recovery, setRecovery] = useState<ReturnType<typeof postExamRecovery>>(null);
   const [recoveryChoice, setRecoveryChoice] = useState<"light" | "usual" | null>(null);
+  const [advance, setAdvance] = useState<LevelAdvancePrompt | null>(null);
   const [modeSheetOpen, setModeSheetOpen] = useState(false);
   const [focusArmed, setFocusArmed] = useState(isStudyFocusArmed);
   const [focusIntroOpen, setFocusIntroOpen] = useState(false);
@@ -180,6 +182,7 @@ export function ZooHome({
         setJlpt(null);
         setRecovery(null);
       }
+      try { setAdvance(levelAdvancePrompt()); } catch { setAdvance(null); }
       // 必须在 stats 读完之后:当天的计划是在那里面排好的,
       // 排之前问 plan_trend 会看到「今天 0 个」,报出一句假喜讯。
       perfTime("首页 · 小时刻", collectMoments);
@@ -233,6 +236,15 @@ export function ZooHome({
       refreshTodayWordPlan();
       refreshMixedCardTasks(getDatabase());
     }
+    scheduleSave(0);
+    notifyProgressUpdated();
+  };
+  const chooseAdvance = (choice: "up" | "back" | "pause") => {
+    if (!advance) return;
+    answerLevelAdvance(advance.kind, advance.level, choice);
+    setAdvance(null);
+    refreshTodayWordPlan();
+    refreshMixedCardTasks(getDatabase());
     scheduleSave(0);
     notifyProgressUpdated();
   };
@@ -363,6 +375,20 @@ export function ZooHome({
             <button className="zoo-post-exam-primary" onClick={adjustRecoveryGoal}>调整目标</button>
             <button onClick={() => chooseRecovery("light")}>先按轻量计划</button>
             <button onClick={() => chooseRecovery("usual")}>保持原强度</button>
+          </div>
+        </section>
+      )}
+
+      {advance && !(recovery && !recoveryChoice) && (
+        <section className="zoo-post-exam" aria-label={`${advance.kind === "words" ? "单词" : "语法"}进阶提醒`}>
+          <div className="zoo-post-exam-head">
+            <span className="zoo-post-exam-badge">{advance.level}</span>
+            <div><b>{advance.level} {advance.kind === "words" ? "单词" : "语法"}{advance.again ? "已学完" : `已学 ${advance.percent}%`}</b><p>接下来想怎么学？</p></div>
+          </div>
+          <div className="zoo-post-exam-actions">
+            <button className="zoo-post-exam-primary" onClick={() => chooseAdvance("up")}>继续学 {advance.next}</button>
+            {advance.backfill && <button onClick={() => chooseAdvance("back")}>先补 {advance.backfill}</button>}
+            <button onClick={() => chooseAdvance("pause")}>先不加{advance.kind === "words" ? "新词" : "新语法"}</button>
           </div>
         </section>
       )}
