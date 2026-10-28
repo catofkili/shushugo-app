@@ -254,7 +254,14 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
   const grammarCard = other?.kind === "grammar" ? other.card : null;
   const kanjiCard = other?.kind === "kanji" ? other.card : null;
   const matchCard = other?.kind === "confusion" ? other.card : null;
+  /**
+   * loadNext 要读「此刻摆着的是不是别的卡」，必须读 ref 不读 state：answerOther 是 `showOther(null)` 紧接着
+   * `loadNext`，闭包里的 `other` 还是刚答完的那张，于是 loadNext 以为它还摆着、不去问队列，
+   * 直接进完成页 —— 单词答完之后每次只能再出一张别的卡，剩下的语法 / 汉字 / 辨析被晾着（顶上停在 517/584）。
+   */
+  const otherRef = useRef<MixedOtherItem | null>(null);
   const showOther = (item: MixedOtherItem | null) => {
+    otherRef.current = item;
     setOther(item);
     setOtherRevealed(false);
   };
@@ -441,8 +448,8 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
         }
       }
       // 混合模式：四种卡一条队列，单词手上没有了就由队列给下一张别的卡 —— 四种都空了才算今天完成。
-      let otherTail = mode === "mixed" && Boolean(other);
-      if (mode === "mixed" && !other) {
+      let otherTail = mode === "mixed" && Boolean(otherRef.current);
+      if (mode === "mixed" && !otherRef.current) {
         if (!mixedCardDataLoaded()) await loadMixedCardData();
         const pick = pickMixedNext({ word: Boolean(data.card) });
         if (pick && pick !== "word") { showOther(pick); otherTail = true; }
@@ -466,7 +473,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     } finally {
       setLoading(false);
     }
-  }, [flushPendingAnswer, initialMode, onDailyModeComplete, other, sessionOptions]);
+  }, [flushPendingAnswer, initialMode, onDailyModeComplete, sessionOptions]);
 
   /**
    * 答完一个单词（已经记账之后）：记下作答顺序，混合模式再问队列这一下是不是轮到别的卡。

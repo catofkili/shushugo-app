@@ -86,6 +86,17 @@ memory 是本机检查点（合并后从流水重放重建），tasks 是当天�
   调用方要做的只有：开场 `pickMixedNext({ word })`、答完单词 `recordMixedWordAnswer()` + `pickMixedNext({ word, afterWord: true })`、
   答别的卡 `answerMixedOther`、撤销按 `mixedUndoKind()` 分派。测试在 `mixed-session.test.ts`（含 10-10 那个 bug 的形状）。
 
+### ⚠️ 2026-10-28 增补：答完别的卡后 `loadNext` 读的 `other` 是旧闭包，单词没了就只能再出一张（`WordStudy.tsx`）
+
+作者报「老 bug：结束只按单词学完就结束」：顶上停在 517/584，单词全清后直接进了完成页，还有 66 条语法没出。
+根因：`answerOther` 是 `showOther(null)` 紧接着 `loadNext`，但 `loadNext` 是上一次渲染的闭包，里面的 `other` state 还是刚答完的那张，
+于是 `mode === "mixed" && !other` 不成立、不去问 `pickMixedNext`，`otherTail` 还被当成 true —— 屏上 card / other 都空，`dailyPlanFinished` 为真。
+表现：单词清空之后每次**只能再出一张**别的卡（每 5 词插播的那几张不受影响，所以平时不容易发现）。
+修法：`otherRef` 在 `showOther` 里同步写，`loadNext` 读 ref、不再把 `other` 放进依赖。
+判据：**任何「先清 state 再立刻调依赖这个 state 的回调」都不行，要读 ref**。10-10 那次是三条出口没问队列，这次是问了但读到旧值。
+真实数据复现过：live.db 里单词 423/423、语法剩 66，`pickMixedNext({word:false})` 仍能出语法卡 —— 队列没问题，问题在页面。
+未补自动测试（WordStudy 没有组件测试底座）；小程序 `runtime/learning.js` 每次直接问队列，没有这个闭包，未动。
+
 ## 起点水平 → 备考计划：定了的方向 + 待办（2026-09-22）
 
 > 2026-09-23 接手补记：小程序混合模式、每日量圆环和学习页音效的模拟器实测及新踩坑，
