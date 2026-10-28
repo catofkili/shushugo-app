@@ -287,6 +287,14 @@
       "reason": "路线 A：Taro 直接编译这份 JlptPlanPage.tsx（备考页的刷题入口），原生 features/jlpt-plan 已停止维护，见头部 2026-09-25 决定。"
     },
     {
+      "web": "frontend/src/components/KanaPrimer.tsx",
+      "mini": [
+        "wechat-miniprogram/src/features/jlpt-plan/index.js",
+        "frontend/src/components/KanaPrimer.tsx"
+      ],
+      "reason": "路线 A：Taro 经 JlptPlanPage 直接编译这份 KanaPrimer.tsx；原生 features/jlpt-plan 的五十音卡同步改用 pickKanaIndex。"
+    },
+    {
       "web": "frontend/src/pages/KanjiReadingUsagePage.tsx",
       "mini": [
         "wechat-miniprogram/src/content/kanji-readings/index.js",

@@ -167,7 +167,7 @@ export function JlptPlanPage({ onBack, onStartWords, onStartGrammar }: Props) {
           <div className="ds-card mb-3 p-5 ds-enter" style={{ animationDelay: "60ms" }}>
             <p className="ds-kicker">下一步 · 今天先做</p>
             <p className="mt-1 text-xl font-black jp-ink">{kanaPending ? "从五十音开始" : noDate ? "先选择考试日期" : shortfallText(available!)}</p>
-            {kanaPending ? <p className="mt-2 text-sm ds-ink2">从下方第一个假名开始选读音，学完再进入新词。</p> : !noDate && !available!.clear && <div className="mt-4 flex flex-wrap gap-2">
+            {kanaPending ? <p className="mt-2 text-sm ds-ink2">在下方选读音，假名学完再进入新词。</p> : !noDate && !available!.clear && <div className="mt-4 flex flex-wrap gap-2">
               {(available!.newWords + available!.reviewWords > 0) && <button onClick={onStartWords} className="focus-ring ds-btn flex-1">开始今天的单词 →</button>}
               {(available!.newGrammar + available!.reviewGrammar > 0) && <button onClick={onStartGrammar} className="focus-ring ds-btn-soft flex-1">开始今天的语法 →</button>}
             </div>}

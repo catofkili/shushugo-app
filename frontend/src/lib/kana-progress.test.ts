@@ -15,7 +15,7 @@ vi.mock("./storage", () => ({ requestFullSnapshot: vi.fn(), scheduleSave: vi.fn(
 import { ensureUserTables } from "./study-core";
 import { getState, setState } from "./database/db-utils";
 import { getDailyWordGoal, getStudyPreferences } from "./studyPreferences";
-import { KANA, deferWordPlanUntilKanaComplete, getKanaProgress, kanaComplete, kanaQuizChoices, recordKanaAnswer, replayKanaReviews } from "./kana-progress";
+import { KANA, deferWordPlanUntilKanaComplete, getKanaProgress, kanaComplete, kanaQuizChoices, pickKanaIndex, recordKanaAnswer, replayKanaReviews } from "./kana-progress";
 import { hydrateLevelPlanPreferences } from "./level-plan";
 
 describe("五十音进度门槛", () => {
@@ -33,6 +33,26 @@ describe("五十音进度门槛", () => {
       expect(new Set(choices).size).toBe(4);
       expect(choices).toContain(reading);
     });
+  });
+
+  it("乱序出题：不连出同一个字，新字只从表序前 8 个没学会的里挑，会回炉已学会的", () => {
+    expect(pickKanaIndex(Object.fromEntries(KANA.map(([k]) => [k, 2])))).toBeNull();
+    const fresh: Record<string, number> = {};
+    const seen = new Set<number>();
+    for (let n = 0; n < 500; n += 1) {
+      const i = pickKanaIndex(fresh, KANA[0][0])!;
+      expect(i).toBeGreaterThan(0);
+      expect(i).toBeLessThan(8);
+      seen.add(i);
+    }
+    expect(seen.size).toBe(7);
+    const half = Object.fromEntries(KANA.slice(0, 40).map(([k]) => [k, 2]));
+    const picks = Array.from({ length: 400 }, () => pickKanaIndex(half)!);
+    expect(picks.some((i) => i < 40)).toBe(true);
+    expect(picks.every((i) => i < 48)).toBe(true);
+    const lastOne = Object.fromEntries(KANA.slice(1).map(([k]) => [k, 2]));
+    expect(pickKanaIndex(lastOne, KANA[0][0])).not.toBe(0);
+    expect(pickKanaIndex({ ...lastOne, [KANA[1][0]]: 0 }, KANA[0][0], () => 0.9)).toBe(1);
   });
 
   it("答题写 FSRS 和流水，重放后保留正确次数", () => {

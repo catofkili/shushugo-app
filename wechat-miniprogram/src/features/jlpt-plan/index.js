@@ -45,7 +45,7 @@ Page({
     const settings = core.withDb(getDatabase(), () => features.web.levelPlan.getLevelPlanSettings());
     const kana = features.web.kanaProgress;
     const progress = settings?.startingLevel === 'kana-none' ? core.withDb(getDatabase(), () => kana.getKanaProgress()) : null;
-    const index = progress ? kana.KANA.findIndex(([symbol]) => (progress[symbol] || 0) < 2) : -1;
+    const index = progress ? (kana.pickKanaIndex(progress, this.data.kanaCard?.symbol) ?? -1) : -1;
     const quota = features.web.preferences.getStudyPreferences();
     const noDate = !examDates.parseExamDate(quota.jlptExamDate) && !examDates.suggestedExamDate(status.examKind);
     const access = entitlements.cachedEntitlement();
@@ -173,7 +173,7 @@ Page({
       if (result.completed) core.withDb(db, () => features.web.wordApi.refreshTodayWordPlan());
       await saveDatabase();
       this.load();
-      this.setData({ note: result.completed ? '五十音完成，新词计划已解锁。' : correct ? '答对了' : `罗马字是 ${reading}，再来一次` });
+      this.setData({ note: result.completed ? '五十音完成，新词计划已解锁。' : correct ? '答对了' : `罗马字是 ${reading}，一会儿再考它` });
     } catch (error) { this.setData({ error: error?.message || '假名作答保存失败。' }); }
     finally { this.setData({ busy: false }); }
   },

@@ -30,6 +30,20 @@ export const kanaQuizChoices = (index: number, attempt = 0): string[] => {
   return shuffled;
 };
 
+// 原生小程序（已停止维护）用的简单出题。网页和 Taro 走 kana-quiz.ts 的 nextKanaStep（先教再考、四种题）。
+// 出哪个字。原来是 findIndex 取表序第一个没学会的，同一个字连出两遍就算「连对两次」，等于没考。
+// 现在：在表序最前的 8 个没学会的字里随机挑（新字逐步进来，又和刚学的混着考），
+// 约四分之一的题抽已学会的字回炉（答错就清零、重新算没学会），且不连出同一个字。
+export const pickKanaIndex = (progress: KanaProgress, previous?: string, random = Math.random): number | null => {
+  const pending = KANA.flatMap(([kana], i) => (progress[kana] ?? 0) < 2 ? [i] : []);
+  if (!pending.length) return null;
+  const notPrevious = (list: number[]) => list.filter((i) => KANA[i][0] !== previous);
+  const window = notPrevious(pending.slice(0, 8));
+  const review = notPrevious(KANA.flatMap(([kana], i) => (progress[kana] ?? 0) >= 2 ? [i] : []));
+  const pool = review.length && (!window.length || random() < 0.25) ? review : window.length ? window : pending;
+  return pool[Math.floor(random() * pool.length)];
+};
+
 const WORD_GOAL_KEY = "kana_deferred_word_goal";
 const KANA_FSRS: FsrsEntity = { table: "kana_memory", idColumn: "symbol", eligible: "1=1" };
 
@@ -46,7 +60,13 @@ export const getKanaProgress = (): KanaProgress => {
   return Object.fromEntries(rowsFor("SELECT symbol, correct_streak FROM kana_memory").map((row) => [String(row.symbol), Number(row.correct_streak)]));
 };
 
-export const kanaMasteredCount = (progress = getKanaProgress()) => KANA.filter(([kana]) => (progress[kana] ?? 0) >= 2).length;
+/** 答过至少一次的字。网页的出题（kana-quiz.ts）拿它判断「教过没有」，没答过的先出教学卡。 */
+export const getAnsweredKana = (): Set<string> => {
+  ensureKanaRows();
+  return new Set(rowsFor("SELECT symbol FROM kana_memory WHERE seen_count > 0").map((row) => String(row.symbol)));
+};
+
+export const kanaMasteredCount =(progress = getKanaProgress()) => KANA.filter(([kana]) => (progress[kana] ?? 0) >= 2).length;
 export const kanaComplete = (progress = getKanaProgress()) => kanaMasteredCount(progress) === KANA.length;
 
 export const deferWordPlanUntilKanaComplete = (wordGoal: number): void => {

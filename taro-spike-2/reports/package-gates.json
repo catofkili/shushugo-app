@@ -2,19 +2,19 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1882379,
+      "bytes": 1883471,
       "passes": true
     },
     "study": {
-      "bytes": 1048680,
+      "bytes": 1129061,
       "passes": true
     },
     "account": {
-      "bytes": 324983,
+      "bytes": 324988,
       "passes": true
     },
     "content-pages": {
-      "bytes": 1175860,
+      "bytes": 1175857,
       "passes": true
     },
     "features": {
@@ -34,7 +34,7 @@
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 310942,
+      "bytes": 310938,
       "passes": true
     },
     "core": {
@@ -1784,7 +1784,7 @@
     },
     {
       "source": "frontend/src/design.css",
-      "bytes": 97821
+      "bytes": 98247
     },
     {
       "source": "taro-spike-2/node_modules/react-reconciler/cjs/react-reconciler.production.min.js",

@@ -745,7 +745,11 @@
 
 /* —————————————————— 16. 五十音起步（备考页的 KanaPrimer） —————————————————— */
 .kana-primer-glyph { margin: 18px 0 4px; color: var(--ds-ink); font-family: "Hiragino Mincho ProN", "Songti SC", serif; font-size: 72px; font-weight: 800; line-height: 1.1; text-align: center; }
-.kana-primer-table { padding: 12px; border-radius: 16px; background: var(--ds-inset); color: var(--ds-ink); }
+.kana-primer-glyph.kana-primer-latin { font-family: inherit; font-size: 56px; }
+.kana-primer-glyph.kana-primer-word { font-size: 52px; letter-spacing: .04em; }
+.kana-primer-choice-kana { font-family: "Hiragino Mincho ProN", "Songti SC", serif; font-size: 28px; }
+.kana-primer-note { padding: 10px 12px; border-radius: 12px; background: var(--ds-inset); color: var(--ds-ink-2); font-size: 14px; line-height: 1.6; }
+.kana-primer-table {padding: 12px; border-radius: 16px; background: var(--ds-inset); color: var(--ds-ink); }
 
 /* —————————————————— 17. 柚子商店（.yz-*） —————————————————— */
 /* 老样式在 app.css「柚子商店」那段（描边 + 棕投影 + 奶油底），这里按三种面重新映射，不去动那段：
