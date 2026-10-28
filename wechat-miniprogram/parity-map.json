@@ -513,6 +513,13 @@
       "reason": "Taro 的 word-list 路由直接编译这份 TSX；原生 library 页面已停止维护。"
     },
     {
+      "web": "frontend/src/components/KanjiUnitPlanSettings.tsx",
+      "mini": [
+        "frontend/src/components/KanjiUnitPlanSettings.tsx"
+      ],
+      "reason": "Taro 的设置页（SettingsPage）直接编译这份 TSX；原生小程序没有汉字读音模式设置。"
+    },
+    {
       "web": "frontend/src/features/mixed-study/KanjiCharCardView.tsx",
       "mini": [
         "wechat-miniprogram/src/pages/index/index.js",

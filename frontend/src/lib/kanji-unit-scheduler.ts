@@ -22,6 +22,9 @@ import {
 } from "./kanji-unit-index";
 import { STUBBORN_DAILY_MISTAKES } from "./fsrs-scheduler";
 import { FSRS_PARAMS_VERSION } from "./reviews";
+import { JLPT_TARGETS } from "./jlpt/plan";
+import { currentFirstPlanLevelIndex, currentPlanLevelRanks } from "./plan-level-order";
+import { getStudyPreferences } from "./studyPreferences";
 
 export { loadKanjiUnitIndex };
 
@@ -32,7 +35,6 @@ export const KANJI_UNIT_SCHEDULER_FLAG = "feature.kanji_unit_scheduler_v1";
  * 共用的话改一个动全部 —— 而这两个模式的节奏本来就不一样。
  */
 const DAILY_QUOTA_KEY = "kanji_unit_daily_quota";
-const TARGET_LEVEL_KEY = "kanji_unit_target_level";
 export const KANJI_UNIT_QUOTA_MIN = 5;
 export const KANJI_UNIT_QUOTA_MAX = 200;
 export const KANJI_UNIT_QUOTA_DEFAULT = 30;
@@ -68,23 +70,16 @@ export const setKanjiUnitDailyQuota = (quota: number): void => {
   `, [DAILY_QUOTA_KEY, String(clamped)]);
 };
 
-/** 目标级别序号(0=N5 … 4=N1)。软排序:超纲只降权,不排除。默认 N1 = 全都学。 */
-export const KANJI_UNIT_TARGET_DEFAULT = 4;
-
-export const getKanjiUnitTargetLevelRank = (): number => {
-  const stored = readState(TARGET_LEVEL_KEY);
-  if (stored === null) return KANJI_UNIT_TARGET_DEFAULT;
-  const raw = Number(stored);
-  if (!Number.isFinite(raw)) return KANJI_UNIT_TARGET_DEFAULT;
-  return Math.min(Math.max(Math.floor(raw), 0), 4);
-};
-
-export const setKanjiUnitTargetLevelRank = (rank: number): void => {
-  getDatabase().run(`
-    INSERT INTO app_state (key, value) VALUES (?, ?)
-    ON CONFLICT(key) DO UPDATE SET value = excluded.value
-  `, [TARGET_LEVEL_KEY, String(Math.min(Math.max(Math.floor(rank), 0), 4))]);
-};
+/**
+ * 目标级别序号(0=N5 … 4=N1) = 备考计划的目标（`jlptTarget`），不再单独存。
+ *
+ * ⚠️ 2026-10-28 前这里有自己的 `kanji_unit_target_level`（默认 N1 = 全都不罚），不跟计划走，
+ * 排序里「超纲一级扣 6 分」又压不住「出现在多少个词里」那一项，所以起点 N5 的人汉字模式照样
+ * 从高频字（不分级别）开始。别再给汉字模式留独立的级别设置：「在哪一级」只有计划说了算
+ * （docs/audits/2026-10-28-level-census.md）。老库里残留的 kanji_unit_target_level 行没人读，不用清。
+ */
+export const getKanjiUnitTargetLevelRank = (): number =>
+  Math.max(JLPT_TARGETS.indexOf(getStudyPreferences().jlptTarget), 0);
 
 /**
  * 一个新单位一生大约要做多少次(FSRS 学习步骤 + 到达长间隔前的复习)。
@@ -345,11 +340,7 @@ export interface CoverageContext {
   knownUnits: Set<string>;
   /** word_id → 这个词需要的全部单位 */
   unitsByWord: Map<number, string[]>;
-  /** 目标级别序号;软排序 —— 超纲的不排除,只降权 */
-  targetLevelRank: number;
 }
-
-const LEVEL_PENALTY = 6;
 
 export const coverageScore = (unitKey: string, context: CoverageContext): number => {
   const unit = kanjiUnitByKey(unitKey);
@@ -372,12 +363,19 @@ export const coverageScore = (unitKey: string, context: CoverageContext): number
   // w3 重要度(均值,不随产量放大)
   const importance = wordIds.length ? importanceSum / wordIds.length : 0;
 
-  // w4 级别:软排序。目标之内不罚;每超纲一级扣固定分,超得多的自然沉底,
-  //     但产量足够高时仍然出得来 —— 这就是「软」的含义。
-  const overshoot = Math.max(unit.levelRank - context.targetLevelRank, 0);
-
-  return yield_ + marginal * 3 + importance * 0.5 - overshoot * LEVEL_PENALTY;
+  // 级别不在分里：新字音先按计划级别分档（unitPlanRank），档内才比这个分。
+  return yield_ + marginal * 3 + importance * 0.5;
 };
+
+/**
+ * 新字音的投放档（越小越先）：计划范围（起点上一级 → 目标）逐级顺推 → 起点以下 → 超出目标按级别。
+ * 同 plan-level-order.ts 的口径，一处不同：字音**没有先验**（level-plan 只给单词 / 语法 / 汉字 / 辨析写基线），
+ * 起点以下的字音其实都还是新的，所以不能像单词那样「排第 0 档先补」——那样起点 N4 的人汉字模式
+ * 会先把 N5 字音全练一遍。让它们排在计划范围之后、超纲之前：用得上，但不抢计划的位置。
+ */
+const unitPlanRank = (levelRank: number, ranks: number[], first: number): number =>
+  levelRank < first ? 50 : ranks[levelRank] ?? 100 + levelRank;
+
 
 /** 词 → 它需要的全部单位。覆盖收益的 w2 要用,按索引现算一次即可。 */
 export const buildUnitsByWord = (): Map<number, string[]> => {
@@ -414,8 +412,7 @@ export interface KanjiUnitPlan {
  */
 export const createKanjiUnitTasks = (
   day = today(),
-  limit = getKanjiUnitDailyQuota(),
-  targetLevelRank = getKanjiUnitTargetLevelRank()
+  limit = getKanjiUnitDailyQuota()
 ): KanjiUnitPlan => {
   if (limit <= 0) return { units: [], reviewCount: 0, newCount: 0, crowdedOut: false };
   materializeKanjiUnitIndex();
@@ -450,7 +447,7 @@ export const createKanjiUnitTasks = (
   const knownUnits = new Set(rowsFor(
     "SELECT unit_key FROM kanji_unit_memory WHERE COALESCE(seen_count, 0) > 0"
   ).map((row) => String(row.unit_key)));
-  const context: CoverageContext = { wordMeta, knownUnits, unitsByWord, targetLevelRank };
+  const context: CoverageContext = { wordMeta, knownUnits, unitsByWord };
   const byScore = (left: string, right: string) =>
     (coverageScore(right, context) - coverageScore(left, context)) || left.localeCompare(right, "ja");
 
@@ -465,7 +462,10 @@ export const createKanjiUnitTasks = (
   `, [studyDayEnd().toISOString()]).map((row) => String(row.unit_key)).sort(byScore);
   const reviews = due.slice(0, limit);
 
-  // 2. 剩余名额给新单位 —— 按覆盖收益排,软排序下超纲的只是降权不是排除
+  // 2. 剩余名额给新单位 —— 先按计划级别分档（排序不是过滤：范围学完能接上更高级），档内按覆盖收益
+  const planRanks = currentPlanLevelRanks("kanji");
+  const firstPlanLevel = currentFirstPlanLevelIndex("kanji");
+  const planRankOf = (unitKey: string) => unitPlanRank(kanjiUnitByKey(unitKey)?.levelRank ?? 5, planRanks, firstPlanLevel);
   const remaining = Math.max(limit - reviews.length, 0);
   const fresh = remaining > 0
     ? rowsFor(`
@@ -474,7 +474,7 @@ export const createKanjiUnitTasks = (
         LEFT JOIN kanji_unit_flags f ON f.unit_key = m.unit_key
         WHERE COALESCE(f.known_forever, 0) = 0
           AND COALESCE(m.seen_count, 0) = 0
-      `).map((row) => String(row.unit_key)).sort(byScore).slice(0, remaining)
+      `).map((row) => String(row.unit_key)).sort((left, right) => (planRankOf(left) - planRankOf(right)) || byScore(left, right)).slice(0, remaining)
     : [];
 
   const selected = [...reviews, ...fresh];

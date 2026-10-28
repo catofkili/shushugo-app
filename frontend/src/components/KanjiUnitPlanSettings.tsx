@@ -4,7 +4,6 @@ import {
   getKanjiUnitTargetLevelRank,
   kanjiUnitEta,
   setKanjiUnitDailyQuota,
-  setKanjiUnitTargetLevelRank,
   KANJI_UNIT_QUOTA_MAX,
   KANJI_UNIT_QUOTA_MIN,
   type KanjiUnitEtaRow
@@ -15,7 +14,7 @@ import { yieldToPaint } from "../lib/yield-to-paint";
 import { DailyPlanSlider } from "./DailyPlanSlider";
 
 /**
- * 汉字读音模式的每日量与目标级别。
+ * 汉字读音模式的每日量（目标级别不在这里设，跟备考计划走）。
  *
  * 和词的「学习强度」是**两个量,分开存**(`kanji_unit_daily_quota`),因为两个模式
  * 的节奏本来就不一样 —— 共用一个的话改一个动全部。
@@ -42,7 +41,7 @@ const formatDays = (days: number): string => {
 
 export function KanjiUnitPlanSettings() {
   const [quota, setQuota] = useState(30);
-  const [targetRank, setTargetRank] = useState(4);
+  const [targetRank, setTargetRank] = useState(getKanjiUnitTargetLevelRank);
   const [eta, setEta] = useState<KanjiUnitEtaRow[]>([]);
   const [ready, setReady] = useState(kanjiUnitIndexLoaded());
 
@@ -78,12 +77,6 @@ export function KanjiUnitPlanSettings() {
     setQuota(value);
     setKanjiUnitDailyQuota(value);
     // 当天计划已经按旧额度排好了,改额度要让首页重读
-    notifyProgressUpdated();
-  };
-
-  const applyTarget = (rank: number) => {
-    setTargetRank(rank);
-    setKanjiUnitTargetLevelRank(rank);
     notifyProgressUpdated();
   };
 
@@ -135,24 +128,9 @@ export function KanjiUnitPlanSettings() {
         ))}
       </div>
 
-      <div className="mt-4">
-        <p className="text-sm font-bold text-white">目标级别</p>
-        <div className="mt-2 flex flex-wrap gap-2">
-          {LEVEL_LABELS.map((label, rank) => (
-            <button
-              key={label}
-              onClick={() => applyTarget(rank)}
-              className={`focus-ring h-8 rounded-full px-3 text-xs font-bold ${
-                targetRank === rank
-                  ? "bg-[#81D8CF] text-[#2f3333]"
-                  : "border border-white/15 bg-white/8 text-white/70"
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      </div>
+      <p className="mt-4 text-xs text-white/50">
+        目标级别 <b className="text-white/80">{LEVEL_LABELS[targetRank]}</b>，跟着备考计划走（在备考页改）；新字音从你起点的上一级往上顺推。
+      </p>
 
       {eta.length > 0 && (
         <div className="mt-4 rounded-xl border border-white/10 bg-[#3c3f3f] p-3">

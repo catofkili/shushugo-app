@@ -17,9 +17,13 @@ export type PlanKind = "words" | "grammar" | "kanji" | "confusion";
  * - 起点以下的级别排第 0 档：先验都写成了学过，剩下的没见过的只会是基础漏网的，先补。
  * - 不懂五十音 / 会五十音 / 专业进阶 / 没设过起点：从 N5 顺推。
  */
-export const planLevelRanks = (startingLevel: string | null | undefined, familiarity: number | undefined, target: JlptTarget): number[] => {
+export const firstPlanLevelIndex = (startingLevel: string | null | undefined, familiarity: number | undefined): number => {
   const start = JLPT_TARGETS.indexOf(startingLevel as JlptTarget);
-  const first = start < 0 ? 0 : start + (familiarity === 0 ? 0 : 1);
+  return start < 0 ? 0 : start + (familiarity === 0 ? 0 : 1);
+};
+
+export const planLevelRanks = (startingLevel: string | null | undefined, familiarity: number | undefined, target: JlptTarget): number[] => {
+  const first = firstPlanLevelIndex(startingLevel, familiarity);
   const last = JLPT_TARGETS.indexOf(target);
   return JLPT_TARGETS.map((_, index) => (index < first ? 0 : index <= last ? index - first : 100 + index));
 };
@@ -40,6 +44,12 @@ const appliedPrior = (): { level: string; familiarity: Partial<Record<PlanKind, 
 export const currentPlanLevelRanks = (kind: PlanKind): number[] => {
   const prior = appliedPrior();
   return planLevelRanks(prior.level, prior.familiarity[kind], getStudyPreferences().jlptTarget);
+};
+
+/** 新内容实际从哪一级开始（JLPT_TARGETS 下标）；它以下的级别是先验写出来的，不算「学完」。 */
+export const currentFirstPlanLevelIndex = (kind: PlanKind): number => {
+  const prior = appliedPrior();
+  return firstPlanLevelIndex(prior.level, prior.familiarity[kind]);
 };
 
 /** SQL 版：`column` 是存 'N5'…'N1' 的列；无级别的（基础词、自定义词）排第 0 档。 */
