@@ -135,9 +135,13 @@ describe("三个方向平级、互不干扰", () => {
   });
 
   it("从例句词典加入的词进入今日任务且不重复计入", () => {
-    expect(addWordToTodayEncore(30)).toBe(true);
-    expect(count("SELECT COUNT(*) FROM stage1_tasks WHERE word_id = 30 AND task_type = 'encore_new'")).toBe(1);
-    expect(addWordToTodayEncore(30)).toBe(false);
+    // 先生成今天的任务表，再挑一个不在表里的生词：写死 30 号的话，它偶尔（约 0.6%）正好被随机抽进
+    // 今天的新词，「已在任务里」直接返回 false（2026-10-28 干净克隆里的 ci-local 撞到过）。
+    getWordSession();
+    const id = count("SELECT p.word_id FROM progress p WHERE p.seen_count = 0 AND p.known_forever = 0 AND p.word_id NOT IN (SELECT word_id FROM stage1_tasks) ORDER BY p.word_id LIMIT 1");
+    expect(addWordToTodayEncore(id)).toBe(true);
+    expect(count("SELECT COUNT(*) FROM stage1_tasks WHERE word_id = ? AND task_type = 'encore_new'", [id])).toBe(1);
+    expect(addWordToTodayEncore(id)).toBe(false);
     expect(getWordSession().phase).toBe("stage1");
   });
 
