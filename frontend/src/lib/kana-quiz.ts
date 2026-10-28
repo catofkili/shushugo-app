@@ -144,7 +144,7 @@ const REVISIT_SHARE = 0.15;
  * 下一步做什么。states 来自 kana-progress 的 getKanaStates（掌握口径在那里）；
  * introduced = 教过或答过的字；recent = 最近出过的两个字（不连着出）。
  * - 今天第一次学、还没过关的字少于 4 个，就按表序教下一个新字（新字每天照常教，不等隔天重考做完）。
- * - 出题在「今天第一次学的」和「之前学过、今天待重考的」两堆里各半随机；约 15% 回炉今天已过关或已掌握的字。
+ * - 出题在「今天第一次学的」和「之前学过、今天待重考的」两堆里各半随机；约 15% 回炉今天已过关的字，已掌握的不再出。
  * - 全部掌握返回 null；今天能考的都过了、剩下要等明天，返回 rest。
  */
 export const nextKanaStep = (states: Record<string, KanaState>, introduced: ReadonlySet<string>, recent: readonly string[], random = Math.random): KanaStep | null => {
@@ -160,7 +160,8 @@ export const nextKanaStep = (states: Record<string, KanaState>, introduced: Read
     return { kind: "teach", teach: { symbol: card.front, romaji: card.romaji, origin: card.origin, pair: card.pair, note: card.note, example: card.examples[0] } };
   }
   if (!learning.length && !review.length && !fresh.length) return { kind: "rest", left: SYMBOLS.filter((kana) => stage(kana) !== "mastered").length };
-  const revisit = ready(SYMBOLS.filter((kana) => stage(kana) === "passed" || stage(kana) === "mastered"));
+  // 已掌握的字不再回炉（「视情况五十音不再出现，毕竟是入门课」，2026-10-28 用户）；只回炉今天刚过关的。
+  const revisit = ready(SYMBOLS.filter((kana) => stage(kana) === "passed"));
   const due = readyLearning.length && readyReview.length ? (random() < 0.5 ? readyReview : readyLearning) : readyLearning.length ? readyLearning : readyReview;
   const pool = revisit.length && (!due.length || random() < REVISIT_SHARE) ? revisit : due.length ? due : [...learning, ...review];
   const kana = pool[Math.floor(random() * pool.length)];
