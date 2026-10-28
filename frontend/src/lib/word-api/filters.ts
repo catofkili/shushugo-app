@@ -1,5 +1,6 @@
 import type { SqlValue } from "../study-core";
 import type { WordSessionOptions } from "../study-types";
+import { planLevelRankSql } from "../plan-level-order";
 
 /**
  * 「筛选学习」的 WHERE 片段:等级 + 词性/收藏 + 学习重点。
@@ -103,24 +104,16 @@ export const isLongTermWeak = (row: Record<string, unknown>): boolean => {
 };
 
 /**
- * 新词投放的等级闸门:N3 及以下算同一档,N2、N1 依次排到后面。
- *
- * 挡住 N1/N2 的理由——未学的词里 N1+N2 占八成(N1 还剩 3988、N2 3125,
- * N3 只剩 1445),按 shuffle_rank 随机抽的话每日新词额度会被它们整个吃光。
- *
- * N5/N4/N3 之间**不分先后**:同档内随机,各级别出现的比例就等于各自的剩余量,
- * N3 剩得最多(1445 / 248 / 176),自然占大头。不按 N5→N4→N3 顺推的道理:
- * 用户在别处学过,低级别词大多本来就会,排在前面等于逼他把会的重刷一遍——
- * 真不会的碰到了按「忘记」就进复习池,靠答题分辨比靠级别猜准。
- *
- * 用排序而不是 WHERE 硬过滤:N3 及以下全学完之后还能自然接上 N2/N1,不会断供。
+ * 新词投放的等级顺序 = 备考计划的级别顺推（plan-level-order.ts）：起点上一级学完再进下一级，
+ * 超出目标的排到最后。用排序而不是 WHERE 硬过滤：计划范围全学完之后还能自然接上更高级，不会断供。
  * 三处新词入口(当日任务表、加餐补位、无任务时的兜底出题)必须用同一份口径。
+ *
+ * ⚠️ 2026-10-28 前这里是「N5/N4/N3 同一档随机、N2/N1 往后排」（08-17 定的，那时还没有起点设定，
+ * 理由是作者在别处学过、低级别大多会）。起点先验（09-23）接管了「低级别本来就会」这件事之后
+ * 这里没跟着改：起点 N5、考 N3 的用户头 40 个新词里 30 个是 N3，目标 N4 的也会排进 N3。
+ * 别改回同档随机 —— 「会不会」交给先验和作答，级别顺序交给计划。
  */
-export const newWordLevelRankSql = (alias = "w") => `CASE ${alias}.jlpt_level
-    WHEN 'N2' THEN 2
-    WHEN 'N1' THEN 3
-    ELSE 1
-  END`;
+export const newWordLevelRankSql = (alias = "w") => planLevelRankSql(`${alias}.jlpt_level`, "words");
 
 /**
  * 新词入口共用的 ORDER BY。

@@ -23,7 +23,8 @@ import {
 import { dailyReviewCap } from "../review-budget";
 import { fsrsDueWordIds, recallFromRow } from "../fsrs-store";
 import { LEECH_LAPSE_THRESHOLD } from "../fsrs-scheduler";
-import { newWordOrderSql } from "./filters";
+import { newWordLevelRankSql, newWordOrderSql } from "./filters";
+import { priorBaselineSql } from "../plan-level-order";
 import {
   dailyNewQuota,
   getReviewQueue,
@@ -70,7 +71,7 @@ const backfillStage1TasksFromReviews = (day: string) => {
           FROM reviews earlier_reviews
           WHERE earlier_reviews.word_id = today_reviews.word_id
             AND earlier_reviews.reviewed_on < ?
-        )
+        ) OR ${priorBaselineSql("words", "today_reviews.word_id")}
         THEN 'review'
         ELSE 'new'
       END AS task_type
@@ -159,6 +160,10 @@ export const createStage1Tasks = (day: string, options: { topUp?: boolean } = {}
   //     免得同一批词天天互相插队。
   //  2. 剩下的全新词。
   //
+  // 1 和 2 都排在计划级别顺序（newWordLevelRankSql）之后：「欠着的」只在同一级里优先。
+  // 2026-10-28 修级别顺推时加的 —— 之前同档随机排进来的 N3 词要是还按「欠着的」插到最前面，
+  // 起点 N5 的用户还得先把这批 N3 啃完才轮到 N4，对不齐的状态会一直拖下去。
+  //
   // ⚠️ 这里**不放大名额**：LIMIT 始终是当天配额，欠的账只改「先给谁」不改「给几个」。
   // 三天没背也还是 30 个，不会变成 90 —— 那种补作业式的堆积只会让人再也不想打开。
   const newRows = rowsFor(`
@@ -176,6 +181,7 @@ export const createStage1Tasks = (day: string, options: { topUp?: boolean } = {}
       AND p.seen_count = 0
     ORDER BY
       CASE WHEN d.word_id IS NOT NULL THEN 0 ELSE 1 END,
+      ${newWordLevelRankSql("w")},
       CASE WHEN carried.word_id IS NOT NULL THEN 0 ELSE 1 END,
       carried.first_planned_on ASC,
       ${newWordOrderSql("w")}

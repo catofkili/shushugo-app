@@ -11,6 +11,7 @@
  */
 import type { WordAnswer } from "../types/vocabulary";
 import { getDatabase } from "./database";
+import { currentPlanLevelRanks } from "./plan-level-order";
 import { firstValue, rowsFor, today } from "./study-core";
 import { ensureFsrsColumns, type FsrsEntity } from "./fsrs-store";
 import { createCardLog, type StepMode } from "./card-log";
@@ -195,8 +196,8 @@ export const matchingCard = (groupKey: string): MatchingCard | null => {
 };
 
 /**
- * 当天清单：到期的 + 没见过的。新学优先给「成员里用户学过的词多」的组 —— 没学过的词连起来
- * 是在背题面，不是在辨析。
+ * 当天清单：到期的 + 没见过的。新学先按计划级别顺推（和单词同一份顺序，单词学到哪级辨析跟到哪级），
+ * 同级里优先给「成员里用户学过的词多」的组 —— 没学过的词连起来是在背题面，不是在辨析。
  */
 export const createConfusionTasks = (quota: { fresh: number; review: number }, targetLevelRank = 4, day = today()) => {
   ensureConfusionCardTables();
@@ -208,12 +209,15 @@ export const createConfusionTasks = (quota: { fresh: number; review: number }, t
   }
   return log.createTasks(quota, () => {
     const learned = new Set(rowsFor("SELECT word_id FROM progress WHERE seen_count > 0").map((row) => Number(row.word_id)));
-    const unseen = new Set(rowsFor(`SELECT group_key FROM confusion_progress WHERE ${log.exclude} AND seen_count = 0 AND level_rank <= ?`, [targetLevelRank]).map((row) => String(row.group_key)));
+    // 先按计划级别顺推（plan-level-order.ts），同级里成员学过得多的先。
+    const ranks = currentPlanLevelRanks("confusion");
+    const unseen = new Map(rowsFor(`SELECT group_key, level_rank FROM confusion_progress WHERE ${log.exclude} AND seen_count = 0 AND level_rank <= ?`, [targetLevelRank])
+      .map((row) => [String(row.group_key), ranks[Number(row.level_rank)] ?? 0]));
     return confusionGroups()
       .filter((group) => matchable(group))
       .filter((group) => unseen.has(group.key))
-      .map((group) => ({ key: group.key, learned: group.members.filter((member) => learned.has(member.id)).length, size: group.members.length }))
-      .sort((a, b) => b.learned - a.learned || a.size - b.size || a.key.localeCompare(b.key))
+      .map((group) => ({ key: group.key, rank: unseen.get(group.key) ?? 0, learned: group.members.filter((member) => learned.has(member.id)).length, size: group.members.length }))
+      .sort((a, b) => a.rank - b.rank || b.learned - a.learned || a.size - b.size || a.key.localeCompare(b.key))
       .map((item) => item.key);
   }, day);
 };

@@ -13,6 +13,7 @@
  */
 import type { WordAnswer } from "../types/vocabulary";
 import { getDatabase } from "./database";
+import { currentPlanLevelRanks } from "./plan-level-order";
 import { firstValue, rowsFor, today } from "./study-core";
 import { ensureFsrsColumns, type FsrsEntity } from "./fsrs-store";
 import { FSRS_PARAMS_VERSION } from "./reviews";
@@ -201,7 +202,7 @@ const log = createCardLog({
 
 /**
  * 生成当天的清单：到期的（复习额度内，装不下随机抽）+ 没见过的（新学额度内，目标等级及以下，
- * 出现次数多的先 —— 覆盖收益最大）。同一天重复调用不重排。
+ * 按计划级别顺推，同级里出现次数多的先 —— 覆盖收益最大）。同一天重复调用不重排。
  */
 export const createKanjiCharTasks = (quota: { fresh: number; review: number }, targetLevelRank: number, day = today()) => {
   ensureKanjiCharTables();
@@ -213,9 +214,12 @@ export const createKanjiCharTasks = (quota: { fresh: number; review: number }, t
   }
   return log.createTasks(quota, () => {
     const occurrence = occurrenceByChar();
-    return rowsFor(`SELECT char FROM kanji_char_memory WHERE ${log.exclude} AND seen_count = 0 AND level_rank <= ?`, [targetLevelRank])
-      .map((row) => String(row.char))
-      .sort((a, b) => (occurrence.get(b) ?? 0) - (occurrence.get(a) ?? 0) || a.localeCompare(b));
+    // 先按计划级别顺推（起点上一级先学完，见 plan-level-order.ts），同级里出现次数多的先。
+    const ranks = currentPlanLevelRanks("kanji");
+    return rowsFor(`SELECT char, level_rank FROM kanji_char_memory WHERE ${log.exclude} AND seen_count = 0 AND level_rank <= ?`, [targetLevelRank])
+      .map((row) => ({ char: String(row.char), rank: ranks[Number(row.level_rank)] ?? 0 }))
+      .sort((a, b) => a.rank - b.rank || (occurrence.get(b.char) ?? 0) - (occurrence.get(a.char) ?? 0) || a.char.localeCompare(b.char))
+      .map((item) => item.char);
   }, day);
 };
 

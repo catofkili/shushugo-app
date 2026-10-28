@@ -13,7 +13,7 @@ import { reportTeamActivity } from "../lib/team-activity";
 import { triggerCountdownHaptic, triggerMemoryHaptic, triggerReliefHaptic, triggerRevealHaptic, triggerSwipeArmHaptic } from "../lib/haptics";
 import { playPronunciation, prefetchPronunciation, prefetchWordPlanAudio, prefetchExamples } from "../lib/speech";
 import { todayWordAudioPlan, tomorrowWordAudioPlan } from "../lib/word-api";
-import { grammarAudioPlan } from "../lib/grammar-quiz";
+import { grammarAudioPlan, PLAN_GRAMMAR_LEVEL } from "../lib/grammar-quiz";
 import { playComplete, playCountdownTick, playDontKnow, playFlip, playKnow, playReliefDeal } from "../lib/zoo-sounds";
 import {
   ExampleBlock,
@@ -525,7 +525,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     const plan = todayWordAudioPlan();
     if (card) plan.unshift({ kanji: card.kanji, kana: card.kana, example: card.example.jp });
     void prefetchWordPlanAudio(plan, tomorrowWordAudioPlan());
-    if (initialMode === "mixed") void prefetchExamples(grammarAudioPlan(preferences.jlptTarget));
+    if (initialMode === "mixed") void prefetchExamples(grammarAudioPlan(PLAN_GRAMMAR_LEVEL));
   }, [loading, initialMode, preferences.voiceId, preferences.jlptTarget, card]);
 
   useEffect(() => {

@@ -82,7 +82,8 @@ describe("疑难辨析 Anki 卡", () => {
   });
 
   it("新学优先给成员学过的组；已掌握的组不进队列", () => {
-    const some = String(rowsFor("SELECT group_key FROM confusion_progress LIMIT 1 OFFSET 5")[0].group_key);
+    // 新学先按计划级别顺推（2026-10-28），「学过成员多的先」是同级里的次序，所以挑最低一级里的组。
+    const some = String(rowsFor("SELECT group_key FROM confusion_progress WHERE level_rank = (SELECT MIN(level_rank) FROM confusion_progress) LIMIT 1 OFFSET 5")[0].group_key);
     const card = matchingCard(some)!;
     card.members.forEach((member) => {
       testDb.run("INSERT OR IGNORE INTO progress (word_id) VALUES (?)", [member.id]);

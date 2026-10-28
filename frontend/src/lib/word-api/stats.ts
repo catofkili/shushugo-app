@@ -1,6 +1,7 @@
 import type { WordStats } from "../../types/vocabulary";
-import { getDailyWordGoal, getJlptPlanPreferences, isPostExamLightActive } from "../studyPreferences";
-import { grammarPlanDone, grammarPlanRemaining } from "../grammar-quiz";
+import { getDailyWordGoal, isPostExamLightActive } from "../studyPreferences";
+import { grammarPlanDone, grammarPlanRemaining, PLAN_GRAMMAR_LEVEL } from "../grammar-quiz";
+import { priorBaselineSql } from "../plan-level-order";
 import { getDatabase } from "../database";
 import { loadMixedCardData, mixedCardCounts, mixedCardDataLoaded } from "../mixed-cards";
 import { firstValue, rowsFor, studyDayEnd, today } from "../study-core";
@@ -219,12 +220,12 @@ export function getWordStats(
     const useKanjiUnits = statsOptions.kanjiUnits ?? (isKanjiUnitSchedulerEnabled() && kanjiUnitIndexLoaded());
     return useKanjiUnits ? kanjiUnitProgress() : directionProgressCounts(KANJI);
   });
-  // 混合模式今天还欠几条语法(备考目标那一级)。语法是**加在**今日计划之上的活,
+  // 混合模式今天还欠几条语法(备考范围 N5 → 目标，和混合模式出题同一个 PLAN_GRAMMAR_LEVEL)。语法是**加在**今日计划之上的活,
   // 不摊进词数里 —— 摊进去的话混合和经典写着同一个数,多出来的那部分在主页上就不存在。
-  const grammarRemaining = lazy(() => grammarPlanRemaining(getJlptPlanPreferences().target));
+  const grammarRemaining = lazy(() => grammarPlanRemaining(PLAN_GRAMMAR_LEVEL));
   // 今天已经过关的语法条数。混合模式的松鼠小路要拿它当分子 —— 小路画的是「这一场」，
   // 而混合模式的一场里语法和单词是同一场（角标、大卡都已经按合计算）。
-  const grammarDone = lazy(() => grammarPlanDone(getJlptPlanPreferences().target));
+  const grammarDone = lazy(() => grammarPlanDone(PLAN_GRAMMAR_LEVEL));
   // 混合学习另外两种卡（汉字 / 辨析）今天的账。索引没加载完的那一次先按 0 算，
   // 同时把加载踢出去 —— 下一次 PROGRESS_UPDATED 重算就有数了（首页和小路都挂着这个事件）。
   const mixedCards = lazy(() => {
@@ -300,6 +301,7 @@ export function getWordStats(
           AND earlier_reviews.direction = 'forward'
           AND earlier_reviews.reviewed_on < ?
       )
+      AND NOT ${priorBaselineSql("words", "today_reviews.word_id")}
     `,
     [studyDate, studyDate],
     0

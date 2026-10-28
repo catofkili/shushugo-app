@@ -3,7 +3,9 @@ import { parseFurigana } from "./furigana-data";
 import { ensureGrammarProgressInitialized } from "./grammar-api";
 import { firstValue, rowsFor, studyDayEnd, today } from "./study-core";
 import { dailyReviewCap } from "./review-budget";
-import { getDailyGrammarGoal, getEffectiveStudyPreferences, getReviewCapPreference, PLAN_REVIEW_DISABLED } from "./studyPreferences";
+import { getDailyGrammarGoal, getEffectiveStudyPreferences, getReviewCapPreference, getStudyPreferences, PLAN_REVIEW_DISABLED } from "./studyPreferences";
+import { levelsInScope } from "./jlpt/plan";
+import { planLevelRankSql, priorBaselineSql } from "./plan-level-order";
 import {
   ensureFsrsColumns,
   fsrsDueWordIds,
@@ -113,6 +115,27 @@ export interface GrammarQuizSession {
 const LEVEL_PATTERN = /^N[1-5]$/;
 
 /**
+ * 混合模式用的「等级」：备考范围（N5 → 目标）里的所有级别，新条目按计划级别顺推
+ * （起点上一级学完再进下一级，见 plan-level-order.ts）；复习覆盖整个范围。
+ *
+ * ⚠️ 2026-10-28 前混合模式传的是目标那一级（`jlptTarget`）：起点 N5、考 N3 的人 N4 语法一条都不出；
+ * 起点先验写进 N5/N4 的语法也永远不会到期出题 —— 圆环（daily-plan 的 grammarPools）却按整个范围算，
+ * 两边对不上。语法页自己选等级的那条路仍然是单一等级。
+ */
+export const PLAN_GRAMMAR_LEVEL = "plan";
+
+const scopeLevels = (level: string): string[] => (
+  level === PLAN_GRAMMAR_LEVEL ? levelsInScope(getStudyPreferences().jlptTarget)
+    : LEVEL_PATTERN.test(level) ? [level] : []
+);
+
+/** 等级条件。等级都过了白名单才拼进 SQL（同 levelEntity 的理由）；不认识的等级什么都不选。 */
+const levelSql = (level: string, column = "g.level") => {
+  const levels = scopeLevels(level);
+  return levels.length ? `${column} IN (${levels.map((item) => `'${item}'`).join(", ")})` : "0";
+};
+
+/**
  * 把 FSRS 的到期集限定到一个等级。
  *
  * 直接拼字符串是因为 `fsrsDueWordIds` 的绑定参数是固定的，而「谁最该复习」的
@@ -120,17 +143,17 @@ const LEVEL_PATTERN = /^N[1-5]$/;
  * 为了传一个等级另写一遍 ORDER BY，就是在制造第二份口径。等级先过白名单。
  */
 const levelEntity = (level: string): FsrsEntity => {
-  if (!LEVEL_PATTERN.test(level)) return GRAMMAR_FSRS;
+  if (!scopeLevels(level).length) return GRAMMAR_FSRS;
   return {
     ...GRAMMAR_FSRS,
     eligible: `${GRAMMAR_FSRS.eligible}
-      AND grammar_id IN (SELECT id FROM grammar_points WHERE level = '${level}')`
+      AND grammar_id IN (SELECT id FROM grammar_points WHERE ${levelSql(level, "level")})`
   };
 };
 
 const levelPointCount = (level: string) => firstValue<number>(
-  "SELECT COUNT(*) FROM grammar_points WHERE level = ?",
-  [level],
+  `SELECT COUNT(*) FROM grammar_points WHERE ${levelSql(level, "level")}`,
+  [],
   0
 );
 
@@ -139,20 +162,21 @@ const answeredTodayCount = (level: string, day: string) => firstValue<number>(`
   SELECT COUNT(DISTINCT r.grammar_id)
   FROM grammar_reviews r
   JOIN grammar_points g ON g.id = r.grammar_id
-  WHERE r.reviewed_on = ? AND g.level = ?
-`, [day, level], 0);
+  WHERE r.reviewed_on = ? AND ${levelSql(level)}
+`, [day], 0);
 
-/** 今天新学的条数：今天答过、而且以前从没答过 */
+/** 今天新学的条数：今天答过、以前从没答过、也不是起点先验写进来的（那是在验证先验） */
 const newDoneTodayCount = (level: string, day: string) => firstValue<number>(`
   SELECT COUNT(DISTINCT r.grammar_id)
   FROM grammar_reviews r
   JOIN grammar_points g ON g.id = r.grammar_id
-  WHERE r.reviewed_on = ? AND g.level = ?
+  WHERE r.reviewed_on = ? AND ${levelSql(level)}
     AND NOT EXISTS (
       SELECT 1 FROM grammar_reviews earlier
       WHERE earlier.grammar_id = r.grammar_id AND earlier.reviewed_on < ?
     )
-`, [day, level, day], 0);
+    AND NOT ${priorBaselineSql("grammar", "r.grammar_id")}
+`, [day, day], 0);
 
 /** 今天这个等级已经过关的条数：毕业（下次到期越过本学习日）或手动熟知 */
 const graduatedTodayCount = (level: string, day: string) => firstValue<number>(`
@@ -160,9 +184,9 @@ const graduatedTodayCount = (level: string, day: string) => firstValue<number>(`
   FROM grammar_reviews r
   JOIN grammar_points g ON g.id = r.grammar_id
   JOIN grammar_progress p ON p.grammar_id = r.grammar_id
-  WHERE r.reviewed_on = ? AND g.level = ?
+  WHERE r.reviewed_on = ? AND ${levelSql(level)}
     AND (p.known_forever = 1 OR (p.fsrs_due IS NOT NULL AND p.fsrs_due > ?))
-`, [day, level, studyDayEnd().toISOString()], 0);
+`, [day, studyDayEnd().toISOString()], 0);
 
 /**
  * 加餐名额。**每个等级一行、日期存在值里**，不把日期写进 key ——
@@ -229,12 +253,12 @@ const planIds = (level: string, day: string): { reviewIds: number[]; newIds: num
     SELECT g.id
     FROM grammar_points g
     JOIN grammar_progress p ON p.grammar_id = g.id
-    WHERE g.level = ?
+    WHERE ${levelSql(level)}
       AND p.seen_count = 0
       AND p.known_forever = 0
-    ORDER BY g.sort_order ASC
+    ORDER BY ${planLevelRankSql("g.level", "grammar")} ASC, g.sort_order ASC
     LIMIT ?
-  `, [level, newQuota]).map((row) => Number(row.id));
+  `, [newQuota]).map((row) => Number(row.id));
   return { reviewIds, newIds };
 };
 
@@ -425,7 +449,7 @@ export const grammarAudioPlan = (level: string): string[] => {
   const { reviewIds, newIds } = planIds(level, today());
   // Prefetch the due candidate pool: capped reviews re-randomize, so the first sampled subset is insufficient.
   const due = reviewIds.length ? rowsFor(`SELECT g.id FROM grammar_points g JOIN grammar_progress p ON p.grammar_id=g.id
-    WHERE g.level=? AND p.known_forever=0 AND p.seen_count>0 AND (p.fsrs_due IS NULL OR p.fsrs_due<=?)`, [level, studyDayEnd().toISOString()]).map(row => Number(row.id)) : [];
+    WHERE ${levelSql(level)} AND p.known_forever=0 AND p.seen_count>0 AND (p.fsrs_due IS NULL OR p.fsrs_due<=?)`, [studyDayEnd().toISOString()]).map(row => Number(row.id)) : [];
   const ids = [...new Set([...due, ...newIds])];
   if (!ids.length) return [];
   return rowsFor(`SELECT example_jp FROM grammar_points WHERE id IN (${ids.map(() => "?").join(",")})`, ids)
@@ -628,8 +652,8 @@ export const extendGrammarQuizPlan = (
     SELECT COUNT(*)
     FROM grammar_points g
     JOIN grammar_progress p ON p.grammar_id = g.id
-    WHERE g.level = ? AND p.seen_count = 0 AND p.known_forever = 0
-  `, [level], 0);
+    WHERE ${levelSql(level)} AND p.seen_count = 0 AND p.known_forever = 0
+  `, [], 0);
   if (remaining > 0) {
     getDatabase().run(
       "INSERT OR REPLACE INTO grammar_state (key, value) VALUES (?, ?)",

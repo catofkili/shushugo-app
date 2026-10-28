@@ -18,14 +18,13 @@
  * 和各卡种自己那份落库的撤销栈对得上（退出再进来，栈顶是谁已经说不清，见 canUndoMixed）。
  */
 import { getDatabase } from "./database";
-import { getGrammarQuizSession, submitGrammarQuizAnswer, undoLastGrammarQuizAnswer, type GrammarQuizCard } from "./grammar-quiz";
+import { getGrammarQuizSession, PLAN_GRAMMAR_LEVEL, submitGrammarQuizAnswer, undoLastGrammarQuizAnswer, type GrammarQuizCard } from "./grammar-quiz";
 import {
   getConfusionCardSession, getKanjiCardSession, mixedCardDataLoaded,
   submitConfusionCardAnswer, submitKanjiCardAnswer, undoConfusionCardAnswer, undoKanjiCardAnswer
 } from "./mixed-cards";
 import type { KanjiCharCard } from "./kanji-char-cards";
 import type { MatchingCard } from "./confusion-cards";
-import { getStudyPreferences } from "./studyPreferences";
 import { UNDO_LIMIT } from "./word-api/undo-stack";
 import type { WordAnswer } from "../types/vocabulary";
 
@@ -57,9 +56,10 @@ const session = {
   grammarCanUndo: false
 };
 
-// 语法用哪一级：跟着备考目标走。混合模式**不给等级选择器** —— 多一个旋钮就多一处口径，
-// 而「我在考哪一级」设置页里已经答过了。
-const grammarLevel = () => getStudyPreferences().jlptTarget;
+// 语法用哪一级：备考范围（N5 → 目标）整个一起，新条目按计划级别顺推（PLAN_GRAMMAR_LEVEL）。
+// 混合模式**不给等级选择器** —— 多一个旋钮就多一处口径，而「我在考哪一级」设置页里已经答过了。
+// ⚠️ 2026-10-28 前这里只传目标那一级，起点 N5 考 N3 的人一条 N4 语法都不出。
+const grammarLevel = () => PLAN_GRAMMAR_LEVEL;
 
 /** 进学习页、切学习模式时清零。 */
 export const resetMixedSession = () => {

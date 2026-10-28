@@ -2,6 +2,7 @@ import { firstValue, studyDayEnd, today } from "../study-core";
 import { ensureProgressInitialized } from "../word-api/bootstrap";
 import { ensureGrammarProgressInitialized } from "../grammar-api";
 import { getJlptPlanPreferences } from "../studyPreferences";
+import { priorBaselineSql } from "../plan-level-order";
 import { defaultExamDate, examEndAt, parseExamDate, type ExamKind } from "./exam-dates";
 import {
   computeDailyMinimum,
@@ -125,7 +126,7 @@ export function getJlptPlanStatus(now = new Date()): JlptPlanStatus {
       AND p.fsrs_due IS NOT NULL AND p.fsrs_due < ?
   `, [dayStart], 0);
 
-  // 今天做过的:第一次见到的算新,见过的算复习。
+  // 今天做过的:第一次见到的算新,见过的算复习。起点先验写进来的卡第一次答是在验证先验,算复习。
   // 用 reviews 表而不是 stage1_tasks——任务表会被配额裁剪重排,
   // 而「今天到底答了什么」只有答题记录说了算。
   const newWordsDone = firstValue<number>(`
@@ -137,6 +138,7 @@ export function getJlptPlanStatus(now = new Date()): JlptPlanStatus {
         SELECT 1 FROM reviews earlier
         WHERE earlier.word_id = r.word_id AND earlier.reviewed_on < ?
       )
+      AND NOT ${priorBaselineSql("words", "r.word_id")}
   `, [day, day], 0);
   const wordsAnsweredToday = firstValue<number>(`
     SELECT COUNT(DISTINCT r.word_id)
@@ -154,6 +156,7 @@ export function getJlptPlanStatus(now = new Date()): JlptPlanStatus {
         SELECT 1 FROM grammar_reviews earlier
         WHERE earlier.grammar_id = r.grammar_id AND earlier.reviewed_on < ?
       )
+      AND NOT ${priorBaselineSql("grammar", "r.grammar_id")}
   `, [day, day], 0);
   const grammarAnsweredToday = firstValue<number>(`
     SELECT COUNT(DISTINCT r.grammar_id)
