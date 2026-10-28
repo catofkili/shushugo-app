@@ -63,7 +63,8 @@ const card = page.data.kanaCard;
 assert.equal(card.choices.length, 4);
 assert.ok(card.choices.includes(card.reading));
 await page.answerKana({ currentTarget: { dataset: { reading: card.reading } } });
-assert.equal(core.web.kanaProgress.getKanaProgress()[card.symbol], 1);
+// 2026-10-28 起第一次学的那天要连对两次才过关，答对一次只是「今天对了一次」
+assert.equal(core.web.kanaProgress.getKanaStates()[card.symbol].todayCorrect, 1);
 page.openSetup();
 page.closeSetup();
 assert.equal(page.data.setupOpen, false, '已有计划可取消重新设定');

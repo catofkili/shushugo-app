@@ -26,6 +26,10 @@ module.exports = {
     "account",
     contentPackage
   ],
+  "mood-study": [
+    "study",
+    contentPackage
+  ],
   "emblem-sprout": [
     "study"
   ],
@@ -100,9 +104,6 @@ module.exports = {
     contentPackage
   ],
   "mood-happy": [
-    contentPackage
-  ],
-  "mood-study": [
     contentPackage
   ],
   "item-repair": [

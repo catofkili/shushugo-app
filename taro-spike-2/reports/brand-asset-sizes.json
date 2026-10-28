@@ -8,7 +8,7 @@
     },
     "study": {
       "beforeBytes": 41968,
-      "afterBytes": 113025
+      "afterBytes": 121992
     },
     "account": {
       "beforeBytes": 13430,
@@ -1057,6 +1057,23 @@
       "afterBytes": 19082,
       "sourceSha256": "6df9ef034fe9363329a0c626624877a7a2b670b7c24333534a5579bf0b2f8788",
       "afterSha256": "38c1a4fe9965e65fb51badf6539ba42f806cd0718d252c95e682bf5f8175fb9d",
+      "quality": "65-90"
+    },
+    {
+      "subpackage": "study",
+      "image": "mood-study",
+      "sourceWidth": 322,
+      "sourceHeight": 254,
+      "maxDisplayHeightCss": 56,
+      "scale": 2,
+      "outputWidth": 142,
+      "outputHeight": 112,
+      "beforeFormat": "none",
+      "beforeBytes": 0,
+      "afterFormat": "png",
+      "afterBytes": 8967,
+      "sourceSha256": "6ab39f72c2613778a97af607a30b6ccaea4dbc65d5aba38029145ee5ad52b5a2",
+      "afterSha256": "e8a5172ceadaa0cc09ce0fefb125d01e5c29726ebd15283d5079e16666be3417",
       "quality": "65-90"
     },
     {

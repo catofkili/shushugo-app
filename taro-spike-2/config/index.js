@@ -49,6 +49,11 @@ module.exports = {
         from: path.join(root, 'src/package-assets', subpackage),
         to: path.join(root, 'dist', subpackage, 'assets')
       })),
+      // 五十音读音：46 条约 250 KB，随 study 分包发（备考页的五十音卡在这个分包），见 frontend/src/lib/kana-audio.weapp.ts。
+      {
+        from: path.join(frontend, 'src/assets/kana-audio'),
+        to: path.join(root, 'dist/study/kana-audio')
+      },
       // 只拷欢迎 / 完成插画；场景原图从小程序云存储读取。
       {
         from: path.join(frontend, 'src/assets/talk-art'),

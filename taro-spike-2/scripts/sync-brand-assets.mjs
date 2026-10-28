@@ -33,6 +33,8 @@ const packageNames = {
     'empty-box': 96, 'empty-search': 96, 'mood-ask': 96, 'mood-idea': 64, 'mood-proud': 96,
     // 备考页倒计时那只按状态拼名（来得及 / 来不及 / 考完），来不及那张 mood-shocked 只登记在 account 分包时，备考页是一张空图。
     'mood-shocked': 108,
+    // 备考页五十音卡（KanaPrimer）页头那只。只登记在 content-pages 时，小程序里五十音卡页头是空白（2026-10-28 开发者工具里看到）。
+    'mood-study': 56,
     'emblem-sprout': 28, 'emblem-squirrel': 28, 'emblem-bird': 28, 'emblem-train': 28,
     'emblem-owl': 28, 'emblem-yuzu': 28, 'emblem-books': 28, 'emblem-torii': 28
   },

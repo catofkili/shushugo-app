@@ -748,7 +748,12 @@
 .kana-primer-glyph.kana-primer-latin { font-family: inherit; font-size: 56px; }
 .kana-primer-glyph.kana-primer-word { font-size: 52px; letter-spacing: .04em; }
 .kana-primer-choice-kana { font-family: "Hiragino Mincho ProN", "Songti SC", serif; font-size: 28px; }
-.kana-primer-note { padding: 10px 12px; border-radius: 12px; background: var(--ds-inset); color: var(--ds-ink-2); font-size: 14px; line-height: 1.6; }
+.kana-primer-prompt { position: relative; display: flex; justify-content: center; align-items: center; min-height: 104px; }
+.kana-primer-prompt .kana-primer-speaker { position: absolute; right: 0; top: 50%; transform: translateY(-50%); }
+.kana-primer-speaker { display: inline-grid; flex: none; width: 36px; height: 36px; margin-left: 6px; place-items: center; border: 0; border-radius: 999px; background: var(--ds-inset); color: var(--ds-ink-2); vertical-align: middle; }
+.kana-primer-listen { display: grid; width: 88px; height: 88px; margin: 14px 0 6px; place-items: center; border: 0; border-radius: 999px; background: var(--ds-primary-tint); color: var(--ds-primary-ink); }
+.kana-primer-feedback { display: inline-flex; align-items: center; flex-wrap: wrap; }
+.kana-primer-note {padding: 10px 12px; border-radius: 12px; background: var(--ds-inset); color: var(--ds-ink-2); font-size: 14px; line-height: 1.6; }
 .kana-primer-table {padding: 12px; border-radius: 16px; background: var(--ds-inset); color: var(--ds-ink); }
 
 /* —————————————————— 17. 柚子商店（.yz-*） —————————————————— */

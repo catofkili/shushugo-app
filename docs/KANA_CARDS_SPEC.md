@@ -370,7 +370,8 @@ Node ESM，`node frontend/scripts/verify-kana-cards.mjs` 零参数运行，全�
    否则手机上刚点出来就没了。有链接的术语照旧点击直接跳转（行为没变）。
    验证：`tsc --noEmit`、`eslint`、`vitest run`（738 passed / 25 skipped）、`npm run prebuild` 全过。
 2. 题型、干扰项生成（干扰项来源是 `kana_confusables.json`）、FSRS 接入、音频。
-   ✅ **2026-10-28 清音 92 个已接上**：教学卡 + 四种题 + 形近干扰项，口径见 `docs/claude/daily-plans-and-study-modes.md`「五十音考题」。音频、浊音・拗音・规则卡还没接。
+   ✅ **2026-10-28 清音 92 个已接上**：教学卡 + 四种题 + 形近干扰项，口径见 `docs/claude/daily-plans-and-study-modes.md`「五十音考题」。浊音・拗音・规则卡还没接。
+   ✅ **2026-10-28 清音读音已接上**（46 条随包发，`frontend/scripts/build-kana-audio.mjs`），掌握口径改成三个不同的日子都过关，同上那份文档。
 3. 假名卡的 FSRS 学习步骤要短：这批东西是几天内速成的，别按每天 15 个新卡的默认档走。
 
 ### 顺手修的两处（`verify-kana-cards.mjs`，不影响判定口径）

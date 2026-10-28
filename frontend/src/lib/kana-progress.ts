@@ -55,10 +55,49 @@ const ensureKanaRows = () => oncePerDatabase("kana-rows", () => {
   ensureFsrsColumns(KANA_FSRS);
 });
 
-export const getKanaProgress = (): KanaProgress => {
-  ensureKanaRows();
-  return Object.fromEntries(rowsFor("SELECT symbol, correct_streak FROM kana_memory").map((row) => [String(row.symbol), Number(row.correct_streak)]));
+// 掌握口径（2026-10-28 用户定：「五十音再怎么也该有三天」「前一天的学会打回重来」）：
+// 一个字要在三个不同的日子都过关才算掌握，所以最快三天学完。过关 = 第一次学的那天连对两次；之后每天答对一次。
+// 当天过关只算「今天会了」，第二天打回成待重考，再答对才回来。任何一次答错都清零，从头算三天。
+// 只看作答流水 kana_reviews：两台设备的流水合并后结论一样，不靠 correct_streak 这种会被覆盖的列。
+// 和单词的 FSRS 完全分开：kana_memory 自己一张表，不进任何单词 / 语法的到期数和复习队列。
+export type KanaStage = "new" | "learning" | "review" | "passed" | "mastered";
+export type KanaState = { stage: KanaStage; days: number; todayCorrect: number; masteredOn?: string };
+export const KANA_MASTERY_DAYS = 3;
+
+export const kanaStateFrom = (reviews: ReadonlyArray<{ answer: string; reviewed_on: string }>, day: string): KanaState => {
+  let days: string[] = [];
+  let runDay = "";
+  let run = 0;
+  for (const review of reviews) {
+    if (review.reviewed_on !== runDay) { runDay = review.reviewed_on; run = 0; }
+    if (review.answer !== "know") { days = []; run = 0; continue; }
+    run += 1;
+    if (!days.includes(review.reviewed_on) && run >= (days.length === 0 ? 2 : 1)) days.push(review.reviewed_on);
+  }
+  const todayCorrect = runDay === day ? run : 0;
+  const stage: KanaStage = days.length >= KANA_MASTERY_DAYS ? "mastered"
+    : days.includes(day) ? "passed"
+    : !reviews.length ? "new"
+    : days.length === 0 ? "learning" : "review";
+  return { stage, days: days.length, todayCorrect, masteredOn: stage === "mastered" ? days[KANA_MASTERY_DAYS - 1] : undefined };
 };
+
+export const getKanaStates = (day = today()): Record<string, KanaState> => {
+  ensureKanaRows();
+  const bySymbol = new Map<string, { answer: string; reviewed_on: string }[]>();
+  for (const row of rowsFor("SELECT symbol, answer, reviewed_on FROM kana_reviews ORDER BY reviewed_at, id")) {
+    const list = bySymbol.get(String(row.symbol)) ?? [];
+    list.push({ answer: String(row.answer), reviewed_on: String(row.reviewed_on) });
+    bySymbol.set(String(row.symbol), list);
+  }
+  return Object.fromEntries(KANA.map(([kana]) => [kana, kanaStateFrom(bySymbol.get(kana) ?? [], day)]));
+};
+
+// correct_streak 列沿用老含义「>= 2 = 掌握」（原生小程序、门槛都按它读）：掌握 2，过过关 1，其余 0。
+const streakOf = (state: KanaState) => state.stage === "mastered" ? 2 : state.days > 0 ? 1 : 0;
+export const kanaProgressFrom = (states: Record<string, KanaState>): KanaProgress =>
+  Object.fromEntries(Object.entries(states).map(([kana, state]) => [kana, streakOf(state)]));
+export const getKanaProgress = (): KanaProgress => kanaProgressFrom(getKanaStates());
 
 /** 答过至少一次的字。网页的出题（kana-quiz.ts）拿它判断「教过没有」，没答过的先出教学卡。 */
 export const getAnsweredKana = (): Set<string> => {
@@ -66,8 +105,11 @@ export const getAnsweredKana = (): Set<string> => {
   return new Set(rowsFor("SELECT symbol FROM kana_memory WHERE seen_count > 0").map((row) => String(row.symbol)));
 };
 
-export const kanaMasteredCount =(progress = getKanaProgress()) => KANA.filter(([kana]) => (progress[kana] ?? 0) >= 2).length;
-export const kanaComplete = (progress = getKanaProgress()) => kanaMasteredCount(progress) === KANA.length;
+export const kanaMasteredCount = (progress = getKanaProgress()) => KANA.filter(([kana]) => (progress[kana] ?? 0) >= 2).length;
+// kana_completed 一旦是 1 就不再按字重算：10-28 之前按「当天连对两次」学完的人不能被新口径翻回未完成，
+// 否则 enforceKanaGate 会把他们的每日新词压成 0。
+export const kanaComplete = (progress?: KanaProgress) =>
+  getState("kana_completed", "0") === "1" || kanaMasteredCount(progress ?? getKanaProgress()) === KANA.length;
 
 export const deferWordPlanUntilKanaComplete = (wordGoal: number): void => {
   setState(WORD_GOAL_KEY, String(Math.max(0, Math.round(wordGoal))));
@@ -84,23 +126,22 @@ export const enforceKanaGate = (): void => {
   if (prefs.dailyGoal !== 0) saveStudyPreferences({ ...prefs, dailyGoal: 0 });
 };
 
-export const recordKanaAnswer = (kana: string, correct: boolean): { progress: KanaProgress; completed: boolean } => {
+export const recordKanaAnswer = (kana: string, correct: boolean): { progress: KanaProgress; states: Record<string, KanaState>; completed: boolean } => {
   ensureKanaRows();
   if (!KANA.some(([symbol]) => symbol === kana)) throw new Error("未知的假名卡");
-  const progress = getKanaProgress();
-  const wasComplete = kanaComplete(progress);
+  const wasComplete = kanaComplete();
   const now = new Date();
   recordFsrsReview(kana, correct ? "know" : "forgot", now, {}, KANA_FSRS);
-  progress[kana] = correct ? Math.min(2, (progress[kana] ?? 0) + 1) : 0;
   const db = getDatabase();
-  db.run("UPDATE kana_memory SET correct_streak=?, seen_count=seen_count+1 WHERE symbol=?", [progress[kana], kana]);
   db.run("INSERT INTO kana_reviews (symbol,answer,reviewed_on,reviewed_at) VALUES (?,?,?,?)", [kana, correct ? "know" : "forgot", today(now), now.getTime()]);
+  const states = getKanaStates(today(now));
+  const progress = kanaProgressFrom(states);
+  db.run("UPDATE kana_memory SET correct_streak=?, seen_count=seen_count+1 WHERE symbol=?", [progress[kana], kana]);
   const completed = kanaComplete(progress);
   if (completed && !wasComplete) {
     setState("kana_completed", "1");
     const goal = Math.max(0, Number(getState(WORD_GOAL_KEY, "0")) || 0);
     const prefs = getStudyPreferences();
-    const now = new Date();
     const startedOn = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
     setState("jlpt_plan_started_on", startedOn);
     saveStudyPreferences({
@@ -112,35 +153,30 @@ export const recordKanaAnswer = (kana: string, correct: boolean): { progress: Ka
   requestFullSnapshot();
   scheduleSave(0);
   notifyProgressUpdated();
-  return { progress, completed };
+  return { progress, states, completed };
 };
 
-/** 两台设备的作答取并集后，以同一条时间顺序重建 FSRS 和记忆闸门。 */
+/** 两台设备的作答取并集后，以同一条时间顺序重建 FSRS 和掌握状态。 */
 export const replayKanaReviews = (): void => {
   ensureKanaRows();
   const db = getDatabase();
   const symbols = rowsFor("SELECT DISTINCT symbol FROM kana_reviews").map((row) => String(row.symbol));
-  let completedAt = 0;
   for (const symbol of symbols) {
     const events = rowsFor("SELECT answer, reviewed_at FROM kana_reviews WHERE symbol=? ORDER BY reviewed_at, id", [symbol]);
-    db.run(`UPDATE kana_memory SET correct_streak=0, seen_count=0,
+    db.run(`UPDATE kana_memory SET correct_streak=0, seen_count=?,
       fsrs_stability=NULL, fsrs_difficulty=NULL, fsrs_due=NULL, fsrs_last_review=NULL,
-      fsrs_state=NULL, fsrs_steps=NULL, fsrs_reps=NULL, fsrs_lapses=NULL WHERE symbol=?`, [symbol]);
-    let streak = 0;
-    let masteredAt = 0;
-    for (const event of events) {
-      const correct = event.answer === "know";
-      recordFsrsReview(symbol, correct ? "know" : "forgot", new Date(Number(event.reviewed_at)), {}, KANA_FSRS);
-      streak = correct ? Math.min(2, streak + 1) : 0;
-      masteredAt = streak === 2 ? (masteredAt || Number(event.reviewed_at)) : 0;
-      db.run("UPDATE kana_memory SET correct_streak=?, seen_count=seen_count+1 WHERE symbol=?", [streak, symbol]);
-    }
-    if (streak === 2) completedAt = Math.max(completedAt, masteredAt);
+      fsrs_state=NULL, fsrs_steps=NULL, fsrs_reps=NULL, fsrs_lapses=NULL WHERE symbol=?`, [events.length, symbol]);
+    for (const event of events) recordFsrsReview(symbol, event.answer === "know" ? "know" : "forgot", new Date(Number(event.reviewed_at)), {}, KANA_FSRS);
   }
-  const completed = kanaComplete();
-  if (completed && getState("kana_completed", "0") !== "1" && completedAt) {
-    const date = new Date(completedAt);
-    setState("jlpt_plan_started_on", `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`);
+  const states = getKanaStates();
+  const progress = kanaProgressFrom(states);
+  for (const symbol of symbols) db.run("UPDATE kana_memory SET correct_streak=? WHERE symbol=?", [progress[symbol] ?? 0, symbol]);
+  const wasComplete = getState("kana_completed", "0") === "1";
+  const completed = kanaComplete(progress);
+  // 跨设备合并后才凑齐：计划起点记在真正掌握最后一个字的那天，不是合并那天。
+  if (completed && !wasComplete) {
+    const lastMastered = Object.values(states).map((state) => state.masteredOn ?? "").sort().pop();
+    if (lastMastered) setState("jlpt_plan_started_on", lastMastered);
   }
   setState("kana_completed", completed ? "1" : "0");
 };
