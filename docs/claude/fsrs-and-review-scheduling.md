@@ -801,3 +801,19 @@ Doctor Rust `system-configuration` NULL object panic；按既有办法只给 Tar
 独立网页端口 5247 的 Vite 及 HTTP 监听均被沙箱以 `listen EPERM` 拒绝；微信开发者工具
 `cli open` 也因自身本地监听被相同限制拒绝。因此**实际页面 / 窄屏视觉检查、Taro 开发者工具运行未完成**，
 不能拿编译和 smoke 通过替代。没有刷新 5173、写用户学习库、提交、合并或推送；改动留在本 worktree。
+
+### 多日负荷模拟（2026-10-29，`frontend/src/lib/daily-load-simulation.test.ts`）
+
+改投放范围、先验、升级 / 回补、复习上限之后，跑一遍它看「会不会某天成批冒出来」。默认跳过，整套约 9 分钟：
+
+```bash
+cd frontend && SHUSHUGO_LOAD_SIM=1 npx vitest run src/lib/daily-load-simulation.test.ts --configLoader runner --no-cache
+# 加 SHUSHUGO_LIVE_DB=.local/live.db 再从真实库往后推 30 天（只读、只打印计数）
+```
+
+- 「真实时间线」情景按 10-28 事故原样重放：起点 N5→N3、N3 10-21 学完空一周、10-28 范围放开、10-29 起点改 N4 + 回补 N4。
+  在限速前的 `14e9d390` 上，同一时间线 10-28 放出 127 条先验（真实当天排 154 条、首答 97 条），证明模拟抓得住真因；限速后语法每天最多 18 条。
+- 真实库 10-29 的 51 条 = 43 条普通复习（21 条是 10-28 首答后又到期的 N4/N5、21 条是早学的 N3）+ 8 条先验（10-28 首答正确率低，额度被调到上限）。
+- 两个 `it.fails`（首答忘一半 / 几乎全忘）是已知现象：没有计划额度时，语法普通复习沿用单词上限约 600，会慢慢涨到每天 113 / 276 条。
+  这是逐日累积，不是突然爆量（「前 7 天中位数 ×4+20」那条断言照样通过）；要不要给语法单设默认上限，作者还没定。
+- 单词作答走 `submitWordAnswer`。不要为了测试给 `word-api.ts` 的内部函数加 `export`：哪怕只加一个 export，也会让小程序 `web.js` 产物变化，`check-shared` 就红。
