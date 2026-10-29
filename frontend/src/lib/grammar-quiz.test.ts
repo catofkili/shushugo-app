@@ -24,6 +24,8 @@ vi.mock("./storage", () => ({ scheduleSave: () => undefined, requestFullSnapshot
 import {
   extendGrammarQuizPlan,
   getGrammarQuizSession,
+  GRAMMAR_DEFAULT_REVIEW_CAP,
+  grammarReviewPool,
   grammarNewQuota,
   grammarAudioPlan,
   grammarQuizRanking,
@@ -58,6 +60,31 @@ describe("语法考题（和单词同一套 FSRS）", () => {
   beforeEach(() => {
     testDb = new SQL.Database(new Uint8Array(readFileSync(seedPath)));
     prefStore.clear();
+  });
+
+  it("语法复习上限没设（0）时默认 60，不再沿用单词的约 600", () => {
+    grammarReviewPool("N1", 0);
+    testDb.run(`UPDATE grammar_progress SET seen_count = 1, fsrs_state = 2, fsrs_stability = 5, fsrs_difficulty = 5,
+      fsrs_reps = 1, fsrs_last_review = '2020-01-01T00:00:00.000Z', fsrs_due = '2020-01-06T00:00:00.000Z'`);
+    const pool = grammarReviewPool("N1", 0);
+    expect(pool.due).toBeGreaterThan(GRAMMAR_DEFAULT_REVIEW_CAP);
+    expect(pool.review).toBe(GRAMMAR_DEFAULT_REVIEW_CAP);
+    expect(grammarReviewPool("N1", 30).review).toBe(30);
+  });
+
+  it("复习上限是一天的总量：答掉一条不会从到期池里再补一条", () => {
+    grammarReviewPool("N1", 0);
+    testDb.run(`UPDATE grammar_progress SET seen_count = 1, fsrs_state = 2, fsrs_stability = 5, fsrs_difficulty = 5,
+      fsrs_reps = 1, fsrs_last_review = '2020-01-01T00:00:00.000Z', fsrs_due = '2020-01-06T00:00:00.000Z'`);
+    testDb.run("INSERT INTO grammar_reviews (grammar_id, answer, score_after, reviewed_on) SELECT id, 'know', 0, '2020-01-01' FROM grammar_points");
+    const seen = new Set<number>();
+    let session = getGrammarQuizSession("N1");
+    for (let guard = 0; session.card && guard < 500; guard++) {
+      seen.add(session.card.id);
+      session = submitGrammarQuizAnswer("N1", session.card.id, "know");
+    }
+    expect(session.card).toBeNull();
+    expect(seen.size).toBe(GRAMMAR_DEFAULT_REVIEW_CAP);
   });
 
   it("prepares the planned grammar examples on page entry without recording answers", () => {

@@ -37,7 +37,7 @@ export interface StudyPreferences {
    */
   kanjiDailyGoal: number;
   confusionDailyGoal: number;
-  /** 语法 / 汉字 / 辨析的每日复习上限：0 = 到期全出，PLAN_REVIEW_DISABLED = 不出复习（单词那个仍是 reviewCap） */
+  /** 语法 / 汉字 / 辨析的每日复习上限：0 = 到期全出（语法例外：0 = 默认 60，见 grammar-quiz.ts 的 GRAMMAR_DEFAULT_REVIEW_CAP），PLAN_REVIEW_DISABLED = 不出复习（单词那个仍是 reviewCap） */
   grammarReviewCap: number;
   kanjiReviewCap: number;
   confusionReviewCap: number;

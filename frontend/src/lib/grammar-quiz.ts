@@ -154,6 +154,16 @@ export const grammarReviewEntity = (level: string): FsrsEntity => {
   };
 };
 
+/**
+ * 语法没设上限（0）时的每日普通复习上限：单独 60，且不超过单词那个上限。
+ * 原来 0 直接沿用单词上限（约 600），一个等级才一百来条，等于不设限；
+ * 2026-10-29 多日负荷模拟里首答忘一半的情景，语法复习逐日涨到 113 条/天（daily-load-simulation.test.ts）。
+ * 先验额度另算，不受它约束（prior-pacing.ts）。
+ */
+export const GRAMMAR_DEFAULT_REVIEW_CAP = 60;
+const grammarReviewLimit = (cap: number, day?: string) =>
+  cap === PLAN_REVIEW_DISABLED ? 0 : cap > 0 ? cap : Math.min(GRAMMAR_DEFAULT_REVIEW_CAP, dailyReviewCap(getReviewCapPreference(), day));
+
 /** 圆环也读计划使用的同一份池子；先验额度在普通复习上限之外。 */
 export const grammarReviewPool = (level: string, cap?: number) => {
   ensureGrammarProgressInitialized();
@@ -162,7 +172,7 @@ export const grammarReviewPool = (level: string, cap?: number) => {
   const end = studyDayEnd();
   const prior = priorIdsForEntity(entity, end).length;
   return { due: plannedDueCount(end, entity), prior,
-    review: cap == null ? 0 : cappedDueCount(cap === PLAN_REVIEW_DISABLED ? 0 : cap > 0 ? cap : dailyReviewCap(getReviewCapPreference()), end, entity) };
+    review: cap == null ? 0 : cappedDueCount(grammarReviewLimit(cap), end, entity) };
 };
 
 const levelPointCount = (level: string) => firstValue<number>(
@@ -178,6 +188,15 @@ const answeredTodayCount = (level: string, day: string) => firstValue<number>(`
   JOIN grammar_points g ON g.id = r.grammar_id
   WHERE r.reviewed_on = ? AND ${levelSql(level)}
 `, [day], 0);
+
+/** 今天已经复习过的条数：今天答过、且今天之前就有真实作答（新学和先验首答都不算） */
+const reviewedTodayCount = (level: string, day: string) => firstValue<number>(`
+  SELECT COUNT(DISTINCT r.grammar_id)
+  FROM grammar_reviews r
+  JOIN grammar_points g ON g.id = r.grammar_id
+  WHERE r.reviewed_on = ? AND ${levelSql(level)}
+    AND EXISTS (SELECT 1 FROM grammar_reviews earlier WHERE earlier.grammar_id = r.grammar_id AND earlier.reviewed_on < ?)
+`, [day, day], 0);
 
 /** 今天新学的条数：今天答过、以前从没答过、也不是起点先验写进来的（那是在验证先验） */
 const newDoneTodayCount = (level: string, day: string) => firstValue<number>(`
@@ -258,14 +277,31 @@ const planIds = (level: string, day: string): { reviewIds: number[]; newIds: num
   ensureGrammarProgressInitialized();
   ensureFsrsColumns(GRAMMAR_FSRS);
   dropLegacyRoundState();
-  // 语法自己的复习上限（圆环给的），0 = 沿用单词那个 reviewCap（一个等级最多一百来条，
-  // 面向八千词设的上限在这里几乎不会咬到）。
+  // 语法自己的复习上限（圆环给的），0 = 默认上限，见 grammarReviewLimit。
   const grammarCap = getEffectiveStudyPreferences().grammarReviewCap;
   const reviewLimit = Math.min(
-    grammarCap === PLAN_REVIEW_DISABLED ? 0 : grammarCap > 0 ? grammarCap : dailyReviewCap(getReviewCapPreference(), day),
+    grammarReviewLimit(grammarCap, day),
     levelPointCount(level)
   );
-  const reviewIds = fsrsDueWordIds(reviewLimit, studyDayEnd(), grammarReviewEntity(level));
+  // 上限管的是「今天复习多少条」，不是「此刻还剩多少到期」：planIds 每答一题都会重算，
+  // 2026-10-29 之前只传 reviewLimit，答掉一条就从到期池里再补一条，一天总量其实不封顶
+  // （负荷模拟里几乎全忘的情景到第 45 天一天 272 条，上限 60 时也一样）。
+  // 所以：今天答过又到期的（重学）照出、不占名额；其余只放「上限 − 今天已复习」条。
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) throw new Error(`bad study day: ${day}`);
+  const entity = grammarReviewEntity(level);
+  const answeredToday = `grammar_id IN (SELECT grammar_id FROM grammar_reviews WHERE reviewed_on = '${day}')`;
+  const end = studyDayEnd();
+  const relearnIds = rowsFor(
+    `SELECT grammar_id AS id FROM grammar_progress WHERE ${entity.eligible} AND ${answeredToday}
+       AND (fsrs_due IS NULL OR fsrs_due <= ?)`,
+    [end.toISOString()]
+  ).map((row) => Number(row.id));
+  const freshDue = fsrsDueWordIds(
+    Math.max(0, reviewLimit - reviewedTodayCount(level, day)),
+    end,
+    { ...entity, eligible: `(${entity.eligible}) AND NOT ${answeredToday}` }
+  );
+  const reviewIds = [...relearnIds, ...freshDue.filter((id) => !relearnIds.includes(id))];
   const newQuota = grammarNewQuota(level, day);
   const newIds = newQuota <= 0 ? [] : rowsFor(`
     SELECT g.id

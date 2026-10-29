@@ -2,7 +2,7 @@
  * 多日负荷回归：出厂内容 + 内存 sql.js，选卡、评分、FSRS、真实流水均走应用入口。
  * 默认跳过（整套约 9 分钟）：SHUSHUGO_LOAD_SIM=1 npx vitest run src/lib/daily-load-simulation.test.ts --configLoader runner --no-cache
  * 可选 SHUSHUGO_LIVE_DB 只读文件进入内存；不联网、不落盘、不输出词条。卡数按当天不同条目计。
- * 常规情景每日新学各5条、复习上限600；真实时间线语法每日3条，10-29起普通语法cap=52。
+ * 常规情景每日新学各5条、单词复习上限600（语法未设上限，走默认 60）；真实时间线语法每日3条，10-29起普通语法cap=52。
  * 真实库保留用户四类额度；时间线用合成前史建立已有119条N3覆盖，不冒称逐题还原用户历史。
  * 答题风格描述每日首答；答错后继续答 know 直到真实调度器判毕业，不用改 due 来清队列。
  */
@@ -16,6 +16,8 @@ import initSqlJs, { type Database } from "sql.js";
 
 let testDb: Database;
 let SQL: Awaited<ReturnType<typeof initSqlJs>>;
+/** 真实库情景的起推日（YYYY-MM-DD），见 beforeAll。10-29 那次用的是当天早上、还没作答的快照。 */
+let liveStart = "2026-10-29";
 const preferences = new Map<string, string>();
 (globalThis as any).localStorage = {
   getItem: (key: string) => preferences.get(key) ?? null,
@@ -38,7 +40,7 @@ import { getLevelPlanSettings, hydrateLevelPlanPreferences, recalibrateLevelStar
 import { answerLevelAdvance, levelAdvancePrompt } from "./level-advance";
 import { JLPT_TARGETS, type JlptTarget } from "./jlpt/plan";
 import { PLAN_KINDS, dailyPlanView } from "./daily-plan";
-import { getGrammarQuizSession, PLAN_GRAMMAR_LEVEL, scopeLevels, submitGrammarQuizAnswer } from "./grammar-quiz";
+import { getGrammarQuizSession, GRAMMAR_DEFAULT_REVIEW_CAP, PLAN_GRAMMAR_LEVEL, scopeLevels, submitGrammarQuizAnswer } from "./grammar-quiz";
 import { loadMixedCardData, mixedCardCounts } from "./mixed-cards";
 import { pickKanjiCharNext, recordKanjiCharReview } from "./kanji-char-cards";
 import { pickConfusionNext, recordConfusionReview } from "./confusion-cards";
@@ -165,6 +167,14 @@ const enabledScenarios = scenarios.filter(scenario => scenario.event !== "live" 
 if (selectedNames) beforeAll(async () => {
   vi.stubGlobal("fetch", vi.fn(() => { throw new Error("模拟禁止联网"); }));
   SQL = await initSqlJs();
+  if (process.env.SHUSHUGO_LIVE_DB) {
+    // 从快照最后一个有作答的日子的次日起推：快照里已有起推当天的作答，流水对账和当天额度都对不上。
+    const peek = new SQL.Database(new Uint8Array(readFileSync(process.env.SHUSHUGO_LIVE_DB)));
+    const last = String(peek.exec("SELECT MAX(d) FROM (SELECT MAX(reviewed_on) d FROM reviews UNION ALL SELECT MAX(reviewed_on) FROM grammar_reviews)")[0]?.values[0][0] ?? "2026-10-28");
+    peek.close();
+    const next = new Date(`${last}T12:00:00`); next.setDate(next.getDate() + 1);
+    liveStart = `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, "0")}-${String(next.getDate()).padStart(2, "0")}`;
+  }
   await loadMixedCardData();
   // Vitest runner 的部分动态 import 会回到实际模块；实际导出的落盘入口也封住。
   const storage = await vi.importActual<typeof import("./storage")>("./storage");
@@ -179,7 +189,7 @@ async function simulate(scenario: Scenario): Promise<Simulation> {
   const began = performance.now();
   const timeline = scenario.event === "timeline";
   const live = scenario.event === "live";
-  const start = timeline ? new Date(2026, 9, 13, 9).getTime() : live ? new Date(2026, 9, 29, 9).getTime() : START;
+  const start = timeline ? new Date(2026, 9, 13, 9).getTime() : live ? new Date(`${liveStart}T09:00:00`).getTime() : START;
   preferences.clear();
   vi.setSystemTime(start);
   if (live) {
@@ -421,11 +431,12 @@ async function simulate(scenario: Scenario): Promise<Simulation> {
     expect(scenario.days).toBeGreaterThanOrEqual(live ? 30 : 45);
     if (scenario.event === "upgrade") expect(result.upgradedNew).toBeGreaterThan(0);
     if (timeline || live) {
-      expect(result.days.filter(day => day.date >= "2026-10-29")).toHaveLength(30);
+      const from = live ? liveStart : "2026-10-29";
+      expect(result.days.filter(day => day.date >= from)).toHaveLength(30);
       expect(firstValue<number>(`SELECT COUNT(DISTINCT r.grammar_id) FROM grammar_reviews r
         JOIN grammar_points g ON g.id=r.grammar_id JOIN level_prior_baselines b
           ON b.entity='grammar' AND b.entity_key=CAST(g.id AS TEXT)
-        WHERE g.level='N4' AND r.reviewed_on >= '2026-10-29'`, [], 0), "回补范围中的N4先验确实出题").toBeGreaterThan(0);
+        WHERE g.level='N4' AND r.reviewed_on >= ?`, [from], 0), "回补范围中的N4先验确实出题").toBeGreaterThan(0);
     }
     if (scenario.event === "incident") {
       expect(result.days.slice(0, 14).every(day => day.cards.grammar.prior === 0)).toBe(true);
@@ -558,13 +569,14 @@ if (!selectedNames && RUN) describe.each(scenarios)("多日负荷：$name", scen
     expect(simulation.days.filter(day => day.cards.grammar.fresh + day.cards.grammar.prior > day.grammarGoal + PRIOR_QUOTA_MAX)
       .map(day => `D${day.day}: ${JSON.stringify(day.cards.grammar)}`)).toEqual([]);
   });
-  // KNOWN SPIKE: half N3→N1 D45 语法113=普通复习100+新学5+先验8，额外重学114次。
-  // KNOWN SPIKE: forgot N5→N3 D45 语法276=普通复习271+新学5+先验0，额外重学498次；先验≤8不能限住已验证卡的复习。
-  // 来源：grammar-quiz.ts:264-268 的 grammarReviewCap=0 沿用600；fsrs-store.ts:518-520 只排除待验证先验，普通复习无60条总闸。
-  (scenario.style === "half" || scenario.style === "forgot" ? test.fails : test)("语法每日合计 ≤60（缺席回归只豁免普通复习）", () => {
+  // 2026-10-29 之前这里是两个 it.fails：half N3→N1 D45 语法 113（普通复习 100）、forgot N5→N3 D45 语法 276（普通复习 271）。
+  // 原因有两层：grammarReviewCap=0 沿用单词上限约 600；而且上限只限「此刻到期多少」，答掉一条就再补一条，一天总量不封顶。
+  // 修法见 grammar-quiz.ts 的 GRAMMAR_DEFAULT_REVIEW_CAP 和 planIds：默认 60，且扣掉今天已复习的。
+  // 现在一天最多 = 普通复习上限 60 + 新学 5 + 先验 PRIOR_QUOTA_MAX，忘得再多也只是重学次数多，条数不涨。
+  test("语法普通复习每天 ≤ GRAMMAR_DEFAULT_REVIEW_CAP，合计 ≤ 上限 + 新学 + 先验上限", () => {
     expect(simulation.days.filter(day => {
       const g = day.cards.grammar;
-      return g.total - (scenario.event === "absence" && day.day >= 41 && day.day <= 47 ? g.review : 0) > 60;
+      return g.review > GRAMMAR_DEFAULT_REVIEW_CAP || g.total > GRAMMAR_DEFAULT_REVIEW_CAP + day.grammarGoal + PRIOR_QUOTA_MAX;
     }).map(day => `D${day.day}: ${JSON.stringify(day.cards.grammar)}`)).toEqual([]);
   });
   test("语法每日合计 ≤前7天中位数×4+20（缺席回归只豁免普通复习）", () => {
