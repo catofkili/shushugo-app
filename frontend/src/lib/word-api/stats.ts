@@ -4,6 +4,7 @@ import { grammarPlanDone, grammarPlanRemaining, PLAN_GRAMMAR_LEVEL } from "../gr
 import { priorBaselineSql } from "../plan-level-order";
 import { priorGateSql } from "../prior-pacing";
 import { getDatabase } from "../database";
+import { notifyProgressUpdated } from "../progress-events";
 import { loadMixedCardData, mixedCardCounts, mixedCardDataLoaded } from "../mixed-cards";
 import { firstValue, rowsFor, studyDayEnd, today } from "../study-core";
 import type { WordSessionOptions } from "../study-types";
@@ -232,7 +233,9 @@ export function getWordStats(
   // 同时把加载踢出去 —— 下一次 PROGRESS_UPDATED 重算就有数了（首页和小路都挂着这个事件）。
   const mixedCards = lazy(() => {
     if (!mixedCardDataLoaded()) {
-      void loadMixedCardData();
+      // 加载完必须喊一次进度更新：以前只是「踢出去」，主页要等下一次答题才重算，
+      // 于是冷启动后主页一直少算汉字 / 辨析（2026-10-31 实测 600，做完 12 张减负回来变 617）。
+      void loadMixedCardData().then(notifyProgressUpdated, () => undefined);
       return { kanjiDone: 0, kanjiRemaining: 0, confusionDone: 0, confusionRemaining: 0 };
     }
     return mixedCardCounts(getDatabase());
