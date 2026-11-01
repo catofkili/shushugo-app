@@ -667,11 +667,12 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
   }, [studyIdleLimitMs]);
 
   useEffect(() => {
-    trackingActiveRef.current = !dailyReviewOverlay && Boolean(card?.id || kanjiCard);
+    // 混合模式里语法 / 汉字 / 辨析卡也算在背：单词背完只剩它们时，倒计时不能停。
+    trackingActiveRef.current = !dailyReviewOverlay && Boolean(card?.id || other);
     if (focusSnapshot.status !== "break") focusBreakRef.current = false;
     // 换卡本身就是一次交互(刚点过评分)，顺手把上一段结掉。
     noteActiveInteraction();
-  }, [card?.id, dailyReviewOverlay, kanjiCard, noteActiveInteraction, unitKey, focusSnapshot.status]);
+  }, [card?.id, dailyReviewOverlay, other, noteActiveInteraction, unitKey, focusSnapshot.status]);
 
   useEffect(() => {
     const entered = enterStudyFocus(FOCUS_SOURCE);
@@ -727,7 +728,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     unreportedFocusMsRef.current = 0;
     const next = getStudyFocusSnapshot();
     setFocusSnapshot(next);
-    if (card?.id || kanjiCard) trackingActiveRef.current = true;
+    if (card?.id || other) trackingActiveRef.current = true;
   };
 
   const stopFocusCountdown = () => {
@@ -737,7 +738,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     const next = stopStudyFocus();
     setFocusSnapshot(next);
     studyClockRef.current = createStudyClock(Date.now());
-    if (card?.id || kanjiCard) trackingActiveRef.current = true;
+    if (card?.id || other) trackingActiveRef.current = true;
   };
 
   const claimDailyCompletionRewards = () => {
@@ -1601,11 +1602,12 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     return (
       <div style={accent} className={`word-study-shell mx-auto flex max-w-4xl flex-col justify-center lg:max-w-[1200px] ${kanjiCard ? "kanji-match-shell" : ""}`}>
         <div className="mb-2 flex items-center gap-2 lg:mx-auto lg:w-[min(900px,100%)]">
-          <span className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-bold !text-[#2f3333]" style={{ background: "var(--quiz-accent)" }}>
+          <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-lg px-2 py-1 text-xs font-bold !text-[#2f3333]" style={{ background: "var(--quiz-accent)" }}>
             <Shuffle size={13} />
             {kanjiCard ? "单独汉字" : "疑难辨析"}
           </span>
-          <span className="text-xs text-white/45">{kanjiCard ? "考的是读音，不考写法" : "回想区别后翻面自评"}</span>
+          <span className="min-w-0 truncate text-xs text-white/45">{kanjiCard ? "考的是读音，不考写法" : "回想区别后翻面自评"}</span>
+          {focusSnapshot.status === "running" && <StudyFocusChip nextReward={focusSnapshot.nextReward} />}
           <button
             onClick={undo}
             disabled={!undoEnabled}
@@ -1638,13 +1640,14 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
       >
         <div className="mb-2 flex items-center gap-2 lg:mx-auto lg:w-[min(900px,100%)]">
           <span
-            className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-bold !text-[#2f3333]"
+            className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-lg px-2 py-1 text-xs font-bold !text-[#2f3333]"
             style={{ background: "var(--quiz-accent)" }}
           >
             <Shuffle size={13} />
             语法 · {grammarCard.level}
           </span>
-          <span className="text-xs text-white/45">和语法考题是同一份进度</span>
+          <span className="min-w-0 truncate text-xs text-white/45">和语法考题是同一份进度</span>
+          {focusSnapshot.status === "running" && <StudyFocusChip nextReward={focusSnapshot.nextReward} />}
           {/* 语法卡把整页顶掉了，工具栏跟着不在 —— 撤销得在这儿自带一颗，
               否则手滑点错一条语法当场就没救。 */}
           <button
