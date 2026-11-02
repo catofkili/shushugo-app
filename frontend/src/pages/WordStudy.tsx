@@ -37,7 +37,6 @@ import { UNDO_LIMIT } from "../lib/word-api/undo-stack";
 import type { WordSessionOptions } from "../lib/study-types";
 import { DistinctionSheet } from "../components/DistinctionSheet";
 import { StudyFocusChest } from "../components/StudyFocusChest";
-import { StudyFocusNextPicker } from "../components/StudyFocusMinutes";
 import { Paywall } from "../components/Paywall";
 import { ScrollArea } from "../components/ScrollArea";
 import { useEntitlements } from "../hooks/useEntitlements";
@@ -57,7 +56,7 @@ import { yieldToPaint } from "../lib/yield-to-paint";
 import { CapybaraWalk } from "../components/CapybaraMascot";
 import { accrueStudyTime, createStudyClock, drainStudySeconds, noteStudyInteraction, STUDY_IDLE_LIMIT_MS } from "../lib/study-clock";
 import { useApp } from "../app/AppContext";
-import { claimStudyFocusReward, continueStudyFocus, enterStudyFocus, finishStudyFocusAtDailyCompletion, getStudyFocusSnapshot, isStudyFocusArmed, recordStudyFocusAnswer, recordStudyFocusTime, leaveStudyFocus, resumeStudyFocus, sameStudyFocusState, setStudyFocusArmed, startStudyFocus, stopStudyFocus, STUDY_FOCUS_BASELINE_DAYS, undoStudyFocusAnswer, type StudyFocusSnapshot } from "../lib/study-focus";
+import { claimStudyFocusReward, continueStudyFocus, enterStudyFocus, finishStudyFocusAtDailyCompletion, getStudyFocusMinutes, getStudyFocusSnapshot, isStudyFocusArmed, recordStudyFocusAnswer, recordStudyFocusTime, leaveStudyFocus, resumeStudyFocus, sameStudyFocusState, setStudyFocusArmed, startStudyFocus, stopStudyFocus, STUDY_FOCUS_BASELINE_DAYS, undoStudyFocusAnswer, type StudyFocusSnapshot } from "../lib/study-focus";
 import { useStudyActivity, useStudyBreakTabBar } from "../hooks/useStudyActivity";
 
 import { SpellingCardView } from "../features/spelling/SpellingCardView";
@@ -1587,11 +1586,11 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
               )}
               <div className="study-focus-actions">
                 <button className="study-focus-secondary" onClick={stopFocusCountdown} disabled={summary?.qualified && reward > 0 && !focusSnapshot.rewardClaimed}>之后不要倒计时</button>
-              <StudyFocusNextPicker />
                 <button className="study-focus-primary" onClick={continueFocusCountdown} disabled={summary?.qualified && reward > 0 && !focusSnapshot.rewardClaimed}>
                   继续倒计时
                 </button>
               </div>
+              <span className="study-focus-next">继续后开始下一段 {getStudyFocusMinutes()}:00</span>
         </section>
       </ScrollArea>,
       document.body
