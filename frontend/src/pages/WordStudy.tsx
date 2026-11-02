@@ -66,6 +66,7 @@ import { today } from "../lib/study-core";
 import { DailyReviewInvite, DailyReviewTopBar, DailyReviewComplete } from "../features/word-study/DailyReviewRound";
 import { answerDailyReviewRound, createDailyReviewRound, dailyReviewRoundDone, nextDailyReviewId, roundWritesFsrs, type DailyReviewRound } from "../lib/word-api/daily-review-round";
 import { StreakSpark } from "../components/streak/StreakMoments";
+import { ListeningPrompt, useListeningReverseCard } from "../features/word-study/ListeningPrompt";
 
 interface WordStudyProps {
   initialMode?: StudyMode;
@@ -1107,6 +1108,9 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     return () => { previewRunRef.current += 1; };
   }, [card, stats, previewEligible, runPreviews]);
 
+  const listening = useListeningReverseCard(card, phase, spellingKey, preferences.voiceId,
+    !loading && !revealed && !other && !dailyReviewOverlay && focusSnapshot.status !== "break");
+
   const revealAnswer = useCallback(() => {
     if (!card || loading || revealed || submitting || reliefActive || dailyReviewOverlay) return;
     revealedAtRef.current = performance.now();
@@ -1127,8 +1131,9 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
       setNoteMemoryOpen(false);
       setActivePopover(null);
     }
-    speakCard(card);
-  }, [buddySession, card, dailyReviewOverlay, loading, previewEligible, reliefActive, revealed, runPreviews, speakCard, submitting]);
+    // 听音题出卡已经播过；失败退回看字后也不在翻面重试同一条音频。
+    if (!listening.candidate) speakCard(card);
+  }, [buddySession, card, dailyReviewOverlay, listening.candidate, loading, previewEligible, reliefActive, revealed, runPreviews, speakCard, submitting]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -1990,6 +1995,9 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
                   {card.pos && (
                     <span className="rounded-sm bg-[#81D8CF]/10 px-1.5 py-0.5 text-[11px] font-bold text-white/60">{card.pos}</span>
                   )}
+                  {listening.active && (
+                    <span className="rounded-sm border border-white/15 px-1.5 py-0.5 text-[11px] font-bold text-white/60">听音</span>
+                  )}
                   {/* 自/他动词是高频易错属性，统一放在题目面，翻面前就能看到。 */}
                   <TransitivityBadge card={card} />
                   {card.honorificLabel && (
@@ -2012,7 +2020,9 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
                 <ScrollArea className="max-h-24 w-full px-1 sm:max-h-28">
                   {isUnitKanji ? (
                     <p className="jp-serif break-words text-4xl font-semibold leading-tight sm:text-6xl lg:text-7xl">{unitTarget?.text}</p>
-                  ) : isReversePhase ? (
+                  ) : isReversePhase ? listening.active ? (
+                    <ListeningPrompt onReplay={listening.replay} />
+                  ) : (
                     <>
                       <p className="jp-serif break-words text-4xl font-semibold leading-tight sm:text-6xl lg:text-7xl">{primaryAnswerText(card)}</p>
                       <ReadingLine card={card} className="jp mt-1 text-xl text-white/72 sm:text-2xl lg:text-3xl" />
@@ -2031,6 +2041,12 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
                 <div className="zoo-reveal-in w-full min-w-0">
                   {isReversePhase ? (
                     <>
+                      {listening.active && (
+                        <>
+                          <p className="jp-serif text-5xl font-semibold leading-none sm:text-6xl lg:text-7xl"><KanjiAnswer card={card} /></p>
+                          <ReadingLine card={card} className="jp mb-6 mt-2 text-2xl text-white/86 sm:text-3xl lg:text-4xl" />
+                        </>
+                      )}
                       <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">释义</p>
                       <p className="mx-auto mt-4 max-w-2xl text-2xl font-semibold leading-9 text-white/88">{card.meaning}</p>
                     </>
@@ -2214,7 +2230,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
               ) : (
                 <div>
                   {/* 翻面前这一屏最大的字必须是题面（在卡片上方），这里只留一句小提示；「答案已隐藏」大字是废话 */}
-                  <p className="text-sm text-white/55">{isReversePhase ? "想一想中文意思" : "想一想怎么读、怎么写"}</p>
+                  {!listening.active && <p className="text-sm text-white/55">{isReversePhase ? "想一想中文意思" : "想一想怎么读、怎么写"}</p>}
                 </div>
               )}
             </ScrollArea>
