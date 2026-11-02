@@ -62,7 +62,9 @@ describe("GrammarCard title furigana", () => {
       const revealed = renderToStaticMarkup(
         <GrammarCard card={{ ...card, pattern: point.title, meaning: point.meaning }} revealed onReveal={() => undefined} onAnswer={() => undefined} />
       );
-      expect(revealed).toContain(point.meaning);
+      // 读音在答案面的表格里：每个单元格各占一格，整段原文已不是连续字符串
+      expect(revealed).toContain(id === "pdf-n5-015" ? "いっぽん" : "ついたち");
+      expect(revealed).toContain("border-t");
     }
     const title = renderToStaticMarkup(<JapaneseRuby text={point.title} furigana={getGrammarTitleFurigana(id)} />);
     expect(title).not.toContain("<rt>");

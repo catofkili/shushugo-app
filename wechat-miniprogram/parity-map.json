@@ -281,7 +281,10 @@
     },
     {
       "web": "frontend/src/pages/ImmersiveGrammar.tsx",
-      "mini": []
+      "mini": [
+        "frontend/src/pages/ImmersiveGrammar.tsx"
+      ],
+      "reason": "Taro 的 grammar-pages 路由直接编译这份 TSX；语法中文意的表格由共享的 GrammarMeaning 画，不另写小程序页面。"
     },
     {
       "web": "frontend/src/pages/JlptPlanPage.tsx",
@@ -656,6 +659,20 @@
         "frontend/src/components/CapybaraMascot.tsx"
       ],
       "reason": "Taro 小程序直接编译这份共享源码；不维护第二份页面。"
+    },
+    {
+      "web": "frontend/src/components/GrammarMeaning.tsx",
+      "mini": [
+        "frontend/src/components/GrammarMeaning.tsx"
+      ],
+      "reason": "Taro 小程序直接编译这份共享源码（div 网格画表格，不用小程序没有的 <table>）；不维护第二份页面。"
+    },
+    {
+      "web": "frontend/src/components/GrammarPointPopover.tsx",
+      "mini": [
+        "frontend/src/components/GrammarPointPopover.tsx"
+      ],
+      "reason": "Taro 小程序直接编译这份共享源码；本次只把中文意换成首行摘要。"
     },
     {
       "web": "frontend/src/components/MascotSay.tsx",

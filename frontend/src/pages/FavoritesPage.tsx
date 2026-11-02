@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState, type CSSProperties } from "react";
+import { meaningSummary } from "../lib/grammar-meaning";
 import { FolderPlus, Pencil, Trash2 } from "lucide-react";
 import { Sticker } from "../components/CapybaraMascot";
 import { JapaneseRuby } from "../components/JapaneseRuby";
@@ -78,7 +79,7 @@ export const FavoritesPage = ({ onOpenGrammar, onStudyPicked }: FavoritesPagePro
       if (!alive) return;
       setGrammarInfo(new Map(grammarPoints.map((point) => [
         point.id,
-        { title: point.title, meaning: point.meaning, level: point.level }
+        { title: point.title, meaning: meaningSummary(point.meaning), level: point.level }
       ])));
     });
     return () => { alive = false; };

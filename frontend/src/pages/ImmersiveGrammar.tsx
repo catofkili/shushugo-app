@@ -3,6 +3,7 @@ import { ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, Star, StickyNote, X
 import { FloatingDoodlePen } from "../components/FloatingDoodlePen";
 import { ScrollArea } from "../components/ScrollArea";
 import { GrammarTermHint } from "../components/GrammarTermHint";
+import { GrammarMeaning } from "../components/GrammarMeaning";
 import { JapaneseRuby } from "../components/JapaneseRuby";
 import { grammarKeyPointFor } from "../lib/grammar-key-points";
 import { grammarPoints } from "../data/grammar";
@@ -110,7 +111,7 @@ export const ImmersiveGrammar = ({ selectedLevel, onBack, onOpenFavorites, onMar
           <div className="min-w-0">
             <span className="rounded-sm border border-white/15 px-2 py-1 text-xs font-bold text-white/62">{sequence?.label}</span>
             <h1 data-grammar-point-id={point.id} data-grammar-highlight-block="title" className="jp-serif mt-4 text-5xl font-semibold leading-tight"><JapaneseRuby text={point.title} furigana={getGrammarTitleFurigana(point.id)} /></h1>
-            <p data-grammar-point-id={point.id} data-grammar-highlight-block="meaning" className="mt-3 text-xl leading-8 text-white/82">{point.meaning}</p>
+            <GrammarMeaning meaning={point.meaning} data-grammar-point-id={point.id} data-grammar-highlight-block="meaning" className="mt-3 text-xl leading-8 text-white/82" />
           </div>
           <button
             onClick={() => {

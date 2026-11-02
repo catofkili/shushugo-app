@@ -3,6 +3,7 @@ import { playFlip } from "../../lib/zoo-sounds";
 import { triggerRevealHaptic } from "../../lib/haptics";
 import { Eye } from "lucide-react";
 import { ScrollArea } from "../../components/ScrollArea";
+import { GrammarMeaning } from "../../components/GrammarMeaning";
 import { JapaneseRuby } from "../../components/JapaneseRuby";
 import { GrammarTermHint } from "../../components/GrammarTermHint";
 import { answerHotkeyLabels, answerOptions } from "../word-study/word-study-utils";
@@ -168,9 +169,7 @@ export const GrammarCard = ({ card, revealed, onReveal, onAnswer, accent = QUIZ_
             </p>
             {/* 答案下半：中文意 */}
             <p className="mt-5 text-xs font-bold uppercase tracking-[0.18em] text-white/55">中文意</p>
-            <p className="mx-auto mt-2 max-w-2xl break-words text-lg leading-7 text-white/85 sm:text-xl">
-              {card.meaning || "—"}
-            </p>
+            <GrammarMeaning meaning={card.meaning || "—"} className="mx-auto mt-2 max-w-2xl break-words text-lg leading-7 text-white/85 sm:text-xl" />
             {kanjiHint && (
               <p
                 className="mx-auto mt-3 max-w-2xl break-words rounded-2xl px-3 py-2 text-sm leading-6"

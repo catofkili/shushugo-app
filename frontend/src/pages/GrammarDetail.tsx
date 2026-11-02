@@ -2,6 +2,7 @@ import { useEffect, useState, type CSSProperties } from "react";
 import { ArrowLeft, StickyNote, X } from "lucide-react";
 import { ExampleSentence } from "../components/ExampleSentence";
 import { GrammarTermHint } from "../components/GrammarTermHint";
+import { GrammarMeaning } from "../components/GrammarMeaning";
 import { JapaneseRuby } from "../components/JapaneseRuby";
 import { ReviewButton } from "../components/ReviewButton";
 import { grammarKanjiHintFor, grammarKeyPointFor } from "../lib/grammar-key-points";
@@ -52,7 +53,7 @@ export const GrammarDetail = ({
           <div>
             <p className="text-xs font-bold text-[#81D8CF]">{grammarSequence(point).label} · {MASTERY_LABEL[mastery]}</p>
             <h1 data-grammar-point-id={point.id} data-grammar-highlight-block="title" className="jp-serif mt-3 text-[32px] font-semibold leading-snug md:text-6xl md:leading-none text-[#343838] dark:text-[#f4efe4]"><JapaneseRuby text={point.title} furigana={getGrammarTitleFurigana(point.id)} /></h1>
-            <p data-grammar-point-id={point.id} data-grammar-highlight-block="meaning" className="mt-4 text-xl text-[#f9faf7] dark:text-zinc-200">{point.meaning}</p>
+            <GrammarMeaning meaning={point.meaning} data-grammar-point-id={point.id} data-grammar-highlight-block="meaning" className="mt-4 text-xl text-[#f9faf7] dark:text-zinc-200" />
             <p data-grammar-point-id={point.id} data-grammar-highlight-block="formation" className="jp mt-4 inline-block rounded-2xl border-l-2 border-[#81D8CF] bg-[#81D8CF]/12 px-3 py-2 text-white">
               <GrammarTermHint text={point.connection ?? point.structure} />
             </p>

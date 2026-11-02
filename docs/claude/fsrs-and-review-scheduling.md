@@ -908,3 +908,23 @@ cd frontend && SHUSHUGO_LOAD_SIM=1 npx vitest run src/lib/daily-load-simulation.
   真实库往后推，第一天普通复习 52（作者自己的计划上限）+ 先验 8 = 60，之后逐日下降。
 - 上限装不下时仍是纯随机抽（`fsrsDueWordIds`，用户 09-18 定的），被挡下的第二天照常是到期状态。
 - 圆环上的复习建议（`grammarReviewPool`）显示的是当天计划总量（上限截断），不扣「已复习」—— 它要的是总量，不是剩余量。
+
+## 语法中文意里的表格（2026-11-02，版本 `2026-11-02-grammar-tables-v1`）
+
+用户看到「一本・三本・六本・八本・十本」的中文意是一整段（「……分别读いっぽん・さんぼん……、匹（……）、杯（……）同规律」），手机上读不下去，要求这类手工改成表格。
+
+**格式：表格写在 `grammar.ts` 的 `meaning` 字符串里，不新增字段。** 含全角「｜」的行是表格行，相邻的表格行合成一张表，第一行是表头，其余行（没有「｜」）是普通段落，行与行用 `\n` 分开。表头第一格可以留空（`｜肯定｜否定`）；表行可以比表头短（日期表最后一行只有两格），不许更长。解析在 `lib/grammar-meaning.ts`（`parseMeaning` / `meaningSummary`），渲染在 `components/GrammarMeaning.tsx`。
+
+**为什么不加字段：** `meaning` 是种子行、整库快照、云同步、搜索、出厂库校验都认的那一列；新增字段要动 `local-schema.sql`、同步表、`build-furigana` 的 12 字段比对、小程序数据层，为十二张卡不值得。一个字符串带着表格走，旧版本客户端最差是把「｜」原样显示。
+
+⚠️ **不用 `<table>`，用 div + CSS grid**（`gridTemplateColumns: repeat(n, auto)`）：Taro 的小程序模板没有 `<table>`，和 `GrammarFoundationPage` 里写过的同一条坑。没有表格的中文意仍然渲染成原来的单个 `<p>`，两条路径行为一致，测试 `grammar-meaning.test.ts` 钉着。
+
+⚠️ **单行位置只放第一行**（`meaningSummary`）：题库排行（`GrammarQuiz.tsx`）、语法列表卡、收藏页回填、例句里的语法气泡（`GrammarPointPopover`）。别在这些位置直接渲染 `meaning`，否则整张表被摊成一长串带「｜」的文字。以后新增显示 `point.meaning` 的位置，要么用 `<GrammarMeaning>`，要么用 `meaningSummary`。写表时第一行（表前的说明句）要能单独读通，例如「静か（安静）的敬体：」。
+
+**改写的十二条（pdf-n5-014 / 015 / 016 / 018 / 019 / 020 / 021 / 022 / 029 / 030 / 034 / 035）：** 序数 `～目／～番目`、本匹杯读音（数 × 三个量词的 5×3 表）、日期读音（日期｜读音 成对排四列，十一个日期六行装下）、自他动词（类｜例｜意思）、ます／て／た／ない形（类或词尾｜变法｜例）、两个形容词各两种文体（现在／过去 × 肯定／否定）。`explanation`、`usageNotes`、例句不动。pattern 与 id 不变，所以进度、错题、收藏都原样保留，不登记重命名。
+
+内容管线照上一节：改 `grammar.ts` → `build:furigana`（Web / iOS 出厂库一起重写；`ios/App/App/public/nihongo.db` 是 gitignored 的，新开 worktree 要先从主目录拷一份，否则脚本 ENOENT）→ `build:kanji-unit-index` → 小程序 `build-shared`、`build-data` → Taro `build:weapp`。`GRAMMAR_SEED_VERSION` 和 `build-furigana.mjs` 里的版本、`grammar_key_points.json` 的 `version` 三处同步改；行数仍是 753。
+
+**小程序包体：** `GrammarMeaning.tsx` 和 `grammar-meaning.ts` 被多个分包各编一份，`verify-package-gates.mjs` 的两张允许清单（核心模块 / 页面组件重复）各登记了一条，理由是两者都无模块级状态。主包 1,898,664，没有增加。`parity-map.json` 里 `ImmersiveGrammar` 原来是 `mini: []` 的占位，实际 Taro 的 grammar-pages 路由编译它，已改成指向自身。
+
+验证：用临时预览页在 390px 宽下逐条看过十二张表（本匹杯五行三列、日期四列、て形八行三列都不溢出、不横滚），预览页已删。没有跑真机 / 开发者工具。
