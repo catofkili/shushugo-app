@@ -8,9 +8,12 @@
 import type { WordAnswer } from "../types/vocabulary";
 import { getDatabase } from "./database";
 import { getState, persistSoon, rowsFor, setState, studyDate } from "./database/db-utils";
-import { claimStudyFocusYuzu, nextStudyFocusYuzu, YUZU } from "./yuzu";
+import {
+  claimStudyFocusYuzu, DEFAULT_STUDY_FOCUS_MINUTES, focusMinimumMs, focusMinimumWords, nextStudyFocusYuzu, STUDY_FOCUS_MINUTES, YUZU
+} from "./yuzu";
 
-export const STUDY_FOCUS_WINDOW_MS = 10 * 60 * 1000;
+/** 后台观测窗口（基线）永远是 10 分钟；倒计时那一段的长度可调，见 getStudyFocusMinutes。 */
+export const STUDY_FOCUS_WINDOW_MS = DEFAULT_STUDY_FOCUS_MINUTES * 60 * 1000;
 export const STUDY_FOCUS_REWARDS = YUZU.focus;
 export const STUDY_FOCUS_REWARD_MIN_MS = YUZU.focusMinimumMs;
 export const STUDY_FOCUS_PARTIAL_KEY = "study_focus_partial_windows";
@@ -22,6 +25,22 @@ export const STUDY_FOCUS_MIN_WORDS = YUZU.focusMinimumWords;
 /** 对比只看最近这么多天的基线：半年前的自己不是「平时」。 */
 export const STUDY_FOCUS_BASELINE_DAYS = 30;
 const ARMED_KEY = "mn-study-focus-armed";
+const MINUTES_KEY = "mn-study-focus-minutes";
+
+/** 倒计时每段多长（分钟）。设备偏好，不同步；新的一段才按新值走，已经开始的一段不改。 */
+export const getStudyFocusMinutes = (): number => {
+  try {
+    const saved = Number(localStorage.getItem(MINUTES_KEY));
+    return STUDY_FOCUS_MINUTES.includes(saved) ? saved : DEFAULT_STUDY_FOCUS_MINUTES;
+  } catch { return DEFAULT_STUDY_FOCUS_MINUTES; }
+};
+export const setStudyFocusMinutes = (minutes: number): void => {
+  if (!STUDY_FOCUS_MINUTES.includes(minutes)) return;
+  try { localStorage.setItem(MINUTES_KEY, String(minutes)); } catch { /* 存不下就只在这一次生效 */ }
+  // 没有倒计时时，缓存的「下一段能领多少」是按偏好时长算的，作废重算；
+  // 有倒计时（跑着或在休息页）时缓存属于那一段，领完之后休息页还要显示「已领取 N」，不能动。
+  try { const current = runtime(); if (!current.focus) current.reward = null; } catch { /* 库还没开就没有缓存 */ }
+};
 
 /** 主页那个勾：这台设备上进背词页时要不要自动开倒计时。设备偏好，不同步。 */
 export const isStudyFocusArmed = (): boolean => {
@@ -50,18 +69,23 @@ export interface StudyFocusCounts {
   forgotten: number;
 }
 export interface StudyFocusSummary extends StudyFocusCounts {
+  /** 这一段的时长（分钟）与它要背够的词数：门槛随时长按比例走。 */
+  minutes: number;
+  minWords: number;
   /** 0–100；没有作答时为 null。只是本轮自评，不能称为长期保持率。 */
   rememberedRate: number | null;
-  /** 这段背够 STUDY_FOCUS_MIN_WORDS 个词才算数：不够的不发柚子。 */
+  /** 这段背够 summary.minWords 个词才算数：不够的不发柚子。 */
   qualified: boolean;
   baselineWindows: number;
   baselineRemembered: number | null;
   rememberedDelta: number | null;
-  /** 每十个有效学习分钟的「记得」词数变化；基线为 0 时不计算百分比。 */
+  /** 「记得」词数相对基线的变化率（基线按本段时长折算）；基线为 0 时不计算百分比。 */
   efficiencyChangePercent: number | null;
 }
 export interface StudyFocusSnapshot {
   status: "off" | "running" | "break";
+  /** 当前（或刚结束）这一段的时长；没有倒计时时是下一段将用的时长。 */
+  minutes: number;
   remainingSeconds: number;
   focusWindowId: string | null;
   activeMs: number;
@@ -78,6 +102,8 @@ interface Runtime {
   pausedAt: number;
   baselines: Record<string, StudyWindow>;
   focus: StudyWindow | null;
+  /** focus 这一段开始时定下的长度；基线窗口不受影响。 */
+  focusMs: number;
   completedAt: number | null;
   summary: StudyFocusSummary | null;
   unsavedMs: number;
@@ -120,7 +146,7 @@ const runtime = (): Runtime => {
         baselines = Object.fromEntries(Object.entries(saved).filter(([, value]) => validWindow(value)));
       }
     } catch { /* 只丢损坏的未满窗口；历史记录和奖励账本不受影响。 */ }
-    current = { source: null, pausedFrom: null, pausedAt: 0, baselines, focus: null, completedAt: null, summary: null, unsavedMs: 0, reward: null, rewardClaimed: false, answerHistory: [] };
+    current = { source: null, pausedFrom: null, pausedAt: 0, baselines, focus: null, focusMs: STUDY_FOCUS_WINDOW_MS, completedAt: null, summary: null, unsavedMs: 0, reward: null, rewardClaimed: false, answerHistory: [] };
     runtimes.set(db, current);
   }
   return current;
@@ -142,13 +168,17 @@ export const studyFocusCounts = (answers: Answers): StudyFocusCounts => {
   };
 };
 
-export const summarizeStudyFocus = (answers: Answers, previous: StudyFocusCounts[]): StudyFocusSummary => {
+export const summarizeStudyFocus = (answers: Answers, previous: StudyFocusCounts[], minutes = DEFAULT_STUDY_FOCUS_MINUTES): StudyFocusSummary => {
   const counts = studyFocusCounts(answers);
-  const baselineRemembered = previous.length ? previous.reduce((sum, window) => sum + window.remembered, 0) / previous.length : null;
+  // 基线是每 10 分钟的平均，折成这一段的长度再比。
+  const baselineRemembered = previous.length
+    ? previous.reduce((sum, window) => sum + window.remembered, 0) / previous.length * minutes / DEFAULT_STUDY_FOCUS_MINUTES : null;
   return {
     ...counts,
+    minutes,
+    minWords: focusMinimumWords(minutes),
     rememberedRate: counts.words ? counts.remembered / counts.words * 100 : null,
-    qualified: counts.words >= STUDY_FOCUS_MIN_WORDS,
+    qualified: counts.words >= focusMinimumWords(minutes),
     baselineWindows: previous.length,
     baselineRemembered,
     rememberedDelta: baselineRemembered === null ? null : counts.remembered - baselineRemembered,
@@ -175,21 +205,28 @@ const previousFocusBaselines = (source: string, startedAt: number): StudyFocusCo
 [source, startedAt, startedAt - STUDY_FOCUS_BASELINE_DAYS * 86_400_000, STUDY_FOCUS_MIN_WORDS])
   .map((row) => ({ words: Number(row.words), remembered: Number(row.remembered), fuzzy: Number(row.fuzzy), forgotten: Number(row.forgotten) }));
 
-const cachedNextReward = (current: Runtime, day: string): number => {
-  if (current.reward?.day !== day) current.reward = { day, value: nextStudyFocusYuzu(day) };
+const cachedNextReward = (current: Runtime, day: string, minutes: number): number => {
+  if (current.reward?.day !== day) current.reward = { day, value: nextStudyFocusYuzu(day, minutes) };
   return current.reward.value;
+};
+
+const beginFocus = (current: Runtime, nowMs: number): void => {
+  current.focus = newWindow(nowMs);
+  current.focusMs = getStudyFocusMinutes() * 60_000;
 };
 
 export const getStudyFocusSnapshot = (nowMs = Date.now()): StudyFocusSnapshot => {
   const current = runtime();
+  const windowMs = current.focus ? current.focusMs : getStudyFocusMinutes() * 60_000;
   return {
     status: current.summary ? "break" : current.focus ? "running" : "off",
-    remainingSeconds: Math.max(0, Math.ceil((STUDY_FOCUS_WINDOW_MS - (current.focus?.activeMs ?? 0)) / 1000)),
+    minutes: windowMs / 60_000,
+    remainingSeconds: Math.max(0, Math.ceil((windowMs - (current.focus?.activeMs ?? 0)) / 1000)),
     focusWindowId: current.focus?.id ?? null,
     activeMs: current.focus?.activeMs ?? 0,
     summary: current.summary,
     nextReward: current.summary && !current.summary.qualified
-      ? 0 : cachedNextReward(current, studyDate(new Date(current.completedAt ?? nowMs))),
+      ? 0 : cachedNextReward(current, studyDate(new Date(current.completedAt ?? nowMs)), windowMs / 60_000),
     rewardClaimed: current.rewardClaimed,
     paused: !current.source && !!current.focus
   };
@@ -200,7 +237,7 @@ export const getStudyFocusSnapshot = (nowMs = Date.now()): StudyFocusSnapshot =>
  * 不然整个背词页（连同小程序的 setData）每秒重渲一次，没开倒计时的人也一样。
  */
 export const sameStudyFocusState = (a: StudyFocusSnapshot, b: StudyFocusSnapshot): boolean =>
-  a.status === b.status && a.nextReward === b.nextReward && a.summary === b.summary && a.rewardClaimed === b.rewardClaimed;
+  a.status === b.status && a.minutes === b.minutes && a.nextReward === b.nextReward && a.summary === b.summary && a.rewardClaimed === b.rewardClaimed;
 
 export const enterStudyFocus = (source: string, nowMs = Date.now()): StudyFocusSnapshot => {
   const current = runtime();
@@ -235,7 +272,7 @@ export const resumeStudyFocus = (source: string, nowMs = Date.now()): StudyFocus
 export const recordStudyFocusTime = (activeMs: number, nowMs = Date.now(), source?: string): StudyFocusSnapshot => {
   const current = runtime();
   if (!current.source || (source !== undefined && source !== current.source) || current.summary || !Number.isFinite(activeMs) || activeMs <= 0) return getStudyFocusSnapshot(nowMs);
-  const acceptedMs = Math.min(activeMs, current.focus ? STUDY_FOCUS_WINDOW_MS - current.focus.activeMs : activeMs);
+  const acceptedMs = Math.min(activeMs, current.focus ? current.focusMs - current.focus.activeMs : activeMs);
   let remaining = acceptedMs;
   while (remaining > 0) {
     const baseline = current.baselines[current.source];
@@ -249,10 +286,10 @@ export const recordStudyFocusTime = (activeMs: number, nowMs = Date.now(), sourc
   }
   if (current.focus) {
     current.focus.activeMs += acceptedMs;
-    if (current.focus.activeMs === STUDY_FOCUS_WINDOW_MS) {
+    if (current.focus.activeMs === current.focusMs) {
       saveWindow(current.focus, "focus", current.source, nowMs);
       // 使用启用之前已完整记录的同入口窗口。当前这轮与重叠窗口不能充当自己的基线。
-      current.summary = summarizeStudyFocus(current.focus.answers, previousFocusBaselines(current.source, current.focus.startedAt));
+      current.summary = summarizeStudyFocus(current.focus.answers, previousFocusBaselines(current.source, current.focus.startedAt), current.focusMs / 60_000);
       current.completedAt = nowMs;
     }
   }
@@ -301,7 +338,7 @@ export const undoStudyFocusAnswer = (wordId: number, nowMs = Date.now()): StudyF
 export const startStudyFocus = (nowMs = Date.now()): StudyFocusSnapshot => {
   const current = runtime();
   if (current.source && !current.focus) {
-    current.focus = newWindow(nowMs);
+    beginFocus(current, nowMs);
     current.rewardClaimed = false;
   }
   return getStudyFocusSnapshot(nowMs);
@@ -313,7 +350,7 @@ export const claimStudyFocusReward = (): number => {
   if (!current.source || !current.focus || !current.summary?.qualified || current.rewardClaimed) return 0;
   const now = getStudyFocusSnapshot().nextReward;
   if (now <= 0) return 0;
-  const earned = claimStudyFocusYuzu(current.focus.id);
+  const earned = claimStudyFocusYuzu(current.focus.id, current.focusMs / 60_000);
   current.rewardClaimed = true;
   return earned;
 };
@@ -325,7 +362,7 @@ export const continueStudyFocus = (nowMs = Date.now()): boolean => {
   if (current.summary.qualified && getStudyFocusSnapshot(nowMs).nextReward > 0 && !current.rewardClaimed) return false;
   current.reward = null;
   current.rewardClaimed = false;
-  current.focus = newWindow(nowMs);
+  beginFocus(current, nowMs);
   current.summary = null;
   current.completedAt = null;
   return true;
@@ -342,11 +379,12 @@ export const stopStudyFocus = (nowMs = Date.now()): StudyFocusSnapshot => {
   return getStudyFocusSnapshot(nowMs);
 };
 
-/** 每日计划结束时，收下已专注至少 5 分钟的一段；更短的段落作废。 */
+/** 每日计划结束时，收下已专注过一半时间（10 分钟一段即 5 分钟）的一段；更短的段落作废。 */
 export const finishStudyFocusAtDailyCompletion = (nowMs = Date.now()): StudyFocusSnapshot => {
   const current = runtime();
   if (!current.source || !current.focus || current.summary) return getStudyFocusSnapshot(nowMs);
-  if (current.focus.activeMs < STUDY_FOCUS_REWARD_MIN_MS) {
+  const minutes = current.focusMs / 60_000;
+  if (current.focus.activeMs < focusMinimumMs(minutes)) {
     current.focus = null;
     current.reward = null;
     current.rewardClaimed = false;
@@ -354,7 +392,7 @@ export const finishStudyFocusAtDailyCompletion = (nowMs = Date.now()): StudyFocu
     return getStudyFocusSnapshot(nowMs);
   }
   saveWindow(current.focus, "focus", current.source, nowMs);
-  current.summary = summarizeStudyFocus(current.focus.answers, previousFocusBaselines(current.source, current.focus.startedAt));
+  current.summary = summarizeStudyFocus(current.focus.answers, previousFocusBaselines(current.source, current.focus.startedAt), minutes);
   current.completedAt = nowMs;
   persistPartial(current);
   return getStudyFocusSnapshot(nowMs);

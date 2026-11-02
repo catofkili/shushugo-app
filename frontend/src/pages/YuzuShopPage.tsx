@@ -229,7 +229,7 @@ export const YuzuShopPage = ({ onOpenPro, onOpenInvite }: { onOpenPro?: () => vo
               <li><span>连击每满 7 天</span><b>+{formatYuzu(YUZU.streak7)}</b></li>
               <li><span>加餐(每天一次)</span><b>+{formatYuzu(YUZU.encore)}</b></li>
               <li><span>解锁一个成就</span><b>+{formatYuzu(YUZU.achievement)}</b></li>
-              <li><span>专注倒计时（每天九段递减）</span><b>+{formatYuzu(YUZU.focus.reduce((sum, amount) => sum + amount, 0))}</b></li>
+              <li><span>专注倒计时（每天约 90 分钟，先多后少）</span><b>+{formatYuzu(YUZU.focus.reduce((sum, amount) => sum + amount, 0))}</b></li>
               {todayRows.length > 0 && <li className="yz-rules-today">今天:{todayRows.map((r) => `${KIND_LABEL[r.kind] ?? r.kind}${r.amount ? ` ${r.amount > 0 ? "+" : ""}${formatYuzu(r.amount)}` : ""}`).join(" · ")}</li>}
             </ul>
           )}

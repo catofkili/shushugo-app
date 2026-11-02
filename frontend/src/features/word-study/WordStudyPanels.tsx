@@ -38,8 +38,8 @@ import { Paywall } from "../../components/Paywall";
 import { canUseFeature } from "../../lib/entitlements";
 import { useEntitlements } from "../../hooks/useEntitlements";
 import { quizGroups } from "../../lib/distinction-quiz";
-import { STUDY_FOCUS_REWARD_MIN_MS, type StudyFocusSnapshot } from "../../lib/study-focus";
-import { YUZU, yuzuBalance, yuzuToday } from "../../lib/yuzu";
+import type { StudyFocusSnapshot } from "../../lib/study-focus";
+import { focusMinimumMs, focusMinimumWords, YUZU, yuzuBalance, yuzuToday } from "../../lib/yuzu";
 import { reportTeamActivity } from "../../lib/team-activity";
 import { readDayStatuses } from "../../lib/streak";
 import { StreakCelebrationGate } from "../../components/streak/StreakMoments";
@@ -302,7 +302,7 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
   const planRewardClaimed = isDailyPlanComplete && yuzuToday().some((row) => row.kind === "plan" && row.key === studyDate);
   const planReward = isDailyPlanComplete ? YUZU.plan : 0;
   const focusReward = focusSnapshot?.summary?.qualified
-    && focusSnapshot.activeMs >= STUDY_FOCUS_REWARD_MIN_MS
+    && focusSnapshot.activeMs >= focusMinimumMs(focusSnapshot.minutes)
     && focusSnapshot.nextReward > 0 ? focusSnapshot.nextReward : 0;
   const focusRewardClaimed = Boolean(focusSnapshot?.rewardClaimed);
   const pendingPlanReward = planRewardClaimed || dailyRewardsClaimed ? 0 : planReward;
@@ -533,10 +533,10 @@ export const FinishPanel = ({ stats, phase, localSeconds, onCheckIn, onContinueS
                   <ul className="fin-reward-sources">
                     <li><span>完成今日计划</span><b>+{YUZU.plan}</b><small>{planRewardClaimed || dailyRewardsClaimed ? "已到账" : "待领取"}</small></li>
                     {focusReward > 0 && (
-                      <li><span>本轮专注（满 5 分钟）</span><b>+{focusReward}</b><small>{focusRewardClaimed || dailyRewardsClaimed ? "已到账" : "待领取"}</small></li>
+                      <li><span>本轮专注（满 {focusMinimumMs(focusSnapshot?.minutes ?? 10) / 60_000} 分钟）</span><b>+{focusReward}</b><small>{focusRewardClaimed || dailyRewardsClaimed ? "已到账" : "待领取"}</small></li>
                     )}
                   </ul>
-                  <p className="fin-reward-note">专注奖励还需本轮至少背 10 个词；每日计划奖励与专注奖励在此一起领取。</p>
+                  <p className="fin-reward-note">专注奖励还需本轮至少背 {focusMinimumWords(focusSnapshot?.minutes ?? 10)} 个词；每日计划奖励与专注奖励在此一起领取。</p>
                 </div>
               </div>
             </section>

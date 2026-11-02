@@ -700,6 +700,13 @@
       "reason": "Taro 小程序直接编译这份共享源码；不维护第二份页面。"
     },
     {
+      "web": "frontend/src/components/StudyFocusMinutes.tsx",
+      "mini": [
+        "frontend/src/components/StudyFocusMinutes.tsx"
+      ],
+      "reason": "Taro 小程序直接编译这份共享源码（开场说明和休息页都用它选每段倒计时多长）；原生小程序页面已停止维护，登记自身让同源改动过配对检查。2026-11-02 倒计时单段时长可调。"
+    },
+    {
       "web": "frontend/src/components/ZooConfetti.tsx",
       "mini": [
         "frontend/src/components/ZooConfetti.tsx"

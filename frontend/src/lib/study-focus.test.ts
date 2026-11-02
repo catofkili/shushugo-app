@@ -10,13 +10,13 @@ vi.mock("./database/db-utils", async (original) => ({
 }));
 
 import {
-  claimStudyFocusReward, continueStudyFocus, enterStudyFocus, getStudyFocusSnapshot, leaveStudyFocus,
+  claimStudyFocusReward, continueStudyFocus, enterStudyFocus, getStudyFocusMinutes, getStudyFocusSnapshot, leaveStudyFocus, setStudyFocusMinutes,
   finishStudyFocusAtDailyCompletion, recordStudyFocusAnswer, recordStudyFocusTime, resumeStudyFocus, sameStudyFocusState, setStudyFocusArmed, startStudyFocus, stopStudyFocus,
   STUDY_FOCUS_MIN_WORDS, STUDY_FOCUS_PARTIAL_KEY, STUDY_FOCUS_REWARD_MIN_MS, STUDY_FOCUS_REWARDS, STUDY_FOCUS_WINDOW_MS, summarizeStudyFocus, undoStudyFocusAnswer
 } from "./study-focus";
 import { LOCAL_SCHEMA_SQL } from "./database/schema";
 import { rowsFor } from "./database/db-utils";
-import { claimStudyFocusYuzu, yuzuBalance } from "./yuzu";
+import { claimStudyFocusYuzu, DEFAULT_STUDY_FOCUS_MINUTES, focusRoundRewards, STUDY_FOCUS_MINUTES, yuzuBalance } from "./yuzu";
 import { DEVICE_LOCAL_STATE_KEYS, SYNCED_TABLES } from "./sync/tables";
 import { accrueStudyTime, createStudyClock, noteStudyInteraction } from "./study-clock";
 
@@ -269,7 +269,7 @@ describe("倒计时的递减奖励", () => {
     expect(earned).toEqual([...STUDY_FOCUS_REWARDS, 0]);
     expect(yuzuBalance()).toBe(222);
     expect(rowsFor("SELECT key FROM yuzu_ledger WHERE kind='focus' ORDER BY key").map((row) => row.key))
-      .toEqual(Array.from({ length: 9 }, (_, index) => `2026-09-28:${index + 1}`));
+      .toEqual(Array.from({ length: 17 }, (_, index) => `2026-09-28:s${index + 1}`).sort());
     const firstId = String(rowsFor("SELECT key FROM yuzu_ledger WHERE kind='focus_claim' LIMIT 1")[0].key);
     expect(claimStudyFocusYuzu(firstId)).toBe(0);
     expect(claimStudyFocusYuzu("not-a-completed-window")).toBe(0);
@@ -284,7 +284,7 @@ describe("倒计时的递减奖励", () => {
     expect(continueStudyFocus(now)).toBe(true);
     answer(1); fill(9); complete(); expect(claimStudyFocusReward()).toBe(100);
     expect(rowsFor("SELECT key FROM yuzu_ledger WHERE kind='focus' ORDER BY key"))
-      .toEqual([{ key: "2026-09-28:1" }, { key: "2026-09-29:1" }]);
+      .toEqual([{ key: "2026-09-28:s1" }, { key: "2026-09-28:s2" }, { key: "2026-09-29:s1" }, { key: "2026-09-29:s2" }]);
   });
 
   it("同一入口重新进入也读下一档，切回可见状态则续上当前段", () => {
@@ -338,5 +338,113 @@ describe("离开背词页：倒计时暂停，不归零", () => {
     startStudyFocus(now); answer(1); fill(9); complete();
     expect(leaveStudyFocus("word")).toBe(false);
     expect(getStudyFocusSnapshot(now).status).toBe("off");
+  });
+});
+
+describe("单段时长可调：一天的总量和总时长不变（2026-11-02）", () => {
+  let stored: Record<string, string>;
+  beforeEach(() => {
+    stored = {};
+    vi.stubGlobal("localStorage", {
+      getItem: (key: string) => stored[key] ?? null,
+      setItem: (key: string, value: string) => { stored[key] = value; },
+      removeItem: (key: string) => { delete stored[key]; }
+    });
+  });
+  afterEach(() => vi.unstubAllGlobals());
+
+  /** 一段：背够门槛的词、走满时长、领奖。 */
+  const round = (minutes: number, base = 100): number => {
+    startStudyFocus(now); fill(minutes, "know", base); advance(minutes * 60_000);
+    const earned = claimStudyFocusReward();
+    expect(continueStudyFocus(now)).toBe(true);
+    return earned;
+  };
+
+  it("每个可选时长：一天合计都是 222，10 分钟那一档的累计与原九档一致", () => {
+    for (const minutes of STUDY_FOCUS_MINUTES) {
+      const rewards = focusRoundRewards(minutes);
+      expect(rewards.reduce((a, b) => a + b, 0)).toBe(222);
+      expect(rewards.length * minutes).toBeGreaterThanOrEqual(85); // 5 分钟那档最后一格是 0，不单独成段
+      expect(rewards.length * minutes).toBeLessThan(90 + minutes);
+    }
+    expect(focusRoundRewards(DEFAULT_STUDY_FOCUS_MINUTES)).toEqual([...STUDY_FOCUS_REWARDS]);
+    expect(focusRoundRewards(15)).toEqual([125, 50, 29, 12, 4, 2]);
+    expect(focusRoundRewards(30)).toEqual([175, 41, 6]);
+  });
+
+  it("只认可选值；没存或存坏了就是 10 分钟", () => {
+    expect(getStudyFocusMinutes()).toBe(10);
+    setStudyFocusMinutes(7);
+    expect(getStudyFocusMinutes()).toBe(10);
+    setStudyFocusMinutes(15);
+    expect(getStudyFocusMinutes()).toBe(15);
+    stored["mn-study-focus-minutes"] = "abc";
+    expect(getStudyFocusMinutes()).toBe(10);
+  });
+
+  it("5 分钟一段：倒计时 5:00、门槛 5 个词，一天走满得 222", () => {
+    setStudyFocusMinutes(5);
+    expect(getStudyFocusSnapshot(now)).toMatchObject({ minutes: 5, remainingSeconds: 300, nextReward: 50 });
+    const earned: number[] = [];
+    for (let index = 0; index < 18; index++) earned.push(round(5, 100 + index * 10));
+    expect(earned).toEqual(focusRoundRewards(5).concat(0));
+    expect(yuzuBalance()).toBe(222);
+  });
+
+  it("30 分钟一段：10 个词不够，要 30 个；倒计时走满才休息", () => {
+    setStudyFocusMinutes(30);
+    startStudyFocus(now); fill(10, "know"); advance(29 * 60_000);
+    expect(getStudyFocusSnapshot(now)).toMatchObject({ status: "running", remainingSeconds: 60 });
+    advance(60_000);
+    expect(getStudyFocusSnapshot(now)).toMatchObject({ status: "break", summary: { minutes: 30, minWords: 30, qualified: false }, nextReward: 0 });
+    expect(claimStudyFocusReward()).toBe(0);
+    continueStudyFocus(now);
+    startStudyFocus(now);
+    expect(round(30, 300)).toBe(175);
+  });
+
+  it("中途改时长：已经开始的一段不改，之后按已付的格接着算，不多拿不重拿，封顶 222", () => {
+    expect(round(10)).toBe(100);
+    setStudyFocusMinutes(5);
+    expect(getStudyFocusSnapshot(now)).toMatchObject({ status: "running", minutes: 10, remainingSeconds: 600, nextReward: 50 });
+    expect(round(10, 150)).toBe(50);
+    expect(getStudyFocusSnapshot(now)).toMatchObject({ minutes: 5, remainingSeconds: 300, nextReward: 13 });
+    expect(round(5, 200)).toBe(13);
+    setStudyFocusMinutes(30);
+    expect(round(5, 250)).toBe(12);
+    expect([round(30, 300), round(30, 400), round(30, 500)]).toEqual([41, 6, 0]);
+    expect(yuzuBalance()).toBe(222);
+  });
+
+  it("休息页领完奖励后再改下一段的时长：这一段显示的奖励不变", () => {
+    startStudyFocus(now); fill(10, "know"); complete();
+    expect(claimStudyFocusReward()).toBe(100);
+    setStudyFocusMinutes(5);
+    expect(getStudyFocusSnapshot(now)).toMatchObject({ status: "break", minutes: 10, nextReward: 100, rewardClaimed: true });
+    expect(continueStudyFocus(now)).toBe(true);
+    expect(getStudyFocusSnapshot(now)).toMatchObject({ status: "running", minutes: 5, remainingSeconds: 300, nextReward: 25 });
+  });
+
+  it("旧账 `日:N`（N 个 10 分钟档）也算已付的格", () => {
+    db.run("INSERT INTO yuzu_ledger(kind, key, amount, day) VALUES ('focus', '2026-09-28:1', 100, '2026-09-28')");
+    expect(round(10)).toBe(50);
+    expect(rowsFor("SELECT key FROM yuzu_ledger WHERE kind='focus' ORDER BY key").map((row) => row.key))
+      .toEqual(["2026-09-28:1", "2026-09-28:s3", "2026-09-28:s4"]);
+  });
+
+  it("每日计划收尾：满一半时间才收，30 分钟一段要 15 分钟", () => {
+    setStudyFocusMinutes(30);
+    startStudyFocus(now); fill(30, "know"); advance(14 * 60_000);
+    expect(finishStudyFocusAtDailyCompletion(now)).toMatchObject({ status: "off", summary: null });
+    startStudyFocus(now); fill(30, "know", 700); advance(15 * 60_000);
+    expect(finishStudyFocusAtDailyCompletion(now)).toMatchObject({ status: "break", summary: { minutes: 30, qualified: true } });
+    expect(claimStudyFocusReward()).toBe(175);
+  });
+
+  it("对比的基线折成本段长度：5 分钟一段拿每 10 分钟的一半来比", () => {
+    const summary = summarizeStudyFocus({ "1": "know", "2": "know", "3": "know", "4": "know", "5": "know" },
+      [{ words: 20, remembered: 8, fuzzy: 0, forgotten: 12 }], 5);
+    expect(summary).toMatchObject({ minutes: 5, minWords: 5, qualified: true, baselineRemembered: 4, rememberedDelta: 1 });
   });
 });
