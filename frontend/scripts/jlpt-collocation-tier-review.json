@@ -1,0 +1,774 @@
+{
+  "schema_version": 1,
+  "status": "complete",
+  "reviewed_at": "2026-11-02",
+  "scope": "790 条固定搭配的学习优先档位；只增加内容元数据，不改表记、读音、释义、等级、kind、条数或运行时排期。未列入例外的条目按 kind 默认归档。",
+  "author_quote": "自谦敬辞必须背；一般固定表达（搭配）次之；惯用句、谚语更弱",
+  "default_tier_by_kind": {
+    "routine_expression": "core",
+    "collocation": "common",
+    "idiom": "optional",
+    "proverb": "optional",
+    "yojijukugo": "optional"
+  },
+  "idiom_promotion_limits": {
+    "N3": 20,
+    "N2": 50,
+    "N1": 30
+  },
+  "pending": [],
+  "exceptions": [
+    {
+      "jmdict_ent_seq": 2846871,
+      "surface": "頭がいっぱい",
+      "level": "N3",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "谈工作压力或担忧时用来表示脑中被某事占满，不能按头部装满东西理解。"
+    },
+    {
+      "jmdict_ent_seq": 1450720,
+      "surface": "頭にくる",
+      "level": "N3",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "日常抱怨中直接表示生气，按「来到头上」无法判断其情绪义。"
+    },
+    {
+      "jmdict_ent_seq": 2574960,
+      "surface": "いい気になる",
+      "level": "N3",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "提醒别人别得意或评价自满态度时常用，整体是贬义而非单纯心情变好。"
+    },
+    {
+      "jmdict_ent_seq": 2225110,
+      "surface": "絵になる",
+      "level": "N3",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "出游拍照或夸人、景物好看时表示适合入画，并不是变成一幅画。"
+    },
+    {
+      "jmdict_ent_seq": 1001860,
+      "surface": "お見えになる",
+      "level": "N3",
+      "kind": "collocation",
+      "tier": "core",
+      "reason": "「来る・いる」的尊敬表达，前台接待和电话应答中用来礼貌报告来宾到达，属于必须掌握的敬语。"
+    },
+    {
+      "jmdict_ent_seq": 2267200,
+      "surface": "お目にかける",
+      "level": "N3",
+      "kind": "collocation",
+      "tier": "core",
+      "reason": "「見せる」的自谦表达，工作或接待中向尊长、客户展示资料和物品时使用，属于必须掌握的敬语。"
+    },
+    {
+      "jmdict_ent_seq": 2851473,
+      "surface": "顔に出る",
+      "level": "N3",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "聊天中说情绪藏不住、全写在脸上时使用，「出る」表达感情显露而非物体出现。"
+    },
+    {
+      "jmdict_ent_seq": 2101420,
+      "surface": "顔を出す",
+      "level": "N3",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "约见、聚会和办公室交谈中表示顺便露面，不是把脸伸出来。"
+    },
+    {
+      "jmdict_ent_seq": 2068190,
+      "surface": "勝手にしろ",
+      "level": "N3",
+      "kind": "routine_expression",
+      "tier": "common",
+      "reason": "争执或不满时表示「随你便」的粗率命令，不是礼貌应答或敬语套话，归一般口语。"
+    },
+    {
+      "jmdict_ent_seq": 2056670,
+      "surface": "気が気でない",
+      "level": "N3",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "等消息、担心家人时表示焦虑得坐立不安，重复的「気」无法逐字推导。"
+    },
+    {
+      "jmdict_ent_seq": 2056660,
+      "surface": "気が散る",
+      "level": "N3",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "学习或工作时解释注意力被打断，整体表示分心而不是气体散开。"
+    },
+    {
+      "jmdict_ent_seq": 1374320,
+      "surface": "世話を焼く",
+      "level": "N3",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "谈家人照料或别人多管闲事时使用，「焼く」不能按烧烤理解。"
+    },
+    {
+      "jmdict_ent_seq": 2418800,
+      "surface": "その時はその時",
+      "level": "N3",
+      "kind": "routine_expression",
+      "tier": "common",
+      "reason": "朋友间商量未来安排时表示「到时候再说」，没有敬语或礼仪功能，归一般口语。"
+    },
+    {
+      "jmdict_ent_seq": 2261800,
+      "surface": "それはそれは",
+      "level": "N3",
+      "kind": "routine_expression",
+      "tier": "common",
+      "reason": "听到意外消息时表示惊讶的感叹，单独这一形式不承担固定的礼貌应答功能，归一般口语。"
+    },
+    {
+      "jmdict_ent_seq": 2089710,
+      "surface": "手がかかる",
+      "level": "N3",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "谈育儿、照顾人或难处理的任务时表示费精力，不是手被挂住。"
+    },
+    {
+      "jmdict_ent_seq": 2603750,
+      "surface": "手が出ない",
+      "level": "N3",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "购物或讨论难题时表示买不起、无力应付，不能只理解为手伸不出去。"
+    },
+    {
+      "jmdict_ent_seq": 2620820,
+      "surface": "手が出る",
+      "level": "N3",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "争吵中表示忍不住动手打人，必须整块识别才能听出暴力行为。"
+    },
+    {
+      "jmdict_ent_seq": 2400050,
+      "surface": "手が届く",
+      "level": "N3",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "谈价格或目标时表示负担得起、能够企及，范围超出手能碰到的字面动作。"
+    },
+    {
+      "jmdict_ent_seq": 2087220,
+      "surface": "波に乗る",
+      "level": "N3",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "谈工作进展或时机时表示乘势、进入顺利状态，不是在水上冲浪。"
+    },
+    {
+      "jmdict_ent_seq": 2416810,
+      "surface": "火の用心",
+      "level": "N3",
+      "kind": "routine_expression",
+      "tier": "common",
+      "reason": "防火提醒或街头巡逻的呼喊，不是对人的敬语或寒暄套话，归一般场景表达。"
+    },
+    {
+      "jmdict_ent_seq": 1627350,
+      "surface": "骨が折れる",
+      "level": "N3",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "说明某项工作很费力时使用，听者需要区分辛苦的惯用义与真的骨折。"
+    },
+    {
+      "jmdict_ent_seq": 2122570,
+      "surface": "まったくもう",
+      "level": "N3",
+      "kind": "routine_expression",
+      "tier": "common",
+      "reason": "抱怨或无奈时说「真是的」，属于随意感叹，不要求作为礼貌套话背诵。"
+    },
+    {
+      "jmdict_ent_seq": 1535110,
+      "surface": "目が点になる",
+      "level": "N3",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "转述惊讶反应时表示目瞪口呆，漫画式的眼睛变成点不能逐字作实义理解。"
+    },
+    {
+      "jmdict_ent_seq": 1012670,
+      "surface": "ものにする",
+      "level": "N3",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "学习技能或争取机会时表示掌握、拿下，不能按把某物变成东西理解。"
+    },
+    {
+      "jmdict_ent_seq": 1912650,
+      "surface": "ものになる",
+      "level": "N3",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "评价新人培养或练习成果时表示成材、取得成效，需要与一般的「なる」区别。"
+    },
+    {
+      "jmdict_ent_seq": 2235460,
+      "surface": "やきもちを焼く",
+      "level": "N3",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "谈恋爱、朋友或家人的嫉妒时常用，按烤年糕无法得出吃醋义。"
+    },
+    {
+      "jmdict_ent_seq": 2102020,
+      "surface": "足を運ぶ",
+      "level": "N2",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "邀请客户到场、说明亲自拜访时使用，表达前往而非搬动双脚。"
+    },
+    {
+      "jmdict_ent_seq": 2119830,
+      "surface": "足を引っ張る",
+      "level": "N2",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "团队合作中表示拖累别人、阻碍进度，是需要即时听懂的人际评价。"
+    },
+    {
+      "jmdict_ent_seq": 2102010,
+      "surface": "味を占める",
+      "level": "N2",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "谈尝到甜头后反复做某事时使用，含成功后还想再来的心理而非占有味道。"
+    },
+    {
+      "jmdict_ent_seq": 2182550,
+      "surface": "頭が上がらない",
+      "level": "N2",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "说自己欠人情或受对方压制时使用，表达关系上的弱势而非颈部动作。"
+    },
+    {
+      "jmdict_ent_seq": 2411170,
+      "surface": "頭が切れる",
+      "level": "N2",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "职场评价某人头脑敏锐、反应快时使用，「切れる」不是切断头部。"
+    },
+    {
+      "jmdict_ent_seq": 2237310,
+      "surface": "頭が下がる",
+      "level": "N2",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "称赞他人的努力、表示由衷佩服时使用，整体是敬佩的惯用义，并非敬语活用或必背寒暄句。"
+    },
+    {
+      "jmdict_ent_seq": 2836058,
+      "surface": "痛いところを突く",
+      "level": "N2",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "开会、讨论时表示指出对方不愿面对的要害，不是触碰身体痛处。"
+    },
+    {
+      "jmdict_ent_seq": 1858410,
+      "surface": "板につく",
+      "level": "N2",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "评价新人逐渐胜任、表演自然时使用，表示技能融入自身而非粘在木板上。"
+    },
+    {
+      "jmdict_ent_seq": 1627710,
+      "surface": "一目置く",
+      "level": "N2",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "谈同事能力或竞争对手时表示认可、另眼相看，不能从放一个眼睛推导。"
+    },
+    {
+      "jmdict_ent_seq": 2108270,
+      "surface": "腕が立つ",
+      "level": "N2",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "介绍技术人员或评价工作本领时表示有能耐，不是手臂竖起。"
+    },
+    {
+      "jmdict_ent_seq": 2832654,
+      "surface": "鵜呑みにする",
+      "level": "N2",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "提醒别人核实网络消息、客户说法时表示照单全收，不是实际吞食。"
+    },
+    {
+      "jmdict_ent_seq": 1854840,
+      "surface": "ウマが合う",
+      "level": "N2",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "谈同事、朋友是否合得来时使用，指性情契合而不是马匹配对。"
+    },
+    {
+      "jmdict_ent_seq": 2420040,
+      "surface": "裏がある",
+      "level": "N2",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "怀疑提议、说法另有隐情时使用，「裏」指隐藏动机而非物体背面。"
+    },
+    {
+      "jmdict_ent_seq": 2260020,
+      "surface": "お見舞い申し上げる",
+      "level": "N2",
+      "kind": "collocation",
+      "tier": "core",
+      "reason": "以自谦语向病患或受灾者致以慰问的定型句，问候信和商务邮件中也会使用，属于必须掌握的礼貌套话。"
+    },
+    {
+      "jmdict_ent_seq": 2139970,
+      "surface": "顔が広い",
+      "level": "N2",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "介绍善于交际的同事或朋友时表示人脉广，不能从脸的宽度推出。"
+    },
+    {
+      "jmdict_ent_seq": 2119420,
+      "surface": "肩の荷が下りる",
+      "level": "N2",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "项目结束或责任解除后表示如释重负，不要求真的搬下肩上物品。"
+    },
+    {
+      "jmdict_ent_seq": 2109080,
+      "surface": "角が立つ",
+      "level": "N2",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "商量如何拒绝、提醒对方时表示容易伤和气，是职场委婉措辞的常见判断。"
+    },
+    {
+      "jmdict_ent_seq": 2068310,
+      "surface": "蚊帳の外",
+      "level": "N2",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "讨论决策或消息没有通知自己时表示被排除在外，不是描述蚊帐位置。"
+    },
+    {
+      "jmdict_ent_seq": 1640380,
+      "surface": "口が滑る",
+      "level": "N2",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "解释无意泄密或说错话时表示说漏嘴，不能按口部滑动理解。"
+    },
+    {
+      "jmdict_ent_seq": 2086150,
+      "surface": "口をきく",
+      "level": "N2",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "谈是否与某人交谈、关系是否疏远时使用，不能把「きく」误听成听别人说话。"
+    },
+    {
+      "jmdict_ent_seq": 2839755,
+      "surface": "首が回らない",
+      "level": "N2",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "谈欠债或资金周转困难时表示被债务困住，需要与脖子不能转动区别。"
+    },
+    {
+      "jmdict_ent_seq": 2833581,
+      "surface": "桁が違う",
+      "level": "N2",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "比较预算、业绩或实力时表示差了一个量级，常不限于数字位数真的不同。"
+    },
+    {
+      "jmdict_ent_seq": 2068130,
+      "surface": "敷居が高い",
+      "level": "N2",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "谈登门或接近某个场所的心理门槛时使用，不是在评价门槛的物理高度。"
+    },
+    {
+      "jmdict_ent_seq": 2233720,
+      "surface": "自腹を切る",
+      "level": "N2",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "出差报销、聚餐或垫付费用时表示自己掏钱，「切る」不是伤害腹部。"
+    },
+    {
+      "jmdict_ent_seq": 1855390,
+      "surface": "図に乗る",
+      "level": "N2",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "批评因被夸奖而得意忘形、得寸进尺时使用，不能按登上图画理解。"
+    },
+    {
+      "jmdict_ent_seq": 2086780,
+      "surface": "棚に上げる",
+      "level": "N2",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "争论中指责别人把自己的过错撇开时使用，不是收纳物品的动作。"
+    },
+    {
+      "jmdict_ent_seq": 2827251,
+      "surface": "詰めが甘い",
+      "level": "N2",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "复盘任务或检查方案时表示最后落实不严密，「甘い」不是味觉评价。"
+    },
+    {
+      "jmdict_ent_seq": 2093080,
+      "surface": "手が空く",
+      "level": "N2",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "安排协作、请人帮忙前询问是否有空时使用，不是判断手里有没有物品。"
+    },
+    {
+      "jmdict_ent_seq": 2125840,
+      "surface": "手が離せない",
+      "level": "N2",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "电话应答、工作交接时表示正在忙、抽不开身，需要作为整块拒绝或延后信号听懂。"
+    },
+    {
+      "jmdict_ent_seq": 2202960,
+      "surface": "手につかない",
+      "level": "N2",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "担心事情或心神不宁时表示无法专心工作学习，不是东西粘不到手上。"
+    },
+    {
+      "jmdict_ent_seq": 2068440,
+      "surface": "手のひらを返す",
+      "level": "N2",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "抱怨对方立场突然变化时表示翻脸、态度逆转，不是在说转动手掌。"
+    },
+    {
+      "jmdict_ent_seq": 2200440,
+      "surface": "手を打つ",
+      "level": "N2",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "会议中讨论风险和对策时表示及时采取措施，不是拍手或击打手部。"
+    },
+    {
+      "jmdict_ent_seq": 2028670,
+      "surface": "手を焼く",
+      "level": "N2",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "谈育儿、带新人或处理麻烦任务时表示难以应付，不是手被烫伤。"
+    },
+    {
+      "jmdict_ent_seq": 2195000,
+      "surface": "取るに足らない",
+      "level": "N2",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "讨论问题严重性时表示不值一提、无足轻重，不能按拿取与足部解释。"
+    },
+    {
+      "jmdict_ent_seq": 2275680,
+      "surface": "猫をかぶる",
+      "level": "N2",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "朋友间谈某人在不同人面前装乖时表示掩饰本性，不是戴上猫。"
+    },
+    {
+      "jmdict_ent_seq": 1313030,
+      "surface": "歯が立たない",
+      "level": "N2",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "遇到难题或强大对手时表示无从应付、完全不是对手，不是牙齿直立。"
+    },
+    {
+      "jmdict_ent_seq": 2537520,
+      "surface": "羽を伸ばす",
+      "level": "N2",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "谈休假、下班后的放松时表示摆脱束缚尽情玩乐，不是伸展翅膀。"
+    },
+    {
+      "jmdict_ent_seq": 2247100,
+      "surface": "腹を割る",
+      "level": "N2",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "同事、朋友之间希望坦诚商谈时使用，指打开心扉而非切开腹部。"
+    },
+    {
+      "jmdict_ent_seq": 2847213,
+      "surface": "引けを取らない",
+      "level": "N2",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "面试自评、产品或实力比较时表示毫不逊色，需要整体理解其否定比较义。"
+    },
+    {
+      "jmdict_ent_seq": 2013650,
+      "surface": "踏んだり蹴ったり",
+      "level": "N2",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "诉说接连遇到倒霉事时使用，主语是遭遇不幸的人而非正在踩踢的人。"
+    },
+    {
+      "jmdict_ent_seq": 2261220,
+      "surface": "身が入る",
+      "level": "N2",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "谈工作、学习投入程度时表示用心、专注，不是身体进入某处。"
+    },
+    {
+      "jmdict_ent_seq": 2227910,
+      "surface": "水に流す",
+      "level": "N2",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "处理争执、商量和解时表示不再追究旧事，不是把物品冲走。"
+    },
+    {
+      "jmdict_ent_seq": 1371290,
+      "surface": "水を差す",
+      "level": "N2",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "讨论计划或聚会气氛时表示泼冷水、打断兴致，需要与加水的本义区别。"
+    },
+    {
+      "jmdict_ent_seq": 2578130,
+      "surface": "耳が痛い",
+      "level": "N2",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "听到批评正中自己的问题时表示难堪而认同，不是在报告耳部疼痛。"
+    },
+    {
+      "jmdict_ent_seq": 2065920,
+      "surface": "目をつける",
+      "level": "N2",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "购物、招聘或商业讨论中表示看中、盯上某个对象，不是安装眼睛。"
+    },
+    {
+      "jmdict_ent_seq": 2078990,
+      "surface": "元も子もない",
+      "level": "N2",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "商量方案时提醒连本钱、原有成果都可能失去，不能按原来与孩子拆开理解。"
+    },
+    {
+      "jmdict_ent_seq": 1570550,
+      "surface": "よりを戻す",
+      "level": "N2",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "朋友间谈分手后复合时表示重归于好，需要与解开线捻的字面义区别。"
+    },
+    {
+      "jmdict_ent_seq": 2727860,
+      "surface": "ツボにはまる",
+      "level": "N2",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "聊天中说某个笑点、做法正合心意时使用，不是落入容器。"
+    },
+    {
+      "jmdict_ent_seq": 1776900,
+      "surface": "釘付け",
+      "level": "N1",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "谈比赛、视频或演出吸引目光时表示看得入神，不能只按被钉住理解。"
+    },
+    {
+      "jmdict_ent_seq": 1871830,
+      "surface": "釘を刺す",
+      "level": "N1",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "工作交代中表示事先叮嘱、警告别出差错，不是钉钉子。"
+    },
+    {
+      "jmdict_ent_seq": 2089050,
+      "surface": "逆鱗に触れる",
+      "level": "N1",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "谈上司或他人被激怒时使用，整体表示触怒而非接触鳞片。"
+    },
+    {
+      "jmdict_ent_seq": 1734760,
+      "surface": "さじ加減",
+      "level": "N1",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "讨论管理、沟通或方案调整的分寸时使用，不限于药物剂量或勺子用量。"
+    },
+    {
+      "jmdict_ent_seq": 2055740,
+      "surface": "しのぎを削る",
+      "level": "N1",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "谈公司竞标、同行竞争时表示激烈角逐，不是削刀刃的动作。"
+    },
+    {
+      "jmdict_ent_seq": 2849043,
+      "surface": "相場が決まっている",
+      "level": "N1",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "聊天中断言某类事情通常总是如此时使用，不是在报告市场定价。"
+    },
+    {
+      "jmdict_ent_seq": 2854176,
+      "surface": "そりが合う",
+      "level": "N1",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "评价与上司、同事是否合拍时使用，常见否定式表达不合，不能按刀的弯曲度理解。"
+    },
+    {
+      "jmdict_ent_seq": 1280920,
+      "surface": "綱渡り",
+      "level": "N1",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "谈资金、日程或项目勉强维持的状态时使用，指稍有差池就失败而非真的走钢丝。"
+    },
+    {
+      "jmdict_ent_seq": 1462990,
+      "surface": "二番煎じ",
+      "level": "N1",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "评价新产品、企划或作品缺乏新意时表示重复旧招，不是在第二次泡茶。"
+    },
+    {
+      "jmdict_ent_seq": 1196590,
+      "surface": "にわか仕込み",
+      "level": "N1",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "谈临时准备的知识、技能时表示仓促学来，工作汇报和考前聊天中会遇到。"
+    },
+    {
+      "jmdict_ent_seq": 2159030,
+      "surface": "梯子を外される",
+      "level": "N1",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "说工作中原先支持自己的人突然撤回支持时使用，不是实际拆走梯子。"
+    },
+    {
+      "jmdict_ent_seq": 2259790,
+      "surface": "歯に衣着せない",
+      "level": "N1",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "介绍说话直率的同事或评论者时表示直言不讳，不能按给牙穿衣理解。"
+    },
+    {
+      "jmdict_ent_seq": 2067580,
+      "surface": "羽目を外す",
+      "level": "N1",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "聚餐、旅行后提醒别玩得过火时表示放纵，不能按拆掉外框理解。"
+    },
+    {
+      "jmdict_ent_seq": 2126780,
+      "surface": "二股をかける",
+      "level": "N1",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "恋爱话题里表示脚踏两条船，属于日常人际关系中需要整块听懂的说法。"
+    },
+    {
+      "jmdict_ent_seq": 1919400,
+      "surface": "へそを曲げる",
+      "level": "N1",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "谈家人或同事情绪时表示闹别扭、赌气，不是肚脐形状改变。"
+    },
+    {
+      "jmdict_ent_seq": 2065100,
+      "surface": "目から鱗が落ちる",
+      "level": "N1",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "培训、讨论中表达受到启发、突然想通时使用，不是眼中真的掉出鳞片。"
+    },
+    {
+      "jmdict_ent_seq": 1962360,
+      "surface": "オブラートに包む",
+      "level": "N1",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "讨论如何委婉表达批评时表示把话说得含蓄，是职场沟通中直接可用的说法。"
+    },
+    {
+      "jmdict_ent_seq": 1852260,
+      "surface": "カマをかける",
+      "level": "N1",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "谈试探别人、套出真实想法时使用，不是把工具挂起来。"
+    },
+    {
+      "jmdict_ent_seq": 2025190,
+      "surface": "ケリがつく",
+      "level": "N1",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "跟进争议、任务收尾时表示终于解决、告一段落，不是实际踢击。"
+    },
+    {
+      "jmdict_ent_seq": 2840172,
+      "surface": "フットワークが軽い",
+      "level": "N1",
+      "kind": "idiom",
+      "tier": "common",
+      "reason": "职场夸人行动快、愿意主动跑动时使用，不局限于运动中的脚步。"
+    }
+  ]
+}

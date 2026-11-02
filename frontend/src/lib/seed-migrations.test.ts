@@ -28,11 +28,17 @@ vi.mock("./storage", () => ({
   saveRecoverySnapshot: async () => "test"
 }));
 
-import { ensureSeedData } from "./study-core";
+import { collocationTier, ensureSeedData } from "./study-core";
 
 const SQL = await initSqlJs();
 const seedPath = fileURLToPath(new URL("../../public/nihongo.db", import.meta.url));
 const one = (sql: string) => Number(testDb.exec(sql)[0]?.values?.[0]?.[0] ?? 0);
+
+it("固定搭配分档缺省为 common，显式 core / optional 原样读取", () => {
+  expect(collocationTier({})).toBe("common");
+  expect(collocationTier({ t: 0 })).toBe("core");
+  expect(collocationTier({ t: 2 })).toBe("optional");
+});
 
 /**
  * study-core 里有 8 条**版本门控**的迁移：`if (getState(...) === XXX_VERSION) return;`

@@ -115,3 +115,86 @@ node frontend/scripts/verify-jlpt-collocation-candidates.mjs
   （迁移顺序早于 FSRS 加列），不要写进判据，否则新装库上迁移直接报错 —— 回归测试在 `seed-migrations.test.ts`。
 - 小程序不跑这条迁移：它的内容来自云端下载的 `nihongo.db`，本来就没有这批搭配。
 
+## 分档 tier（2026-11-02）
+
+作者原话：**「自谦敬辞必须背；一般固定表达（搭配）次之；惯用句、谚语更弱」**。
+本次任务提供的背景是：作者 N3 未学词的 181 条中有 173 条固定搭配，N2 未学固定搭配有 380 条。
+分档按学习价值和使用场景决定，不改变现有条目的表记、读音、释义、等级、kind 或收录范围；总数仍为 790。
+
+| tier | 定义 | 默认归属 |
+| --- | --- | --- |
+| `core` 必背 | 敬语、自谦与礼貌寒暄套话，听力即时应答、接待、书信和商务沟通中需要整块调用 | `routine_expression`，随意口语例外降为 common；其他 kind 中本质为敬语的另列例外 |
+| `common` 常用 | 一般搭配，以及日常口语或职场中需要整块识别的常用惯用句 | `collocation`，敬语例外升为 core；另含降档的随意口语和审核通过的惯用句 |
+| `optional` 选学 | 优先要求认读的惯用句、谚语、四字熟语 | `idiom` / `proverb` / `yojijukugo`；只有 idiom 可按例外提升 |
+
+### 决定源、默认和例外
+
+`frontend/scripts/jlpt-collocation-tier-review.json` 是分档决定源，`status=complete`、`pending=[]`，
+`reviewed_at=2026-11-02`。它记录五种 kind 的默认档位、提升上限及 94 条带逐条理由的例外；
+没有例外的条目只读默认规则，不另抄一份 790 条清单。例外同时保留 ent_seq、表记、等级和 kind，
+重建与验证时核对身份，防止后来换词或重分类后误套旧决定。
+
+- A：本质为敬语的非 routine_expression 升 core。本次为 3 条 collocation：
+  N3「お見えになる」「お目にかける」，N2「お見舞い申し上げる」。没有把一般敬佩、谦让态度本身当成敬语，
+  例如「頭が下がる」是表达佩服的惯用句，列入 common。
+- B：routine_expression 中的随意口语降 common。本次为 N3 的「勝手にしろ」「その時はその時」
+  「それはそれは」「火の用心」「まったくもう」5 条。其余确有敬语或礼貌套话功能的保留 core，
+  包括 N5/N4 的基础礼貌表达。
+- C：idiom 只有在口语或职场中确有常见使用场景、整体义需要整块识别时才提升 common。
+  N3 最多 20、N2 最多 50、N1 最多 30；这是上限，不是配额。本次分别提升 **19 / 47 / 20** 条，
+  每条的具体场景与非字面用法见决定源的 reason。没有联网补词或改写既有释义。
+- proverb 54 条、yojijukugo 60 条全部保持 optional，不适用任何提升例外。
+
+### 体积与读取约定
+
+运行时 JSON 只增加可选字段 `t`，审核源仍使用完整的 `core` / `common` / `optional` 档名。
+
+| entry 的 t | `collocationTier(entry)` 返回值 |
+| --- | --- |
+| 缺省 | `common` |
+| `0` | `core` |
+| `2` | `optional` |
+
+0 / 2 只是内容传输编码，不是数据库值或排期权重。消费者通过 `frontend/src/lib/study-core.ts`
+导出的 `collocationTier` 读取；内容类型相应增加 `t?: 0 | 2`。本次仅增加类型和该纯函数，未接入任何调用方。
+`ensureJlptCollocationContent` 仍只插入原有词条字段，**不写 tier 入 DB**，固定搭配内容版本保持
+`2026-10-18-jlpt-collocations-zh-v3`，schema_version、原有 reviewed_at、removed 清单及其他既有内容均不变。
+队列、每日计划、完成口径和界面读取档位属于后续任务 B。
+
+对同一批决定实测表示法的开销如下；原始大小包含现有两空格缩进和末尾换行：
+
+| 表示法 | 新增原始字节 | 去掉 JSON 空白后新增字节 |
+| --- | ---: | ---: |
+| 每条都写完整 tier 字符串 | 19,718 | 13,398 |
+| 缺省 common，只写 core / optional 字符串 | 12,302 | 8,454 |
+| 顶层 core / optional 两个 ent_seq 数组 | 6,289 | 3,870 |
+| **本次：缺省 common，紧凑 t 数字字段** | **2,886** | **2,886** |
+
+选择最后一种：每个新增片段 `,"t":0` 或 `,"t":2` 恰为 6 字节，51 条 core 加 430 条 optional，
+共 481 × 6 = **2,886 字节**。构建脚本仅压紧新字段，保留其他内容的格式；原文件 230,278 B，
+新文件 **233,164 B**。以 Node zlib 默认参数对整份文件压缩作辅助比较，gzip 增加 502 B、Brotli 增加 267 B；
+这些不是小程序构建后的包体测量。决定源、理由、默认规则和提升上限不进入运行时 JSON。
+相比顶层 ID 数组，entry 自带短字段也使读取函数无需额外索引、缓存或修改现有异步装载链路。
+
+已核对 Taro 的构建配置与已提交 webpack stats：`jlpt_collocation_content` 经共享 shims 映射到
+`seed-guard.js`，stats 没有收录该 JSON。此次不重新编译小程序；包体闸门只复核现有 reports，
+不能把基线 reports 的通过结果当作重新构建的证明。
+
+### 最终计数与验证
+
+| 等级 | core | common | optional | 合计 |
+| --- | ---: | ---: | ---: | ---: |
+| N5 | 7 | 1 | 0 | 8 |
+| N4 | 9 | 7 | 0 | 16 |
+| N3 | 22 | 141 | 27 | 190 |
+| N2 | 13 | 106 | 261 | 380 |
+| N1 | 0 | 54 | 142 | 196 |
+| 合计 | 51 | 309 | 430 | 790 |
+
+`build-jlpt-collocation-translations.mjs` 在原有选择、翻译决定源之外读取分档决定源并生成短字段；
+重建不会丢档位。`verify-jlpt-collocation-content.mjs` 进一步检查编码合法、产物逐条符合默认及例外、
+例外身份与单行理由、谚语及四字熟语保持 optional、非 routine 的 core 有例外记录、
+N3 core ∈ [15, 30]、N2 core ∈ [8, 20]、惯用句提升上限及总数 790。
+读取函数的缺省 common、core、optional 三种情况覆盖在 `seed-migrations.test.ts`；
+原有迁移和内容矩阵测试继续核对条数、迁移幂等及既有计划计数。
+

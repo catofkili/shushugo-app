@@ -8,12 +8,14 @@ const scriptDir = path.dirname(fileURLToPath(import.meta.url))
 const frontendDir = path.resolve(scriptDir, '..')
 const candidatePath = path.join(frontendDir, 'src/data/jlpt_collocation_candidates.json')
 const reviewPath = path.join(scriptDir, 'jlpt-collocation-translation-review.json')
+const tierReviewPath = path.join(scriptDir, 'jlpt-collocation-tier-review.json')
 const outputPath = path.join(frontendDir, 'src/data/jlpt_collocation_content.json')
 const selectionPath = path.join(scriptDir, 'jlpt-collocation-manual-review.json')
 
 const candidate = JSON.parse(await readFile(candidatePath, 'utf8'))
 const review = JSON.parse(await readFile(reviewPath, 'utf8'))
 const selection = JSON.parse(await readFile(selectionPath, 'utf8'))
+const tierReview = JSON.parse(await readFile(tierReviewPath, 'utf8'))
 
 if (review.status !== 'complete' || review.pending.length !== 0) {
   throw new Error('translation review is incomplete')
@@ -21,8 +23,24 @@ if (review.status !== 'complete' || review.pending.length !== 0) {
 if (!Array.isArray(review.entries) || review.entries.length !== candidate.entries.length) {
   throw new Error('translation count differs from collocation candidates')
 }
+if (tierReview.status !== 'complete' || tierReview.pending.length !== 0) {
+  throw new Error('tier review is incomplete')
+}
 
 const byId = new Map(candidate.entries.map((entry) => [entry.jmdict_ent_seq, entry]))
+const tiers = new Set(['core', 'common', 'optional'])
+const tierById = new Map()
+for (const exception of tierReview.exceptions) {
+  const source = byId.get(exception.jmdict_ent_seq)
+  if (!source || ['surface', 'level', 'kind'].some((key) => exception[key] !== source[key])) {
+    throw new Error(`tier exception differs from candidate: ${exception.jmdict_ent_seq}`)
+  }
+  if (tierById.has(exception.jmdict_ent_seq)) throw new Error(`duplicate tier exception: ${exception.surface}`)
+  if (!tiers.has(exception.tier) || typeof exception.reason !== 'string' || !exception.reason.trim()) {
+    throw new Error(`invalid tier exception: ${exception.surface}`)
+  }
+  tierById.set(exception.jmdict_ent_seq, exception.tier)
+}
 const ids = new Set()
 const entries = review.entries.map((translation, index) => {
   const label = `entries[${index}]`
@@ -38,6 +56,8 @@ const entries = review.entries.map((translation, index) => {
     throw new Error(`${label}.meaning is empty`)
   }
   if (!/[\u3400-\u9fff]/u.test(translation.meaning)) throw new Error(`${label}.meaning is not Chinese`)
+  const tier = tierById.get(source.jmdict_ent_seq) ?? tierReview.default_tier_by_kind[source.kind]
+  if (!tiers.has(tier)) throw new Error(`unknown tier for ${source.surface}`)
   return {
     // Keep audit-only selection metadata out of the runtime bundle. The
     // candidate/review files remain the provenance and review records.
@@ -48,6 +68,8 @@ const entries = review.entries.map((translation, index) => {
     kind: source.kind,
     meaning: translation.meaning.trim(),
     translation_source: translation.translation_source,
+    // Compact wire format: absent = common, 0 = core, 2 = optional; reasons stay in the review.
+    ...(tier === 'common' ? {} : { t: tier === 'core' ? 0 : 2 }),
   }
 })
 
@@ -67,6 +89,7 @@ if (product.removed.some(({ surface, kana }) => entries.some((entry) => entry.su
   throw new Error('removed entry is still in content')
 }
 
-await writeFile(outputPath, `${JSON.stringify(product, null, 2)}\n`)
+// Compact only the added tier fields; preserve the existing content's formatting.
+await writeFile(outputPath, `${JSON.stringify(product, null, 2).replace(/,\n {6}"t": ([02])/g, ',"t":$1')}\n`)
 console.log(`validated and wrote ${entries.length} translated collocation entries`)
 console.log(`content: ${outputPath}`)

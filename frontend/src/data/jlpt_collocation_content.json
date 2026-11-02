@@ -28,7 +28,7 @@
       "level": "N5",
       "kind": "routine_expression",
       "meaning": "谢谢；感谢",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 2222180,
@@ -37,7 +37,7 @@
       "level": "N5",
       "kind": "routine_expression",
       "meaning": "好久不见；许久未见",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 2149640,
@@ -46,7 +46,7 @@
       "level": "N5",
       "kind": "routine_expression",
       "meaning": "感谢您的等待；抱歉让您久等了",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 1221540,
@@ -64,7 +64,7 @@
       "level": "N5",
       "kind": "routine_expression",
       "meaning": "我吃好了，谢谢；饭菜很好吃，谢谢；感谢这顿饭",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 1270690,
@@ -73,7 +73,7 @@
       "level": "N5",
       "kind": "routine_expression",
       "meaning": "可以进来吗？",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 1320240,
@@ -82,7 +82,7 @@
       "level": "N5",
       "kind": "routine_expression",
       "meaning": "失礼了；对不起；打扰了",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 2276200,
@@ -91,7 +91,7 @@
       "level": "N5",
       "kind": "routine_expression",
       "meaning": "打扰了；对不起；请原谅",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 1401020,
@@ -109,7 +109,7 @@
       "level": "N4",
       "kind": "routine_expression",
       "meaning": "新年快乐；恭贺新禧",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 1270220,
@@ -118,7 +118,7 @@
       "level": "N4",
       "kind": "routine_expression",
       "meaning": "幸亏；托福；托神灵的庇佑",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 1002280,
@@ -127,7 +127,7 @@
       "level": "N4",
       "kind": "routine_expression",
       "meaning": "之前；以前",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 2857842,
@@ -136,7 +136,7 @@
       "level": "N4",
       "kind": "routine_expression",
       "meaning": "请先请；您先请",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 1002260,
@@ -145,7 +145,7 @@
       "level": "N4",
       "kind": "routine_expression",
       "meaning": "受到关照；受到帮助；受到照顾；蒙受恩惠；欠人人情",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 1002410,
@@ -154,7 +154,7 @@
       "level": "N4",
       "kind": "routine_expression",
       "meaning": "祝你生日快乐；生日快乐",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 1001540,
@@ -163,7 +163,7 @@
       "level": "N4",
       "kind": "routine_expression",
       "meaning": "祝贺；恭喜",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 1639460,
@@ -217,7 +217,7 @@
       "level": "N4",
       "kind": "routine_expression",
       "meaning": "别担心；不用担心；没关系",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 2229770,
@@ -235,7 +235,7 @@
       "level": "N4",
       "kind": "routine_expression",
       "meaning": "做得很好；干得不错",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 2684210,
@@ -253,7 +253,7 @@
       "level": "N3",
       "kind": "idiom",
       "meaning": "头疼；头痛",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2846871,
@@ -307,7 +307,7 @@
       "level": "N3",
       "kind": "idiom",
       "meaning": "背水一战；无路可退；走投无路；没有退路；没有第二次机会",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1678830,
@@ -316,7 +316,7 @@
       "level": "N3",
       "kind": "idiom",
       "meaning": "为时已晚；木已成舟；覆水难收",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2612840,
@@ -361,7 +361,7 @@
       "level": "N3",
       "kind": "idiom",
       "meaning": "得到好运；时来运转；走好运",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2546050,
@@ -370,7 +370,7 @@
       "level": "N3",
       "kind": "routine_expression",
       "meaning": "你好吗；你最近怎么样；你近来如何",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 2405970,
@@ -388,7 +388,7 @@
       "level": "N3",
       "kind": "proverb",
       "meaning": "坚持不懈终有成；冷石坐三年也会暖",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1627700,
@@ -397,7 +397,7 @@
       "level": "N3",
       "kind": "idiom",
       "meaning": "从头到尾；事无巨细；全部",
-      "translation_source": "project_manual"
+      "translation_source": "project_manual","t":2
     },
     {
       "jmdict_ent_seq": 2149180,
@@ -406,7 +406,7 @@
       "level": "N3",
       "kind": "routine_expression",
       "meaning": "再见；我走了；回见",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 2098360,
@@ -415,7 +415,7 @@
       "level": "N3",
       "kind": "routine_expression",
       "meaning": "请来（我们这里）；请光临（本店）",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 2238160,
@@ -460,7 +460,7 @@
       "level": "N3",
       "kind": "idiom",
       "meaning": "幕后英雄；默默奉献的人；做吃力不讨好工作的人",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1001900,
@@ -469,7 +469,7 @@
       "level": "N3",
       "kind": "routine_expression",
       "meaning": "请不要费心；别麻烦了；不用客气",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 2257240,
@@ -478,7 +478,7 @@
       "level": "N3",
       "kind": "routine_expression",
       "meaning": "您别来无恙吧？；没什么事吧？",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 1001750,
@@ -487,7 +487,7 @@
       "level": "N3",
       "kind": "routine_expression",
       "meaning": "遗憾；可惜；真是遗憾",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 1269390,
@@ -505,7 +505,7 @@
       "level": "N3",
       "kind": "routine_expression",
       "meaning": "不胜惶恐；深感抱歉；承蒙厚爱",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 1238880,
@@ -514,7 +514,7 @@
       "level": "N3",
       "kind": "routine_expression",
       "meaning": "正如您所说；诚如您所言；完全同意",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 2221720,
@@ -523,7 +523,7 @@
       "level": "N3",
       "kind": "routine_expression",
       "meaning": "可以请您…吗；能否请您…",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 1001860,
@@ -532,7 +532,7 @@
       "level": "N3",
       "kind": "collocation",
       "meaning": "到达；来临",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 2267200,
@@ -541,7 +541,7 @@
       "level": "N3",
       "kind": "collocation",
       "meaning": "展示；让…看到",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 2851473,
@@ -640,7 +640,7 @@
       "level": "N3",
       "kind": "idiom",
       "meaning": "脾气暴躁；性格凶悍；好争执",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1221530,
@@ -838,7 +838,7 @@
       "level": "N3",
       "kind": "idiom",
       "meaning": "高兴；心情好",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2516430,
@@ -982,7 +982,7 @@
       "level": "N3",
       "kind": "routine_expression",
       "meaning": "您真好心；您真是太客气了",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 2864843,
@@ -991,7 +991,7 @@
       "level": "N3",
       "kind": "routine_expression",
       "meaning": "如你所知；正如你所了解的那样",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 1005100,
@@ -1000,7 +1000,7 @@
       "level": "N3",
       "kind": "routine_expression",
       "meaning": "请看；请查看",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 1270770,
@@ -1009,7 +1009,7 @@
       "level": "N3",
       "kind": "routine_expression",
       "meaning": "请看；请瞧",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 2202170,
@@ -1018,7 +1018,7 @@
       "level": "N3",
       "kind": "routine_expression",
       "meaning": "如你所见；正如你所看到的",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 1177410,
@@ -1027,7 +1027,7 @@
       "level": "N3",
       "kind": "proverb",
       "meaning": "连猴子也会从树上掉下来；人皆有失；骄兵必败；智者千虑，必有一失",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2526230,
@@ -1036,7 +1036,7 @@
       "level": "N3",
       "kind": "idiom",
       "meaning": "轻视；看不起",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1320150,
@@ -1045,7 +1045,7 @@
       "level": "N3",
       "kind": "proverb",
       "meaning": "失败是成功之母；失败乃成功之阶",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1884240,
@@ -1081,7 +1081,7 @@
       "level": "N3",
       "kind": "proverb",
       "meaning": "住处久则生情；住久了哪里都是故乡；居处由心造",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2086340,
@@ -1171,7 +1171,7 @@
       "level": "N3",
       "kind": "idiom",
       "meaning": "利用；以……为借口；以……为幌子",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1007460,
@@ -1207,7 +1207,7 @@
       "level": "N3",
       "kind": "proverb",
       "meaning": "积少成多；聚沙成塔；积尘成山",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2857239,
@@ -1243,7 +1243,7 @@
       "level": "N3",
       "kind": "routine_expression",
       "meaning": "虽然不值一提，但是…；虽然微不足道，但是…",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 2089710,
@@ -1288,7 +1288,7 @@
       "level": "N3",
       "kind": "idiom",
       "meaning": "人手不足；人员不够",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1904380,
@@ -1396,7 +1396,7 @@
       "level": "N3",
       "kind": "proverb",
       "meaning": "时间就是金钱；一寸光阴一寸金",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2837171,
@@ -1423,7 +1423,7 @@
       "level": "N3",
       "kind": "routine_expression",
       "meaning": "不用客气；没什么；小事一桩",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 2724320,
@@ -1459,7 +1459,7 @@
       "level": "N3",
       "kind": "proverb",
       "meaning": "不屈不挠；坚持不懈；屡败屡战",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2087220,
@@ -1486,7 +1486,7 @@
       "level": "N3",
       "kind": "proverb",
       "meaning": "有二必有三；两次之后必有第三次",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2832221,
@@ -1504,7 +1504,7 @@
       "level": "N3",
       "kind": "proverb",
       "meaning": "对牛弹琴；给猫金币",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2255400,
@@ -1522,7 +1522,7 @@
       "level": "N3",
       "kind": "idiom",
       "meaning": "吃得很香；食欲旺盛",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2420390,
@@ -1558,7 +1558,7 @@
       "level": "N3",
       "kind": "proverb",
       "meaning": "实用胜于美观；团子胜于花",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1982010,
@@ -1648,7 +1648,7 @@
       "level": "N3",
       "kind": "idiom",
       "meaning": "费力；出力；费功夫",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2758570,
@@ -1666,7 +1666,7 @@
       "level": "N3",
       "kind": "routine_expression",
       "meaning": "一点心意；小小心意",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 2838980,
@@ -1675,7 +1675,7 @@
       "level": "N3",
       "kind": "routine_expression",
       "meaning": "非常感谢；万分感谢",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 2837425,
@@ -1684,7 +1684,7 @@
       "level": "N3",
       "kind": "routine_expression",
       "meaning": "欢迎再次光临；请再来",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 2122570,
@@ -1792,7 +1792,7 @@
       "level": "N3",
       "kind": "idiom",
       "meaning": "眼光高；眼光独到；具有鉴赏眼光",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1535110,
@@ -1810,7 +1810,7 @@
       "level": "N3",
       "kind": "idiom",
       "meaning": "走运；交好运",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2785170,
@@ -1819,7 +1819,7 @@
       "level": "N3",
       "kind": "idiom",
       "meaning": "目光转向；眼睛被吸引向某物",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2751030,
@@ -1828,7 +1828,7 @@
       "level": "N3",
       "kind": "idiom",
       "meaning": "用眼神交流；用眼睛说话",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2399540,
@@ -1918,7 +1918,7 @@
       "level": "N3",
       "kind": "routine_expression",
       "meaning": "请多关照；请多帮助；请好好对待我；期待与你合作",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 2211080,
@@ -1954,7 +1954,7 @@
       "level": "N2",
       "kind": "proverb",
       "meaning": "事事反驳；处处找借口；总能顶嘴",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2691410,
@@ -1972,7 +1972,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "被红线牵连；宿命相连；注定成婚；由红线（命运之线）相系",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2119580,
@@ -1981,7 +1981,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "飘飘然；忘乎所以；兴高采烈；轻浮",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1404640,
@@ -1990,7 +1990,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "超出预算；预算透支；出现赤字；亏损",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2119600,
@@ -2008,7 +2008,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "腿脚快；走路跑步快",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2404250,
@@ -2017,7 +2017,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "（长时间行走或站立后）腿僵硬；腿酸痛",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2764170,
@@ -2026,7 +2026,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "朝向；自然而然地向某处去；奔向",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2859899,
@@ -2044,7 +2044,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "混乱不堪；到处都是东西；连脚都没有地方踩",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2028770,
@@ -2053,7 +2053,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "趁虚而入；看准对方弱点加以利用；看人下菜碟",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1856360,
@@ -2062,7 +2062,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "退出黑道；金盆洗手；断绝关系；改邪归正；重新做人",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2102020,
@@ -2089,7 +2089,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "走到腿软；走到筋疲力尽；走得精疲力竭",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2102010,
@@ -2107,7 +2107,7 @@
       "level": "N2",
       "kind": "proverb",
       "meaning": "藏头露尾；顾首不顾尾；隐其首而暴其尾",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2182550,
@@ -2143,7 +2143,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "明显领先竞争对手；在对手中脱颖而出；出类拔萃",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2588310,
@@ -2152,7 +2152,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "目不转睛地；死死地盯着",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2102060,
@@ -2161,7 +2161,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "踩钢丝；铤而走险；走危险的路；冒险",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1538610,
@@ -2170,7 +2170,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "工作中偷懒；磨蹭时间；懒散度日",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1538600,
@@ -2179,7 +2179,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "严厉责骂；狠狠训斥；痛骂；数落",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1857040,
@@ -2188,7 +2188,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "不劳而获；坐享其成；中饱私囊",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2872311,
@@ -2197,7 +2197,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "布下罗网；设下圈套；布置警戒网",
-      "translation_source": "project_manual"
+      "translation_source": "project_manual","t":2
     },
     {
       "jmdict_ent_seq": 1172000,
@@ -2206,7 +2206,7 @@
       "level": "N2",
       "kind": "proverb",
       "meaning": "雨后地坚；经历磨难基础更稳固；不经风雨不成长；雨后天晴",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1621720,
@@ -2215,7 +2215,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "暴风雨前的宁静；风暴前的平静",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1517520,
@@ -2224,7 +2224,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "惊慌失措；手足无措；慌张不安",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2119940,
@@ -2233,7 +2233,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "得到（有影响力的人物）的个人支持；受到（有影响力的人物）的庇护",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2141290,
@@ -2242,7 +2242,7 @@
       "level": "N2",
       "kind": "proverb",
       "meaning": "过分谨慎；敲石桥再过河",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1155130,
@@ -2251,7 +2251,7 @@
       "level": "N2",
       "kind": "yojijukugo",
       "meaning": "心灵感应；心心相印；心意相通；以心传心",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1228590,
@@ -2260,7 +2260,7 @@
       "level": "N2",
       "kind": "proverb",
       "meaning": "欲速则不达；慢慢来比较快",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2836058,
@@ -2278,7 +2278,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "毫不在意；无关痛痒；不痛不痒",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1858410,
@@ -2296,7 +2296,7 @@
       "level": "N2",
       "kind": "yojijukugo",
       "meaning": "一期一会；一生一次的相遇；独一无二的珍贵体验",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2599850,
@@ -2305,7 +2305,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "无懈可击；滴水不漏；完美无缺",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1627710,
@@ -2323,7 +2323,7 @@
       "level": "N2",
       "kind": "yojijukugo",
       "meaning": "一会儿高兴一会儿忧愁；时而欢喜时而不安；忽喜忽忧；在乐观和悲观之间摇摆不定",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1163690,
@@ -2332,7 +2332,7 @@
       "level": "N2",
       "kind": "yojijukugo",
       "meaning": "时而前进时而后退；此消彼长；拉锯；时好时坏",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1163610,
@@ -2341,7 +2341,7 @@
       "level": "N2",
       "kind": "yojijukugo",
       "meaning": "一心一意；全神贯注；专心致志；聚精会神",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2833819,
@@ -2359,7 +2359,7 @@
       "level": "N2",
       "kind": "yojijukugo",
       "meaning": "长处和短处；优点和缺点；利弊得失",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2833834,
@@ -2368,7 +2368,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "懦夫背后嘀咕；失败者的牢骚",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1972160,
@@ -2377,7 +2377,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "荆棘之路；坎坷之路",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2102140,
@@ -2386,7 +2386,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "人群拥挤；熙熙攘攘；水泄不通",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1171050,
@@ -2395,7 +2395,7 @@
       "level": "N2",
       "kind": "yojijukugo",
       "meaning": "四处乱跑；东奔西窜；手忙脚乱；不知所措",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2859780,
@@ -2413,7 +2413,7 @@
       "level": "N2",
       "kind": "proverb",
       "meaning": "谎言变成真话；玩笑成了事实",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2108270,
@@ -2431,7 +2431,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "跃跃欲试；想大显身手",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2237320,
@@ -2440,7 +2440,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "对自己的能力有信心；相信自己的本领",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2848809,
@@ -2485,7 +2485,7 @@
       "level": "N2",
       "kind": "proverb",
       "meaning": "对牛弹琴；向聋子说法",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2859790,
@@ -2521,7 +2521,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "智胜；以计谋取胜",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2102340,
@@ -2539,7 +2539,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "一模一样；如出一辙；几乎完全相同；酷似；翻版",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1860720,
@@ -2557,7 +2557,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "占上风；胜过；压倒",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1173240,
@@ -2566,7 +2566,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "天壤之别；悬殊的差异",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1860950,
@@ -2575,7 +2575,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "听天由命；听凭命运；一切交由上天安排",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1202280,
@@ -2584,7 +2584,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "画饼；空中楼阁；镜花水月",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1977140,
@@ -2593,7 +2593,7 @@
       "level": "N2",
       "kind": "proverb",
       "meaning": "用小投入获得大回报；以小博大",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2833898,
@@ -2611,7 +2611,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "摆出重要的样子；趾高气扬；自以为了不起",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2172200,
@@ -2620,7 +2620,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "获得可靠基础，处于安全状态；放心；登上大船",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2158500,
@@ -2638,7 +2638,7 @@
       "level": "N2",
       "kind": "routine_expression",
       "meaning": "恕我直言；不好意思，但是……；恐怕……",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 2872006,
@@ -2647,7 +2647,7 @@
       "level": "N2",
       "kind": "routine_expression",
       "meaning": "恕我冒昧；恕我直言（用于委婉反驳对方）",
-      "translation_source": "project_manual"
+      "translation_source": "project_manual","t":0
     },
     {
       "jmdict_ent_seq": 2198680,
@@ -2656,7 +2656,7 @@
       "level": "N2",
       "kind": "routine_expression",
       "meaning": "给您添麻烦了；让您费事了",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 2102550,
@@ -2665,7 +2665,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "同吃一锅饭；关系密切；一起生活",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2801720,
@@ -2674,7 +2674,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "荒唐可笑；不切实际",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2857810,
@@ -2683,7 +2683,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "铁下心肠；硬起心肠；狠心",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2168410,
@@ -2692,7 +2692,7 @@
       "level": "N2",
       "kind": "proverb",
       "meaning": "趁鬼不在时洗衣服；趁老板不在时偷懒；独自一人时随意放松；趁上司外出时悠闲度日",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2869554,
@@ -2701,7 +2701,7 @@
       "level": "N2",
       "kind": "routine_expression",
       "meaning": "初次见面，很高兴认识您；初次见面，幸会",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 2832829,
@@ -2710,7 +2710,7 @@
       "level": "N2",
       "kind": "routine_expression",
       "meaning": "请理解；请留意",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 2260020,
@@ -2719,7 +2719,7 @@
       "level": "N2",
       "kind": "collocation",
       "meaning": "表示深切慰问；致以诚挚的慰问",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 2826185,
@@ -2728,7 +2728,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "奋起；振作；打起精神",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2006850,
@@ -2737,7 +2737,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "正中下怀；如愿所期；落入圈套",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2760600,
@@ -2746,7 +2746,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "啃老；靠父母养活",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2723970,
@@ -2755,7 +2755,7 @@
       "level": "N2",
       "kind": "routine_expression",
       "meaning": "谨此祝贺；请接受我的祝贺",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 1781130,
@@ -2764,7 +2764,7 @@
       "level": "N2",
       "kind": "yojijukugo",
       "meaning": "温故而知新；以过去为鉴发现新知",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1781110,
@@ -2773,7 +2773,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "温室教养；在温室环境中长大的人；娇生惯养",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1498050,
@@ -2782,7 +2782,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "完全依赖他人；总是依靠别人",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1183110,
@@ -2791,7 +2791,7 @@
       "level": "N2",
       "kind": "proverb",
       "meaning": "以怨报德；恩将仇报",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2102700,
@@ -2800,7 +2800,7 @@
       "level": "N2",
       "kind": "proverb",
       "meaning": "被信任的部下背叛；被亲信所伤",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1204760,
@@ -2809,7 +2809,7 @@
       "level": "N2",
       "kind": "proverb",
       "meaning": "有其父必有其子；蛙的孩子还是蛙；龙生龙，凤生凤",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1978010,
@@ -2818,7 +2818,7 @@
       "level": "N2",
       "kind": "proverb",
       "meaning": "如水过鸭背；青蛙脸上的水",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1217740,
@@ -2827,7 +2827,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "羞愧得面红耳赤；羞愧难当",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2839877,
@@ -2836,7 +2836,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "名气大；广为人知；成名",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2028440,
@@ -2845,7 +2845,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "有很大的影响力；很有权势；很有人脉",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2139970,
@@ -2863,7 +2863,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "使蒙羞；泼脏水；使丢脸",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2595960,
@@ -2890,7 +2890,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "笼中鸟；被关在笼里的鸟",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2532410,
@@ -2917,7 +2917,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "风声；传闻；道听途说",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2402740,
@@ -2935,7 +2935,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "昂首阔步；趾高气扬；自信满满；毫无顾虑",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2603950,
@@ -2971,7 +2971,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "趁势投靠胜者；跟风；随大流",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2109080,
@@ -2989,7 +2989,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "使情况恶化；激化；加剧",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1208940,
@@ -2998,7 +2998,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "声望提高；受欢迎",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2840810,
@@ -3007,7 +3007,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "被神灵附身；神灵上身",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2776830,
@@ -3016,7 +3016,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "遭到雷击；被雷击中",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2260240,
@@ -3025,7 +3025,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "天地不仁；世道无情；没有神佛保佑",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2102980,
@@ -3052,7 +3052,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "面面俱到；考虑周密；细致入微",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2840708,
@@ -3061,7 +3061,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "有空；有时间",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2866028,
@@ -3070,7 +3070,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "身体分身乏术；即使有几个身体也应付不过来",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2741970,
@@ -3088,7 +3088,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "突然变得安静温顺的人；借来的猫",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2841584,
@@ -3097,7 +3097,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "偿还债务；还债",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2667650,
@@ -3106,7 +3106,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "隐瞒真实本性或感情；假装友善；装伪君子",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2557390,
@@ -3133,7 +3133,7 @@
       "level": "N2",
       "kind": "yojijukugo",
       "meaning": "起死回生；绝处逢生；死而复生；力挽狂澜",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1795530,
@@ -3142,7 +3142,7 @@
       "level": "N2",
       "kind": "yojijukugo",
       "meaning": "起承转合；引入、发展、转折、结尾（某些中国诗歌的四段式结构）",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2839264,
@@ -3151,7 +3151,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "黄灯",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1219430,
@@ -3160,7 +3160,7 @@
       "level": "N2",
       "kind": "yojijukugo",
       "meaning": "异想天开；奇异荒诞；难以置信",
-      "translation_source": "project_manual"
+      "translation_source": "project_manual","t":2
     },
     {
       "jmdict_ent_seq": 2208120,
@@ -3178,7 +3178,7 @@
       "level": "N2",
       "kind": "proverb",
       "meaning": "一切取决于你的看法；心态决定一切",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2063940,
@@ -3187,7 +3187,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "孤注一掷；冒险一试；大胆尝试；从清水寺舞台跳下来",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2182570,
@@ -3205,7 +3205,7 @@
       "level": "N2",
       "kind": "proverb",
       "meaning": "只见树木，不见森林；见木不见林；因小失大",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2841698,
@@ -3214,7 +3214,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "神童；天才儿童；潜力股",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1810950,
@@ -3223,7 +3223,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "渔翁得利；坐收渔利",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2833934,
@@ -3232,7 +3232,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "掩盖问题；视而不见",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1401920,
@@ -3259,7 +3259,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "说话流畅；善于言辞；口才好",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2417350,
@@ -3268,7 +3268,7 @@
       "level": "N2",
       "kind": "proverb",
       "meaning": "言多必失；祸从口出；多言多必失",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2086150,
@@ -3286,7 +3286,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "被解雇；被开除",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2839755,
@@ -3304,7 +3304,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "仅存一线希望；还有一丝生机",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1329240,
@@ -3313,7 +3313,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "解雇；开除；撤职",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2849244,
@@ -3322,7 +3322,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "模糊不清；捉摸不定；朦胧",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2833581,
@@ -3340,7 +3340,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "像猫狗一样不和；水火不容；犬猿之仲",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2542300,
@@ -3349,7 +3349,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "来到这里；来了这里",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2564820,
@@ -3358,7 +3358,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "心花怒放；兴高采烈；欣喜若狂",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2839767,
@@ -3394,7 +3394,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "无言以对；哑口无言；说不出话来",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2835652,
@@ -3412,7 +3412,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "无用的差使；只会听命行动；徒劳的跑腿",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2831521,
@@ -3421,7 +3421,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "乘此机会；趁机",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2404390,
@@ -3430,7 +3430,7 @@
       "level": "N2",
       "kind": "proverb",
       "meaning": "未雨绸缪；防患于未然；居安思危；防微杜渐",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1238480,
@@ -3439,7 +3439,7 @@
       "level": "N2",
       "kind": "proverb",
       "meaning": "入乡随俗",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2872717,
@@ -3448,7 +3448,7 @@
       "level": "N2",
       "kind": "routine_expression",
       "meaning": "请多关照；请继续惠顾",
-      "translation_source": "project_manual"
+      "translation_source": "project_manual","t":0
     },
     {
       "jmdict_ent_seq": 2833935,
@@ -3457,7 +3457,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "位列前五；跻身五强；属于最优秀的五个之一",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2859985,
@@ -3466,7 +3466,7 @@
       "level": "N2",
       "kind": "routine_expression",
       "meaning": "给您带来不便，深感抱歉；打扰之处，敬请谅解",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 2860737,
@@ -3475,7 +3475,7 @@
       "level": "N2",
       "kind": "routine_expression",
       "meaning": "请谅解；请知悉；敬请理解",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 2232900,
@@ -3484,7 +3484,7 @@
       "level": "N2",
       "kind": "routine_expression",
       "meaning": "特此联系；现将……情况告知",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 1264450,
@@ -3493,7 +3493,7 @@
       "level": "N2",
       "kind": "yojijukugo",
       "meaning": "荒唐无稽；岂有此理；不可饶恕；荒谬绝伦",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2862782,
@@ -3502,7 +3502,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "喝醉失去自制力；被酒控制",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2864078,
@@ -3511,7 +3511,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "篡改数字以谋取私利；故意计算错误；虚报或隐瞒年龄",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2068130,
@@ -3529,7 +3529,7 @@
       "level": "N2",
       "kind": "yojijukugo",
       "meaning": "处于极度困境；穷于应付；焦头烂额；捉襟见肘",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2527660,
@@ -3538,7 +3538,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "善于言辞；口齿伶俐；说话流利；健谈",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2858785,
@@ -3547,7 +3547,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "谦恭有礼；采取谦虚的态度",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1184590,
@@ -3574,7 +3574,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "抓住把柄；揭露某人的错误；掌握某人的证据；找到突破口；抓住尾巴",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2827617,
@@ -3583,7 +3583,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "摇尾巴；摇尾",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2118330,
@@ -3592,7 +3592,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "夹着尾巴逃跑；认输；仓皇逃走",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2864550,
@@ -3601,7 +3601,7 @@
       "level": "N2",
       "kind": "routine_expression",
       "meaning": "请原谅，但是……；不好意思，但是……",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 2093310,
@@ -3610,7 +3610,7 @@
       "level": "N2",
       "kind": "proverb",
       "meaning": "班门弄斧；向内行人献丑；对懂行人卖弄；释迦牟尼前讲佛法",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2269750,
@@ -3619,7 +3619,7 @@
       "level": "N2",
       "kind": "routine_expression",
       "meaning": "盛夏问候语；在炎热季节询问某人的身体状况",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":0
     },
     {
       "jmdict_ent_seq": 2791280,
@@ -3628,7 +3628,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "被紧急事务所迫；处于巨大压力之下；受到紧急催促",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1310320,
@@ -3637,7 +3637,7 @@
       "level": "N2",
       "kind": "yojijukugo",
       "meaning": "支离破碎；前后矛盾；杂乱无章；语无伦次；混乱不堪",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2197800,
@@ -3655,7 +3655,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "冷眼相待；冷淡对待；态度冷漠",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1793810,
@@ -3664,7 +3664,7 @@
       "level": "N2",
       "kind": "yojijukugo",
       "meaning": "改变态度；重新开始；焕然一新",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2683310,
@@ -3673,7 +3673,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "死不瞑目；死而有憾；无法安心赴死",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1420740,
@@ -3682,7 +3682,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "露出真面目；原形毕露",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1317570,
@@ -3691,7 +3691,7 @@
       "level": "N2",
       "kind": "yojijukugo",
       "meaning": "自作自受；自食其果；咎由自取",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2860657,
@@ -3700,7 +3700,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "地狱里遇到佛；绝望中的希望；雪中送炭；山穷水尽遇贵人；困难时得到的意外帮助",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2233720,
@@ -3718,7 +3718,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "自扼其喉；自掘坟墓；自我伤害；自取灭亡",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1318670,
@@ -3727,7 +3727,7 @@
       "level": "N2",
       "kind": "yojijukugo",
       "meaning": "绝望；自暴自弃；自我放弃",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1342400,
@@ -3736,7 +3736,7 @@
       "level": "N2",
       "kind": "yojijukugo",
       "meaning": "一帆风顺；顺风顺水",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2839899,
@@ -3745,7 +3745,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "踩中地雷",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2836937,
@@ -3763,7 +3763,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "杯水车薪；微不足道的数额；蝇头小利",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2185540,
@@ -3772,7 +3772,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "令人头痛的事；烦心事；麻烦的根源",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1855390,
@@ -3799,7 +3799,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "用行动说话；以身作则；言行一致",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2843773,
@@ -3817,7 +3817,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "要求过多；期望过高",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1393580,
@@ -3826,7 +3826,7 @@
       "level": "N2",
       "kind": "yojijukugo",
       "meaning": "闻所未闻；前所未有；史无前例；创纪录的",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1394290,
@@ -3835,7 +3835,7 @@
       "level": "N2",
       "kind": "proverb",
       "meaning": "善事当速；趁热打铁",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1854290,
@@ -3844,7 +3844,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "台风眼；热带气旋眼",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1809660,
@@ -3853,7 +3853,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "高不可攀的事物；无法企及的目标；够不着的奖品；高岭之花",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1985200,
@@ -3862,7 +3862,7 @@
       "level": "N2",
       "kind": "proverb",
       "meaning": "意外之喜；从天而降的好运；掉落的红豆馅年糕",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2086780,
@@ -3889,7 +3889,7 @@
       "level": "N2",
       "kind": "yojijukugo",
       "meaning": "直截了当；开门见山；坦率；直言不讳",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2779990,
@@ -3898,7 +3898,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "家庭经济状况；家计情况",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2827556,
@@ -3907,7 +3907,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "……并非唯一；……并不是全部",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2772330,
@@ -3916,7 +3916,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "血液沸腾；跃跃欲试；心痒难耐",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2732350,
@@ -3925,7 +3925,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "血亲相残；骨肉相争；自相残杀",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2760050,
@@ -3934,7 +3934,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "脚踏实地；现实稳健",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2842653,
@@ -3943,7 +3943,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "声誉、权势、影响力等急剧下降；彻底堕落；完全破产",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1893320,
@@ -3952,7 +3952,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "有血有肉的；人性化的；温暖的；富有同情心的",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1255090,
@@ -3961,7 +3961,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "冷血；无情；铁石心肠；缺乏同情心",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2860016,
@@ -3979,7 +3979,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "表面相似但实则截然不同的两种事物；有天壤之别；云泥之差；月亮与鳖",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2827251,
@@ -3997,7 +3997,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "忠心耿耿地追随；尽心尽力地侍奉；唯命是从",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1854430,
@@ -4006,7 +4006,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "（尤指书法或酒量）技艺进步；水平提高",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2093080,
@@ -4024,7 +4024,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "能干；有能力；胜任",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2766770,
@@ -4033,7 +4033,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "无法控制；失控；难以处理；无计可施",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2125840,
@@ -4051,7 +4051,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "独立；自立",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2089780,
@@ -4060,7 +4060,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "做事快速；工作效率高",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1437400,
@@ -4069,7 +4069,7 @@
       "level": "N2",
       "kind": "yojijukugo",
       "meaning": "适材适所；各得其所；人尽其才",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2841392,
@@ -4078,7 +4078,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "屏息以待；紧张期待",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2202960,
@@ -4096,7 +4096,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "上当；中计；落入圈套",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2068440,
@@ -4114,7 +4114,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "无可奈何；无能为力；爱莫能助",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2200440,
@@ -4132,7 +4132,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "千方百计；想尽办法；无所不用其极",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1327280,
@@ -4141,7 +4141,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "切伤手；割伤手",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1896030,
@@ -4150,7 +4150,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "伸出手；伸出胳膊",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2028670,
@@ -4168,7 +4168,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "变得自负；变得虚荣；趾高气扬；骄傲自满；变成天狗",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2845646,
@@ -4177,7 +4177,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "天壤之别；天地之差；判若云泥；相差悬殊",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2789820,
@@ -4186,7 +4186,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "天籁之音；天籁",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1985430,
@@ -4195,7 +4195,7 @@
       "level": "N2",
       "kind": "proverb",
       "meaning": "出头的钉子会被敲打；锋芒毕露的人会遭到惩罚",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2126140,
@@ -4204,7 +4204,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "不是自己该插手的事；不该自己说话（行动）；与己无关",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1896840,
@@ -4222,7 +4222,7 @@
       "level": "N2",
       "kind": "proverb",
       "meaning": "灯下黑；近在咫尺反而看不清；身在其中反而不知；灯台下最黑暗",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1897210,
@@ -4240,7 +4240,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "与年龄不符；与年龄不相称",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2826891,
@@ -4249,7 +4249,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "上了年纪；年岁渐长",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2195000,
@@ -4267,7 +4267,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "过度；过分；太过分；走得太远",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2419240,
@@ -4276,7 +4276,7 @@
       "level": "N2",
       "kind": "proverb",
       "meaning": "既无害处也无益处；无关痛痒；既不好也不坏",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2763450,
@@ -4285,7 +4285,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "恶语伤人；说人坏话",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1445460,
@@ -4294,7 +4294,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "最后关头；紧要关头",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2210450,
@@ -4303,7 +4303,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "倒入下水道；浪费；白白浪费",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1436910,
@@ -4312,7 +4312,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "睡得像死猪一样；睡得很沉；酣睡",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2402180,
@@ -4321,7 +4321,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "玷污；败坏（名誉或声誉）",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1419210,
@@ -4330,7 +4330,7 @@
       "level": "N2",
       "kind": "proverb",
       "meaning": "彼此差别很小；大同小异；半斤八两",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2403660,
@@ -4339,7 +4339,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "无论如何；不管怎样；笑也好哭也好；反正都是",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2830225,
@@ -4357,7 +4357,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "从长远角度看待；以长期眼光看",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2402700,
@@ -4366,7 +4366,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "遭遇困难；吃苦头；陷入困境",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1832260,
@@ -4375,7 +4375,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "地狱深处",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2836833,
@@ -4384,7 +4384,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "成熟善良；性格均衡；是个好人",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1845590,
@@ -4393,7 +4393,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "空无一人；杳无人迹；冷冷清清",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1845600,
@@ -4402,7 +4402,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "忙得不可开交；恨不得连猫的爪子都想借",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1845690,
@@ -4411,7 +4411,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "极小的面积；极小的地方；猫的额头",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2275680,
@@ -4429,7 +4429,7 @@
       "level": "N2",
       "kind": "proverb",
       "meaning": "扰水；惊睡狗；唤醒睡孩",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1900610,
@@ -4438,7 +4438,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "变得热情；迷上；失去理智；认真起来",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2066630,
@@ -4447,7 +4447,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "认输；放弃；投降",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2131510,
@@ -4465,7 +4465,7 @@
       "level": "N2",
       "kind": "proverb",
       "meaning": "极其谨慎；确保万无一失；慎之又慎",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1470130,
@@ -4474,7 +4474,7 @@
       "level": "N2",
       "kind": "proverb",
       "meaning": "能者不露才华；有本事的人不炫耀；大智若愚；真才实学的人往往沉默寡言",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2028680,
@@ -4483,7 +4483,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "渴望得到某物；梦寐以求",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1313030,
@@ -4501,7 +4501,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "裸体国王；脱离现实的高位者",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2835959,
@@ -4510,7 +4510,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "完全坦诚的交往；毫无隐瞒的关系",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2139470,
@@ -4519,7 +4519,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "性格相合；相处融洽",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2843787,
@@ -4528,7 +4528,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "嗅觉灵敏；鼻子灵",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2611320,
@@ -4537,7 +4537,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "好色；见异思迁；容易被女人吸引",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2556600,
@@ -4546,7 +4546,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "连花都要羞愧；花儿也要脸红（形容少女的美貌超过了鲜花）",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1975230,
@@ -4555,7 +4555,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "既有外表又有实质；既有才华又有品德；既有趣味又有教育意义",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2256700,
@@ -4573,7 +4573,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "撒娇；娇声娇气",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1902290,
@@ -4582,7 +4582,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "让某人持花；让某人获得功劳",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2537520,
@@ -4618,7 +4618,7 @@
       "level": "N2",
       "kind": "yojijukugo",
       "meaning": "半信半疑；将信将疑；疑信参半",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2845280,
@@ -4627,7 +4627,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "吃亏；被坑；抽到鬼牌（玩老鼠牌游戏时）",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1626690,
@@ -4636,7 +4636,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "着火；被点燃；点燃；燃烧",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2862105,
@@ -4645,7 +4645,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "手气好（如抽牌、摸牌时）；运气好",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2847213,
@@ -4663,7 +4663,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "膝盖发软；膝盖快要弯曲；双腿无力",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2145230,
@@ -4672,7 +4672,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "火上浇油；煽风点火",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2138600,
@@ -4681,7 +4681,7 @@
       "level": "N2",
       "kind": "proverb",
       "meaning": "百闻不如一见；眼见为实；一张图片胜过千言万语",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1488420,
@@ -4690,7 +4690,7 @@
       "level": "N2",
       "kind": "yojijukugo",
       "meaning": "百发百中；百无一失；无往不利",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2855845,
@@ -4699,7 +4699,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "喷火；喷烈焰；吐火",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2419530,
@@ -4708,7 +4708,7 @@
       "level": "N2",
       "kind": "proverb",
       "meaning": "夫妻吵架，旁人不要插手；夫妻口角，局外人勿劝阻",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1501510,
@@ -4717,7 +4717,7 @@
       "level": "N2",
       "kind": "proverb",
       "meaning": "覆水难收；木已成舟；悔之晚矣",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2186550,
@@ -4726,7 +4726,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "不幸中的幸事；塞翁失马焉知非福；苦中作乐；祸福相依",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2402610,
@@ -4735,7 +4735,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "打开盖子；揭开盖子",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1495030,
@@ -4744,7 +4744,7 @@
       "level": "N2",
       "kind": "yojijukugo",
       "meaning": "不眠不休；日夜不停",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2869875,
@@ -4771,7 +4771,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "无关紧要；微不足道；不值一提；屁都不是",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1908300,
@@ -4789,7 +4789,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "去世；死亡；成为星星",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1501770,
@@ -4798,7 +4798,7 @@
       "level": "N2",
       "kind": "proverb",
       "meaning": "即便是佛的耐心也有限度；三番五次会惹恼佛",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1908590,
@@ -4807,7 +4807,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "在某地落叶归根；在某处度过余生；以某地为最终安居之所",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1603640,
@@ -4816,7 +4816,7 @@
       "level": "N2",
       "kind": "yojijukugo",
       "meaning": "本末倒置；舍本逐末；颠倒轻重缓急",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1622010,
@@ -4825,7 +4825,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "浪费；牺牲；糟蹋；毁坏；丧失；抛弃",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1641090,
@@ -4834,7 +4834,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "四处奔波；活跃于各地",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2261220,
@@ -4852,7 +4852,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "无人能及；独一无二；首屈一指",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2857694,
@@ -4861,7 +4861,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "与某人相处融洽；适合某人；感到舒适；水土相宜",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2119060,
@@ -4870,7 +4870,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "水火不容；势不两立；格格不入的两样东西（或两个人）",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2227910,
@@ -4888,7 +4888,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "如鱼得水；得心应手",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1371290,
@@ -4906,7 +4906,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "试探；打探消息",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2856308,
@@ -4924,7 +4924,7 @@
       "level": "N2",
       "kind": "yojijukugo",
       "meaning": "三日坊主；做事不能持久的人；见异思迁者",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2870424,
@@ -4951,7 +4951,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "听得耳朵生茧；经常听说某事而感到厌烦",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2069560,
@@ -4969,7 +4969,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "直言不讳；开门见山；直截了当；坦白",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2408570,
@@ -4978,7 +4978,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "昔日风采已不复存在；面目全非；判若两人",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1910970,
@@ -4987,7 +4987,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "全心投入；专心致志；倾注心血；感兴趣",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1426740,
@@ -4996,7 +4996,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "预感；直觉；第六感",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2211580,
@@ -5005,7 +5005,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "令人感动；触动人心；动人心弦",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1531020,
@@ -5014,7 +5014,7 @@
       "level": "N2",
       "kind": "yojijukugo",
       "meaning": "无理要求；过分的要求",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2867233,
@@ -5023,7 +5023,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "眼神飘忽；目光游移；眼睛乱转",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2859413,
@@ -5032,7 +5032,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "眼眶发热；感动得热泪盈眶",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2817710,
@@ -5041,7 +5041,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "谋生的手段；生活来源；主要收入；生计",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2028370,
@@ -5050,7 +5050,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "掌上明珠；疼爱备至；视若珍宝",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2129390,
@@ -5059,7 +5059,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "怒目而视；用愤怒的眼神看待",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2864984,
@@ -5068,7 +5068,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "极其迅速；瞬间即逝；快到肉眼难以察觉",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2118970,
@@ -5077,7 +5077,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "教训某人；让某人见识一下；向某人展示自己的本领",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2662390,
@@ -5086,7 +5086,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "眼神发亮；眼神改变；惊慌失措；激动兴奋",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2153140,
@@ -5095,7 +5095,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "眼中钉；肉中刺；讨厌的人；碍眼的东西",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2736730,
@@ -5104,7 +5104,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "有生之年；活着的时候",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2129770,
@@ -5113,7 +5113,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "睁大眼睛；瞪大眼睛",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2065920,
@@ -5131,7 +5131,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "瞒着；背地里",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1535190,
@@ -5149,7 +5149,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "收回成本；实现收支平衡",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2078990,
@@ -5167,7 +5167,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "有起有伏；有高有低；跌宕起伏",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2182640,
@@ -5176,7 +5176,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "猜测恰好命中；推测结果恰如所愿",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2417570,
@@ -5185,7 +5185,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "看到山头；看到终点；胜利在望",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2526430,
@@ -5194,7 +5194,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "推测；凭直觉猜测；碰运气",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1539260,
@@ -5203,7 +5203,7 @@
       "level": "N2",
       "kind": "yojijukugo",
       "meaning": "优柔寡断；犹豫不决；摇摆不定",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1546230,
@@ -5212,7 +5212,7 @@
       "level": "N2",
       "kind": "yojijukugo",
       "meaning": "周密细致；准备充分",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1570550,
@@ -5230,7 +5230,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "左右逢源；同时获得两种幸福；左拥右抱",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2077530,
@@ -5239,7 +5239,7 @@
       "level": "N2",
       "kind": "proverb",
       "meaning": "物以类聚，人以群分",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2152720,
@@ -5248,7 +5248,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "天赐之物；及时之助；意外之喜",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2152700,
@@ -5257,7 +5257,7 @@
       "level": "N2",
       "kind": "proverb",
       "meaning": "笑脸迎人福自来；笑口常开福气到",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1970680,
@@ -5266,7 +5266,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "胡萝卜加大棒；糖果与鞭子",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2844485,
@@ -5302,7 +5302,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "认输；放弃；投降",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2727860,
@@ -5356,7 +5356,7 @@
       "level": "N2",
       "kind": "idiom",
       "meaning": "动手术；进行手术操作",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2402580,
@@ -5383,7 +5383,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "傲慢地驱使；颐指气使",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2841233,
@@ -5392,7 +5392,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "精疲力尽；筋疲力尽；疲惫不堪",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2849931,
@@ -5401,7 +5401,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "面向错误的方向；走反方向",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2834644,
@@ -5410,7 +5410,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "（对身边之人或事物）突然发生意外之事；防不胜防",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1928820,
@@ -5419,7 +5419,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "接替某人的职位；取代某人；接任",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2826391,
@@ -5428,7 +5428,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "不惜一切代价；无论如何；拼命也要抓住石头",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1165630,
@@ -5437,7 +5437,7 @@
       "level": "N1",
       "kind": "yojijukugo",
       "meaning": "下定决心；痛下决心；发奋立志",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1166190,
@@ -5446,7 +5446,7 @@
       "level": "N1",
       "kind": "yojijukugo",
       "meaning": "全部始末；详细情况；整个经过；来龙去脉",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2188670,
@@ -5455,7 +5455,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "参与；插一手；分一杯羹",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1166920,
@@ -5464,7 +5464,7 @@
       "level": "N1",
       "kind": "yojijukugo",
       "meaning": "一网打尽；一举擒获",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2272410,
@@ -5473,7 +5473,7 @@
       "level": "N1",
       "kind": "proverb",
       "meaning": "闻一知十；举一反三；一点就通；领悟力强",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1587400,
@@ -5482,7 +5482,7 @@
       "level": "N1",
       "kind": "yojijukugo",
       "meaning": "一攫千金；一举致富；暴富",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1163550,
@@ -5491,7 +5491,7 @@
       "level": "N1",
       "kind": "yojijukugo",
       "meaning": "一触即发；千钧一发；剑拔弩张",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2846250,
@@ -5509,7 +5509,7 @@
       "level": "N1",
       "kind": "yojijukugo",
       "meaning": "一朝一夕；短时间内",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1165200,
@@ -5518,7 +5518,7 @@
       "level": "N1",
       "kind": "yojijukugo",
       "meaning": "一刀两断；一剑斩断",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2112680,
@@ -5527,7 +5527,7 @@
       "level": "N1",
       "kind": "proverb",
       "meaning": "大而无用之人",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2403560,
@@ -5536,7 +5536,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "鵜眼鹰眼；敏锐的目光；警觉的注视",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2834648,
@@ -5545,7 +5545,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "不明确的；难以预测的；悬而未决的；模棱两可的",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1861510,
@@ -5554,7 +5554,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "端正衣着和姿态；摆正态度；严肃对待",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2139580,
@@ -5572,7 +5572,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "离水的河童；不适应环境的人",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2843846,
@@ -5581,7 +5581,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "找零；收到零钱",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2839772,
@@ -5608,7 +5608,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "靠空气生活；无以为生；没有经济来源而生活",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2419140,
@@ -5617,7 +5617,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "刀折矢尽；计穷力竭；用尽所有手段",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2868684,
@@ -5626,7 +5626,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "整顿心态；做好准备；集中精力；勒紧头盔的缨带",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2122430,
@@ -5635,7 +5635,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "耐心细致地解释；用简单易懂的方式耐心讲解；循循善诱",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2103060,
@@ -5653,7 +5653,7 @@
       "level": "N1",
       "kind": "yojijukugo",
       "meaning": "为己谋利；牵强附会以符合自身利益；为自己的田地引水",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2103140,
@@ -5662,7 +5662,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "惊呆；惊愕；惊叹；目瞪口呆",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1243700,
@@ -5671,7 +5671,7 @@
       "level": "N1",
       "kind": "yojijukugo",
       "meaning": "九死一生；死里逃生",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2103180,
@@ -5680,7 +5680,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "暂时告一段落；暂时结束；告一段落",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1225600,
@@ -5689,7 +5689,7 @@
       "level": "N1",
       "kind": "yojijukugo",
       "meaning": "疑心生暗鬼；疑神疑鬼；草木皆兵",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1245710,
@@ -5698,7 +5698,7 @@
       "level": "N1",
       "kind": "yojijukugo",
       "meaning": "空前绝后；前所未有，后无来者",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1776900,
@@ -5725,7 +5725,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "搜遍每个角落；到处寻找；彻底搜查",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1872080,
@@ -5734,7 +5734,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "醉酒时絮絮叨叨；醉言醉语",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2780210,
@@ -5743,7 +5743,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "引颈受罚；洗颈以待；坐以待毙",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2836044,
@@ -5761,7 +5761,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "迷惑；欺骗；蒙蔽；制造烟幕",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2089050,
@@ -5779,7 +5779,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "把一切都托付给某人；完全委任于他人",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2836884,
@@ -5788,7 +5788,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "虚报；夸大（数字、分数等）；掺水",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1274860,
@@ -5797,7 +5797,7 @@
       "level": "N1",
       "kind": "yojijukugo",
       "meaning": "公正廉明；正直坦诚；光明磊落",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2118090,
@@ -5806,7 +5806,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "哽咽；说不出话来",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2402730,
@@ -5815,7 +5815,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "衣锦还乡；荣归故里；光宗耀祖地回到故乡",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2037790,
@@ -5842,7 +5842,7 @@
       "level": "N1",
       "kind": "yojijukugo",
       "meaning": "完全不知所措；迷失方向；如堕五里雾中；茫然不解；困惑迷茫",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2764310,
@@ -5869,7 +5869,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "咋舌惊叹；惊讶；惊叹",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2417650,
@@ -5878,7 +5878,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "同生共死；一起赴死；同归于尽",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2055740,
@@ -5896,7 +5896,7 @@
       "level": "N1",
       "kind": "yojijukugo",
       "meaning": "四面楚歌；四面受敌；众叛亲离",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2146910,
@@ -5914,7 +5914,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "集中炮火",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2868966,
@@ -5932,7 +5932,7 @@
       "level": "N1",
       "kind": "yojijukugo",
       "meaning": "神出鬼没；出没无常；行踪不定",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2655400,
@@ -5941,7 +5941,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "厚颜无耻；胆大包天；脸皮厚；心脏长毛",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1362520,
@@ -5950,7 +5950,7 @@
       "level": "N1",
       "kind": "yojijukugo",
       "meaning": "万物；自然界的一切；宇宙万象",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2750980,
@@ -5968,7 +5968,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "场外斗殴；场外打斗；台下混战",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2866131,
@@ -5977,7 +5977,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "令人脊背发凉；不寒而栗",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1385250,
@@ -5986,7 +5986,7 @@
       "level": "N1",
       "kind": "yojijukugo",
       "meaning": "勤奋钻研；刻苦学习以磨砺品格",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1388870,
@@ -5995,7 +5995,7 @@
       "level": "N1",
       "kind": "yojijukugo",
       "meaning": "千载一遇（的机会）；千金难买的机遇；百年难遇的良机",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2859782,
@@ -6022,7 +6022,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "抓住衣袖苦苦哀求；依赖某人求助",
-      "translation_source": "project_manual"
+      "translation_source": "project_manual","t":2
     },
     {
       "jmdict_ent_seq": 2746880,
@@ -6031,7 +6031,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "排除障碍；迂回进行；填外壕",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2854176,
@@ -6049,7 +6049,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "隔岸观火；别人的事情",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1413320,
@@ -6058,7 +6058,7 @@
       "level": "N1",
       "kind": "yojijukugo",
       "meaning": "大器晚成",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2592530,
@@ -6067,7 +6067,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "爽快；直率；干脆利落",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1407110,
@@ -6076,7 +6076,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "他山之石；借鉴他人错误的教训；可资借鉴的他山之石（他山之石，可以攻玉）",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2665850,
@@ -6085,7 +6085,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "一拥而上；集中进攻",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2127610,
@@ -6094,7 +6094,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "知足；安贫乐道；满足于自己的处境",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1786190,
@@ -6103,7 +6103,7 @@
       "level": "N1",
       "kind": "yojijukugo",
       "meaning": "大胆无畏；鲁莽大胆；蛮勇",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1414690,
@@ -6112,7 +6112,7 @@
       "level": "N1",
       "kind": "yojijukugo",
       "meaning": "大同小异；大体相同而略有差异",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2202570,
@@ -6148,7 +6148,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "抢先占有；确立所有权；吐唾沫（以阻止他人拿走）",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2125800,
@@ -6157,7 +6157,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "能够胜任其他工作；具有可转移的技能；适应能力强；作为废料有价值",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2433630,
@@ -6166,7 +6166,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "向（某人）学习；以（某人）为榜样；学习（某人）的优点",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2112280,
@@ -6175,7 +6175,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "厚颜无耻；大胆；厚脸皮",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2140260,
@@ -6184,7 +6184,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "最终决定；权威之言；一锤定音",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1437690,
@@ -6193,7 +6193,7 @@
       "level": "N1",
       "kind": "yojijukugo",
       "meaning": "彻头彻尾；始终如一；完完全全；从始至终",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2131030,
@@ -6202,7 +6202,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "重蹈覆辙；步人后尘；沿着前人的车辙行进",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1896010,
@@ -6211,7 +6211,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "涉足；参与；插手",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2270850,
@@ -6220,7 +6220,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "搬起石头砸自己的脚；自作自受；害人害己",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2854575,
@@ -6229,7 +6229,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "欣喜若狂；乐不可支；飘飘然",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1440150,
@@ -6256,7 +6256,7 @@
       "level": "N1",
       "kind": "yojijukugo",
       "meaning": "瞬间；电光石火",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2829952,
@@ -6265,7 +6265,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "推卸责任给下属并抛弃他们的行为；蜥蜴脱尾",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2856432,
@@ -6274,7 +6274,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "获得机会；时来运转；获得有利的时机",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2261090,
@@ -6283,7 +6283,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "势如破竹；锐不可当；气势如虹",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2785800,
@@ -6292,7 +6292,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "如虎添翼",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1897980,
@@ -6301,7 +6301,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "放虎归山；纵虎出笼",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2871104,
@@ -6310,7 +6310,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "自投罗网；飞蛾扑火",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1457250,
@@ -6319,7 +6319,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "凡夫俗子生出才能之人；平凡父母生出杰出子女",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1445230,
@@ -6328,7 +6328,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "使人惊呆；使人目瞪口呆；令人震惊；使人惊愕",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2609990,
@@ -6337,7 +6337,7 @@
       "level": "N1",
       "kind": "proverb",
       "meaning": "以毒攻毒；以火制火；用恶制恶",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1436920,
@@ -6346,7 +6346,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "承担责任；背黑锅；蒙受污名",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2774300,
@@ -6355,7 +6355,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "威势令哭孩噤声；让哭泣孩童安静",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2100950,
@@ -6382,7 +6382,7 @@
       "level": "N1",
       "kind": "proverb",
       "meaning": "费力的事；从二楼滴眼药水",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2834545,
@@ -6391,7 +6391,7 @@
       "level": "N1",
       "kind": "proverb",
       "meaning": "舍肉取骨；以伤换伤；牺牲小利以获大胜",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2837762,
@@ -6400,7 +6400,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "皇帝旗；帝国标准旗",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1599870,
@@ -6409,7 +6409,7 @@
       "level": "N1",
       "kind": "yojijukugo",
       "meaning": "极便宜；贱卖；廉价",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1462990,
@@ -6427,7 +6427,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "两面派；言行不一；口是心非",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1196590,
@@ -6445,7 +6445,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "给钟表上发条；上紧发条",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2118930,
@@ -6454,7 +6454,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "该付账的时候了；该交地租的时候了",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2850091,
@@ -6463,7 +6463,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "胆小；怯懦；跳蚤的勇气",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2727580,
@@ -6472,7 +6472,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "徒劳无功；白费力气",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2835508,
@@ -6481,7 +6481,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "帮助长期员工开设同一店铺的分店；帮助老员工独立开店",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2863251,
@@ -6499,7 +6499,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "牙齿酸软；令人烦躁",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2630160,
@@ -6535,7 +6535,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "无可救药；不可救药；坏透了；一无是处；糟糕透顶",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2859753,
@@ -6544,7 +6544,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "（专家）相形见绌；不足以匹敌；赤脚逃跑",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2853000,
@@ -6589,7 +6589,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "生育；分娩",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1628180,
@@ -6598,7 +6598,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "下定决心；拿定主意",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1471110,
@@ -6607,7 +6607,7 @@
       "level": "N1",
       "kind": "yojijukugo",
       "meaning": "波澜起伏；跌宕起伏；充满戏剧性；变化多端",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2836088,
@@ -6625,7 +6625,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "玩火",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1484880,
@@ -6643,7 +6643,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "投降；屈服；让步；认输",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2869763,
@@ -6652,7 +6652,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "屈服；投降；让步",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2418220,
@@ -6661,7 +6661,7 @@
       "level": "N1",
       "kind": "proverb",
       "meaning": "人言可畏；流言蜚语难阻止；人嘴两张皮，什么都能说",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2788200,
@@ -6670,7 +6670,7 @@
       "level": "N1",
       "kind": "proverb",
       "meaning": "利用他人的钱财获利；挪用他人资金冒险；拆东墙补西墙",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1904500,
@@ -6697,7 +6697,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "显而易见；昭然若揭；清清楚楚；一目了然",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1740090,
@@ -6706,7 +6706,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "不完全燃烧；不充分燃烧",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1492260,
@@ -6715,7 +6715,7 @@
       "level": "N1",
       "kind": "yojijukugo",
       "meaning": "少说多做；行动先于言语；先做后说",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2126780,
@@ -6733,7 +6733,7 @@
       "level": "N1",
       "kind": "yojijukugo",
       "meaning": "长生不老；永葆青春；长生不死",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1504790,
@@ -6742,7 +6742,7 @@
       "level": "N1",
       "kind": "yojijukugo",
       "meaning": "竭尽全力；尽心尽力；粉身碎骨",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1919400,
@@ -6760,7 +6760,7 @@
       "level": "N1",
       "kind": "proverb",
       "meaning": "功亏一篑；煮饭忘了加米；雕像虽成，灵魂未入",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2834571,
@@ -6787,7 +6787,7 @@
       "level": "N1",
       "kind": "yojijukugo",
       "meaning": "傍若无人；我行我素；横行霸道；目中无人；狂妄自大",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1514860,
@@ -6796,7 +6796,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "自掘坟墓；自作自受",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2846159,
@@ -6814,7 +6814,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "安心睡眠；无忧无虑地睡觉",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2858218,
@@ -6823,7 +6823,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "在床上哭泣；哭着入睡；在床上暗暗流泪；枕为泪湿",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1983470,
@@ -6832,7 +6832,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "命在旦夕的人；砧板上的鱼",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2670370,
@@ -6841,7 +6841,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "警惕；提防；谨慎小心；防止被欺骗",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1909970,
@@ -6850,7 +6850,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "（歌舞伎中）做出姿态；摆出架势",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1365530,
@@ -6859,7 +6859,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "自作自受；咎由自取；自食其果；自作孽不可活",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2061840,
@@ -6868,7 +6868,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "拉开差距；领先对手",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2838502,
@@ -6877,7 +6877,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "凑齐还债所需的全部金钱；筹足债款",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2408590,
@@ -6886,7 +6886,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "惨不忍睹；不忍直视；令人痛心地看",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2837575,
@@ -6895,7 +6895,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "心里痒痒；跃跃欲试",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1919520,
@@ -6904,7 +6904,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "感到厌恶；感到反感；毛骨悚然",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1919510,
@@ -6913,7 +6913,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "看起来很无害；看起来不会伤害任何人；看起来黄油都融不进嘴里的样子",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2065100,
@@ -6931,7 +6931,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "聪慧伶俐；机灵过人；非常聪明",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2144580,
@@ -6940,7 +6940,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "惊讶；困惑；迷茫；慌张；翻白眼",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2153080,
@@ -6949,7 +6949,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "冰释前嫌；言归于好；重归于好；恢复原状",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2837559,
@@ -6958,7 +6958,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "犯罪；作奸犯科",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2844875,
@@ -6967,7 +6967,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "盲目蛮干；不明确目标地做某事；无的放矢",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1541640,
@@ -6976,7 +6976,7 @@
       "level": "N1",
       "kind": "yojijukugo",
       "meaning": "名存实亡；徒有虚名",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2130890,
@@ -6985,7 +6985,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "在世间谋生；生活；过活",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2402310,
@@ -7003,7 +7003,7 @@
       "level": "N1",
       "kind": "yojijukugo",
       "meaning": "龙头蛇尾；开局强劲结局虚弱；虎头蛇尾",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2865218,
@@ -7012,7 +7012,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "顾惜自身；只顾自己；自私自利",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2690550,
@@ -7021,7 +7021,7 @@
       "level": "N1",
       "kind": "proverb",
       "meaning": "化险为夷；转危为安；因祸得福",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2857556,
@@ -7030,7 +7030,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "抓住稻草；病急乱投医；孤注一掷",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1962360,
@@ -7066,7 +7066,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "杯中风暴；茶杯里的风暴；小题大做；无关紧要的争执",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 1051790,
@@ -7075,7 +7075,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "哥伦布的蛋；哥伦布之卵",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2730850,
@@ -7084,7 +7084,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "陷入困境；处于狼狈之地",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2843602,
@@ -7093,7 +7093,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "打开潘多拉魔盒；揭开潘多拉之盒",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2840172,
@@ -7111,7 +7111,7 @@
       "level": "N1",
       "kind": "idiom",
       "meaning": "坐冷板凳；做替补队员",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2082110,
@@ -7120,7 +7120,7 @@
       "level": "N1",
       "kind": "proverb",
       "meaning": "想要劝说别人反而被别人劝说；偷鸡不成蚀把米；搬起石头砸自己的脚；木乃伊猎人最后自己变成了木乃伊",
-      "translation_source": "tomoshi_zh_defs"
+      "translation_source": "tomoshi_zh_defs","t":2
     },
     {
       "jmdict_ent_seq": 2777440,
