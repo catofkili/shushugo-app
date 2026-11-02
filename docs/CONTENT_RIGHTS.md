@@ -35,6 +35,7 @@ Apple 的 App Review Guidelines 要求开发者只提交自己创建或已获许
 | 例句音频 | `frontend/public/audio/examples/`（不入库；计划放 R2） | 2026-09-18 生成，VOICEVOX 春日部つむぎ 11,655 条 AAC。⚠️ 生成时用 macOS 自带 Kyoko 念一遍当**语调参考**（只提取音高曲线写进 VOICEVOX 查询，Kyoko 的音频一个字节都不发布，见 `scripts/prosody-transfer.mjs`）。macOS SLA 对系统语音的**输出**限定个人非商用；音高曲线是否算「输出」没有先例，风险低但是灰的。**2026-10-13 更正**：已不只一个声音、也不放 R2——三个声音（含付费的 voicevox-10 / 11，柚子商店在售）各 11,683 句用同一套 Kyoko 参考重新生成，打成音频包经腾讯云开发向 iOS / 小程序发布（线上网页不取包）；上面那条灰区因此覆盖三个声音、三端。换 AivisSpeech 的待办仍未做 | 署名同单词音频。要彻底去掉灰区就把参考引擎换成 AivisSpeech（ACML 1.0，商用允许、署名自愿），只改 `referenceWav` 一个函数，重跑约 6 小时 |
 | 第三方依赖 | `frontend/package-lock.json`、`frontend/node_modules/`、`frontend/ios/App/Pods/` | 依赖自身带有许可证文件，但尚未形成发行版 NOTICE 汇总 | 发布前生成并检查第三方许可证/NOTICE 清单 |
 | 图片、图标、字体、宣传素材 | `frontend/ios/`、`frontend/public/`、App Store 素材 | 本清单未证明全部拥有权利 | 逐项登记来源和许可；删除无法证明的素材 |
+| 吉祥物与商品图（水豚、鳄鱼贴纸，`frontend/public/brand/sheet*/`） | 同左 | **2026-11-02 作者确认**：都是作者用 OpenAI 生图模型（经 Codex / ChatGPT）生成的，作者认定可商用、可在英语版收集日里同样使用，需要新图可以直接再生成。OpenAI 使用条款把输出的权利归使用者 | 保留生成批次与脚本（`frontend/scripts/brand-sheet/`）作来源记录；字体、App Store 宣传图等其余素材仍按上一行逐项登记 |
 
 ## VOICEVOX 发布注意事项
 
