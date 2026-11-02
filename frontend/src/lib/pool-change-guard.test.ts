@@ -35,7 +35,7 @@ import { getGrammarQuizSession, PLAN_GRAMMAR_LEVEL, scopeLevels, submitGrammarQu
 import { getConfusionCardSession, getKanjiCardSession, loadMixedCardData, submitConfusionCardAnswer, submitKanjiCardAnswer } from "./mixed-cards";
 import { groupLevelRank, matchable } from "./confusion-cards";
 import { confusionGroups } from "./confusion-groups";
-import { createStage1Tasks, pickStage1Next } from "./word-api/stage1";
+import { COLLOCATION_DAILY_NEW, createStage1Tasks, pickStage1Next } from "./word-api/stage1";
 import { ensureProgressInitialized } from "./word-api/bootstrap";
 import { submitWordAnswer } from "./word-api";
 import { defaultStudyPreferences, getEffectiveStudyPreferences, getStudyPreferences, readLevelAdvance, saveStudyPreferences } from "./studyPreferences";
@@ -129,7 +129,8 @@ function observe(name: string): DayLoad[] {
       day,
       cards: byKind(() => ({ review: 0, fresh: 0, prior: 0, total: 0, answers: 0 })),
       limits: byKind(kind => kind === "words" ? dailyReviewCap(prefs.reviewCap, day) : planReviewLimit(0, kind, day)),
-      goals: { words: prefs.dailyGoal, grammar: prefs.grammarDailyGoal, kanji: prefs.kanjiDailyGoal, confusion: prefs.confusionDailyGoal }
+      // 固定搭配有独立日额（不占 dailyGoal），单词新学上限 = 普通名额 + 搭配日额；dailyGoal 为 0 时搭配也是 0。
+      goals: { words: prefs.dailyGoal + (prefs.dailyGoal > 0 ? COLLOCATION_DAILY_NEW : 0), grammar: prefs.grammarDailyGoal, kanji: prefs.kanjiDailyGoal, confusion: prefs.confusionDailyGoal }
     };
     for (const kind of KINDS) {
       const { reviews, idColumn } = PRIOR_ENTITIES[kind];

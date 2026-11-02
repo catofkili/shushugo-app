@@ -647,9 +647,7 @@ export function addWordsToQueue(wordIds: number[]): {
         AND t.task_type = 'new'
         AND NOT ${wordStartedSql()}
         AND p.known_forever = 0
-        AND (NOT ${collocationWordSql()} OR EXISTS (
-          SELECT 1 FROM dictionary_discovered_words d WHERE d.word_id = w.id
-        ))
+        AND (NOT ${collocationWordSql()} OR w.id IN (SELECT word_id FROM dictionary_discovered_words))
         AND t.word_id NOT IN (${placeholders})
       ORDER BY t.order_index DESC
       LIMIT 1
@@ -675,10 +673,8 @@ export function addWordsToQueue(wordIds: number[]): {
     );
     if (alreadyQueued) {
       // 原本在独立日额里的搭配被点名后不能超额又被裁掉：先腾普通名额，已答满时保留为显式加餐。
-      if (stage1NewTaskCount(day) > quota && !freeOneNewSlot()) db.run(`
-        UPDATE stage1_tasks SET task_type = 'encore_new' WHERE reviewed_on = ? AND word_id = ?
-          AND task_type = 'new' AND word_id IN (SELECT w.id FROM words w WHERE ${collocationWordSql()})
-      `, [day, id]);
+      if (stage1NewTaskCount(day) > quota && !freeOneNewSlot()) db.run(
+        `UPDATE stage1_tasks SET task_type='encore_new' WHERE reviewed_on=? AND word_id=? AND task_type='new' AND word_id IN (SELECT id FROM words w WHERE ${collocationWordSql()})`, [day, id]);
       queuedToday += 1;
       return;
     }

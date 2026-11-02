@@ -38,8 +38,8 @@ const setGoal = (dailyGoal: number, includeOptionalExpressions = false) => stora
   jlptExamDate: "2027-07-04", jlptPlanStartedOn: "2026-11-02"
 }));
 const insertCollocation = (id: number, entry: typeof content.entries[number]) => {
-  db.run("INSERT INTO words (id,kanji,kana,meaning,pos,jlpt_level,importance,shuffle_rank,example_jp,example_meaning) VALUES (?,?,?,?,'固定搭配',?,3,0,'','')",
-    [id, entry.surface, entry.kana, entry.meaning, entry.level]);
+  db.run("INSERT INTO words (id,kanji,kana,meaning,pos,jlpt_level,importance,shuffle_rank,example_jp,example_meaning,collocation_tier) VALUES (?,?,?,?,'固定搭配',?,3,0,'','',?)",
+    [id, entry.surface, entry.kana, entry.meaning, entry.level, entry.t ?? 1]);
   db.run("INSERT INTO progress (word_id) VALUES (?)", [id]);
 };
 const newTasks = () => rowsFor(`
@@ -57,6 +57,11 @@ const answer = (id: number, day = today(), direction = "forward") => {
   setLastAnsweredWord(id);
 };
 
+// 同档内是 ABS(RANDOM())：固定拿某个编号会偶尔撞上当天被系统抽中的 3 个，测试要先排除它们。
+const unqueuedCollocations = () => {
+  const queued = new Set(newTasks().map((row) => Number(row.id)));
+  return Array.from({ length: 20 }, (_, i) => COLLOCATION + i).filter((id) => !queued.has(id)).reverse();
+};
 describe("固定搭配独立每日新学配额", () => {
   beforeAll(async () => {
     const initWeappSqlJs = createRequire(import.meta.url)("../../../wechat-miniprogram/src/vendor/sql-wasm.js") as
@@ -157,7 +162,7 @@ describe("固定搭配独立每日新学配额", () => {
     let lastCollocation = false;
     for (let i = 0; i < 13; i++) {
       const card = pickStage1Next(new Set(), { deterministic: true })!;
-      const tier = wordCollocationTier(card);
+      const tier = wordCollocationTier(rowsFor("SELECT pos,collocation_tier FROM words WHERE id=?", [card.id])[0]);
       if (lastCollocation && tier) expect(newTasks().filter((row) => !row.collocation && !row.started)).toHaveLength(0);
       if (tier) seenTiers.push(tier);
       lastCollocation = tier !== null;
@@ -228,18 +233,20 @@ describe("固定搭配独立每日新学配额", () => {
     db.run("UPDATE progress SET known_forever=1 WHERE word_id<? OR word_id>=?", [COLLOCATION, COLLOCATION + 20]);
     expect(getWordSession({ level: "N3" }).card).toBeNull();
     expect(encoreRemainingCount(today())).toBe(0);
-    answer(COLLOCATION + 19, "2026-11-01");
-    db.run("UPDATE progress SET fsrs_due='2026-11-01' WHERE word_id=?", [COLLOCATION + 19]);
+    const [due] = unqueuedCollocations();
+    answer(due, "2026-11-01");
+    db.run("UPDATE progress SET fsrs_due='2026-11-01' WHERE word_id=?", [due]);
     expect(encoreRemainingCount(today())).toBe(1);
-    expect(getWordSession({ level: "N3" }).card?.id).toBe(COLLOCATION + 19);
+    expect(getWordSession({ level: "N3" }).card?.id).toBe(due);
   });
   it("词典点名、词库加入今天和自选清单仍可显式学习搭配", () => {
     createStage1Tasks(today());
-    expect(addWordToTodayEncore(COLLOCATION + 19)).toBe(true);
-    expect(addWordsToQueue([COLLOCATION + 18]).today).toBe(1);
+    const [named, added] = unqueuedCollocations();
+    expect(addWordToTodayEncore(named)).toBe(true);
+    expect(addWordsToQueue([added]).today).toBe(1);
     createStage1Tasks(today());
-    expect(newTasks().map((row) => row.id)).toContain(COLLOCATION + 19);
-    expect(newTasks().map((row) => row.id)).toContain(COLLOCATION + 18);
+    expect(newTasks().map((row) => row.id)).toContain(named);
+    expect(newTasks().map((row) => row.id)).toContain(added);
     setPickedWords([COLLOCATION + 17]);
     expect(pickedWordIds()).toEqual([COLLOCATION + 17]);
   });

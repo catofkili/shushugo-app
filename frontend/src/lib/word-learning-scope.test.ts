@@ -88,16 +88,16 @@ describe("固定搭配分档的共享学习口径", () => {
     db.run("UPDATE words SET collocation_tier=NULL WHERE id=?", [COMMON]);
     expect(wordCollocationTier(rowsFor("SELECT pos,collocation_tier FROM words WHERE id=?", [COMMON])[0])).toBe("common");
     createStage1Tasks(today());
-    expect(tasks()).toEqual([CORE, NORMAL, COMMON]);
+    expect(tasks()).toEqual([NORMAL, CORE, COMMON]);
     expect(count(newWordEligibleSql())).toBe(3);
     toggle(true);
     createStage1Tasks(today());
-    expect(tasks()).toEqual([CORE, NORMAL, COMMON, OPTIONAL]);
+    expect(tasks()).toEqual([NORMAL, CORE, COMMON, OPTIONAL]);
   });
   it("同形非固定搭配即使列值为 optional 也不隐藏或改变普通词排序", () => {
     db.run("UPDATE words SET kanji=(SELECT kanji FROM words WHERE id=?), kana=(SELECT kana FROM words WHERE id=?), collocation_tier=2 WHERE id=?", [OPTIONAL, OPTIONAL, NORMAL]);
     createStage1Tasks(today());
-    expect(tasks()).toEqual([CORE, NORMAL, COMMON]);
+    expect(tasks()).toEqual([NORMAL, CORE, COMMON]);
     expect(count(newWordEligibleSql())).toBe(3);
   });
   it("关闭时普通词与独立搭配名额分开入队，不含 optional，首次出题仍按档位", () => {

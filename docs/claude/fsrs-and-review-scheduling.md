@@ -1251,3 +1251,29 @@ fresh build 主包现为 **1,898,552 B**：C 历史 **1,925,754 → 1,898,552 B*
 视觉检查未完成：Playwright 默认浏览器版本未安装，改用本机已缓存的 Chromium 后，启动被沙箱的 `MachPortRendezvousServer Permission denied` 拦截，未取得页面或窄屏截图。没有下载浏览器、启动 dev server、连接 5173 或访问真实学习库；小程序构建及共享产物仍按作者本任务约定留待协调合并后统一验收。
 
 本次提交尝试另被文件沙箱阻断：当前 worktree 的 Git 元数据在 `/Users/lsc/Documents/shushugo/.git/worktrees/colloc-daily`，不在会话可写范围内，`git add` 无法创建 `index.lock`（`Operation not permitted`），因此尚未形成提交。实现与测试均留在 `claude/collocation-daily` 的工作区；没有改主目录源码、切换分支或绕过权限。
+
+### 合并时的主包账（2026-11-02 晚，rebase 到分档任务 D 之后）
+
+rebase 到 `ecda896a`（档位改存 `words.collocation_tier`）后第一次 `build:weapp`，主包 **1,900,752 B，超 1,900,000 闸门 752 B**：
+分档 D 合完只剩约 3 KB 余量，本节新增的 stage1 / word-api SQL 模板字符串（模板字面量里的换行和缩进压缩不掉）吃掉了。
+腾法只动本次新增的代码：① `pickStage1Next` 判断「上一张是不是新搭配」不再单独查一次 reviews，改看当天任务表里那一行（`task_type` 为 new / encore_new 且是搭配）；
+② `pendingCollocationCount` 和 reconcile 的 DELETE 共用 `pendingCollocationSql`；③ 新增 SQL 改成单行紧凑写法，`NOT EXISTS (SELECT … d.word_id = w.id)` 改 `w.id NOT IN (SELECT word_id FROM dictionary_discovered_words)`。
+④ topUp 里普通批和搭配批原来各写一条 INSERT，合成一个循环。结果主包 **1,899,888 B，余量只有 112 B**（加上下面「隔开新搭配」的修法之后的数）。**下一次往主包（stage1 / word-api / 主页 / 单词页）加任何东西，先按 `release-and-deployment.md`「连胜那次主包超了 13 KB」那节找地方腾。**
+`stage1.ts` 里这几段 SQL 写成一行是为了包体，别「美化」回多行缩进——那会直接把主包推回闸门外。
+
+合并时还改了分档 D 新增的两条旧断言（`word-learning-scope.test.ts`「NULL 固定搭配按 common 排序」「同形非固定搭配」）：
+期望的当天任务顺序从 `[CORE, NORMAL, COMMON]` 改成 `[NORMAL, CORE, COMMON]`——固定搭配不再在普通队列里和普通词比档位，而是普通名额排完后由独立日额追加；
+`collocation-daily.test.ts` 造数据补上 `collocation_tier` 列（D 之后档位不再按表记+读音查索引）。
+`content-matrix.ts` 基表合并取 main 的语法数（当天语法题去重 769 → 753）+ 本分支去掉三档搭配后的单词数。
+
+**隔开新搭配和混淆组隔离的先后（合并时修）**：最初的「上一张是新搭配就先把未开始的搭配筛掉」放在干扰隔离之前，
+`word-api.sequencer.test.ts`「整场里同一混淆组的词不会挨着出」约 1/8 红（main 上 6/6 绿，关掉这条过滤 12/12 绿）——
+筛完新词道只剩一个和刚出过的词同组的普通词、复习道又空，排片器只好放行。现在的判据：**只有隔开之后仍有不撞车的候选才隔开**，
+混淆组隔离优先于搭配间隔。`pool-change-guard.test.ts` 的单词新学上限同步改为 `dailyGoal + COLLOCATION_DAILY_NEW`（dailyGoal 为 0 时为 0），
+这是独立日额的本意，不是放宽守卫。`collocation-daily.test.ts` 里两条曾固定拿第 19 号搭配，偶尔撞上当天随机抽中的 3 个（同档 `ABS(RANDOM())`），改为先排除当天已排的。
+
+**⚠️ 已有当天计划时不要每次都补位（合并时修，性能）**：Codex 初版在 `createStage1Tasks` 的「已有计划」分支里每次都调 `topUpStage1NewTasks`。
+搭配日额只要有空位（**搭配全学完、或没有可学的搭配**）就永远空着，于是**每次选卡**都要全库跑一遍 `newWordEligibleSql` + `newWordOrderSql` 去找根本不存在的搭配：
+`word-api.sequencer.test.ts` 80 张卡从 0.8 s 涨到 2.7 s，全量 `ci-local` 里两条 5 s 超时（小程序 sql.js 更慢）。
+现在 `reconcileStage1NewQuota` 返回「是否裁掉了搭配」，已有计划**只在裁掉搭配时**补位（旧版计划里搭配占着普通名额，裁完要补普通词）；新建计划时照常补。
+计数「今天已新学几个搭配」仍从当天 `reviews` 出发（走 `idx_reviews_day_direction`），别改成从 790 条搭配逐条 `EXISTS` 查流水。

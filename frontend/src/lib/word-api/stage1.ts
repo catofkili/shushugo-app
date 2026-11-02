@@ -63,30 +63,22 @@ const optionalScopeByDatabase = new WeakMap<object, boolean>();
 export const COLLOCATION_DAILY_NEW = 3;
 
 // 词典/词库点名仍走原来的普通名额或 encore_new；只有系统投放的搭配受独立日额约束。
-const dailyCollocationSql = (w = "w") => `(${collocationWordSql(w)} AND NOT EXISTS (
-  SELECT 1 FROM dictionary_discovered_words explicit_word WHERE explicit_word.word_id = ${w}.id
-))`;
+const dailyCollocationSql = (w = "w") => `(${collocationWordSql(w)} AND ${w}.id NOT IN (SELECT word_id FROM dictionary_discovered_words))`;
+// 主包余量只有个位数字节，这些新增 SQL 刻意写成紧凑单行。
+// 当天任务表里系统投放、尚未开始的搭配
+const pendingCollocationSql = `FROM stage1_tasks t JOIN progress p ON p.word_id=t.word_id JOIN words w ON w.id=t.word_id WHERE t.reviewed_on=? AND t.task_type IN ('new','encore_new') AND ${dailyCollocationSql()} AND NOT ${wordStartedSql()} AND p.known_forever=0`;
 
 export const stage1NewTaskCount = (day: string) => firstValue<number>(
-  `SELECT COUNT(*) FROM stage1_tasks t JOIN words w ON w.id = t.word_id
-   WHERE t.reviewed_on = ? AND t.task_type = 'new' AND NOT ${dailyCollocationSql()}`,
+  `SELECT COUNT(*) FROM stage1_tasks t JOIN words w ON w.id=t.word_id WHERE t.reviewed_on=? AND t.task_type='new' AND NOT ${dailyCollocationSql()}`,
   [day],
   0
 );
 
-const remainingCollocationQuota = (day: string) => Math.max((dailyNewQuota() > 0 ? COLLOCATION_DAILY_NEW : 0) - firstValue<number>(`
-  SELECT COUNT(DISTINCT r.word_id) FROM reviews r JOIN words w ON w.id = r.word_id
-  WHERE r.reviewed_on = ? AND ${collocationWordSql()}
-    AND NOT EXISTS (SELECT 1 FROM reviews earlier WHERE earlier.word_id = r.word_id AND earlier.reviewed_on < ?)
-    AND NOT ${priorBaselineSql("words", "r.word_id")}
-`, [day, day], 0), 0);
+const remainingCollocationQuota = (day: string) => Math.max((dailyNewQuota() > 0 ? COLLOCATION_DAILY_NEW : 0) - firstValue<number>(
+  // 今天首次真实作答（排除先验）的搭配；从当天 reviews 出发，走 reviewed_on 索引。
+  `SELECT COUNT(DISTINCT w.id) FROM reviews r JOIN words w ON w.id=r.word_id WHERE r.reviewed_on=? AND ${collocationWordSql()} AND NOT EXISTS(SELECT 1 FROM reviews e WHERE e.word_id=w.id AND e.reviewed_on<?) AND NOT ${priorBaselineSql("words", "w.id")}`, [day, day], 0), 0);
 
-const pendingCollocationCount = (day: string) => firstValue<number>(`
-  SELECT COUNT(*) FROM stage1_tasks t JOIN words w ON w.id = t.word_id
-  JOIN progress p ON p.word_id = t.word_id
-  WHERE t.reviewed_on = ? AND t.task_type IN ('new', 'encore_new')
-    AND ${dailyCollocationSql()} AND NOT ${wordStartedSql()} AND p.known_forever = 0
-`, [day], 0);
+const pendingCollocationCount = (day: string) => firstValue<number>(`SELECT COUNT(*) ${pendingCollocationSql}`, [day], 0);
 
 const backfillStage1TasksFromReviews = (day: string) => {
   const rows = rowsFor(`
@@ -158,8 +150,9 @@ export const createStage1Tasks = (day: string, options: { topUp?: boolean } = {}
   if (!options.topUp) {
     const hasPlan = stage1TaskCount(day) > 0;
     if (hasPlan && !removedOptional && !scopeChanged) {
-      reconcileStage1NewQuota(day);
-      topUpStage1NewTasks(day);
+      // 已有计划只在清理裁掉了搭配时补位（旧版计划里搭配占着普通名额，裁完要补普通词）。别改成每次都补：搭配学完 / 没有可学的搭配时日额永远空着，
+      // 每次选卡都会全库扫一遍找不存在的搭配，选卡整场慢 3 倍多（sequencer 测试 0.8s → 2.7s）。
+      if (reconcileStage1NewQuota(day)) topUpStage1NewTasks(day);
       reconcilePriorTasks(WORD_FSRS, "stage1_tasks", day, studyDayEnd(), "review");
       return;
     }
@@ -244,31 +237,20 @@ const topUpStage1NewTasks = (day: string) => {
       ${newWordOrderSql("w")}
     LIMIT ?
   `, [day, day, ordinarySlots]) : [];
+  // 搭配独立日额排在普通名额之后。两批不相交：普通批只放进点名过的搭配，dailyCollocationSql 恰好排除点名的。
+  const collocationSlots = Math.max(remainingCollocationQuota(day) - pendingCollocationCount(day), 0);
+  const collocations = collocationSlots > 0 ? rowsFor(`SELECT p.word_id FROM progress p JOIN words w ON w.id=p.word_id WHERE ${dailyCollocationSql()} AND ${newWordEligibleSql()} AND p.word_id NOT IN (SELECT word_id FROM stage1_tasks WHERE reviewed_on=?) ORDER BY ${newWordOrderSql("w")} LIMIT ?`, [day, collocationSlots]) : [];
 
-  newRows.forEach((row) => {
+  [...newRows, ...collocations].forEach((row) => {
     db.run(`
       INSERT OR IGNORE INTO stage1_tasks (reviewed_on, word_id, task_type, order_index)
       VALUES (?, ?, 'new', ?)
     `, [day, Number(row.word_id), orderIndex]);
     orderIndex += 1;
   });
-  const collocationSlots = Math.max(remainingCollocationQuota(day) - pendingCollocationCount(day), 0);
-  if (collocationSlots > 0) {
-    const collocations = rowsFor(`
-      SELECT p.word_id FROM progress p JOIN words w ON w.id = p.word_id
-      WHERE ${dailyCollocationSql()} AND ${newWordEligibleSql()}
-        AND p.word_id NOT IN (SELECT word_id FROM stage1_tasks WHERE reviewed_on = ?)
-      ORDER BY ${newWordOrderSql("w")}
-      LIMIT ?
-    `, [day, collocationSlots]);
-    collocations.forEach((row) => {
-      db.run("INSERT INTO stage1_tasks (reviewed_on, word_id, task_type, order_index) VALUES (?, ?, 'new', ?)",
-        [day, Number(row.word_id), orderIndex++]);
-    });
-  }
 };
 
-const reconcileStage1NewQuota = (day: string) => {
+const reconcileStage1NewQuota = (day: string): boolean => {
   const completedNewTasks = firstValue<number>(`
     SELECT COUNT(*)
     FROM stage1_tasks t
@@ -305,19 +287,11 @@ const reconcileStage1NewQuota = (day: string) => {
   `, [day, day, remainingNewQuota]);
 
   const collocationQuota = remainingCollocationQuota(day);
-  if (pendingCollocationCount(day) <= collocationQuota) return;
+  if (pendingCollocationCount(day) <= collocationQuota) return false;
   // 旧计划（含自动加餐）只裁未开始的搭配；已答任务、先验和复习行都保留。
-  getDatabase().run(`
-    DELETE FROM stage1_tasks WHERE reviewed_on = ? AND word_id IN (
-      SELECT word_id FROM (
-        SELECT t.word_id, ROW_NUMBER() OVER (ORDER BY ${newWordLevelRankSql("w")},
-          ${newWordTierRankSql("w.id")}, t.order_index, t.word_id) AS row_number
-        FROM stage1_tasks t JOIN progress p ON p.word_id = t.word_id JOIN words w ON w.id = t.word_id
-        WHERE t.reviewed_on = ? AND t.task_type IN ('new', 'encore_new')
-          AND ${dailyCollocationSql()} AND NOT ${wordStartedSql()} AND p.known_forever = 0
-      ) WHERE row_number > ?
-    )
-  `, [day, day, collocationQuota]);
+  getDatabase().run(`DELETE FROM stage1_tasks WHERE reviewed_on=? AND word_id IN (SELECT word_id FROM (SELECT t.word_id, ROW_NUMBER() OVER (ORDER BY ${newWordLevelRankSql("w")}, ${newWordTierRankSql("w.id")}, t.order_index, t.word_id) n ${pendingCollocationSql}) WHERE n>?)`,
+    [day, day, collocationQuota]);
+  return true;
 };
 
 export const STAGE1_PLAN_VERSION = "capped-random-v4";
@@ -581,15 +555,18 @@ export const pickStage1Next = (
   let pickable = availableRows.length > 1 && !repeatAllowed
     ? availableRows.filter((row) => Number(row.id) !== lastId)
     : availableRows;
-  const lastWasNewCollocation = lastId > 0 && firstValue<number>(`
-    SELECT 1 FROM words w WHERE w.id = ? AND ${collocationWordSql()}
-      AND EXISTS (SELECT 1 FROM reviews r WHERE r.word_id = w.id AND r.reviewed_on = ?)
-      AND NOT EXISTS (SELECT 1 FROM reviews earlier WHERE earlier.word_id = w.id AND earlier.reviewed_on < ?)
-      AND NOT ${priorBaselineSql("words", "w.id")}
-  `, [lastId, day, day], 0) > 0;
-  // 新搭配之间至少隔一张；只剩新搭配时让步，学习中卡和复习仍走原排片。
-  const otherCards = pickable.filter((row) => row.started || !row.collocation);
-  if (lastWasNewCollocation && otherCards.length) pickable = otherCards;
+  const recent = recentAnswersToday(day, INTERFERENCE_WINDOW);
+  const interference = perfTime("选卡 · 干扰索引", () => sessionInterference(day, rows));
+  // 新词道常常只有一两个候选(配额小 / 快背完了)。排片器的干扰隔离是「过滤空了就当没这条」,
+  // 一个候选自己撞上刚出过的同组词时它必然放行 —— 見る 刚答完就出 ご覧になる。
+  // 所以这一轮新词全部撞车、复习道还有词时,把这一轮让给复习道,新词下一轮再来。
+  const conflictsRecent = (row: Record<string, unknown>) =>
+    recent.wordIds.some((id) => interference.conflicts(Number(row.id), id));
+  // 新搭配之间至少隔一张（上一张是当天任务表里的 new / encore_new 搭配）。避开同组混淆词优先：
+  // 先筛掉未开始的搭配会让候选只剩撞车的卡、排片器只好放行（sequencer 测试约 1/8 红过），所以隔开后没有不撞车的卡就不隔。
+  // 上一张答完可能已排到以后、不在 rows 里，所以直接查任务表。
+  const spaced = pickable.filter((row) => row.started || !row.collocation);
+  if (spaced.some((row) => !conflictsRecent(row)) && firstValue<number>(`SELECT COUNT(*) FROM stage1_tasks t JOIN words w ON w.id=t.word_id WHERE t.reviewed_on=? AND t.word_id=? AND t.task_type LIKE '%new' AND ${collocationWordSql()}`, [day, lastId], 0)) pickable = spaced;
   const reviewRows = pickable.filter((row) => String(row.task_type) === "review");
   // encore_new is an explicitly discovered word: it bypasses the daily new
   // quota, but it must still enter the same new-card lane for sequencing.
@@ -605,19 +582,12 @@ export const pickStage1Next = (
     JOIN stage1_tasks t ON t.word_id = r.word_id AND t.reviewed_on = r.reviewed_on
     WHERE t.reviewed_on = ?
   `, [day], 0);
-  const recent = recentAnswersToday(day, INTERFERENCE_WINDOW);
-  const interference = perfTime("选卡 · 干扰索引", () => sessionInterference(day, rows));
   const wantNew = shouldPickStage1NewWord(
     reviewRows.length,
     newRows.length,
     completedTaskCount,
     deterministic ? 1 : undefined
   );
-  // 新词道常常只有一两个候选(配额小 / 快背完了)。排片器的干扰隔离是「过滤空了就当没这条」,
-  // 一个候选自己撞上刚出过的同组词时它必然放行 —— 見る 刚答完就出 ご覧になる。
-  // 所以这一轮新词全部撞车、复习道还有词时,把这一轮让给复习道,新词下一轮再来。
-  const conflictsRecent = (row: Record<string, unknown>) =>
-    recent.wordIds.some((id) => interference.conflicts(Number(row.id), id));
   const preferredRows = wantNew && !(reviewRows.length && orderedNewRows.every(conflictsRecent))
     ? orderedNewRows
     : reviewRows.length ? reviewRows : orderedNewRows;
