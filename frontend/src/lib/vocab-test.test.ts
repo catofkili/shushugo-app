@@ -66,6 +66,7 @@ beforeEach(async () => {
   testDb.run("CREATE TABLE app_state (key TEXT PRIMARY KEY, value TEXT NOT NULL)");
   testDb.run("CREATE TABLE words (id INTEGER PRIMARY KEY, kanji TEXT, kana TEXT, meaning TEXT, jlpt_level TEXT, pos TEXT)");
   testDb.run("CREATE TABLE reviews (id INTEGER PRIMARY KEY, word_id INTEGER, answer TEXT, score_after REAL, reviewed_on TEXT)");
+  testDb.run("CREATE TABLE progress (word_id INTEGER PRIMARY KEY, seen_count INTEGER DEFAULT 0, known_forever INTEGER DEFAULT 0, fsrs_state INTEGER, fsrs_due TEXT, fsrs_stability REAL, fsrs_last_review TEXT)");
   sampleRows().forEach((row) => {
     testDb.run("INSERT INTO words (id, kanji, kana, meaning, jlpt_level) VALUES (?, ?, ?, ?, ?)", [row.id, row.kanji, row.kana, row.meaning, row.level]);
   });

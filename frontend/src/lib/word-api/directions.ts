@@ -15,6 +15,7 @@ import {
 } from "../orthography";
 import { LEECH_LAPSE_THRESHOLD } from "../fsrs-scheduler";
 import { pendingPriorSql, priorGateSql } from "../prior-pacing";
+import { optionalWordSql } from "../collocation-tier";
 
 /**
  * 一个词 = 三张卡:正向(释义 → 日语)、反向(日语 → 释义)、汉字读音(表记 → 读音)。
@@ -149,6 +150,7 @@ export const ensureDirectionCardIds = (direction: StudyDirection, limit: number)
       AND p.known_forever = 0
       AND COALESCE(p.fsrs_lapses, 0) < ?
       AND ${priorGateSql("words", "p.word_id")}
+      ${direction.id === "kanji_reading" ? `AND NOT (${optionalWordSql("w.id")})` : ""}
       ${direction.wordFilterSql ? `AND ${direction.wordFilterSql}` : ""}
       AND NOT EXISTS (SELECT 1 FROM ${table} m WHERE m.word_id = p.word_id)
     ORDER BY p.fsrs_due ASC, p.word_id ASC

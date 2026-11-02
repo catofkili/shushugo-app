@@ -1,3 +1,4 @@
+import { wordLearningScopeSql, wordStartedSql } from "./word-learning-scope";
 import { getDatabase } from "./database";
 import { firstValue, getState, rowsFor, setState } from "./database/db-utils";
 import { ensureGrammarProgressInitialized } from "./grammar-api";
@@ -159,10 +160,11 @@ export async function applyLevelStartingPoint(settings: LevelPlanSettings, now =
           SELECT CAST(t.${entity.key} AS TEXT) AS entity_key, ${entity.level} AS level_rank
           FROM ${entity.table} t
           WHERE t.known_forever = 0
-            AND (t.seen_count = 0 OR EXISTS (
+            AND (${entity.name === "words" ? `NOT ${wordStartedSql("t")}` : "t.seen_count = 0"} OR EXISTS (
               SELECT 1 FROM level_prior_baselines b WHERE b.entity = ? AND b.entity_key = CAST(t.${entity.key} AS TEXT)
             ))
             AND NOT EXISTS (SELECT 1 FROM ${entity.reviewTable} r WHERE r.${entity.reviewKey} = t.${entity.key})
+            ${entity.name === "words" ? `AND t.word_id IN (SELECT w.id FROM words w JOIN progress p ON p.word_id = w.id WHERE ${wordLearningScopeSql()})` : ""}
         `, [entity.name]);
         for (const row of candidates) {
           const levelRank = Number(row.level_rank);

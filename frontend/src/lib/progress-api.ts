@@ -1,3 +1,4 @@
+import { wordLearningScopeSql } from "./word-learning-scope";
 import { firstRow, rowsFor, studyDayEnd } from "./study-core";
 import { ensureGrammarProgressInitialized } from "./grammar-api";
 import { ensureProgressInitialized } from "./word-api";
@@ -31,6 +32,7 @@ export function getProgressOverview(): ProgressOverview {
       SUM(CASE WHEN NOT ${REAL_WORD} THEN 1 ELSE 0 END) AS unseen
     FROM words w
     JOIN progress p ON p.word_id = w.id
+    WHERE ${wordLearningScopeSql()}
   `, [dayEnd]);
   const wordsByLevel = rowsFor(`
     SELECT
@@ -42,7 +44,7 @@ export function getProgressOverview(): ProgressOverview {
       SUM(CASE WHEN NOT ${REAL_WORD} THEN 1 ELSE 0 END) AS unseen
     FROM words w
     JOIN progress p ON p.word_id = w.id
-    WHERE w.jlpt_level IN ('N5', 'N4', 'N3', 'N2', 'N1')
+    WHERE w.jlpt_level IN ('N5', 'N4', 'N3', 'N2', 'N1') AND ${wordLearningScopeSql()}
     GROUP BY w.jlpt_level
     ORDER BY CASE w.jlpt_level WHEN 'N5' THEN 1 WHEN 'N4' THEN 2 WHEN 'N3' THEN 3 WHEN 'N2' THEN 4 WHEN 'N1' THEN 5 ELSE 9 END
   `, [dayEnd]).map((row) => ({

@@ -1,3 +1,4 @@
+import { newWordEligibleSql, wordLearningScopeSql, wordStartedSql } from "../word-learning-scope";
 import type { WordStats } from "../../types/vocabulary";
 import { getDailyWordGoal, isPostExamLightActive } from "../studyPreferences";
 import { grammarPlanDone, grammarPlanRemaining, PLAN_GRAMMAR_LEVEL } from "../grammar-quiz";
@@ -163,7 +164,7 @@ export function getWordStats(
     SELECT COUNT(*)
     FROM words w
     JOIN progress p ON p.word_id = w.id
-    WHERE 1 = 1 ${filter.clause}
+    WHERE ${wordLearningScopeSql()} ${filter.clause}
   `, filter.params, 0));
   const knownForever = lazy(() => firstValue<number>(`
     SELECT COUNT(*)
@@ -182,7 +183,7 @@ export function getWordStats(
     SELECT COUNT(*)
     FROM progress p
     JOIN words w ON w.id = p.word_id
-    WHERE p.known_forever = 0 AND p.seen_count > 0
+    WHERE p.known_forever = 0 AND ${wordStartedSql()}
       AND (p.fsrs_due IS NULL OR p.fsrs_due <= ?) ${filter.clause}
       AND ${priorGateSql("words", "p.word_id")}
   `, [studyDayEnd().toISOString(), ...filter.params], 0));
@@ -191,7 +192,7 @@ export function getWordStats(
     SELECT COUNT(*)
     FROM progress p
     JOIN words w ON w.id = p.word_id
-    WHERE p.known_forever = 0 AND p.seen_count = 0 ${filter.clause}
+    WHERE ${newWordEligibleSql()} ${filter.clause}
     `,
     filter.params,
     0

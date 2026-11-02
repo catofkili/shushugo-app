@@ -5,6 +5,7 @@
 import { firstRow, firstValue, rowsFor, studyDate } from "../database/db-utils";
 import { updateMemoryProfileIfNeeded, getUserMemoryProfile, getMemoryStrengthLabel } from "../adaptive";
 import { ensureFsrsColumns, MASTERED_SQL } from "../fsrs-store";
+import { wordLearningScopeSql } from "../word-learning-scope";
 
 const realWordStudySql = () => {
   const baselineExists = firstValue<number>(
@@ -181,7 +182,7 @@ export function getMasteryAnalytics(): MasteryAnalytics {
         AND COALESCE(p.fsrs_lapses, 0) > 0 THEN 1 ELSE 0 END) AS struggling
     FROM words w
     JOIN progress p ON p.word_id = w.id
-    WHERE w.jlpt_level IN ('N5', 'N4', 'N3', 'N2', 'N1')
+    WHERE w.jlpt_level IN ('N5', 'N4', 'N3', 'N2', 'N1') AND ${wordLearningScopeSql()}
     GROUP BY w.jlpt_level
     ORDER BY CASE w.jlpt_level
       WHEN 'N5' THEN 1

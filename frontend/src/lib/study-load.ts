@@ -1,3 +1,4 @@
+import { newWordEligibleSql } from "./word-learning-scope";
 import { rowsFor, studyDate, studyDayEnd, today } from "./study-core";
 import { getDailyWordGoal } from "./studyPreferences";
 import { ensureFsrsColumns, WORD_FSRS } from "./fsrs-store";
@@ -181,7 +182,7 @@ const pendingDue = (now: Date): number => {
 
 /** 还没学过的词还剩多少 —— 新词额度只能发到它见底为止 */
 const unlearnedWordCount = (): number => Number(rowsFor(`
-  SELECT COUNT(*) AS n FROM progress WHERE known_forever = 0 AND seen_count = 0
+  SELECT COUNT(*) AS n FROM progress p JOIN words w ON w.id = p.word_id WHERE ${newWordEligibleSql()}
 `)[0]?.n ?? 0);
 
 export const dailyStudyLoad = (options: {

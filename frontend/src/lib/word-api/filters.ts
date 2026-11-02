@@ -1,6 +1,7 @@
 import type { SqlValue } from "../study-core";
 import type { WordSessionOptions } from "../study-types";
 import { planLevelRankSql } from "../plan-level-order";
+import { newWordTierRankSql } from "../collocation-tier";
 
 /**
  * 「筛选学习」的 WHERE 片段:等级 + 词性/收藏 + 学习重点。
@@ -124,7 +125,7 @@ export const newWordLevelRankSql = (alias = "w") => planLevelRankSql(`${alias}.j
  * 每日任务表只在配额没填满时生成一次(见 stage1NewTaskCount),所以用 RANDOM() 不会来回抖。
  */
 export const newWordOrderSql = (alias = "w") =>
-  `${newWordLevelRankSql(alias)} ASC, ${alias}.importance DESC, ABS(RANDOM()) ASC`;
+  `${newWordLevelRankSql(alias)} ASC, ${newWordTierRankSql(`${alias}.id`)} ASC, ${alias}.importance DESC, ABS(RANDOM()) ASC`;
 
 export const wordFilterSql = (options: WordSessionOptions = {}, alias = "w", progressAlias = "p") => {
   const clauses: string[] = [];

@@ -832,3 +832,68 @@ cd frontend && SHUSHUGO_LOAD_SIM=1 npx vitest run src/lib/daily-load-simulation.
   真实库往后推，第一天普通复习 52（作者自己的计划上限）+ 先验 8 = 60，之后逐日下降。
 - 上限装不下时仍是纯随机抽（`fsrsDueWordIds`，用户 09-18 定的），被挡下的第二天照常是到期状态。
 - 圆环上的复习建议（`grammarReviewPool`）显示的是当天计划总量（上限截断），不扣「已复习」—— 它要的是总量，不是剩余量。
+## 固定搭配分档（2026-11-02）
+
+作者当天拍板的原意（转述，非逐字引文）：「自谦敬辞必须背；一般固定表达次之；惯用句、谚语、四字熟语更弱。」任务 A 的逐条归档是决定源，不按 `kind` 再猜一次档位。`jlpt_collocation_content.json` 的 `t=0` 是 core，省略 `t` 是 common，`t=2` 是 optional；`study-core.collocationTier` 保留兼容导出，实现移到 `collocation-tier.ts`。
+
+- **core 必背**：正常投放，算本级完成；同级排普通词之前。
+- **common 常用**：正常投放，算本级完成；同级排普通词之后。
+- **optional 选学**：`studyPreferences.includeOptionalExpressions` 默认 false；关闭时未学卡不投放、不占新词名额、不增加本级完成分母、起点估算、推荐量、首页新词角标或备考缺口。打开时同级排 common 后，并纳入这些口径。
+- 级别排序仍走 `newWordLevelRankSql` / 计划级别顺推。词典点名词的既有显式优先例外保留；同档原有重要度、随机以及历史欠账只在档位之后决定先后。首次露面的实际挑卡也尊重这份顺序，不能只排任务表再让排片随机打乱。已经开始的学习步骤仍走原排片器。
+
+### 唯一资格判据与不可破坏的不变量
+
+`word-learning-scope.ts` 提供三份 SQL 片段：`wordStartedSql`（有任何方向 reviews 流水、`seen_count>0`、或 progress 已有 FSRS 状态/到期/稳定度/上次复习）、`wordLearningScopeSql`（本级/计划总量的范围）、`newWordEligibleSql`（未熟知、未开始且在范围内的新词）。调用处可以传显式开关，默认现读偏好，不能模块加载时冻结。
+
+**已学过的 optional 无论开关如何都照常复习，不能搁置、清状态或删除流水。** 本级总量也保留它们，已学分子同时保留，因而不会增加未学负担；熟知同理。先验已经建立 FSRS 的 optional 也是已开始的卡，关开关不是撤销先验。真实词量仍遵守原先「先验不冒充真实作答」口径，不能拿新词资格倒推成就分子。
+
+关闭开关时，当天任务表只移走未学 optional（含加餐），随后在原新词配额内补位；打开时补足尚空的名额。任务数限制不变，不重抽已经排好的复习、不丢已答任务。自选清单原始 ID 继续保存，读取时屏蔽尚未启用的 optional，重新打开可恢复。起点先验也使用同一范围，并保护没有 seen_count、但已有 FSRS 的卡不被重估覆盖；先验释放限速、复习上限不足时纯随机取样、95% 后往上/回补/先不加均未改。
+
+开关变化的观察值只存在按库实例的 WeakMap，不写 app_state 云同步；换库/冷启动重新核对本机偏好。打开状态冷启动且当天任务丢失时，仍先回填真实今日流水再补额度，不能因为「开关变了」跳过回填、凭空增加新词名额。
+
+### SQL 表示和双端共享
+
+未加列、未加表、未改固定搭配内容版本。`frontend/scripts/build-collocation-tier-index.mjs` 从 A 的 JSON 生成 `collocation_tier_index.json`，仅保留 `[表记,读音,t]`；测试逐项核对全部 790 条。内容变更后先运行该脚本，再生成小程序共享包。迁移正文在小程序里是种子守卫，运行时不能直接 import 正文拿档位，因此独立小索引是必要的。
+
+`collocation-tier.ts` 启动时用 `collocationTier` 构造各档身份集合；SQL 通过 `json_each` 展开，按 **`pos='固定搭配'` 且表记、读音同时匹配** 得到真实 word_id 子查询。`IN (SELECT …)` 是不相关集合查询，无需逐词跨 WASM、没有参数个数限制，也不用每次开库把 ID 一条条带到 JS。没有依赖自增 ID，换库、迁移和导入后仍能匹配。未知/自导普通词不被同表记误筛。
+
+没有用 TEMP 表：sql.js `export()` 重开内部连接会丢 TEMP 表；也没有缓存库内 word_id，避免同步合库/恢复后缓存过期。连接键使用 `char(31)`，不用 NUL（SQLite 的 JSON 字符串处理遇 NUL 会截断）。只清今日任务范围，不在每次挑卡时先把全库待清 ID 搬出来。
+
+原生 `build-shared.mjs` 只新增这个小索引的 INLINE_DATA 许可，然后重新生成 `src/shared/web.js`；Taro 沿现有路线直接引用同一份 lib。没有页面变更，不需要 parity-map 的 UI 配对登记。任务 B 明确禁止重建 Taro 和 reports；源代码与新原生共享包的验收不能声称验证过新的 Taro 安装包大小或真机行为。
+
+### 调用点清单（避免以后只修一个入口）
+
+| 文件 | 入口 / 口径 |
+| --- | --- |
+| `word-api/stage1.ts` | `createStage1Tasks`、`reconcileStage1NewQuota`、`pickStage1Next`、`tomorrowWordAudioPlan`、`encoreRemainingCount`：计划、配额、实际首次出题、音频候选和续杯 |
+| `word-api/filters.ts` | `newWordOrderSql`：所有正常新词入口共用级别和档位顺序 |
+| `word-api.ts` | `pickFilteredWordNext`、`startEncore`、`addWordToTodayEncore`、`addWordsToQueue`：筛选/兜底、加餐和词库添加 |
+| `mixed-session.ts` | `pickMixedNext` 只决定下一种卡；单词仍经 `word-api` → `pickStage1Next`，没有复制筛词规则 |
+| `word-api/picked.ts` | `pickedWordIds`：自选清单的资格和总量 |
+| `fsrs-store.ts` | `WORD_FSRS.eligible` → `fsrsDueWordIds` / `fsrsDueCount`：已开始卡不受 optional 开关排除，包含仅 FSRS/仅流水的边界 |
+| `studyPreferences.ts`、`level-advance.ts` | `levelUnseenContent`、`levelProgress`：暂停收尾、回补有无剩余、本级 95% 分母 |
+| `level-plan.ts` | `applyLevelStartingPoint`：起点先验候选，不给关闭的未学 optional 建 FSRS |
+| `daily-plan.ts` | `remainingPlanWords`、`previewCurrentLevelPlan`、`dailyPlanView`、`learnedLevel`、`examPreset`：DailyPlanPanel/起点预览/推荐量/水平推断/备考缺口 |
+| `plan/content-matrix.ts` | `expectedContent`、`previewLevelPlan`：35 份基表默认排除，读取时按开关加增量 |
+| `word-api/stats.ts` | `getWordStats` 的 total / unseenCount：首页/小程序角标及混合模式中的单词量 |
+| `progress-api.ts` | `getProgressOverview` 总量和分级量；`seenWordCount` 的真实历史分子保留，不抹掉已学 optional |
+| `analytics/stats.ts` | `getMasteryAnalytics` 的分级总量与掌握比例：不把未启用的选学卡算成尚欠的学习量，历史分子保留 |
+| `study-load.ts`、`kana-words.ts` | `unlearnedWordCount`（负荷预测）、`simpleWords`（假名后简单词） |
+| `jlpt/status.ts` | `getJlptPlanStatus` 的覆盖总量、新学剩余和每日推荐，备考页面直接消费 |
+| `vocab-test.ts` | `wordRows`：新场测验抽样框/分级词量；旧场快照和历史不追改 |
+| `spelling/study.ts`、`spelling/store.ts`、`word-api/directions.ts` | `shouldSpellWord`、`seedCards`、`ensureDirectionCardIds`：不引入 optional 拼写/汉字读音产出卡 |
+
+另核对了冷启动 `getWordStats → mixedCardCounts → eligibleKanjiChoiceChars / confusionGroups` 的 `json_group_array` 批读：它们读的是汉字例词资格/完整辨析关系，**不是单词未学数**，保留完整词表及批量跨 WASM 的路径，不按偏好删辨析成员或更改分组 key。真正单词角标在上表 `getWordStats`，单词任务在 stage1。同理 `word-library` 的词库目录总量、迁移完整性 COUNT、真实历史/奖励和查阅关系不是新词池，不因关开关消失。
+
+### 题面边界与这次踩到的坑
+
+optional 不进入内联拼写，也不播种新的独立拼写/汉字读音卡；既有拼写标记、方向 FSRS 和历史不删除，到期复习保持。反向的日文→释义认读可沿现有方向使用。**经典/混合单词卡仍是中文→日语**，所以没有宣称完成严格的「optional 全部只认读」。要做到后者需把单卡题面方向与 FSRS 记忆方向分离，并对网页/Taro 卡面同步验收，不能在这次只改 lib 时把作答记到另一个方向或偷偷新增题型。词汇量测验仍沿现有正字法规则选读音/释义题，未重写题库。
+
+回归已覆盖默认/写回偏好、开关下队列顺序与实际出题、旧队列补位、仅见过/仅 FSRS/仅流水的 optional 复习、本级分母、计划/角标/测验口径、起点先验和拼写/方向播种。实现时发现三个容易漏的边界：只看 seen_count 会把有 FSRS/流水的词当新词；只在 INSERT 时过滤会让旧当天清单继续泄漏；补位若不排除当天已有任务，LIMIT 会被 INSERT OR IGNORE 吃掉，实际名额补不满。测试使用真实出厂 schema，并等待异步落盘 import 完成再关闭测试库，避免 teardown 的异步假红。
+### 任务 B 验收记录（2026-11-02）
+
+`bash scripts/ci-local.sh` 在本 worktree 全部通过：frontend check / lint / test / build、原生小程序全部 32 个脚本（含 check-shared / check-parity）、Taro npm test、cloudflare-sync check / test。前端 1521 项通过、27 项跳过，lint 为既有 51 个 warning、0 error；本次新增回归 18 项（共享范围测试 17 项、矩阵增量测试 1 项）。CLAUDE.md 13513 字符，比任务 A 多 54，仅改专题索引触发条件。页面/组件、Taro src/reports、iOS 和 cloudflare-sync 无改动；未提交、未推送、未合并或修改其他 worktree。
+
+视觉验收仍未完成：对独立离线生产构建尝试 Playwright，未启动 dev server、未连接/刷新 5173；本机缓存 Chromium 启动被沙箱的 `MachPortRendezvousServer Permission denied` 拦截，未获得截图，不能声称视觉或真机验收通过。任务 B 没有设置页改动，也未重建 Taro 包；新 Taro 包体和真机检查留在作者指定的任务 C 后统一验收。
+
+本机 node_modules 原为指向主目录的只读软链，Vite 默认配置缓存会写到主目录而被拒绝。验收期间只在本 worktree 临时建立包级软链目录，让 `.vite-temp` 等缓存留在 worktree；验收后恢复原软链，没有安装依赖或写主目录 node_modules。下次遇到同样权限错误，应隔离缓存或用 Vitest `--configLoader runner --no-cache`，不能改主目录权限或起学习页的 dev server。

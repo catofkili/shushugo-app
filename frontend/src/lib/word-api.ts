@@ -1,3 +1,4 @@
+import { newWordEligibleSql, wordLearningScopeSql, wordStartedSql } from "./word-learning-scope";
 import { getDatabase } from "./database";
 import { priorGateSql, undoPriorValidation } from "./prior-pacing";
 import { displayedPromptKeyOf, displayedPromptPeers } from "./models/question-meaning-index";
@@ -174,7 +175,7 @@ const recordCheckin = () => {
 
 const pickFilteredWordNext = (options: WordSessionOptions): WordCard | null => {
   const filter = wordFilterSql(options, "w");
-  filter.clause += ` AND ${priorGateSql("words", "p.word_id")}`;
+  filter.clause += ` AND ${priorGateSql("words", "p.word_id")} AND ${wordLearningScopeSql()}`;
   const dueIds = getReviewQueue().filter((item) => item.due_after <= 0).map((item) => item.word_id);
   if (dueIds.length) {
     const placeholders = dueIds.map(() => "?").join(",");
@@ -202,7 +203,7 @@ const pickFilteredWordNext = (options: WordSessionOptions): WordCard | null => {
     JOIN progress p ON p.word_id = w.id
     LEFT JOIN word_notes n ON n.word_id = w.id
     WHERE p.known_forever = 0
-      AND p.seen_count > 0
+      AND ${wordStartedSql()}
       AND COALESCE(p.fsrs_lapses, 0) >= ?
       ${filter.clause}
     ORDER BY p.fsrs_lapses DESC, p.fsrs_due ASC, w.importance DESC
@@ -218,7 +219,7 @@ const pickFilteredWordNext = (options: WordSessionOptions): WordCard | null => {
     JOIN progress p ON p.word_id = w.id
     LEFT JOIN word_notes n ON n.word_id = w.id
     WHERE p.known_forever = 0
-      AND p.seen_count > 0
+      AND ${wordStartedSql()}
       AND (p.fsrs_due IS NULL OR p.fsrs_due <= ?)
       ${filter.clause}
     ORDER BY p.fsrs_due ASC, p.fsrs_lapses DESC, w.importance DESC
@@ -234,7 +235,7 @@ const pickFilteredWordNext = (options: WordSessionOptions): WordCard | null => {
     JOIN progress p ON p.word_id = w.id
     LEFT JOIN word_notes n ON n.word_id = w.id
     WHERE p.known_forever = 0
-      AND p.seen_count = 0
+      AND ${newWordEligibleSql()}
       ${filter.clause}
     ORDER BY ${newWordOrderSql("w")}
     LIMIT 1
@@ -501,7 +502,7 @@ export function startEncore(customSize?: number): WordSessionResponse {
       FROM progress p
       JOIN words w ON w.id = p.word_id
       WHERE p.known_forever = 0
-        AND p.seen_count = 0
+        AND ${newWordEligibleSql()}
         AND p.word_id NOT IN (SELECT word_id FROM stage1_tasks WHERE reviewed_on = ?)
       ORDER BY ${newWordOrderSql("w")}
       LIMIT ?
@@ -541,7 +542,7 @@ export function addWordToTodayEncore(wordId: number): boolean {
   if (!Number.isFinite(id) || id <= 0) return false;
   const day = today();
   const eligible = firstValue<number>(
-    "SELECT 1 FROM words w JOIN progress p ON p.word_id = w.id WHERE w.id = ? AND p.known_forever = 0 LIMIT 1",
+    `SELECT 1 FROM words w JOIN progress p ON p.word_id = w.id WHERE w.id = ? AND p.known_forever = 0 AND ${wordLearningScopeSql()} LIMIT 1`,
     [id],
     0
   );
@@ -615,13 +616,13 @@ export function addWordsToQueue(wordIds: number[]): {
     const id = Math.round(Number(raw));
     if (!Number.isFinite(id) || id <= 0 || picked.has(id)) return;
     const row = firstRow(
-      "SELECT p.seen_count, p.known_forever FROM progress p JOIN words w ON w.id = p.word_id WHERE w.id = ? LIMIT 1",
+      `SELECT p.seen_count, p.known_forever, ${wordStartedSql()} AS started FROM progress p JOIN words w ON w.id = p.word_id WHERE w.id = ? AND ${wordLearningScopeSql()} LIMIT 1`,
       [id]
     );
     if (!row) return;
     picked.add(id);
     if (Number(row.known_forever ?? 0) === 1) { known += 1; return; }
-    if (Number(row.seen_count ?? 0) > 0) { alreadyLearning += 1; return; }
+    if (Number(row.started ?? 0) > 0) { alreadyLearning += 1; return; }
     fresh.push(id);
   });
 
@@ -640,7 +641,7 @@ export function addWordsToQueue(wordIds: number[]): {
       JOIN progress p ON p.word_id = t.word_id
       WHERE t.reviewed_on = ?
         AND t.task_type = 'new'
-        AND p.seen_count = 0
+        AND NOT ${wordStartedSql()}
         AND p.known_forever = 0
         AND t.word_id NOT IN (${placeholders})
       ORDER BY t.order_index DESC

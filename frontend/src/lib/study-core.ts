@@ -85,7 +85,7 @@ type DictionarySupplementSeed = {
   entries: DictionarySupplementEntry[];
 };
 
-export type CollocationTier = "core" | "common" | "optional";
+export { collocationTier, type CollocationTier } from "./collocation-tier";
 
 type JlptCollocationContentEntry = {
   surface: string;
@@ -97,9 +97,6 @@ type JlptCollocationContentEntry = {
   // Compact content-only tier: absent = common, 0 = core, 2 = optional; never written to DB.
   t?: 0 | 2;
 };
-
-export const collocationTier = (entry: Pick<JlptCollocationContentEntry, "t">): CollocationTier =>
-  entry.t === 0 ? "core" : entry.t === 2 ? "optional" : "common";
 
 type JlptCollocationContent = {
   schema_version: number;

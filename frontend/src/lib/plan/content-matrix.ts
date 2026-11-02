@@ -1,5 +1,6 @@
 import { consolidationDays, daysBetween, JLPT_TARGETS, MAX_DAILY_NEW_GRAMMAR, MAX_DAILY_NEW_WORDS, type JlptTarget } from "../jlpt/plan";
 import type { Familiarity, StartingLevel } from "../level-plan";
+import { getStudyPreferences } from "../studyPreferences";
 
 type Kind = keyof Familiarity;
 export type ContentCounts = Record<Kind, number>;
@@ -8,10 +9,12 @@ export type ContentCounts = Record<Kind, number>;
 export const CONTENT_BY_LEVEL: Record<JlptTarget, ContentCounts> = {
   N5: { words: 920, grammar: 127, kanji: 448, confusion: 8 },
   N4: { words: 862, grammar: 136, kanji: 362, confusion: 33 },
-  N3: { words: 2096, grammar: 146, kanji: 408, confusion: 58 },
-  N2: { words: 3615, grammar: 155, kanji: 390, confusion: 91 },
-  N1: { words: 4216, grammar: 205, kanji: 362, confusion: 154 }
+  N3: { words: 2069, grammar: 146, kanji: 408, confusion: 58 },
+  N2: { words: 3354, grammar: 155, kanji: 390, confusion: 91 },
+  N1: { words: 4074, grammar: 205, kanji: 362, confusion: 154 }
 };
+
+export const OPTIONAL_WORDS_BY_LEVEL: Record<JlptTarget, number> = { N5: 0, N4: 0, N3: 27, N2: 261, N1: 142 };
 
 export const VISIBLE_STARTS: Array<Exclude<StartingLevel, "beyond">> = ["kana-none", "kana", ...JLPT_TARGETS];
 const KINDS: Kind[] = ["words", "grammar", "kanji", "confusion"];
@@ -31,9 +34,13 @@ export const CONTENT_MATRIX = Object.fromEntries(VISIBLE_STARTS.map((start) => [
   }))
 ])) as Record<Exclude<StartingLevel, "beyond">, Record<JlptTarget, ContentCounts>>;
 
-export const expectedContent = (start: StartingLevel, target: JlptTarget, familiarity?: Familiarity): ContentCounts => {
+export const expectedContent = (start: StartingLevel, target: JlptTarget, familiarity?: Familiarity, includeOptional = getStudyPreferences().includeOptionalExpressions): ContentCounts => {
   if (start === "beyond") return zero();
   const counts = { ...CONTENT_MATRIX[start][target] };
+  if (includeOptional) {
+    const first = Math.max(0, JLPT_TARGETS.indexOf(start as JlptTarget) + (familiarity?.words === 0 ? 0 : 1));
+    counts.words += JLPT_TARGETS.slice(first, JLPT_TARGETS.indexOf(target) + 1).reduce((sum, level) => sum + OPTIONAL_WORDS_BY_LEVEL[level], 0);
+  }
   // 自报 N4 但把单词熟悉度调到 0，N4 词也必须进入新学，而不是只算 N3。
   if (JLPT_TARGETS.includes(start as JlptTarget) && JLPT_TARGETS.indexOf(start as JlptTarget) <= JLPT_TARGETS.indexOf(target)) {
     for (const kind of KINDS) if (familiarity?.[kind] === 0) counts[kind] += CONTENT_BY_LEVEL[start as JlptTarget][kind];
@@ -48,6 +55,7 @@ export const previewLevelPlan = (input: {
   target: JlptTarget;
   examDate: Date;
   familiarity?: Familiarity;
+  includeOptionalExpressions?: boolean;
   /** 有真实学习进度时覆盖静态级别差估算。 */
   remainingWords?: number;
   today?: Date;
@@ -61,7 +69,7 @@ export const previewLevelPlan = (input: {
   // 不懂五十音时先预留约一周；真正解锁由 92 张基础假名的掌握进度决定。
   const kanaDays = input.startingLevel === "kana-none" && !input.kanaCompleted ? 7 : 0;
   const intakeDays = Math.max(0, daysLeft - reviewDays - kanaDays);
-  const content = { ...expectedContent(input.startingLevel, input.target, input.familiarity) };
+  const content = { ...expectedContent(input.startingLevel, input.target, input.familiarity, input.includeOptionalExpressions) };
   if (Number.isFinite(input.remainingWords)) content.words = Math.max(0, Math.floor(input.remainingWords!));
   const required = Object.fromEntries(KINDS.map((kind) => [kind, Math.ceil(content[kind] / Math.max(1, intakeDays))])) as ContentCounts;
   const daily = Object.fromEntries(KINDS.map((kind) => [kind, Math.min(required[kind], CAPS[kind])])) as ContentCounts;

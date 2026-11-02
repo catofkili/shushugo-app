@@ -1,4 +1,5 @@
 import type { WordAnswer } from "../../types/vocabulary";
+import { optionalWordSql } from "../collocation-tier";
 import { createCardLog } from "../card-log";
 import { getDatabase } from "../database";
 import { oncePerDatabase, persistSoon } from "../database/db-utils";
@@ -69,6 +70,7 @@ const seedCards = (limit: number, options?: { minStabilityDays?: number }, onlyW
     FROM progress p
     JOIN words w ON w.id = p.word_id
     WHERE p.seen_count > 0
+      AND NOT (${optionalWordSql("w.id")})
       AND p.known_forever = 0
       AND COALESCE(p.fsrs_lapses, 0) < ?
       AND p.fsrs_stability IS NOT NULL

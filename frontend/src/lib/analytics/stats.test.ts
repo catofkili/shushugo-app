@@ -38,6 +38,7 @@ beforeEach(() => {
     right_count INTEGER NOT NULL DEFAULT 0,
     fuzzy_count INTEGER NOT NULL DEFAULT 0,
     forgot_count INTEGER NOT NULL DEFAULT 0,
+    fsrs_state INTEGER,
     fsrs_stability REAL,
     fsrs_due TEXT,
     fsrs_last_review TEXT,

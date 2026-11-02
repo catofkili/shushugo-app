@@ -3,6 +3,7 @@ import { rowObjectToCard } from "../models/word-card";
 import { allowsBackToBack } from "../scheduler/requeue";
 import { getState, persistSoon, setState, studyDayEnd, today, rowsFor, type DbRow } from "../study-core";
 import { lastAnsweredWord } from "./session-state";
+import { wordLearningScopeSql } from "../word-learning-scope";
 
 /**
  * 自选清单：用户在词库里勾出来的一批词，单独开一场只含这些词的学习。
@@ -33,7 +34,11 @@ export const pickedWordIds = (): number[] => {
   try {
     const parsed = JSON.parse(getState(KEY, "[]")) as unknown;
     if (!Array.isArray(parsed)) return [];
-    return parsed.map((id) => Number(id)).filter((id) => Number.isFinite(id) && id > 0);
+    const ids = parsed.map((id) => Number(id)).filter((id) => Number.isFinite(id) && id > 0);
+    if (!ids.length) return [];
+    const allowed = new Set(rowsFor(`SELECT w.id FROM words w LEFT JOIN progress p ON p.word_id=w.id
+      WHERE w.id IN (${ids.map(() => "?").join(",")}) AND ${wordLearningScopeSql()}`, ids).map((row) => Number(row.id)));
+    return ids.filter((id) => allowed.has(id));
   } catch {
     return [];
   }

@@ -1,3 +1,4 @@
+import { newWordEligibleSql, wordLearningScopeSql, wordStartedSql } from "./word-learning-scope";
 /**
  * 每日学习量：一份状态、三个入口（圆环 / 数字表单 / 备考一键，docs/MIXED_STUDY_PLAN.md 第 3 节）。
  *
@@ -92,7 +93,7 @@ const wordExtras = () => getDailyReliefProgress().total + getDailyTailProgress()
 const pick = (cap: number, due: number) => (cap === PLAN_REVIEW_DISABLED ? 0 : cap > 0 ? Math.min(cap, due) : due);
 
 /** 级别起点只补足旧级别的先验；目标级别以上已有的真实学习/批量认识记录必须从今日剩余量中扣掉。 */
-export const remainingPlanWords = (startingLevel: string, target: JlptTarget, familiarity?: { words: number }) => {
+export const remainingPlanWords = (startingLevel: string, target: JlptTarget, familiarity?: { words: number }, includeOptional?: boolean) => {
   if (startingLevel === "beyond") return 0;
   const startRank = JLPT_TARGETS.indexOf(startingLevel as JlptTarget);
   const targetRank = JLPT_TARGETS.indexOf(target);
@@ -106,7 +107,7 @@ export const remainingPlanWords = (startingLevel: string, target: JlptTarget, fa
     SELECT COUNT(*) FROM words w
     LEFT JOIN progress p ON p.word_id = w.id
     WHERE (w.jlpt_level IN (${inLevels})${baseWords})
-      AND COALESCE(p.seen_count, 0) = 0 AND COALESCE(p.known_forever, 0) = 0
+      AND ${newWordEligibleSql("w", "p", includeOptional)}
   `, [], 0);
 };
 
@@ -114,7 +115,7 @@ export const remainingPlanWords = (startingLevel: string, target: JlptTarget, fa
 export const previewCurrentLevelPlan = (input: Parameters<typeof previewLevelPlan>[0]) =>
   previewLevelPlan({
     ...input,
-    remainingWords: remainingPlanWords(input.startingLevel, input.target, input.familiarity)
+    remainingWords: remainingPlanWords(input.startingLevel, input.target, input.familiarity, input.includeOptionalExpressions)
   });
 
 export const dailyPlanView = (prefs: StudyPreferences = getEffectiveStudyPreferences()): DailyPlanView => {
@@ -133,7 +134,7 @@ export const dailyPlanView = (prefs: StudyPreferences = getEffectiveStudyPrefere
     {
       kind: "words", label: PLAN_LABELS.words,
       fresh: kanaGatePending() ? 0 : prefs.dailyGoal, review: wordReviewCount(prefs.reviewCap, wordDue - extras - priorExtras.words) + extras + priorExtras.words,
-      pool: { due: wordDue, unseen: status.coverage.words.total - status.coverage.words.seen },
+      pool: { due: wordDue, unseen: remainingPlanWords("kana", target, undefined, prefs.includeOptionalExpressions) },
       suggest: { fresh: status.plan.newWords, review: wordDue }
     },
     {
@@ -234,8 +235,8 @@ export const segmentLength = (count: number) => Math.log1p(Math.max(0, count));
 export const learnedLevel = (): JlptTarget | null => {
   if (getLevelPlanSettings()) return effectiveStartingLevel();
   const rows = rowsFor(`
-    SELECT w.jlpt_level AS level, SUM(p.seen_count > 0 OR p.known_forever = 1) AS seen, COUNT(*) AS total
-    FROM progress p JOIN words w ON w.id = p.word_id GROUP BY w.jlpt_level
+    SELECT w.jlpt_level AS level, SUM(${wordStartedSql()} OR p.known_forever = 1) AS seen, COUNT(*) AS total
+    FROM progress p JOIN words w ON w.id = p.word_id WHERE ${wordLearningScopeSql()} GROUP BY w.jlpt_level
   `);
   const ratio = new Map(rows.map((row) => [String(row.level), Number(row.seen) / Math.max(1, Number(row.total))]));
   let current: JlptTarget | null = null;
@@ -267,7 +268,7 @@ export const examPreset = (target: JlptTarget) => {
   const levels = JLPT_TARGETS.slice(0, targetRank + 1).map((level) => `'${level}'`).join(", ");
   const unseenWords = expected?.content.words ?? firstValue<number>(`
     SELECT COUNT(*) FROM progress p JOIN words w ON w.id = p.word_id
-    WHERE w.jlpt_level IN (${levels}) AND p.seen_count = 0 AND p.known_forever = 0
+    WHERE w.jlpt_level IN (${levels}) AND ${newWordEligibleSql()}
   `, [], 0);
   const unseenGrammar = expected?.content.grammar ?? firstValue<number>(`
     SELECT COUNT(*) FROM grammar_progress p JOIN grammar_points g ON g.id = p.grammar_id

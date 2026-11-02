@@ -8,6 +8,7 @@
 import { getDatabase } from "./database";
 import { rowsFor, firstValue, getState, setState, studyDate } from "./database/db-utils";
 import type { WordAnswer } from "../types/vocabulary";
+import { wordStartedSql } from "./word-learning-scope";
 import { pendingPriorSql, priorGateSql, priorIdsForEntity, priorKindForTable } from "./prior-pacing";
 import {
   recordReview,
@@ -55,7 +56,7 @@ const MOJI_NOT_ACTIVATED = `word_id NOT IN (
 export const WORD_FSRS: FsrsEntity = {
   table: "progress",
   idColumn: "word_id",
-  eligible: `known_forever = 0 AND seen_count > 0 AND ${MOJI_NOT_ACTIVATED}`
+  eligible: `known_forever = 0 AND ${wordStartedSql("progress")} AND ${MOJI_NOT_ACTIVATED}`
 };
 /**
  * 汉字读音卡。eligible 不再要求 seen_count > 0:卡是「按需建出来」的(ensureDirectionCards),

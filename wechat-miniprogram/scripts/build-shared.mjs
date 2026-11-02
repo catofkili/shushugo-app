@@ -43,7 +43,8 @@ const HEADER = '/* 由 scripts/build-shared.mjs 从 frontend/src 生成，别手
 // The same platform replacements are consumed by the Taro spike's Webpack config.
 const SHIMS = createSharedShims(root);
 // 允许直接打进主包的 src/data JSON（都不大）
-const INLINE_DATA = new Set(['english_origins.json', 'kanji_orthography.json']);
+// 固定搭配迁移正文仍走出厂库守卫；三端队列只内联词形、读音、档位小索引。
+const INLINE_DATA = new Set(['english_origins.json', 'kanji_orthography.json', 'collocation_tier_index.json']);
 
 const plugin = {
   name: 'shushugo-shims',

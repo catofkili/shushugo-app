@@ -277,3 +277,10 @@ export const lastEncounterToday(wordId: number, day?: string): boolean;  // 这�
 - **未来上云仍是单独发版任务**：先让所有端更新到认得相关表与列、但仍 cloud:false 的版本；全部更新后才能改为上云。当前公开构建包含拼写功能，不能把解除实验隔离误当成允许上传本机拼写表。
 
 **本机撤销也不能借道上云**：`last_answer` 是当前设备的单词撤销栈，新增的作答前 `always_spell` 值存在这份快照中。因此把该键登记为设备本地状态，云快照导出和合并两侧都过滤；否则表虽然 cloud:false，另一设备仍会收到标记的旧值，并可能用另一设备的撤销覆盖本机标记。正常 reviews 和正向 FSRS 照常同步。
+## 2026-11-02：optional 固定搭配不新增拼写负担
+
+固定搭配分档由 `collocation-tier.ts` 统一读取，不按惯用句/谚语类别另判。
+optional 无论开关是否打开都不触发 `shouldSpellWord` 的内联拼写（含已有 `always_spell`），也不由 `seedCards` 新建独立拼写卡。
+这是固定搭配选学的题面例外，不改普通词的「一直拼写」优先级。既有 spelling_memory、always_spell、拼写 FSRS 和作答历史保留，
+已有独立方向到期卡不因关闭学习 optional 的开关而删除；以后改档仍可继续读取原标记。
+经典单词题面目前仍是中文→日语，不等于严格的只认读；本次不新增题型或分叉 FSRS 方向，详见 FSRS 专题同日分档说明。

@@ -1,6 +1,6 @@
 import { getDatabase } from "../database";
 import type { WordCard } from "../../types/vocabulary";
-import { getReviewCapPreference } from "../studyPreferences";
+import { getReviewCapPreference, getStudyPreferences } from "../studyPreferences";
 import { rowObjectToCard as toWordCard } from "../models/word-card";
 import { perfRecord, perfTime } from "../perf-marks";
 import {
@@ -25,6 +25,8 @@ import { fsrsDueWordIds, recallFromRow, WORD_FSRS } from "../fsrs-store";
 import { priorGateSql, priorIntakeSql, reconcilePriorTasks } from "../prior-pacing";
 import { LEECH_LAPSE_THRESHOLD } from "../fsrs-scheduler";
 import { newWordLevelRankSql, newWordOrderSql } from "./filters";
+import { newWordTierRankSql } from "../collocation-tier";
+import { newWordEligibleSql, wordLearningScopeSql, wordStartedSql } from "../word-learning-scope";
 import { priorBaselineSql } from "../plan-level-order";
 import {
   dailyNewQuota,
@@ -54,6 +56,9 @@ const stage1TaskCount = (day: string) => firstValue<number>(
   [day],
   0
 );
+
+// 本机偏好的最后一次观察值不能跟 app_state 云同步；换库/冷启动时重新核对即可。
+const optionalScopeByDatabase = new WeakMap<object, boolean>();
 
 export const stage1NewTaskCount = (day: string) => firstValue<number>(
   "SELECT COUNT(*) FROM stage1_tasks WHERE reviewed_on = ? AND task_type = 'new'",
@@ -117,12 +122,24 @@ const activateMojiMigratedReviews = (day: string) => {
  */
 export const createStage1Tasks = (day: string, options: { topUp?: boolean } = {}) => {
   const db = getDatabase();
+  // 偏好存储无需知道调度器；下次取卡/角标时补足当前额度，不重抽复习、不动已答任务。
+  const optionalScope = getStudyPreferences().includeOptionalExpressions;
+  const scopeChanged = (optionalScopeByDatabase.get(db) ?? false) !== optionalScope;
+  optionalScopeByDatabase.set(db, optionalScope);
+  // 开关关闭也要当场清掉旧计划里的未学 optional（包括加餐），已学任务和流水不动。
+  db.run(`DELETE FROM stage1_tasks WHERE reviewed_on = ? AND word_id IN (
+    SELECT t.word_id FROM stage1_tasks t JOIN words w ON w.id=t.word_id
+    LEFT JOIN progress p ON p.word_id = w.id
+    WHERE t.reviewed_on = ? AND NOT ${wordLearningScopeSql()}
+  )`, [day, day]);
+  const removedOptional = db.getRowsModified() > 0;
   if (!options.topUp) {
-    if (stage1TaskCount(day) > 0) {
+    const hasPlan = stage1TaskCount(day) > 0;
+    if (hasPlan && !removedOptional && !scopeChanged) {
       reconcilePriorTasks(WORD_FSRS, "stage1_tasks", day, studyDayEnd(), "review");
       return;
     }
-    if (firstValue<number>("SELECT 1 FROM reviews WHERE reviewed_on = ? LIMIT 1", [day], 0)) {
+    if (!hasPlan && !removedOptional && firstValue<number>("SELECT 1 FROM reviews WHERE reviewed_on = ? LIMIT 1", [day], 0)) {
       backfillStage1TasksFromReviews(day);
     }
   }
@@ -182,16 +199,17 @@ export const createStage1Tasks = (day: string, options: { topUp?: boolean } = {}
       WHERE task_type = 'new' AND reviewed_on < ?
       GROUP BY word_id
     ) carried ON carried.word_id = p.word_id
-    WHERE p.known_forever = 0
-      AND p.seen_count = 0
+    WHERE ${newWordEligibleSql()}
+      AND p.word_id NOT IN (SELECT word_id FROM stage1_tasks WHERE reviewed_on = ?)
     ORDER BY
       CASE WHEN d.word_id IS NOT NULL THEN 0 ELSE 1 END,
       ${newWordLevelRankSql("w")},
+      ${newWordTierRankSql("w.id")},
       CASE WHEN carried.word_id IS NOT NULL THEN 0 ELSE 1 END,
       carried.first_planned_on ASC,
       ${newWordOrderSql("w")}
     LIMIT ?
-  `, [day, Math.max(dailyNewQuota() - stage1NewTaskCount(day), 0)]);
+  `, [day, day, Math.max(dailyNewQuota() - stage1NewTaskCount(day), 0)]);
 
   newRows.forEach((row) => {
     db.run(`
@@ -210,7 +228,7 @@ const reconcileStage1NewQuota = (day: string) => {
     JOIN progress p ON p.word_id = t.word_id
     WHERE t.reviewed_on = ?
       AND t.task_type = 'new'
-      AND (p.seen_count > 0 OR p.known_forever = 1)
+      AND (${wordStartedSql()} OR p.known_forever = 1)
   `, [day], 0);
   const remainingNewQuota = Math.max(dailyNewQuota() - completedNewTasks, 0);
 
@@ -228,7 +246,7 @@ const reconcileStage1NewQuota = (day: string) => {
           JOIN progress p ON p.word_id = t.word_id
           WHERE t.reviewed_on = ?
             AND t.task_type = 'new'
-            AND p.seen_count = 0
+            AND NOT ${wordStartedSql()}
             AND p.known_forever = 0
         )
         WHERE row_number > ?
@@ -291,7 +309,7 @@ export const tomorrowWordAudioPlan = (): WordAudioPlan[] => {
   const due = rowsFor(`
     SELECT w.kanji, w.kana, w.example_jp AS example
     FROM words w JOIN progress p ON p.word_id = w.id
-    WHERE p.known_forever = 0 AND p.seen_count > 0
+    WHERE p.known_forever = 0 AND ${wordStartedSql()}
       AND p.fsrs_due IS NOT NULL AND p.fsrs_due <= ?
       AND ${priorGateSql("words", "p.word_id", end, today(current))}
     ORDER BY p.fsrs_due ASC, w.id ASC
@@ -302,7 +320,7 @@ export const tomorrowWordAudioPlan = (): WordAudioPlan[] => {
   const rows = rowsFor(`
     SELECT w.kanji, w.kana, w.example_jp AS example
     FROM words w JOIN progress p ON p.word_id = w.id
-    WHERE p.seen_count = 0 AND p.known_forever = 0
+    WHERE ${newWordEligibleSql()}
     ORDER BY ${newWordOrderSql("w")}
     LIMIT ?
   `, [Math.max(quota * 4, quota)]).map((row) => ({
@@ -371,7 +389,7 @@ export const encoreRemainingCount = (day: string) => firstValue<number>(`
   SELECT COUNT(*)
   FROM progress p
   WHERE p.known_forever = 0
-    AND p.seen_count > 0
+    AND ${wordStartedSql()}
     AND (p.fsrs_due IS NULL OR p.fsrs_due <= ?)
     AND ${priorGateSql("words", "p.word_id", studyDayEnd(), day)}
     -- 还没轮到激活的导入词不算积压,否则续杯会把几千个导入词一次性倒出来
@@ -400,6 +418,7 @@ const pickedCard = (day: string, wordId: number): WordCard | null => {
       p.fsrs_state,
       t.task_type,
       t.order_index,
+      EXISTS (SELECT 1 FROM dictionary_discovered_words d WHERE d.word_id=w.id) AS discovered,
       COALESCE(n.note, '') AS note
     FROM stage1_tasks t
     JOIN words w ON w.id = t.word_id
@@ -424,7 +443,7 @@ export const pickStage1Next = (
     JOIN progress p ON p.word_id = t.word_id
     WHERE t.reviewed_on = ?
       AND t.task_type = 'new'
-      AND p.seen_count = 0
+      AND NOT ${wordStartedSql()}
       AND p.known_forever = 0
   `, [day], 0);
 
@@ -453,7 +472,10 @@ export const pickStage1Next = (
       p.fsrs_lapses,
       p.fsrs_state,
       t.task_type,
-      t.order_index
+      t.order_index,
+      ${newWordLevelRankSql("w")} AS new_level_rank,
+      ${newWordTierRankSql("w.id")} AS new_tier_rank,
+      ${wordStartedSql()} AS started
     FROM stage1_tasks t
     JOIN words w ON w.id = t.word_id
     JOIN progress p ON p.word_id = t.word_id
@@ -495,6 +517,11 @@ export const pickStage1Next = (
   // encore_new is an explicitly discovered word: it bypasses the daily new
   // quota, but it must still enter the same new-card lane for sequencing.
   const newRows = pickable.filter((row) => ["new", "encore_new"].includes(String(row.task_type)));
+  // 首次露面按任务队列顺序；已开始的学习步骤仍交给原排片器，不能用 tier 饿死复习。
+  const firstNew = newRows.filter((row) => !row.started)
+    .sort((a, b) => Number(b.discovered) - Number(a.discovered) || Number(a.new_level_rank) - Number(b.new_level_rank)
+      || Number(a.new_tier_rank) - Number(b.new_tier_rank) || Number(a.order_index) - Number(b.order_index))[0];
+  const orderedNewRows = firstNew ? newRows.filter((row) => row === firstNew || row.started) : newRows;
   const completedTaskCount = firstValue<number>(`
     SELECT COUNT(DISTINCT r.word_id)
     FROM reviews r
@@ -514,9 +541,9 @@ export const pickStage1Next = (
   // 所以这一轮新词全部撞车、复习道还有词时,把这一轮让给复习道,新词下一轮再来。
   const conflictsRecent = (row: Record<string, unknown>) =>
     recent.wordIds.some((id) => interference.conflicts(Number(row.id), id));
-  const preferredRows = wantNew && !(reviewRows.length && newRows.every(conflictsRecent))
-    ? newRows
-    : reviewRows.length ? reviewRows : newRows;
+  const preferredRows = wantNew && !(reviewRows.length && orderedNewRows.every(conflictsRecent))
+    ? orderedNewRows
+    : reviewRows.length ? reviewRows : orderedNewRows;
   const candidates = preferredRows.map((row) => {
     const dueAfter = queueById.get(Number(row.id)) ?? 0;
     const components = priorityComponents(row, queueById.get(Number(row.id)), newQuotaLeft, {

@@ -7,9 +7,11 @@ import { questionMeaningKeyOf } from "./models/question-meaning-index";
 import { reviewedQuestionMeaning } from "./models/question-meaning-overrides";
 import { isLoanwordSourceSurface, kanjiReadingSurface, preferredWordSurface, shouldStudyKanjiReading } from "./orthography";
 import { moraCount } from "../features/word-study/word-study-utils";
+import { wordLearningScopeSql } from "./word-learning-scope";
 
 /**
- * 词汇量测验是测量，不是学习模式：它不读写 progress、reviews、FSRS 或今日计划。
+ * 词汇量测验是测量，不是学习模式：它不改 progress、reviews、FSRS 或今日计划。
+ * 只读学习状态，以便关掉选学时保留已经学过的 optional 词。
  * 题面和作答快照只放在 app_state，离开页面或切 App 后可以继续当前一场。
  */
 export type VocabTestQuestionKind = "reading" | "meaning";
@@ -215,9 +217,9 @@ const enrichRow = (row: VocabTestWordRow): WordRow => {
 };
 
 const wordRows = (): VocabTestWordRow[] => rowsFor(`
-  SELECT id, kanji, kana, meaning, pos, jlpt_level AS level
-  FROM words
-  WHERE jlpt_level IN ('N5', 'N4', 'N3', 'N2', 'N1')
+  SELECT w.id, w.kanji, w.kana, w.meaning, w.pos, w.jlpt_level AS level
+  FROM words w LEFT JOIN progress p ON p.word_id = w.id
+  WHERE w.jlpt_level IN ('N5', 'N4', 'N3', 'N2', 'N1') AND ${wordLearningScopeSql()}
     AND TRIM(COALESCE(meaning, '')) <> ''
     AND TRIM(COALESCE(kana, '')) <> ''
 `).map((row: DbRow) => ({

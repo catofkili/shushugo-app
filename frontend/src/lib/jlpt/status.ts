@@ -1,3 +1,4 @@
+import { newWordEligibleSql, wordLearningScopeSql, wordStartedSql } from "../word-learning-scope";
 import { firstValue, studyDayEnd, today } from "../study-core";
 import { ensureProgressInitialized } from "../word-api/bootstrap";
 import { ensureGrammarProgressInitialized } from "../grammar-api";
@@ -77,12 +78,12 @@ export function getJlptPlanStatus(now = new Date()): JlptPlanStatus {
   const grammarEligible = `grammar_id IN (SELECT g.id FROM grammar_points g WHERE ${grammar})`;
 
   const wordTotal = firstValue<number>(
-    `SELECT COUNT(*) FROM words w WHERE ${words}`, [], 0
+    `SELECT COUNT(*) FROM words w LEFT JOIN progress p ON p.word_id = w.id WHERE ${words} AND ${wordLearningScopeSql()}`, [], 0
   );
   const wordUnseen = firstValue<number>(`
     SELECT COUNT(*) FROM words w
     JOIN progress p ON p.word_id = w.id
-    WHERE ${words} AND p.seen_count = 0 AND p.known_forever = 0
+    WHERE ${words} AND ${newWordEligibleSql()}
   `, [], 0);
   const wordCovered = firstValue<number>(`
     SELECT COUNT(*) FROM words w JOIN progress p ON p.word_id = w.id
@@ -94,7 +95,7 @@ export function getJlptPlanStatus(now = new Date()): JlptPlanStatus {
   const wordFreshDue = firstValue<number>(`
     SELECT COUNT(*) FROM words w
     JOIN progress p ON p.word_id = w.id
-    WHERE ${words} AND p.seen_count > 0 AND p.known_forever = 0
+    WHERE ${words} AND ${wordStartedSql()} AND p.known_forever = 0
       AND (p.fsrs_due IS NULL OR (p.fsrs_due <= ? AND p.fsrs_due >= ?))
       AND NOT ${priorIntakeSql("words", "p.word_id", day)}
   `, [dayEnd, dayStart], 0) + releasedPriorIds("words", new Date(dayEnd), day).filter((key) => firstValue<number>(
@@ -103,7 +104,7 @@ export function getJlptPlanStatus(now = new Date()): JlptPlanStatus {
   const wordOverdue = firstValue<number>(`
     SELECT COUNT(*) FROM words w
     JOIN progress p ON p.word_id = w.id
-    WHERE ${words} AND p.seen_count > 0 AND p.known_forever = 0
+    WHERE ${words} AND ${wordStartedSql()} AND p.known_forever = 0
       AND p.fsrs_due IS NOT NULL AND p.fsrs_due < ?
       AND NOT ${pendingPriorSql("words", "p.word_id")}
   `, [dayStart], 0);

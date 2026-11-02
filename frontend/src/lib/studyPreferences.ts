@@ -1,6 +1,7 @@
 import { daysBetween, JLPT_TARGETS, type JlptTarget } from "./jlpt/plan";
 import { defaultExamDate, formatExamDate, isExamKind, parseExamDate, type ExamKind } from "./jlpt/exam-dates";
 import { firstValue, getState, setState } from "./database/db-utils";
+import { newWordEligibleSql } from "./word-learning-scope";
 
 export type ThemePreference = "system" | "light" | "dark";
 
@@ -21,6 +22,8 @@ export interface StudyPreferences {
   showJlptLevel: boolean;
   /** 正向单词今天最后一次见面改用拼写；设备偏好，默认关闭。 */
   spellingEnabled: boolean;
+  /** 未学的选学固定表达是否进入新词与计划量；默认关，已学卡不受影响。设备偏好，与 spellingEnabled 同存。 */
+  includeOptionalExpressions: boolean;
   /** 学习强度 = 每日新词数(复习量由算法定) */
   dailyGoal: number;
   /**
@@ -106,6 +109,7 @@ export const defaultStudyPreferences: StudyPreferences = {
   showRomaji: false,
   showJlptLevel: false,
   spellingEnabled: false,
+  includeOptionalExpressions: false,
   dailyGoal: 15,
   grammarDailyGoal: 5,
   reviewCap: 0,
@@ -176,6 +180,7 @@ export const normalizeStudyPreferences = (value: Partial<StudyPreferences> = {})
   showRomaji: value.showRomaji ?? defaultStudyPreferences.showRomaji,
   showJlptLevel: value.showJlptLevel ?? defaultStudyPreferences.showJlptLevel,
   spellingEnabled: value.spellingEnabled === true,
+  includeOptionalExpressions: value.includeOptionalExpressions === true,
   dailyGoal: clampDailyGoal(Number(value.dailyGoal ?? defaultStudyPreferences.dailyGoal)),
   grammarDailyGoal: clampGrammarGoal(Number(value.grammarDailyGoal ?? defaultStudyPreferences.grammarDailyGoal)),
   kanjiDailyGoal: clampSmallGoal(Number(value.kanjiDailyGoal ?? defaultStudyPreferences.kanjiDailyGoal), 50),
@@ -334,7 +339,7 @@ export const levelAdvanceTarget = (kind: LevelAdvanceKind): JlptTarget => JLPT_T
 export const levelUnseenContent = (kind: LevelAdvanceKind, level: string): number => firstValue<number>(
   kind === "words"
     ? `SELECT COUNT(*) FROM words w LEFT JOIN progress p ON p.word_id = w.id
-       WHERE w.jlpt_level = ? AND COALESCE(p.seen_count, 0) = 0 AND COALESCE(p.known_forever, 0) = 0`
+       WHERE w.jlpt_level = ? AND ${newWordEligibleSql()}`
     : `SELECT COUNT(*) FROM grammar_points g LEFT JOIN grammar_progress p ON p.grammar_id = g.id
        WHERE g.level = ? AND COALESCE(p.seen_count, 0) = 0 AND COALESCE(p.known_forever, 0) = 0`, [level], 0);
 /** 暂停对该类新内容的封顶；null = 不封顶。没学完 100% 时封在剩余数，学完后一周内是 0。 */

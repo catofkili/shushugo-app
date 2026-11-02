@@ -1,3 +1,4 @@
+import { newWordEligibleSql } from "./word-learning-scope";
 // 五十音学到第三天起，往五十音卡里混简单单词（2026-10-28 用户：「第三天开始简单单词和假名混在一起考」）。
 // 词走单词自己的 FSRS（submitQuickStudyBatch → submitWordAnswer，和背单词页同一条记账路），
 // 假名走 kana_memory，两套记忆不混；只是在同一张卡上轮流出。口径见 docs/claude/daily-plans-and-study-modes.md「五十音考题」。
@@ -30,7 +31,7 @@ export const newWordsToday = (day = today()): number => firstValue<number>(
 export const simpleWords = (introduced: ReadonlySet<string>, limit = 40): KanaWord[] => {
   ensureProgressInitialized();
   return rowsFor(`SELECT w.id, w.kana, w.kanji, w.meaning FROM words w LEFT JOIN progress p ON p.word_id = w.id
-    WHERE w.jlpt_level = 'N5' AND COALESCE(p.seen_count, 0) = 0 AND COALESCE(p.known_forever, 0) = 0
+    WHERE w.jlpt_level = 'N5' AND ${newWordEligibleSql()}
       AND w.kana NOT IN (SELECT kana FROM words WHERE jlpt_level = 'N5' GROUP BY kana HAVING COUNT(*) > 1)
     ORDER BY w.importance DESC, length(w.kana) < 2, length(w.kana), w.id`)
     .map((row) => ({ id: Number(row.id), kana: String(row.kana ?? ""), kanji: String(row.kanji ?? ""), meaning: firstMeaning(String(row.meaning ?? "")) }))
