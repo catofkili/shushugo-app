@@ -1,4 +1,4 @@
-import { AlertTriangle, CalendarDays, ChevronDown, ChevronRight, Download, Languages, ListOrdered, Moon, RotateCcw, ScrollText, Smartphone, Sparkles, Sun, Type, Upload, Volume2 } from "lucide-react";
+import { AlertTriangle, CalendarDays, ChevronDown, ChevronRight, Download, Languages, ListOrdered, Moon, Quote, RotateCcw, ScrollText, Smartphone, Sparkles, Sun, Type, Upload, Volume2 } from "lucide-react";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { Capacitor } from "@capacitor/core";
 import { DailyPlanPanel } from "../components/DailyPlanPanel";
@@ -533,6 +533,7 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
           </div>
 
           <div className="w7-row flex items-center gap-3 px-4 py-3">
+            <Quote size={20} className="shrink-0 text-[var(--ds-ink-2)]" />
             <div className="min-w-0 flex-1 text-left">
               <p className="block text-[15px] font-bold text-white">选学：惯用句 · 谚语 · 四字熟语</p>
               <p className="mt-1 block text-xs text-white/50">开启后才会排进新词；已学过的照常复习</p>
