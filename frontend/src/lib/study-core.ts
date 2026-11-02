@@ -114,7 +114,7 @@ const JLPT_WORD_METADATA_VERSION = `2026-10-12-atatameru-example-v1-${FURIGANA_V
 const JLPT_LEVEL_OVERRIDE_VERSION = "2026-08-21-unleveled-v1";
 // 与 src/data/grammar_seed.json 的 version 字段保持一致。种子 JSON 只在版本
 // 不匹配需要迁移时才动态加载,避免打进主 bundle。
-export const GRAMMAR_SEED_VERSION = "2026-11-02-grammar-tables-v1";
+export const GRAMMAR_SEED_VERSION = "2026-11-02-grammar-tables-v2";
 /**
  * 种子里有多少条语法点。⚠️ 它不是装饰,是**版本戳撒谎时的唯一兜底**。
  *
@@ -559,8 +559,11 @@ const GRAMMAR_ID_OFFSET = 1_000_000;
  * 「看到 A 就点了认识，B 其实不会」，所以 B 不该继承 A 的 FSRS 状态。
  * 2026-11-02 类目卡改成具体变形/读音题：旧卡的「认识」只针对术语，
  * 不能证明会做新题，因此这 12 条刻意不登记重命名，从零开始学。
+ * 同日自他动词卡从具体词对改成通用句型，作者要求保留这一步的进度；
+ * 只登记具体词对的旧名，最初的类目名仍不继承。
  */
 const GRAMMAR_PATTERN_RENAMES: Record<string, string> = {
+  "～が開く／～を開ける": "～が＋自動詞／～を＋他動詞",
   "誰／どなた／どの方": "誰",
   "どう／いかが": "どう",
   "なぜ／どうして／なんで": "なぜ",

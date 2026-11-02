@@ -104,7 +104,6 @@
     {"kind":"grammar_title","id":"pdf-n2-032","annotations":[{"start":1,"length":1,"reading":"さい"},{"start":4,"length":1,"reading":"さい"}]},
     {"kind":"grammar_title","id":"pdf-n2-035","annotations":[{"start":1,"length":1,"reading":"すえ"}]},
     {"kind":"grammar_title","id":"pdf-n1-022","annotations":[{"start":1,"length":1,"reading":"きら"}]},
-    {"kind":"grammar_title","id":"pdf-n5-018","annotations":[{"start":2,"length":1,"reading":"あ"},{"start":7,"length":1,"reading":"あ"}]},
     {"kind":"grammar_title","id":"pdf-n5-020","annotations":[{"start":0,"length":1,"reading":"か"},{"start":4,"length":1,"reading":"およ"},{"start":8,"length":1,"reading":"の"},{"start":12,"length":1,"reading":"ま"},{"start":16,"length":1,"reading":"はな"},{"start":20,"length":1,"reading":"い"}]},
     {"kind":"grammar_title","id":"pdf-n5-021","annotations":[{"start":0,"length":1,"reading":"き"},{"start":4,"length":1,"reading":"ぬ"},{"start":8,"length":1,"reading":"よ"},{"start":12,"length":1,"reading":"か"},{"start":16,"length":1,"reading":"か"},{"start":20,"length":1,"reading":"い"}]},
     {"kind":"grammar","id":"pdf-n5-014","exampleIndex":1,"annotations":[{"start":0,"length":2,"reading":"にほん"},{"start":3,"length":1,"reading":"き"},{"start":5,"length":2,"reading":"みっか"},{"start":7,"length":1,"reading":"め"},{"start":11,"length":1,"reading":"さん"},{"start":12,"length":2,"reading":"ばんめ"},{"start":15,"length":2,"reading":"じゅぎょう"},{"start":18,"length":2,"reading":"ともだち"}]},

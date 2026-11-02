@@ -62,4 +62,17 @@ describe("grammar title furigana", () => {
       expect(projected.every((item) => face.slice(item.start, item.start + item.length) !== "来")).toBe(true);
     }
   });
+
+  it("自他动词通用标题自动注音，具体助词题不借用标题里不对应的术语读音", () => {
+    const point = grammarPoints.find((point) => point.id === "pdf-n5-018")!;
+    expect(point.title).toBe("～が＋自動詞／～を＋他動詞");
+    expect(getGrammarTitleFurigana(point.id)).toEqual([
+      { start: 3, length: 3, reading: "じどうし" },
+      { start: 10, length: 3, reading: "たどうし" }
+    ]);
+    expect(getGrammarTitleFuriganaByPattern(point.title)).toEqual(getGrammarTitleFurigana(point.id));
+    const question = grammarQuizQuestion(point.title);
+    expect(question).toBe("窓（　）開く／窓（　）開ける");
+    expect(projectFurigana(point.title, question, getGrammarTitleFurigana(point.id))).toEqual([]);
+  });
 });

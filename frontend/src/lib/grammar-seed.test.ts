@@ -26,6 +26,7 @@ vi.mock("./storage", () => ({ requestFullSnapshot: vi.fn(), scheduleSave: vi.fn(
 import { requestFullSnapshot, scheduleSave } from "./storage";
 
 import { ensureSeedData, ensureUserTables, GRAMMAR_SEED_VERSION } from "./study-core";
+import { ensureFsrsColumns, GRAMMAR_FSRS } from "./fsrs-store";
 import grammarSeed from "../data/grammar_seed.json";
 
 const SQL = await initSqlJs();
@@ -103,13 +104,43 @@ describe("语法种子升版本", () => {
     expect(one(`SELECT seen_count FROM grammar_progress WHERE grammar_id = ${newId}`)).toBeUndefined();
   });
 
+  it("自他动词具体词对改为通用句型后，三张表的记录和 FSRS 状态随编号迁移保留", async () => {
+    ensureUserTables();
+    ensureFsrsColumns(GRAMMAR_FSRS);
+    const pattern = "～が＋自動詞／～を＋他動詞";
+    const newId = Number(testDb.exec("SELECT id FROM grammar_points WHERE pattern = ?", [pattern])[0].values[0][0]);
+    const oldId = newId + 10000;
+    testDb.run("UPDATE grammar_points SET id = ?, pattern = '～が開く／～を開ける' WHERE id = ?", [oldId, newId]);
+    testDb.run("INSERT INTO grammar_progress (grammar_id, score, seen_count, fsrs_stability, fsrs_difficulty, fsrs_due) VALUES (?, 7, 9, 12, 4, '2026-11-10')", [oldId]);
+    testDb.run("INSERT INTO grammar_reviews (grammar_id, answer, score_after, reviewed_on) VALUES (?, 'know', 7, '2026-11-01')", [oldId]);
+    testDb.run("INSERT INTO grammar_mistakes (grammar_id, answer, first_seen_on, last_seen_on) VALUES (?, 'forgot', '2026-10-31', '2026-11-01')", [oldId]);
+    const tables = ["grammar_progress", "grammar_reviews", "grammar_mistakes"];
+    const records = tables.map((table) => testDb.exec(`SELECT * FROM ${table} WHERE grammar_id = ?`, [oldId])[0]);
+    testDb.run("INSERT OR REPLACE INTO grammar_state (key, value) VALUES ('dataset_version', '2026-11-02-grammar-tables-v1')");
+
+    await ensureSeedData();
+
+    expect(Number(testDb.exec("SELECT id FROM grammar_points WHERE pattern = ?", [pattern])[0].values[0][0])).toBe(newId);
+    tables.forEach((table, index) => {
+      const expected = records[index];
+      const idColumn = expected.columns.indexOf("grammar_id");
+      expect(testDb.exec(`SELECT ${expected.columns.join(", ")} FROM ${table} WHERE grammar_id = ?`, [newId])[0]).toEqual({
+        columns: expected.columns,
+        values: expected.values.map((row) => row.map((value, column) => column === idColumn ? newId : value))
+      });
+      expect(testDb.exec(`SELECT * FROM ${table} WHERE grammar_id = ?`, [oldId])).toEqual([]);
+    });
+    expect(one("SELECT pattern FROM grammar_points WHERE pattern = '～が開く／～を開ける'")).toBeUndefined();
+    expect(one("SELECT value FROM grammar_state WHERE key = 'dataset_version'")).toBe(GRAMMAR_SEED_VERSION);
+  });
+
   it("类目清理删除旧卡的三份进度，12 道新题从零开始，其余进度按 pattern 保留", async () => {
     ensureUserTables();
     const rewrites: [string, string][] = [
       ["序数詞（序数词）", "～目／～番目"],
       ["常用助数詞（量词）", "一本・三本・六本・八本・十本"],
       ["常用数量の読み方（常用数量读法）", "一日・二日・三日・四日・五日・六日・七日・八日・九日・十日・二十日"],
-      ["自動詞と他動詞（自他动词）", "～が開く／～を開ける"],
+      ["自動詞と他動詞（自他动词）", "～が＋自動詞／～を＋他動詞"],
       ["動詞「ます形」（敬体形）", "書きます・食べます・します・来ます"],
       ["動詞「て形」", "書いて・泳いで・飲んで・待って・話して・行って"],
       ["動詞「た形」", "聞いた・脱いだ・読んだ・買った・貸した・行った"],
