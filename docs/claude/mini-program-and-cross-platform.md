@@ -516,3 +516,106 @@ JOIN 读的是 **grammar_state** —— **点了收藏永远显示不出来**，
 - 首装的 `getProgressOverview`（`initProgress` 给一万多词建 progress 行）约 74 ms，还是逐条思路，没动。
 - word-study 内容分包在 iPhone 上 JS 求值约 4.3 秒（见「小程序启动」一节末尾），这次没碰。
 - 主包 1,869,020 / 1,900,000 字节，余量约 31 KB。
+
+
+## 2026-11-02 任务 C：选学开关、索引包体与 JSON1 实测（命令行验收，主包仍阻塞）
+
+### 开关入口与刷新边界
+
+`frontend/src/pages/SettingsPage.tsx` 的「学习偏好」区，紧邻 `spellingEnabled`，新增
+`includeOptionalExpressions`。标题为「选学：惯用句 · 谚语 · 四字熟语」，说明为
+「开启后才会排进新词；已学过的照常复习」。复用 `SettingsSwitch` 和相邻行样式，没有新增组件、图标、贴纸或页面。
+Taro 的 `src/account/settings/index.tsx` → `frontend/src/routes/settings.tsx` → 同一份 `SettingsPage`，
+所以两端的真实 `checked/onChange` 绑定均在该共享 TSX，不维护第二份开关状态；`parity-map.json` 同时登记共享源与 Taro 入口。
+
+写回仍走 `updatePreference` → `saveStudyPreferences` → `PREFERENCES_EVENT`，并在该开关变化时调用既有
+`notifyProgressUpdated()`。DailyPlanPanel 等监听偏好重读计划；主页/学习页沿现有统计/取卡入口调用
+`createStage1Tasks`，由 B 的按库实例开关观察值补空位、清掉未学 optional。
+没有调用会重抽未答复习的 `refreshTodayWordPlan`，也没有在设置页复制队列规则。
+设备偏好不新增云字段；已答任务与已学 optional 的复习保持原判据。
+
+### 包体：必须看 fresh build，不能拿 HEAD 的旧报告代替
+
+本 worktree HEAD 为 `e5cc0001`。先保持 B 源码原状构建，保存数字后再压缩；以下均为未压缩代码包的字节数。
+常规 `npm run build:weapp` 先因只读 node_modules 软链中的 plugin-html 写入失败，隔离依赖后又复现 Doctor 的
+`system-configuration` NULL object panic。沿本专题既有办法，仅将同一命令链的
+`taro build --type weapp` 改为 `taro build --type weapp --no-check`，其余资产、CSS、异步路径、API、包体与重复模块检查照顺序执行。
+需要写入的 plugin-html/Taro 依赖和 Vite 缓存仅在当前 worktree 的忽略目录隔离，没有写主目录依赖、安装依赖或启动服务。
+
+索引原为 790 × `[表记,读音,t]`，**37,965 B**；webpack stats 证实随 `collocation-tier.ts` 落入
+**主包 `common.js`**，不是内容分包。原状 fresh build 主包 **1,940,847 B**，比 1,900,000 B 闸门多 **40,847 B**。
+压缩后只存 core 51 条与 optional 430 条，common 由 `pos='固定搭配'` 减去这两档推得；表记等于读音时只存一个字符串。
+生成脚本、索引、读取与 SQL 差集同步变更，测试逐项重建表示并核对 A 全部 790 条的档位；普通词即使表记相同仍不会被误筛。
+新索引 **22,877 B**，减少 **15,088 B（39.7%）**。排序先 core、再 optional、最后以固定搭配判 common，避免重复展开两个差集。
+
+| 包 | HEAD 已提交 reports | B 原状 fresh build | 压缩 + 两端开关 fresh build | 距 1,900,000 B 闸门余量 |
+| --- | ---: | ---: | ---: | ---: |
+| main | 1,898,464 | 1,940,847 | 1,925,754 | -25,754 |
+| study | 1,391,287 | 1,391,785 | 1,391,785 | 508,215 |
+| account | 325,827 | 326,242 | 326,865 | 1,573,135 |
+| content-pages | 1,175,863 | 1,175,874 | 1,175,874 | 724,126 |
+| features | 588,538 | 588,539 | 588,539 | 1,311,461 |
+| content | 1,619,464 | 1,619,465 | 1,619,465 | 280,535 |
+| grammar-foundation | 670,029 | 670,030 | 670,030 | 1,229,970 |
+| grammar-advanced | 547,230 | 547,231 | 547,231 | 1,352,769 |
+| grammar-pages | 310,938 | 311,041 | 311,041 | 1,588,959 |
+| core | 279,123 | 279,124 | 279,124 | 1,620,876 |
+| lazy | 929,503 | 930,493 | 930,493 | 969,507 |
+| jlpt-bank | 764,758 | 764,759 | 764,759 | 1,135,241 |
+| jlpt-bank-2 | 585,140 | 585,141 | 585,141 | 1,314,859 |
+
+主包仍在 `common.js`，压缩后 **1,925,754 B，超 25,754 B**。没有提高预算、删允许清单或伪造 reports。
+所有分包都在预算内，未许可页面组件重复为 0；总闸门仍为失败。
+**尚未解决的范围冲突**：作者要求超限继续分包加载，同时验收清单禁止修改 Taro 加载入口/构建配置等其他文件。
+异步索引必须在首次统计/取卡前可靠就绪，不能用后台加载后先按 common/空集合运行来绕过预算。
+已向作者询问是否允许最小必要的 Taro 加载/构建改动；未获答复前不实施超出清单的改动，也不宣称任务 C 完成。
+
+### JSON1：实际包内 wasm 可执行，冷启动批读并未加档位过滤
+
+Taro `config/index.js` 的 `sql.js$` → `src/platform/sql-js.weapp.cjs` →
+`wechat-miniprogram/src/vendor/sql-wasm.js`，wasm 为 `dist/core/sql-wasm.wasm.br`。
+`build-wasm-br.mjs` 从 `wechat-miniprogram/src/assets/sql-wasm.wasm` 压缩生成；在 Node 24.16.0 中解压后逐字节相同：
+**659,730 B**，SHA-256 `438c88f666dc054ce4e9395f80fe9db4218b1a3c379960454880f048a7898aed`。
+用这份 vendored 胶水和同一 wasmBinary 实跑：
+`SELECT sqlite_version(), (SELECT json_group_array(value) FROM json_each('[1,2,3]'))`
+返回 **`3.49.1`、`[1,2,3]`**。不是用 npm 版 sql.js 推断 JSON1；共享范围回归测试也改用这份实际小程序 wasm，新增 json_each 断言。
+
+10-19 首页角标链里的两条批读分别位于 `confusion-groups.ts` 和 `kanji-choice.ts`，B 没向它们加档位子查询：
+它们构造完整辨析关系和汉字候选，不是 optional 新词池。这两条 SQL 仍为 **158 / 178 字符（同为 UTF-8 字节）**，
+加档位前后长度不变，不能为了量一个不存在的新增过滤而改坏分组成员。
+实际受影响的是首页 `getWordStats` 的 total/unseenCount 与其触发的 stage1 新词选择。
+
+计时只用出厂库和 A 的全部固定搭配建立独立内存库（11,709 词，其中固定搭配 790），不读取学习库。
+临时 Vitest 按 `ensureProgressInitialized` → `loadMixedCardData` → `getWordStats().modeCounts/total/unseenCount` 捕获真实 SQL 和 bind 参数。
+在同一份内存库、同一份小程序 wasm 上交替执行「关闭档位集合匹配的对照 / B 原状 / 压缩版」，
+每次含 prepare、bind、step、读取全部结果、free，预热 5 次，随后 31 次取中位数；对照保留其余 B 的资格判据，
+仅把档位 ID 子查询换成空集合以取消 optional 过滤和档位排序，不冒充整个旧版本启动耗时。
+临时测量代码与独立库在 `/private/tmp/colloc-c/`，不进入补丁。Node 毫秒不等于 iPhone 解释执行耗时。
+
+2026-11-02 续验：同一测量脚本重新执行，结果如下；「去过滤」仅是上述取消档位集合的对照，
+不是 `5bd94d14` 整个旧版。长度先列字符数，括号内为 UTF-8 字节数；耗时为 31 次中位数。
+
+| 查询 | 去过滤长度 | B 原状长度 | 压缩后长度 | 去过滤 → B 原状 → 压缩后（ms） |
+| --- | ---: | ---: | ---: | ---: |
+| stage1 新词选择 | 1,920（1,920） | 46,223（97,599） | 33,453（70,685） | 8.175 → 12.209 → 11.268 |
+| 辨析关系批读 | 158（158） | 158（158） | 158（158） | 7.260 → 7.308 → 7.330 |
+| 汉字候选批读 | 178（178） | 178（178） | 178（178） | 3.824 → 3.844 → 3.893 |
+| 首页 total | 427（427） | 9,994（21,238） | 9,994（21,238） | 1.340 → 2.528 → 2.529 |
+| 首页 unseenCount | 726（726） | 10,293（21,537） | 10,293（21,537） | 2.677 → 3.856 → 3.854 |
+
+压缩版相对去过滤对照的最大倍率为 total 的 **1.887 倍**，最慢语句 **11.268 ms**；
+本次隔离测量均未触及「翻倍或超过 50 ms」阈值，因此没有增加 CTE 或改动调用方 SQL。
+此前同一脚本曾在宿主繁忙时得到 70.58 → 249.53 ms，连未变化批读也从 7 ms 量到 80–135 ms，
+这组非隔离结果保留在临时日志，不能拿来推断档位过滤本身的回归；真机耗时仍需后续验收。
+续验也再次核对同一份 wasm 的字节数、SHA-256、Brotli 解压一致性及 `json_each` 返回值，均与上文相同。
+
+### 续验闸门状态：仍未完成任务 C
+
+重新执行上述 `build:weapp` 全链（仅 `--no-check` 跳过 Doctor），编译、CSS/字体、异步内容、API 检查通过；
+重新生成的主包仍为 **1,925,754 B**，在预算闸门退出 1。stats 的 common chunk 包含索引模块，输出文件为 `common.js`。
+构建生成的 `src/package-assets/**` / lucide 资源副作用均还原，保留的 Git 改动只在作者允许的文件范围内。
+
+`VITEST_MAX_WORKERS=2 bash scripts/ci-local.sh`：前端 typecheck、lint、**1,522 项测试**和生产构建通过；
+原生小程序全部检查（含 check-shared、check-parity）通过；Taro smoke/闸门自测通过后在同一主包预算处退出 1，
+后续 cloudflare-sync 检查未由该次脚本执行。首次与构建并行的全量测试有 8 项 5 秒超时，错开构建并降低并发后全部通过，未改测试超时或断言。
+因此不能将本次 `ci-local.sh` 写成全绿，也没有提交、合并、推送、启动 dev server 或打开 GUI；视觉/真机验收按作者安排留给后续。

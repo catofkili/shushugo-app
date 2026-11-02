@@ -1,5 +1,6 @@
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import initSqlJs, { type Database } from "sql.js";
 import content from "../data/jlpt_collocation_content.json";
 import tierIndex from "../data/collocation_tier_index.json";
@@ -46,7 +47,10 @@ const count = (predicate: string) => firstValue<number>(`SELECT COUNT(*) FROM wo
 
 describe("固定搭配分档的共享学习口径", () => {
   beforeAll(async () => {
-    SQL = await initSqlJs();
+    // 用 Taro sql-js.weapp.cjs 实际引用的胶水和 wasm，不能拿 npm 版通过冒充小程序 JSON1 可用。
+    const initWeappSqlJs = createRequire(import.meta.url)("../../../wechat-miniprogram/src/vendor/sql-wasm.js") as
+      (options: { wasmBinary: Uint8Array }) => ReturnType<typeof initSqlJs>;
+    SQL = await initWeappSqlJs({ wasmBinary: readFileSync(new URL("../../../wechat-miniprogram/src/assets/sql-wasm.wasm", import.meta.url)) });
     db = new SQL.Database(new Uint8Array(readFileSync(new URL("../../public/nihongo.db", import.meta.url))));
     ensureProgressInitialized();
     // 只留下四张可学习卡，沿用出厂表结构，避免测试自己发明一份调度 schema。
@@ -78,11 +82,20 @@ describe("固定搭配分档的共享学习口径", () => {
     storage.set("mn-study-preferences", JSON.stringify({ includeOptionalExpressions: "false" }));
     expect(getStudyPreferences().includeOptionalExpressions).toBe(false);
   });
+  it("小程序实际 wasm 支持档位集合使用的 json_each", () => {
+    expect(firstValue<string>("SELECT json_group_array(value) FROM json_each('[1,2,3]')", [], "")).toBe("[1,2,3]");
+  });
   it("运行时小索引与 A 的全部词形、读音和档位完全相同", () => {
-    expect(tierIndex).toEqual(content.entries.map((entry) => [entry.surface, entry.kana, "t" in entry ? entry.t : 1]));
+    expect(tierIndex).toEqual(Object.fromEntries([["core", 0], ["optional", 2]].map(([tier, code]) => [tier,
+      content.entries.filter((entry) => "t" in entry && entry.t === code)
+        .map((entry) => entry.surface === entry.kana ? entry.surface : [entry.surface, entry.kana])
+    ])));
+    for (const entry of content.entries) {
+      expect(wordCollocationTier({ kanji: entry.surface, kana: entry.kana, pos: "固定搭配" })).toBe(collocationTier(entry));
+    }
     const entry = content.entries.find((entry) => collocationTier(entry) === "optional")!;
     expect(wordCollocationTier({ kanji: entry.surface, kana: entry.kana, pos: "固定搭配" })).toBe("optional");
-    expect(wordCollocationTier({ kanji: entry.surface, kana: "其它读音", pos: "固定搭配" })).toBeNull();
+    expect(wordCollocationTier({ kanji: entry.surface, kana: "其它读音", pos: "固定搭配" })).toBe("common");
     expect(wordCollocationTier({ kanji: entry.surface, kana: entry.kana, pos: "名词" })).toBeNull();
   });
   it("关闭时新词队列不含 optional，core 在高权重普通词之前，common 在其后", () => {

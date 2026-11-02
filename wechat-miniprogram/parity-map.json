@@ -394,9 +394,10 @@
     {
       "web": "frontend/src/pages/SettingsPage.tsx",
       "mini": [
-        "frontend/src/pages/SettingsPage.tsx"
+        "frontend/src/pages/SettingsPage.tsx",
+        "taro-spike-2/src/account/settings/index.tsx"
       ],
-      "reason": "路线 A：Taro 直接编译同一份学习偏好与模式设置页面，拼写共用 studyPreferences 设备偏好。"
+      "reason": "路线 A：Taro 设置入口经 SettingsRoute 直接编译这份 TSX；spellingEnabled 与 includeOptionalExpressions 的 SettingsSwitch 渲染、绑定和偏好刷新两端共用。"
     },
     {
       "web": "frontend/src/pages/TeamPage.tsx",

@@ -38,6 +38,7 @@ import { importExternalWordList, previewExternalWordList } from "../lib/word-lis
 import { MascotSay } from "../components/MascotSay";
 import { yieldToPaint } from "../lib/yield-to-paint";
 import { getAutoSendErrors, setAutoSendErrors } from "../lib/feedback";
+import { notifyProgressUpdated } from "../lib/progress-events";
 
 interface SettingsPageProps {
   onBack: () => void;
@@ -191,6 +192,8 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
   const updatePreference = (patch: Partial<StudyPreferences>, text = "设置已保存。") => {
     const next = saveStudyPreferences({ ...preferences, ...patch });
     setPreferences(next);
+    // 沿现有统计刷新入口，让队列补空位/清理未学选学卡，保留复习与已答任务。
+    if (patch.includeOptionalExpressions !== undefined) notifyProgressUpdated();
 
     // 如果更新了主题，立即应用
     if (patch.theme !== undefined) {
@@ -527,6 +530,14 @@ export function SettingsPage({ onBack: _onBack, onRequireAuth }: SettingsPagePro
               <p className="mt-1 block text-xs text-white/50">每天最后一次见面时拼写；选忘记后，这个词一直用拼写。</p>
             </div>
             <SettingsSwitch label="拼写" checked={preferences.spellingEnabled} onChange={(spellingEnabled) => updatePreference({ spellingEnabled })} />
+          </div>
+
+          <div className="w7-row flex items-center gap-3 px-4 py-3">
+            <div className="min-w-0 flex-1 text-left">
+              <p className="block text-[15px] font-bold text-white">选学：惯用句 · 谚语 · 四字熟语</p>
+              <p className="mt-1 block text-xs text-white/50">开启后才会排进新词；已学过的照常复习</p>
+            </div>
+            <SettingsSwitch label="选学：惯用句 · 谚语 · 四字熟语" checked={preferences.includeOptionalExpressions} onChange={(includeOptionalExpressions) => updatePreference({ includeOptionalExpressions })} />
           </div>
 
           <div className="w7-row flex items-center gap-3 px-4 py-3 w10-motion-row">
