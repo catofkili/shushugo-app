@@ -34,7 +34,7 @@ import {
   type GrammarQuizAnswer
 } from "./grammar-quiz";
 import { getStubbornGrammarToday } from "./word-api/stubborn-today";
-import { MANUAL_GRAMMAR_QUESTIONS } from "../data/grammar-quiz-questions";
+import { grammarQuizQuestion, MANUAL_GRAMMAR_QUESTIONS } from "../data/grammar-quiz-questions";
 import { GRAMMAR_SEED_ROW_COUNT, today } from "./study-core";
 
 const SQL = await initSqlJs();
@@ -60,6 +60,15 @@ describe("语法考题（和单词同一套 FSRS）", () => {
   beforeEach(() => {
     testDb = new SQL.Database(new Uint8Array(readFileSync(seedPath)));
     prefStore.clear();
+  });
+
+  it("同一级别的考题题面唯一，跨级同名允许", () => {
+    const patternsByQuestion = new Map<string, string[]>();
+    for (const [level, pattern] of testDb.exec("SELECT level, pattern FROM grammar_points ORDER BY sort_order")[0].values) {
+      const key = `${level}: ${grammarQuizQuestion(String(pattern))}`;
+      patternsByQuestion.set(key, [...(patternsByQuestion.get(key) ?? []), String(pattern)]);
+    }
+    expect([...patternsByQuestion].filter(([, patterns]) => patterns.length > 1)).toEqual([]);
   });
 
   it("语法复习上限没设（0）时默认 60，不再沿用单词的约 600", () => {
@@ -98,8 +107,8 @@ describe("语法考题（和单词同一套 FSRS）", () => {
   it("题面仍是句型，答案是接续 + 中文意 + 例句", () => {
     const { card } = getGrammarQuizSession(LEVEL);
     expect(card).not.toBeNull();
-    expect(card!.question).not.toBe("");
-    expect(card!.question).toContain("名詞");
+    expect(grammarQuizQuestion(card!.pattern)).not.toBe("");
+    expect(grammarQuizQuestion(card!.pattern)).toContain("名詞");
     expect(card!.pattern).not.toBe("");
     expect(card!.formation).not.toBe("");
     expect(card!.meaning).not.toBe("");
@@ -114,33 +123,33 @@ describe("语法考题（和单词同一套 FSRS）", () => {
       .flatMap((level) => grammarQuizRanking(level));
     expect(rows).toHaveLength(GRAMMAR_SEED_ROW_COUNT);
     const patterns = new Set(rows.map((row) => row.pattern));
-    expect(Object.keys(MANUAL_GRAMMAR_QUESTIONS)).toHaveLength(21);
+    expect(Object.keys(MANUAL_GRAMMAR_QUESTIONS)).toHaveLength(22);
     Object.keys(MANUAL_GRAMMAR_QUESTIONS).forEach((pattern) => {
       expect(patterns.has(pattern)).toBe(true);
       expect(MANUAL_GRAMMAR_QUESTIONS[pattern]).not.toBe("");
     });
-    // 21 条人工题面 + 16 条重名消歧后缀（「～とは（N1-2）」题面上要摘掉，否则先把等级说出去）
+    // 22 条人工题面 + 6 条跨级重名消歧后缀；同级重复已经删除。
     const suffixed = rows.filter((row) => /（N[1-5]-\d+）$/.test(row.pattern));
-    expect(suffixed).toHaveLength(16);
-    suffixed.forEach((row) => expect(row.question).toBe(row.pattern.replace(/（N[1-5]-\d+）$/, "")));
-    expect(rows.filter((row) => row.question !== row.pattern)).toHaveLength(21 + 16);
+    expect(suffixed).toHaveLength(6);
+    suffixed.forEach((row) => expect(grammarQuizQuestion(row.pattern)).toBe(row.pattern.replace(/（N[1-5]-\d+）$/, "")));
+    expect(rows.filter((row) => grammarQuizQuestion(row.pattern) !== row.pattern)).toHaveLength(22 + 6);
 
     const spontaneous = rows.find((row) => row.pattern.includes("自発"));
-    expect(spontaneous?.question).toBe("～（ら）れる");
-    expect(rows.find((row) => row.pattern.startsWith("可能助动词"))?.question).toBe("れる／られる");
+    expect(grammarQuizQuestion(spontaneous!.pattern)).toBe("昔のことが思い出される");
+    expect(grammarQuizQuestion(rows.find((row) => row.pattern.startsWith("可能助动词"))!.pattern)).toBe("漢字が読める・朝早く起きられる");
     // 自然的日语词形不是“泄题标签”：卷面怎么写，这里就怎么提示。
-    expect(rows.find((row) => row.pattern.includes("～間（あいだ）"))?.question).toBe("～間（あいだ）");
-    expect(rows.find((row) => row.pattern === "ぜんぜん（全然）")?.question).toBe("ぜんぜん（全然）");
-    expect(rows.find((row) => row.pattern === "～て以来（いらい）")?.question).toBe("～て以来（いらい）");
-    expect(rows.find((row) => row.pattern === "基数詞（基数词）")?.question).toBe("基数詞");
+    expect(grammarQuizQuestion(rows.find((row) => row.pattern.includes("～間（あいだ）"))!.pattern)).toBe("～間（あいだ）");
+    expect(grammarQuizQuestion(rows.find((row) => row.pattern === "ぜんぜん（全然）")!.pattern)).toBe("ぜんぜん（全然）");
+    expect(grammarQuizQuestion(rows.find((row) => row.pattern === "～て以来（いらい）")!.pattern)).toBe("～て以来（いらい）");
+    expect(grammarQuizQuestion(rows.find((row) => row.pattern === "～目／～番目")!.pattern)).toBe("～目／～番目");
     // 结构提示也保留汉字，避免把题面粗暴改成全假名。
-    expect(rows.find((row) => row.pattern.startsWith("名詞1＋"))?.question).toContain("名詞");
+    expect(grammarQuizQuestion(rows.find((row) => row.pattern.startsWith("名詞1＋"))!.pattern)).toContain("名詞");
   });
 
   it("⚠️ 一天只放新语法配额那么多条，不再是「把整个等级洗一遍」", () => {
     const quota = grammarNewQuota(LEVEL);
     expect(quota).toBeGreaterThan(0);
-    expect(quota).toBeLessThan(127); // N5 一共 127 条
+    expect(quota).toBeLessThan(122); // N5 一共 122 条
     // 首答就点认识 = Easy，当天直接毕业，所以一场正好走完配额
     const { seen } = drain(() => "know");
     expect(new Set(seen).size).toBe(quota);
@@ -319,6 +328,6 @@ describe("语法考题（和单词同一套 FSRS）", () => {
     expect(ranked[0].id).toBe(ids[2]);
     expect(ranked[1].id).toBe(ids[0]);
     expect(ranked[ranked.length - 1].seenCount).toBe(0);
-    expect(ranked).toHaveLength(127);
+    expect(ranked).toHaveLength(122);
   });
 });

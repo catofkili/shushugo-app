@@ -134,9 +134,9 @@ describe("先验额度", () => {
   });
 });
 
-it("事故回归：127 条语法已到期，只放初始额度；答完当天不再进卡，未放行的 FSRS 和基线不变", () => {
-  const keys = keysFor("grammar", 127);
-  expect(keys).toHaveLength(127);
+it("事故回归：122 条语法已到期，只放初始额度；答完当天不再进卡，未放行的 FSRS 和基线不变", () => {
+  const keys = keysFor("grammar", 122);
+  expect(keys).toHaveLength(122);
   seed("grammar", keys);
   const allFsrs = () => rowsFor("SELECT grammar_id, fsrs_due, fsrs_last_review, fsrs_stability, fsrs_reps FROM grammar_progress WHERE known_forever = 0 ORDER BY grammar_id");
   const before = allFsrs();

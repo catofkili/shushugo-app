@@ -37,7 +37,6 @@ import {
 import { patternAttachment } from "./grammar-formation";
 import type { FuriganaAnnotation } from "../types/furigana";
 import type { WordAnswer } from "../types/vocabulary";
-import { grammarQuizQuestion } from "../data/grammar-quiz-questions";
 
 /**
  * 语法考题：题面是日语句型，答案是它的接续 + 中文意。
@@ -72,8 +71,6 @@ const QUEUE_KEY = "grammar" as const;
 
 export interface GrammarQuizCard {
   id: number;
-  /** 题面：逐条人工审过的句型；答案面的完整 pattern 不在这里提前显示。 */
-  question: string;
   /** 答案里的句型原文 */
   pattern: string;
   /** 答案上半：接续 */
@@ -333,7 +330,6 @@ const rowToCard = (row: Record<string, unknown>): GrammarQuizCard => {
   const exampleFurigana = parseFurigana(row.example_furigana);
   return {
     id: Number(row.id),
-    question: grammarQuizQuestion(pattern),
     pattern,
     formation,
     attachment: patternAttachment(pattern, formation),

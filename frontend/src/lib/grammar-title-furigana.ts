@@ -49,8 +49,11 @@ export const projectFurigana = (
   let searchFrom = 0;
   for (const annotation of annotations) {
     const base = sourceText.slice(annotation.start, annotation.start + annotation.length);
+    if (!base) return undefined;
     const start = targetText.indexOf(base, searchFrom);
-    if (!base || start < 0) return undefined;
+    // 题面不是标题子串时（变形题：标题「来ます」、题面「くる」），标题里有、题面没有的字跳过。
+    // 同一个字在两边读音不同就不能写成汉字：「来ます」的き 会被投到「来る」上。
+    if (start < 0) continue;
     projected.push({ ...annotation, start });
     searchFrom = start + base.length;
   }

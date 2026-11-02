@@ -1,3 +1,4 @@
+/* 由 scripts/build-shared.mjs 从 frontend/src 生成，别手改；改网页那份再重跑。 */
 "use strict";
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -17,7 +18,7 @@ var __copyProps = (to, from, except, desc) => {
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// ../../../../../Documents/shushugo/frontend/src/data/grammar-foundation.ts
+// ../frontend/src/data/grammar-foundation.ts
 var grammar_foundation_exports = {};
 __export(grammar_foundation_exports, {
   FOUNDATION_SECTION_LABELS: () => FOUNDATION_SECTION_LABELS,
@@ -26,7 +27,7 @@ __export(grammar_foundation_exports, {
 });
 module.exports = __toCommonJS(grammar_foundation_exports);
 
-// ../../../../../Documents/shushugo/frontend/src/data/verb-conjugation-foundation.ts
+// ../frontend/src/data/verb-conjugation-foundation.ts
 var verbConjugationRules = [
   {
     id: "verb-form-dictionary",
@@ -46,7 +47,7 @@ var verbConjugationRules = [
         ["\u6765\u308B", "\u6765\u308B\uFF08\u304F\u308B\uFF09", "\u6765\u308B", "\u8BFB\u97F3\u968F\u6D3B\u7528\u6539\u53D8\uFF0C\u8981\u8FDE\u8BFB\u97F3\u4E00\u8D77\u8BB0"]
       ]
     }],
-    relatedGrammarIds: ["pdf-n5-017", "pdf-n5-023", "pdf-n4-085"]
+    relatedGrammarIds: ["pdf-n5-019", "pdf-n4-085"]
   },
   {
     id: "verb-form-plain",
@@ -66,7 +67,7 @@ var verbConjugationRules = [
         ["\u8FC7\u53BB\u5426\u5B9A", "\u8AAD\u307E\u306A\u304B\u3063\u305F", "\u8AAD\u307F\u307E\u305B\u3093\u3067\u3057\u305F", "\u6628\u65E5\u306F\u8AAD\u307E\u306A\u304B\u3063\u305F"]
       ]
     }],
-    relatedGrammarIds: ["pdf-n5-023", "pdf-n4-020", "pdf-n4-086"]
+    relatedGrammarIds: ["pdf-n5-021", "pdf-n5-022", "pdf-n4-020", "pdf-n4-086"]
   },
   {
     id: "verb-form-terminal",
@@ -86,7 +87,7 @@ var verbConjugationRules = [
         ["\u6765\u308B", "\u6765\u308B\uFF08\u304F\u308B\uFF09", "\u53CB\u9054\u304C\u6765\u308B\u3002", "\u660E\u65E5\u6765\u308B\u53CB\u9054"]
       ]
     }],
-    relatedGrammarIds: ["pdf-n5-023", "pdf-n5-077", "pdf-n5-078"]
+    relatedGrammarIds: ["pdf-n5-021", "pdf-n5-022", "pdf-n5-077", "pdf-n5-078"]
   },
   {
     id: "verb-form-attributive",
@@ -106,7 +107,7 @@ var verbConjugationRules = [
         ["\u8FC7\u53BB\u5426\u5B9A", "\u8AAD\u307E\u306A\u304B\u3063\u305F\uFF0B\u540D\u8BCD", "\u6628\u65E5\u6765\u306A\u304B\u3063\u305F\u4EBA", "\u305D\u306E\u4EBA\u306F\u6628\u65E5\u6765\u306A\u304B\u3063\u305F"]
       ]
     }],
-    relatedGrammarIds: ["pdf-n5-023", "pdf-n4-020", "pdf-n4-086"]
+    relatedGrammarIds: ["pdf-n5-021", "pdf-n5-022", "pdf-n4-020", "pdf-n4-086"]
   },
   {
     id: "verb-form-masu",
@@ -133,7 +134,7 @@ var verbConjugationRules = [
         rows: [["\u975E\u8FC7\u53BB\u80AF\u5B9A", "\u307E\u3059", "\u8AAD\u307F\u307E\u3059"], ["\u975E\u8FC7\u53BB\u5426\u5B9A", "\u307E\u305B\u3093", "\u8AAD\u307F\u307E\u305B\u3093"], ["\u8FC7\u53BB\u80AF\u5B9A", "\u307E\u3057\u305F", "\u8AAD\u307F\u307E\u3057\u305F"], ["\u8FC7\u53BB\u5426\u5B9A", "\u307E\u305B\u3093\u3067\u3057\u305F", "\u8AAD\u307F\u307E\u305B\u3093\u3067\u3057\u305F"]]
       }
     ],
-    relatedGrammarIds: ["pdf-n5-019", "pdf-n5-023", "pdf-n5-103"]
+    relatedGrammarIds: ["pdf-n5-019", "pdf-n5-103"]
   },
   {
     id: "verb-form-nai",
@@ -495,7 +496,7 @@ var verbConjugationRules = [
   }
 ];
 
-// ../../../../../Documents/shushugo/frontend/src/data/grammar-foundation.ts
+// ../frontend/src/data/grammar-foundation.ts
 var FOUNDATION_SECTION_LABELS = {
   sentence: "\u53E5\u5B50\u4E0E\u8C13\u8BED",
   conjugation: "\u8BCD\u7C7B\u4E0E\u6D3B\u7528",
@@ -555,7 +556,7 @@ var grammarFoundationRules = [
         ]
       }
     ],
-    relatedGrammarIds: ["pdf-n5-001", "pdf-n5-003", "pdf-n5-023", "pdf-n5-029", "pdf-n5-034"]
+    relatedGrammarIds: ["pdf-n5-001", "pdf-n5-003", "pdf-n5-019", "pdf-n5-021", "pdf-n5-022", "pdf-n5-029", "pdf-n5-034"]
   },
   {
     id: "ellipsis-and-question-slots",
@@ -575,7 +576,7 @@ var grammarFoundationRules = [
     summary: "\u52A8\u8BCD\u3001\u3044\u5F62\u5BB9\u8BCD\u548C\u306A\u5F62\u5BB9\u8BCD\uFF0F\u540D\u8BCD\u8C13\u8BED\u4F1A\u968F\u53E5\u6CD5\u73AF\u5883\u6539\u53D8\u5F62\u5F0F\uFF1B\u540D\u8BCD\u672C\u4F53\u3001\u526F\u8BCD\u3001\u8FDE\u4F53\u8BCD\u3001\u63A5\u7EED\u8BCD\u548C\u52A9\u8BCD\u901A\u5E38\u4E0D\u6309\u8FD9\u79CD\u65B9\u5F0F\u6D3B\u7528\u3002",
     patterns: ["\u52A8\u8BCD\uFF1A\u66F8\u304F\u2192\u66F8\u304B\u306A\u3044", "\u3044\u5F62\u5BB9\u8BCD\uFF1A\u6691\u3044\u2192\u6691\u304B\u3063\u305F", "\u540D\u8BCD\uFF0B\u52A9\u52A8\u6210\u5206\uFF1A\u5B66\u751F\uFF0B\u3060\u3063\u305F", "\u52A9\u8BCD\uFF1A\u304C\uFF0F\u3092\uFF0F\u306B"],
     checkpoints: ["\u53D8\u5316\u53D1\u751F\u5728\u8BCD\u5C3E\u6216\u540E\u63A5\u6210\u5206\uFF0C\u4E0D\u662F\u6574\u53E5\u8BDD\u968F\u610F\u53D8\u5F62\u3002", "\u5148\u786E\u8BA4\u8BCD\u7C7B\uFF0C\u624D\u80FD\u77E5\u9053\u8BE5\u67E5\u54EA\u5F20\u6D3B\u7528\u8868\u3002"],
-    relatedGrammarIds: ["pdf-n5-017", "pdf-n5-029", "pdf-n5-034", "pdf-n5-046"]
+    relatedGrammarIds: ["pdf-n5-022", "pdf-n5-029", "pdf-n5-034", "pdf-n5-046"]
   },
   {
     id: "verb-conjugation-system",
@@ -635,7 +636,7 @@ var grammarFoundationRules = [
         ]
       }
     ],
-    relatedGrammarIds: ["pdf-n5-017", "pdf-n5-019", "pdf-n5-020", "pdf-n5-021", "pdf-n5-022"]
+    relatedGrammarIds: ["pdf-n5-019", "pdf-n5-020", "pdf-n5-021", "pdf-n5-022"]
   },
   ...verbConjugationRules,
   {
@@ -660,7 +661,7 @@ var grammarFoundationRules = [
         ]
       }
     ],
-    relatedGrammarIds: ["pdf-n5-029", "pdf-n5-032", "pdf-n5-034", "pdf-n5-037"]
+    relatedGrammarIds: ["pdf-n5-029", "pdf-n5-034", "pdf-n5-070"]
   },
   {
     id: "forms-are-attachment-points",
@@ -726,7 +727,7 @@ var grammarFoundationRules = [
     summary: "\u6307\u793A\u8BCD\u3001\u5F62\u5BB9\u8BCD\u3001\u540D\u8BCD\u548C\u5B8C\u6574\u5C0F\u53E5\u90FD\u53EF\u4EE5\u653E\u5728\u540D\u8BCD\u524D\u3002\u5148\u627E\u5230\u6700\u540E\u7684\u4E2D\u5FC3\u540D\u8BCD\uFF0C\u518D\u5411\u524D\u786E\u5B9A\u4FEE\u9970\u8303\u56F4\u3002",
     patterns: ["\u3053\u306E\u672C", "\u9AD8\u3044\u5C71", "\u9759\u304B\u306A\u753A", "\u65E5\u672C\u8A9E\u306E\u672C", "\u6628\u65E5\u8CB7\u3063\u305F\u672C"],
     checkpoints: ["\u5C0F\u53E5\u4FEE\u9970\u540D\u8BCD\u65F6\u4E0D\u7528\u307E\u3059\uFF0F\u3067\u3059\u6536\u5C3E\u3002", "\u88AB\u4FEE\u9970\u540D\u8BCD\u5728\u5C0F\u53E5\u4E2D\u7684\u89D2\u8272\u901A\u5E38\u4E0D\u518D\u7528\u4E00\u4E2A\u989D\u5916\u4EE3\u8BCD\u8868\u793A\u3002"],
-    relatedGrammarIds: ["pdf-n5-008", "pdf-n5-031", "pdf-n5-036", "pdf-n5-023"]
+    relatedGrammarIds: ["pdf-n5-008", "pdf-n5-031", "pdf-n5-036", "pdf-n5-021"]
   },
   {
     id: "subordinate-clause-form",
@@ -736,7 +737,7 @@ var grammarFoundationRules = [
     summary: "\u6574\u53E5\u5373\u4F7F\u4EE5\u3067\u3059\uFF0F\u307E\u3059\u7ED3\u675F\uFF0C\u540D\u8BCD\u4FEE\u9970\u3001\u5F15\u7528\u3001\u540D\u8BCD\u5316\u548C\u591A\u6570\u63A5\u7EED\u7ED3\u6784\u5185\u90E8\u4ECD\u4F7F\u7528\u666E\u901A\u5F62\u3002\u793C\u8C8C\u4E3B\u8981\u843D\u5728\u6574\u53E5\u6700\u540E\uFF0C\u4E0D\u9700\u8981\u6BCF\u5C42\u90FD\u52A0\u307E\u3059\uFF0F\u3067\u3059\u3002",
     patterns: ["\u6628\u65E5\u8CB7\u3063\u305F\u672C\u3067\u3059", "\u660E\u65E5\u884C\u304F\u3068\u601D\u3044\u307E\u3059", "\u65E5\u672C\u8A9E\u3092\u52C9\u5F37\u3059\u308B\u3053\u3068\u306F\u697D\u3057\u3044\u3067\u3059"],
     checkpoints: ["\u5148\u5212\u51FA\u5C0F\u53E5\u8FB9\u754C\uFF0C\u518D\u5224\u65AD\u6BCF\u4E2A\u8C13\u8BED\u5C5E\u4E8E\u54EA\u4E00\u5C42\u3002", "\u540D\u8BCD\u3001\u306A\u5F62\u5BB9\u8BCD\u5728\u67D0\u4E9B\u63A5\u7EED\u524D\u662F\u5426\u4FDD\u7559\u3060\uFF0C\u8981\u6309\u540E\u9879\u89C4\u5219\u5224\u65AD\u3002"],
-    relatedGrammarIds: ["pdf-n5-023", "pdf-n4-020", "pdf-n4-021", "pdf-n4-086"]
+    relatedGrammarIds: ["pdf-n5-021", "pdf-n5-022", "pdf-n4-020", "pdf-n4-021", "pdf-n4-086"]
   },
   {
     id: "clause-linking-and-scope",
@@ -816,7 +817,7 @@ var grammarFoundationRules = [
     summary: "\u666E\u901A\u4F53\uFF0F\u656C\u4F53\u51B3\u5B9A\u53E5\u672B\u5BF9\u542C\u8005\u662F\u5426\u793C\u8C8C\uFF1B\u5C0A\u656C\u8BED\u62AC\u9AD8\u52A8\u4F5C\u4E3B\u4F53\uFF0C\u8C26\u8BA9\u8BED\u538B\u4F4E\u81EA\u5DF1\u4E00\u65B9\u3002\u7528\u4E86\u3067\u3059\uFF0F\u307E\u3059\u4E0D\u7B49\u4E8E\u5DF2\u7ECF\u6B63\u786E\u4F7F\u7528\u5C0A\u656C\u8BED\u6216\u8C26\u8BA9\u8BED\u3002",
     patterns: ["\u666E\u901A\u4F53\uFF1A\u884C\u304F", "\u656C\u4F53\uFF1A\u884C\u304D\u307E\u3059", "\u5C0A\u656C\uFF1A\u3044\u3089\u3063\u3057\u3083\u308B", "\u8C26\u8BA9\uFF1A\u4F3A\u3046"],
     checkpoints: ["\u5148\u786E\u8BA4\u52A8\u4F5C\u662F\u8C01\u505A\uFF0C\u518D\u9009\u5C0A\u656C\u6216\u8C26\u8BA9\u3002", "\u4ECE\u53E5\u5E38\u7528\u666E\u901A\u5F62\uFF0C\u4F46\u6574\u53E5\u6700\u540E\u4ECD\u53EF\u7528\u656C\u4F53\u3002", "\u793C\u8C8C\u7A0B\u5EA6\u8FD8\u53D7\u573A\u5408\u3001\u5173\u7CFB\u548C\u56FA\u5B9A\u8868\u8FBE\u5F71\u54CD\u3002"],
-    relatedGrammarIds: ["pdf-n5-023", "pdf-n4-098", "pdf-n4-109", "pdf-n4-111", "pdf-n3-140"]
+    relatedGrammarIds: ["pdf-n5-019", "pdf-n4-098", "pdf-n4-109", "pdf-n4-111"]
   }
 ];
 var grammarFoundationSections = Object.keys(FOUNDATION_SECTION_LABELS).map((id) => ({ id, label: FOUNDATION_SECTION_LABELS[id] }));

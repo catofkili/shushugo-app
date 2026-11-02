@@ -9,6 +9,8 @@ import { answerHotkeyLabels, answerOptions } from "../word-study/word-study-util
 import { patternPieces } from "../../lib/grammar-formation";
 import { grammarKanjiHint, grammarKeyPoint } from "../../lib/grammar-key-points";
 import { getGrammarTitleFuriganaByPattern, projectFurigana } from "../../lib/grammar-title-furigana";
+// 题面表只在这里和考题页用：从 lib/grammar-quiz 引的话会跟着主页统计进 Taro 主包（2026-11-02 超过上限）。
+import { grammarQuizQuestion } from "../../data/grammar-quiz-questions";
 import type { GrammarQuizAnswer, GrammarQuizCard } from "../../lib/grammar-quiz";
 import { ExamplePlayButton } from "../word-study/WordStudyPanels";
 
@@ -55,7 +57,8 @@ const hasInlineAttachment = (attachment: string | null): attachment is string =>
 const PatternLine = ({ card, revealed }: { card: GrammarQuizCard; revealed: boolean }) => {
   const furigana = getGrammarTitleFuriganaByPattern(card.pattern);
   if (!revealed) {
-    return <JapaneseRuby text={card.question} furigana={projectFurigana(card.pattern, card.question, furigana)} />;
+    const question = grammarQuizQuestion(card.pattern);
+    return <JapaneseRuby text={question} furigana={projectFurigana(card.pattern, question, furigana)} />;
   }
   if (!hasInlineAttachment(card.attachment)) return <JapaneseRuby text={card.pattern} furigana={furigana} />;
   const pieces = patternPieces(card.pattern);

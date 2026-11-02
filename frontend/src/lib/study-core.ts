@@ -114,7 +114,7 @@ const JLPT_WORD_METADATA_VERSION = `2026-10-12-atatameru-example-v1-${FURIGANA_V
 const JLPT_LEVEL_OVERRIDE_VERSION = "2026-08-21-unleveled-v1";
 // 与 src/data/grammar_seed.json 的 version 字段保持一致。种子 JSON 只在版本
 // 不匹配需要迁移时才动态加载,避免打进主 bundle。
-export const GRAMMAR_SEED_VERSION = "2026-10-20-grammar-connection-examples-v1";
+export const GRAMMAR_SEED_VERSION = "2026-11-02-grammar-category-cleanup-v1";
 /**
  * 种子里有多少条语法点。⚠️ 它不是装饰,是**版本戳撒谎时的唯一兜底**。
  *
@@ -127,7 +127,7 @@ export const GRAMMAR_SEED_VERSION = "2026-10-20-grammar-connection-examples-v1";
  * `grammar_state.queue`、再往 archive 里写一份 —— 只有真的对不上才值得付这个代价。
  * `verify-release-db.mjs` 会钉住这个常数 == 出厂库 == seed。
  */
-export const GRAMMAR_SEED_ROW_COUNT = 769;
+export const GRAMMAR_SEED_ROW_COUNT = 753;
 export const DICTIONARY_SUPPLEMENT_VERSION = "2026-08-16-handwritten-v1";
 // v3（2026-10-18）内容和 v2 一样，只为让 retireRemovedCollocations 再跑一次：
 // 起点重估曾把已退役的行 known_forever 清回 0（见 level-plan.ts 重置那段）。
@@ -557,6 +557,8 @@ const GRAMMAR_ID_OFFSET = 1_000_000;
  * 2026-09-18 把「A／B」两个写法拆成两条（见 scripts/grammar-variant-splits.json）：
  * 旧进度归第一个写法，第二个写法作为新条目从零开始 —— 拆的理由正是
  * 「看到 A 就点了认识，B 其实不会」，所以 B 不该继承 A 的 FSRS 状态。
+ * 2026-11-02 类目卡改成具体变形/读音题：旧卡的「认识」只针对术语，
+ * 不能证明会做新题，因此这 12 条刻意不登记重命名，从零开始学。
  */
 const GRAMMAR_PATTERN_RENAMES: Record<string, string> = {
   "誰／どなた／どの方": "誰",

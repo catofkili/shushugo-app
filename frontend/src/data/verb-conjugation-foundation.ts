@@ -23,7 +23,7 @@ export const verbConjugationRules: GrammarFoundationRule[] = [
         ["来る", "来る（くる）", "来る", "读音随活用改变，要连读音一起记"]
       ]
     }],
-    relatedGrammarIds: ["pdf-n5-017", "pdf-n5-023", "pdf-n4-085"]
+    relatedGrammarIds: ["pdf-n5-019", "pdf-n4-085"]
   },
   {
     id: "verb-form-plain",
@@ -43,7 +43,7 @@ export const verbConjugationRules: GrammarFoundationRule[] = [
         ["过去否定", "読まなかった", "読みませんでした", "昨日は読まなかった"]
       ]
     }],
-    relatedGrammarIds: ["pdf-n5-023", "pdf-n4-020", "pdf-n4-086"]
+    relatedGrammarIds: ["pdf-n5-021", "pdf-n5-022", "pdf-n4-020", "pdf-n4-086"]
   },
   {
     id: "verb-form-terminal",
@@ -63,7 +63,7 @@ export const verbConjugationRules: GrammarFoundationRule[] = [
         ["来る", "来る（くる）", "友達が来る。", "明日来る友達"]
       ]
     }],
-    relatedGrammarIds: ["pdf-n5-023", "pdf-n5-077", "pdf-n5-078"]
+    relatedGrammarIds: ["pdf-n5-021", "pdf-n5-022", "pdf-n5-077", "pdf-n5-078"]
   },
   {
     id: "verb-form-attributive",
@@ -83,7 +83,7 @@ export const verbConjugationRules: GrammarFoundationRule[] = [
         ["过去否定", "読まなかった＋名词", "昨日来なかった人", "その人は昨日来なかった"]
       ]
     }],
-    relatedGrammarIds: ["pdf-n5-023", "pdf-n4-020", "pdf-n4-086"]
+    relatedGrammarIds: ["pdf-n5-021", "pdf-n5-022", "pdf-n4-020", "pdf-n4-086"]
   },
   {
     id: "verb-form-masu",
@@ -110,7 +110,7 @@ export const verbConjugationRules: GrammarFoundationRule[] = [
         rows: [["非过去肯定", "ます", "読みます"], ["非过去否定", "ません", "読みません"], ["过去肯定", "ました", "読みました"], ["过去否定", "ませんでした", "読みませんでした"]]
       }
     ],
-    relatedGrammarIds: ["pdf-n5-019", "pdf-n5-023", "pdf-n5-103"]
+    relatedGrammarIds: ["pdf-n5-019", "pdf-n5-103"]
   },
   {
     id: "verb-form-nai",

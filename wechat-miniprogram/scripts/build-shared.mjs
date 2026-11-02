@@ -11,6 +11,7 @@
  *  - src/shared/web.js                       主包。入口清单 scripts/shared/entry.ts。
  *  - src/content/question-meanings.js        content 分包：人工题面层（1 MB）
  *  - src/features/content/distinction-reviews.js   features 分包：辨析审校（数据 + 函数）
+ *  - src/features/data/grammar-foundation.js       features 分包：语法框架及具体卡片链接
  *  - src/content/kanji-unit-runtime.js             content 分包：汉字单元索引
  *  - src/content/kanji-reading-usage.js            content 分包：一字多音说明表
  *  - data/grammar_ids.json                    grammar_points.id ↔ grammar.ts 字符串 id
@@ -109,6 +110,8 @@ const kanjiVariantsJson = fs.readFileSync(path.join(data, 'kanji_variants.json')
 outputs.set('src/features/content/kanji-variants.js', HEADER + 'module.exports = JSON.parse(' + JSON.stringify(kanjiVariantsJson) + ');\n');
 outputs.set('src/features/content/kanji-readings.js', jsonModule('kanji_readings.json'));
 outputs.set('src/features/content/grammar-key-points.js', jsonModule('grammar_key_points.json'));
+const foundation = await build({ entryPoints: [path.join(data, 'grammar-foundation.ts')], bundle: true, format: 'cjs', write: false });
+outputs.set('src/features/data/grammar-foundation.js', HEADER + foundation.outputFiles[0].text);
 outputs.set('src/content/pitch-accent.js', jsonModule('pitch_accent.json'));
 const reviews = await build({ ...common, charset: 'utf8', entryPoints: [path.join(data, 'confusion_distinction_reviews.ts')] });
 outputs.set('src/features/content/distinction-reviews.js', HEADER + reviews.outputFiles[0].text);

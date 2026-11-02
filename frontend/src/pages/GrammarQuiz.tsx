@@ -6,6 +6,7 @@ import { getStudyPreferences } from "../lib/studyPreferences";
 import { ArrowLeft, ListOrdered, Plus, Undo2 } from "lucide-react";
 import type { JLPTLevel } from "../types/grammar";
 import { GrammarCard } from "../features/grammar-quiz/GrammarCard";
+import { grammarQuizQuestion } from "../data/grammar-quiz-questions";
 import { useStudyTimer } from "../lib/useStudyTimer";
 import { Sticker } from "../components/CapybaraMascot";
 import { ScrollArea } from "../components/ScrollArea";
@@ -174,7 +175,7 @@ export const GrammarQuiz = ({ initialLevel, onBack }: GrammarQuizProps) => {
                 }`}
               >
                 <div className="min-w-0 flex-1">
-                  <p className="jp truncate text-base font-semibold">{row.question}</p>
+                  <p className="jp truncate text-base font-semibold">{grammarQuizQuestion(row.pattern)}</p>
                   <p className="truncate text-xs text-white/55">{row.meaning}</p>
                 </div>
                 <div className="shrink-0 text-right">

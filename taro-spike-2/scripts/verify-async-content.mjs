@@ -93,7 +93,7 @@ try {
 }
 stores.grammar = null;
 await content.ready();
-if (!Array.isArray(stores.grammar) || stores.grammar.length !== 769) {
+if (!Array.isArray(stores.grammar) || stores.grammar.length !== 753) {
   throw new Error(`content.ready() 未加载完整语法记录：${stores.grammar?.length ?? 'null'}`);
 }
 

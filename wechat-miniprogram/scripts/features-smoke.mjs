@@ -40,7 +40,7 @@ assert.equal(await words.toggleWordFavorite(wordId), true);
 assert.equal(await grammar.toggleGrammarFavorite(17), true);
 assert.deepEqual(
   core.rowsFor(db, 'SELECT item_type, item_id FROM content_favorites ORDER BY item_type').map((row) => [row.item_type, row.item_id]),
-  [['grammar', 'pdf-n5-017'], ['word', String(wordId)]],
+  [['grammar', 'pdf-n5-019'], ['word', String(wordId)]],
   '语法收藏必须是 grammar.ts 的字符串 id，和网页同一批行'
 );
 assert.equal(features.listFavorites().length, 2);
@@ -59,7 +59,7 @@ assert.equal(core.firstValue(db, "SELECT COUNT(*) FROM sync_tombstones WHERE tab
 assert.equal(core.firstValue(db, "SELECT COUNT(*) FROM sync_tombstones WHERE table_name = 'favorite_folders' AND row_key = '考试 重点'"), 1, '改名 = 旧名删除');
 assert.ok(core.rowsFor(db, 'SELECT sync_updated_at FROM content_favorites').every((row) => row.sync_updated_at), 'lww 表的每次写都要有 sync_updated_at，否则合并时输给对端的旧行');
 assert.equal(await grammar.toggleGrammarFavorite(17), false);
-assert.equal(core.firstValue(db, "SELECT COUNT(*) FROM sync_tombstones WHERE table_name = 'content_favorites' AND row_key = ?", [`grammar${String.fromCharCode(31)}pdf-n5-017`], 0), 1, '删收藏要留墓碑（触发器写的）');
+assert.equal(core.firstValue(db, "SELECT COUNT(*) FROM sync_tombstones WHERE table_name = 'content_favorites' AND row_key = ?", [`grammar${String.fromCharCode(31)}pdf-n5-019`], 0), 1, '删收藏要留墓碑（触发器写的）');
 assert.equal(await grammar.toggleGrammarFavorite(17), true);
 assert.equal(core.firstValue(db, "SELECT COUNT(*) FROM sync_tombstones WHERE table_name = 'content_favorites'", [], 0), 0, '加回来要撤掉墓碑');
 assert.ok(grammar.grammarRows(db, '', 'N5', 50).find((row) => Number(row.id) === 17).favorite === 1, '列表按字符串 id 亮星');

@@ -72,7 +72,7 @@ export interface JlptQuestion {
   order?: OptionNo[];
   /** 文章题：指向 bank.passages 的键。 */
   passageId?: string;
-  /** 考点：词指 words.id，语法指 grammar_points.id。文章题可以为 null。 */
+  /** 考点引用：词指 words.id，语法指 grammar_points.id。文法题无准确对应卡时可为 null；不影响题目和作答。 */
   target: { type: "word" | "grammar"; id: number; surface: string } | null;
 }
 

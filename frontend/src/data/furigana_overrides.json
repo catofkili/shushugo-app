@@ -90,18 +90,6 @@
     "高名|こうめい|こうみょう"
   ],
   "overrides": [
-    {"kind":"grammar_title","id":"pdf-n5-013","annotations":[{"start":0,"length":3,"reading":"きすうし"}]},
-    {"kind":"grammar_title","id":"pdf-n5-019","annotations":[{"start":0,"length":2,"reading":"どうし"},{"start":5,"length":1,"reading":"けい"}]},
-    {"kind":"grammar_title","id":"pdf-n5-020","annotations":[{"start":0,"length":2,"reading":"どうし"},{"start":4,"length":1,"reading":"けい"}]},
-    {"kind":"grammar_title","id":"pdf-n5-021","annotations":[{"start":0,"length":2,"reading":"どうし"},{"start":4,"length":1,"reading":"けい"}]},
-    {"kind":"grammar_title","id":"pdf-n5-022","annotations":[{"start":0,"length":2,"reading":"どうし"},{"start":5,"length":1,"reading":"けい"}]},
-    {"kind":"grammar_title","id":"pdf-n5-023","annotations":[{"start":0,"length":2,"reading":"どうし"},{"start":3,"length":3,"reading":"けいたいけい"},{"start":7,"length":3,"reading":"ふつうけい"}]},
-    {"kind":"grammar_title","id":"pdf-n5-029","annotations":[{"start":1,"length":3,"reading":"けいようし"},{"start":5,"length":3,"reading":"ふつうけい"}]},
-    {"kind":"grammar_title","id":"pdf-n5-030","annotations":[{"start":1,"length":3,"reading":"けいようし"},{"start":5,"length":3,"reading":"けいたいけい"}]},
-    {"kind":"grammar_title","id":"pdf-n5-032","annotations":[{"start":1,"length":3,"reading":"けいようし"},{"start":6,"length":1,"reading":"けい"}]},
-    {"kind":"grammar_title","id":"pdf-n5-034","annotations":[{"start":1,"length":3,"reading":"けいようし"},{"start":5,"length":3,"reading":"ふつうけい"}]},
-    {"kind":"grammar_title","id":"pdf-n5-035","annotations":[{"start":1,"length":3,"reading":"けいようし"},{"start":5,"length":1,"reading":"けい"},{"start":6,"length":2,"reading":"たいけい"}]},
-    {"kind":"grammar_title","id":"pdf-n5-037","annotations":[{"start":1,"length":3,"reading":"けいようし"},{"start":6,"length":1,"reading":"けい"}]},
     {"kind":"grammar_title","id":"pdf-n5-038","annotations":[{"start":1,"length":3,"reading":"けいようし"},{"start":6,"length":1,"reading":"けい"}]},
     {"kind":"grammar_title","id":"pdf-n5-077","annotations":[{"start":0,"length":3,"reading":"しゅうじょし"}]},
     {"kind":"grammar_title","id":"pdf-n5-078","annotations":[{"start":0,"length":3,"reading":"しゅうじょし"}]},
@@ -115,6 +103,13 @@
     {"kind":"grammar_title","id":"pdf-n2-004","annotations":[{"start":1,"length":1,"reading":"うえ"}]},
     {"kind":"grammar_title","id":"pdf-n2-032","annotations":[{"start":1,"length":1,"reading":"さい"},{"start":4,"length":1,"reading":"さい"}]},
     {"kind":"grammar_title","id":"pdf-n2-035","annotations":[{"start":1,"length":1,"reading":"すえ"}]},
-    {"kind":"grammar_title","id":"pdf-n1-022","annotations":[{"start":1,"length":1,"reading":"きら"}]}
+    {"kind":"grammar_title","id":"pdf-n1-022","annotations":[{"start":1,"length":1,"reading":"きら"}]},
+    {"kind":"grammar_title","id":"pdf-n5-018","annotations":[{"start":2,"length":1,"reading":"あ"},{"start":7,"length":1,"reading":"あ"}]},
+    {"kind":"grammar_title","id":"pdf-n5-020","annotations":[{"start":0,"length":1,"reading":"か"},{"start":4,"length":1,"reading":"およ"},{"start":8,"length":1,"reading":"の"},{"start":12,"length":1,"reading":"ま"},{"start":16,"length":1,"reading":"はな"},{"start":20,"length":1,"reading":"い"}]},
+    {"kind":"grammar_title","id":"pdf-n5-021","annotations":[{"start":0,"length":1,"reading":"き"},{"start":4,"length":1,"reading":"ぬ"},{"start":8,"length":1,"reading":"よ"},{"start":12,"length":1,"reading":"か"},{"start":16,"length":1,"reading":"か"},{"start":20,"length":1,"reading":"い"}]},
+    {"kind":"grammar","id":"pdf-n5-014","exampleIndex":1,"annotations":[{"start":0,"length":2,"reading":"にほん"},{"start":3,"length":1,"reading":"き"},{"start":5,"length":2,"reading":"みっか"},{"start":7,"length":1,"reading":"め"},{"start":11,"length":1,"reading":"さん"},{"start":12,"length":2,"reading":"ばんめ"},{"start":15,"length":2,"reading":"じゅぎょう"},{"start":18,"length":2,"reading":"ともだち"}]},
+    {"kind":"grammar","id":"pdf-n5-015","exampleIndex":0,"annotations":[{"start":0,"length":2,"reading":"えんぴつ"},{"start":3,"length":2,"reading":"さんぼん"},{"start":9,"length":2,"reading":"いっぽん"},{"start":11,"length":1,"reading":"か"}]},
+    {"kind":"grammar","id":"pdf-n5-016","exampleIndex":0,"annotations":[{"start":0,"length":2,"reading":"りょこう"},{"start":3,"length":2,"reading":"はちがつ"},{"start":5,"length":2,"reading":"ふつか"},{"start":9,"length":2,"reading":"とおか"}]},
+    {"kind":"grammar","id":"pdf-n5-018","exampleIndex":0,"annotations":[{"start":0,"length":1,"reading":"かぜ"},{"start":2,"length":1,"reading":"まど"},{"start":4,"length":1,"reading":"あ"},{"start":10,"length":1,"reading":"わたし"},{"start":12,"length":1,"reading":"まど"},{"start":14,"length":1,"reading":"あ"}]}
   ]
 }

@@ -6,11 +6,11 @@ export type ContentCounts = Record<Kind, number>;
 
 /** 出厂库加启动时的固定搭配迁移：单词/语法按 JLPT 级别，汉字/辨析按素材 level_rank。内容变动时测试会报错。 */
 export const CONTENT_BY_LEVEL: Record<JlptTarget, ContentCounts> = {
-  N5: { words: 920, grammar: 127, kanji: 448, confusion: 8 },
+  N5: { words: 920, grammar: 122, kanji: 448, confusion: 8 },
   N4: { words: 862, grammar: 136, kanji: 362, confusion: 33 },
-  N3: { words: 2096, grammar: 146, kanji: 408, confusion: 58 },
-  N2: { words: 3615, grammar: 155, kanji: 390, confusion: 91 },
-  N1: { words: 4216, grammar: 205, kanji: 362, confusion: 154 }
+  N3: { words: 2096, grammar: 145, kanji: 408, confusion: 58 },
+  N2: { words: 3615, grammar: 153, kanji: 390, confusion: 91 },
+  N1: { words: 4216, grammar: 197, kanji: 362, confusion: 154 }
 };
 
 export const VISIBLE_STARTS: Array<Exclude<StartingLevel, "beyond">> = ["kana-none", "kana", ...JLPT_TARGETS];
