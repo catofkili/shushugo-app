@@ -1,7 +1,7 @@
 import { daysBetween, JLPT_TARGETS, type JlptTarget } from "./jlpt/plan";
 import { defaultExamDate, formatExamDate, isExamKind, parseExamDate, type ExamKind } from "./jlpt/exam-dates";
 import { firstValue, getState, setState } from "./database/db-utils";
-import { newWordEligibleSql } from "./word-learning-scope";
+import { collocationWordSql, newWordEligibleSql } from "./word-learning-scope";
 
 export type ThemePreference = "system" | "light" | "dark";
 
@@ -339,7 +339,7 @@ export const levelAdvanceTarget = (kind: LevelAdvanceKind): JlptTarget => JLPT_T
 export const levelUnseenContent = (kind: LevelAdvanceKind, level: string): number => firstValue<number>(
   kind === "words"
     ? `SELECT COUNT(*) FROM words w LEFT JOIN progress p ON p.word_id = w.id
-       WHERE w.jlpt_level = ? AND ${newWordEligibleSql()}`
+       WHERE w.jlpt_level = ? AND NOT ${collocationWordSql()} AND ${newWordEligibleSql()}`
     : `SELECT COUNT(*) FROM grammar_points g LEFT JOIN grammar_progress p ON p.grammar_id = g.id
        WHERE g.level = ? AND COALESCE(p.seen_count, 0) = 0 AND COALESCE(p.known_forever, 0) = 0`, [level], 0);
 /** 暂停对该类新内容的封顶；null = 不封顶。没学完 100% 时封在剩余数，学完后一周内是 0。 */

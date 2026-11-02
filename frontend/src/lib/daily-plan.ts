@@ -1,4 +1,4 @@
-import { newWordEligibleSql, wordLearningScopeSql, wordStartedSql } from "./word-learning-scope";
+import { collocationWordSql, newWordEligibleSql, wordLearningScopeSql, wordStartedSql } from "./word-learning-scope";
 /**
  * 每日学习量：一份状态、三个入口（圆环 / 数字表单 / 备考一键，docs/MIXED_STUDY_PLAN.md 第 3 节）。
  *
@@ -107,6 +107,7 @@ export const remainingPlanWords = (startingLevel: string, target: JlptTarget, fa
     SELECT COUNT(*) FROM words w
     LEFT JOIN progress p ON p.word_id = w.id
     WHERE (w.jlpt_level IN (${inLevels})${baseWords})
+      AND NOT ${collocationWordSql()}
       AND ${newWordEligibleSql("w", "p", includeOptional)}
   `, [], 0);
 };
@@ -268,7 +269,7 @@ export const examPreset = (target: JlptTarget) => {
   const levels = JLPT_TARGETS.slice(0, targetRank + 1).map((level) => `'${level}'`).join(", ");
   const unseenWords = expected?.content.words ?? firstValue<number>(`
     SELECT COUNT(*) FROM progress p JOIN words w ON w.id = p.word_id
-    WHERE w.jlpt_level IN (${levels}) AND ${newWordEligibleSql()}
+    WHERE w.jlpt_level IN (${levels}) AND NOT ${collocationWordSql()} AND ${newWordEligibleSql()}
   `, [], 0);
   const unseenGrammar = expected?.content.grammar ?? firstValue<number>(`
     SELECT COUNT(*) FROM grammar_progress p JOIN grammar_points g ON g.id = p.grammar_id

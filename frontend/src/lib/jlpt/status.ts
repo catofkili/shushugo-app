@@ -1,4 +1,4 @@
-import { newWordEligibleSql, wordLearningScopeSql, wordStartedSql } from "../word-learning-scope";
+import { collocationWordSql, newWordEligibleSql, wordLearningScopeSql, wordStartedSql } from "../word-learning-scope";
 import { firstValue, studyDayEnd, today } from "../study-core";
 import { ensureProgressInitialized } from "../word-api/bootstrap";
 import { ensureGrammarProgressInitialized } from "../grammar-api";
@@ -83,7 +83,7 @@ export function getJlptPlanStatus(now = new Date()): JlptPlanStatus {
   const wordUnseen = firstValue<number>(`
     SELECT COUNT(*) FROM words w
     JOIN progress p ON p.word_id = w.id
-    WHERE ${words} AND ${newWordEligibleSql()}
+    WHERE ${words} AND NOT ${collocationWordSql()} AND ${newWordEligibleSql()}
   `, [], 0);
   const wordCovered = firstValue<number>(`
     SELECT COUNT(*) FROM words w JOIN progress p ON p.word_id = w.id

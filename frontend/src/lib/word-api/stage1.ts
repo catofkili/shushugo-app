@@ -26,7 +26,7 @@ import { priorGateSql, priorIntakeSql, reconcilePriorTasks } from "../prior-paci
 import { LEECH_LAPSE_THRESHOLD } from "../fsrs-scheduler";
 import { newWordLevelRankSql, newWordOrderSql } from "./filters";
 import { newWordTierRankSql } from "../collocation-tier";
-import { newWordEligibleSql, wordLearningScopeSql, wordStartedSql } from "../word-learning-scope";
+import { collocationWordSql, newWordEligibleSql, wordLearningScopeSql, wordStartedSql } from "../word-learning-scope";
 import { priorBaselineSql } from "../plan-level-order";
 import {
   dailyNewQuota,
@@ -60,11 +60,33 @@ const stage1TaskCount = (day: string) => firstValue<number>(
 // 本机偏好的最后一次观察值不能跟 app_state 云同步；换库/冷启动时重新核对即可。
 const optionalScopeByDatabase = new WeakMap<object, boolean>();
 
+export const COLLOCATION_DAILY_NEW = 3;
+
+// 词典/词库点名仍走原来的普通名额或 encore_new；只有系统投放的搭配受独立日额约束。
+const dailyCollocationSql = (w = "w") => `(${collocationWordSql(w)} AND NOT EXISTS (
+  SELECT 1 FROM dictionary_discovered_words explicit_word WHERE explicit_word.word_id = ${w}.id
+))`;
+
 export const stage1NewTaskCount = (day: string) => firstValue<number>(
-  "SELECT COUNT(*) FROM stage1_tasks WHERE reviewed_on = ? AND task_type = 'new'",
+  `SELECT COUNT(*) FROM stage1_tasks t JOIN words w ON w.id = t.word_id
+   WHERE t.reviewed_on = ? AND t.task_type = 'new' AND NOT ${dailyCollocationSql()}`,
   [day],
   0
 );
+
+const remainingCollocationQuota = (day: string) => Math.max((dailyNewQuota() > 0 ? COLLOCATION_DAILY_NEW : 0) - firstValue<number>(`
+  SELECT COUNT(DISTINCT r.word_id) FROM reviews r JOIN words w ON w.id = r.word_id
+  WHERE r.reviewed_on = ? AND ${collocationWordSql()}
+    AND NOT EXISTS (SELECT 1 FROM reviews earlier WHERE earlier.word_id = r.word_id AND earlier.reviewed_on < ?)
+    AND NOT ${priorBaselineSql("words", "r.word_id")}
+`, [day, day], 0), 0);
+
+const pendingCollocationCount = (day: string) => firstValue<number>(`
+  SELECT COUNT(*) FROM stage1_tasks t JOIN words w ON w.id = t.word_id
+  JOIN progress p ON p.word_id = t.word_id
+  WHERE t.reviewed_on = ? AND t.task_type IN ('new', 'encore_new')
+    AND ${dailyCollocationSql()} AND NOT ${wordStartedSql()} AND p.known_forever = 0
+`, [day], 0);
 
 const backfillStage1TasksFromReviews = (day: string) => {
   const rows = rowsFor(`
@@ -136,6 +158,8 @@ export const createStage1Tasks = (day: string, options: { topUp?: boolean } = {}
   if (!options.topUp) {
     const hasPlan = stage1TaskCount(day) > 0;
     if (hasPlan && !removedOptional && !scopeChanged) {
+      reconcileStage1NewQuota(day);
+      topUpStage1NewTasks(day);
       reconcilePriorTasks(WORD_FSRS, "stage1_tasks", day, studyDayEnd(), "review");
       return;
     }
@@ -144,6 +168,7 @@ export const createStage1Tasks = (day: string, options: { topUp?: boolean } = {}
     }
   }
 
+  reconcileStage1NewQuota(day);
   activateMojiMigratedReviews(day);
 
   // 不再有「退休抽查」:FSRS 里已掌握的词间隔会自然涨到 180 天以上,
@@ -172,6 +197,13 @@ export const createStage1Tasks = (day: string, options: { topUp?: boolean } = {}
     orderIndex += 1;
   });
 
+  topUpStage1NewTasks(day);
+  reconcilePriorTasks(WORD_FSRS, "stage1_tasks", day, studyDayEnd(), "review");
+};
+
+const topUpStage1NewTasks = (day: string) => {
+  const db = getDatabase();
+  let orderIndex = firstValue<number>("SELECT COALESCE(MAX(order_index), 0) + 1 FROM stage1_tasks WHERE reviewed_on = ?", [day], 1);
   // 新词名额三档优先，档内才轮到 newWordOrderSql 的随机：
   //
   //  0. 例句词典里主动加进来的 —— 用户点名要的词，永远最优先。
@@ -188,7 +220,8 @@ export const createStage1Tasks = (day: string, options: { topUp?: boolean } = {}
   //
   // ⚠️ 这里**不放大名额**：LIMIT 始终是当天配额，欠的账只改「先给谁」不改「给几个」。
   // 三天没背也还是 30 个，不会变成 90 —— 那种补作业式的堆积只会让人再也不想打开。
-  const newRows = rowsFor(`
+  const ordinarySlots = Math.max(dailyNewQuota() - stage1NewTaskCount(day), 0);
+  const newRows = ordinarySlots > 0 ? rowsFor(`
     SELECT p.word_id
     FROM progress p
     JOIN words w ON w.id = p.word_id
@@ -200,6 +233,7 @@ export const createStage1Tasks = (day: string, options: { topUp?: boolean } = {}
       GROUP BY word_id
     ) carried ON carried.word_id = p.word_id
     WHERE ${newWordEligibleSql()}
+      AND (NOT ${collocationWordSql()} OR d.word_id IS NOT NULL)
       AND p.word_id NOT IN (SELECT word_id FROM stage1_tasks WHERE reviewed_on = ?)
     ORDER BY
       CASE WHEN d.word_id IS NOT NULL THEN 0 ELSE 1 END,
@@ -209,7 +243,7 @@ export const createStage1Tasks = (day: string, options: { topUp?: boolean } = {}
       carried.first_planned_on ASC,
       ${newWordOrderSql("w")}
     LIMIT ?
-  `, [day, day, Math.max(dailyNewQuota() - stage1NewTaskCount(day), 0)]);
+  `, [day, day, ordinarySlots]) : [];
 
   newRows.forEach((row) => {
     db.run(`
@@ -218,7 +252,20 @@ export const createStage1Tasks = (day: string, options: { topUp?: boolean } = {}
     `, [day, Number(row.word_id), orderIndex]);
     orderIndex += 1;
   });
-  reconcilePriorTasks(WORD_FSRS, "stage1_tasks", day, studyDayEnd(), "review");
+  const collocationSlots = Math.max(remainingCollocationQuota(day) - pendingCollocationCount(day), 0);
+  if (collocationSlots > 0) {
+    const collocations = rowsFor(`
+      SELECT p.word_id FROM progress p JOIN words w ON w.id = p.word_id
+      WHERE ${dailyCollocationSql()} AND ${newWordEligibleSql()}
+        AND p.word_id NOT IN (SELECT word_id FROM stage1_tasks WHERE reviewed_on = ?)
+      ORDER BY ${newWordOrderSql("w")}
+      LIMIT ?
+    `, [day, collocationSlots]);
+    collocations.forEach((row) => {
+      db.run("INSERT INTO stage1_tasks (reviewed_on, word_id, task_type, order_index) VALUES (?, ?, 'new', ?)",
+        [day, Number(row.word_id), orderIndex++]);
+    });
+  }
 };
 
 const reconcileStage1NewQuota = (day: string) => {
@@ -226,8 +273,10 @@ const reconcileStage1NewQuota = (day: string) => {
     SELECT COUNT(*)
     FROM stage1_tasks t
     JOIN progress p ON p.word_id = t.word_id
+    JOIN words w ON w.id = t.word_id
     WHERE t.reviewed_on = ?
       AND t.task_type = 'new'
+      AND NOT ${dailyCollocationSql()}
       AND (${wordStartedSql()} OR p.known_forever = 1)
   `, [day], 0);
   const remainingNewQuota = Math.max(dailyNewQuota() - completedNewTasks, 0);
@@ -244,14 +293,31 @@ const reconcileStage1NewQuota = (day: string) => {
             ROW_NUMBER() OVER (ORDER BY t.order_index ASC, t.word_id ASC) AS row_number
           FROM stage1_tasks t
           JOIN progress p ON p.word_id = t.word_id
+          JOIN words w ON w.id = t.word_id
           WHERE t.reviewed_on = ?
             AND t.task_type = 'new'
+            AND NOT ${dailyCollocationSql()}
             AND NOT ${wordStartedSql()}
             AND p.known_forever = 0
         )
         WHERE row_number > ?
       )
   `, [day, day, remainingNewQuota]);
+
+  const collocationQuota = remainingCollocationQuota(day);
+  if (pendingCollocationCount(day) <= collocationQuota) return;
+  // 旧计划（含自动加餐）只裁未开始的搭配；已答任务、先验和复习行都保留。
+  getDatabase().run(`
+    DELETE FROM stage1_tasks WHERE reviewed_on = ? AND word_id IN (
+      SELECT word_id FROM (
+        SELECT t.word_id, ROW_NUMBER() OVER (ORDER BY ${newWordLevelRankSql("w")},
+          ${newWordTierRankSql("w.id")}, t.order_index, t.word_id) AS row_number
+        FROM stage1_tasks t JOIN progress p ON p.word_id = t.word_id JOIN words w ON w.id = t.word_id
+        WHERE t.reviewed_on = ? AND t.task_type IN ('new', 'encore_new')
+          AND ${dailyCollocationSql()} AND NOT ${wordStartedSql()} AND p.known_forever = 0
+      ) WHERE row_number > ?
+    )
+  `, [day, day, collocationQuota]);
 };
 
 export const STAGE1_PLAN_VERSION = "capped-random-v4";
@@ -279,7 +345,6 @@ export const ensureStage1Tasks = () => {
   const day = today();
   resetUnansweredStage1PlanForVersion(day);
   createStage1Tasks(day);
-  reconcileStage1NewQuota(day);
 };
 
 type WordAudioPlan = { kanji: string; kana: string; example: string };
@@ -321,6 +386,7 @@ export const tomorrowWordAudioPlan = (): WordAudioPlan[] => {
     SELECT w.kanji, w.kana, w.example_jp AS example
     FROM words w JOIN progress p ON p.word_id = w.id
     WHERE ${newWordEligibleSql()}
+      AND NOT ${collocationWordSql()}
     ORDER BY ${newWordOrderSql("w")}
     LIMIT ?
   `, [Math.max(quota * 4, quota)]).map((row) => ({
@@ -475,6 +541,8 @@ export const pickStage1Next = (
       t.order_index,
       ${newWordLevelRankSql("w")} AS new_level_rank,
       ${newWordTierRankSql("w.id")} AS new_tier_rank,
+      ${collocationWordSql()} AS collocation,
+      EXISTS (SELECT 1 FROM dictionary_discovered_words d WHERE d.word_id = w.id) AS discovered,
       ${wordStartedSql()} AS started
     FROM stage1_tasks t
     JOIN words w ON w.id = t.word_id
@@ -510,9 +578,18 @@ export const pickStage1Next = (
     && (queueById.get(lastId) ?? 0) <= 0;
   if (stubbornDrill) return rowObjectToCard(lastRow);
 
-  const pickable = availableRows.length > 1 && !repeatAllowed
+  let pickable = availableRows.length > 1 && !repeatAllowed
     ? availableRows.filter((row) => Number(row.id) !== lastId)
     : availableRows;
+  const lastWasNewCollocation = lastId > 0 && firstValue<number>(`
+    SELECT 1 FROM words w WHERE w.id = ? AND ${collocationWordSql()}
+      AND EXISTS (SELECT 1 FROM reviews r WHERE r.word_id = w.id AND r.reviewed_on = ?)
+      AND NOT EXISTS (SELECT 1 FROM reviews earlier WHERE earlier.word_id = w.id AND earlier.reviewed_on < ?)
+      AND NOT ${priorBaselineSql("words", "w.id")}
+  `, [lastId, day, day], 0) > 0;
+  // 新搭配之间至少隔一张；只剩新搭配时让步，学习中卡和复习仍走原排片。
+  const otherCards = pickable.filter((row) => row.started || !row.collocation);
+  if (lastWasNewCollocation && otherCards.length) pickable = otherCards;
   const reviewRows = pickable.filter((row) => String(row.task_type) === "review");
   // encore_new is an explicitly discovered word: it bypasses the daily new
   // quota, but it must still enter the same new-card lane for sequencing.

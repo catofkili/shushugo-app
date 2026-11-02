@@ -1,5 +1,5 @@
 import { firstValue } from "./database/db-utils";
-import { wordLearningScopeSql, wordStartedSql } from "./word-learning-scope";
+import { collocationWordSql, wordStartedSql } from "./word-learning-scope";
 import { JLPT_TARGETS, type JlptTarget } from "./jlpt/plan";
 import { currentFirstPlanLevelIndex } from "./plan-level-order";
 import { kanaGatePending, LEVEL_ADVANCE_PAUSE_MS, levelAdvanceTarget, levelUnseenContent, readLevelAdvance, writeLevelAdvance, type LevelAdvanceKind } from "./studyPreferences";
@@ -27,11 +27,11 @@ export interface LevelAdvancePrompt {
 
 const levelProgress = (kind: LevelAdvanceKind, level: string): { covered: number; total: number } => ({
   total: firstValue<number>(kind === "words"
-    ? `SELECT COUNT(*) FROM words w LEFT JOIN progress p ON p.word_id = w.id WHERE w.jlpt_level = ? AND ${wordLearningScopeSql()}`
+    ? `SELECT COUNT(*) FROM words w WHERE w.jlpt_level = ? AND NOT ${collocationWordSql()}`
     : "SELECT COUNT(*) FROM grammar_points WHERE level = ?", [level], 0),
   covered: firstValue<number>(kind === "words" ? `
       SELECT COUNT(*) FROM words w JOIN progress p ON p.word_id = w.id
-      WHERE w.jlpt_level = ? AND (${wordStartedSql()} OR p.known_forever = 1)
+      WHERE w.jlpt_level = ? AND NOT ${collocationWordSql()} AND (${wordStartedSql()} OR p.known_forever = 1)
     ` : `
       SELECT COUNT(*) FROM grammar_points g LEFT JOIN grammar_progress p ON p.grammar_id = g.id
       WHERE g.level = ? AND (p.known_forever = 1 OR EXISTS (

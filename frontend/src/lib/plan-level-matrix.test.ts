@@ -10,6 +10,7 @@ import { beforeAll, describe, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import initSqlJs, { type Database } from "sql.js";
+import collocations from "../data/jlpt_collocation_content.json";
 
 const store = new Map<string, string>();
 (globalThis as any).localStorage = { getItem: (key: string) => store.get(key) ?? null, setItem: (key: string, value: string) => store.set(key, String(value)), removeItem: (key: string) => store.delete(key) };
@@ -22,6 +23,7 @@ import { ensureUserTables, today } from "./study-core";
 import { saveLevelPlanSettings } from "./level-plan";
 import { JLPT_TARGETS, type JlptTarget } from "./jlpt/plan";
 import { createStage1Tasks } from "./word-api/stage1";
+import { collocationWordSql } from "./word-learning-scope";
 import { getGrammarQuizSession, PLAN_GRAMMAR_LEVEL, submitGrammarQuizAnswer } from "./grammar-quiz";
 import { createKanjiCharTasks } from "./kanji-char-cards";
 import { createConfusionTasks } from "./confusion-cards";
@@ -49,6 +51,10 @@ describe.each(combos)("起点 %s、考 %s：每个新内容入口的第一批", 
     store.clear();
     testDb = new (await initSqlJs()).Database(new Uint8Array(seed));
     ensureUserTables();
+    for (const entry of collocations.entries) testDb.run(
+      "INSERT INTO words (kanji,kana,meaning,pos,jlpt_level) VALUES (?,?,?,'固定搭配',?)",
+      [entry.surface, entry.kana, entry.meaning, entry.level]
+    );
     await loadKanjiUnitIndex();
     await saveLevelPlanSettings({
       startingLevel: start,
@@ -70,6 +76,19 @@ describe.each(combos)("起点 %s、考 %s：每个新内容入口的第一批", 
       WHERE t.reviewed_on = ? AND t.task_type = 'new'
     `, [day]).map((row) => row.level);
     expect(levels).toEqual([firstLevel]);
+  });
+
+  it("固定搭配独立 3 个名额，也从起点上一级顺推，不挤占普通新词", () => {
+    createStage1Tasks(day);
+    const fresh = rows(`
+      SELECT w.jlpt_level AS level, ${collocationWordSql()} AS collocation
+      FROM stage1_tasks t JOIN words w ON w.id = t.word_id
+      WHERE t.reviewed_on = ? AND t.task_type = 'new'
+    `, [day]);
+    const collocationRows = fresh.filter((row) => row.collocation);
+    expect(collocationRows).toHaveLength(3);
+    expect(new Set(collocationRows.map((row) => row.level))).toEqual(new Set([firstLevel]));
+    expect(fresh.filter((row) => !row.collocation)).toHaveLength(15);
   });
 
   it("语法（混合模式）：范围内出起点上一级；起点 ≥ 目标时不出新的", () => {

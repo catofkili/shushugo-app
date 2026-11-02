@@ -10,11 +10,12 @@ vi.mock("../storage", () => ({ requestFullSnapshot: vi.fn(), scheduleSave: vi.fn
 import { loadKanjiCharData, materializeKanjiChars } from "../kanji-char-cards";
 import { materializeConfusionCards } from "../confusion-cards";
 import { JLPT_TARGETS } from "../jlpt/plan";
-import { CONTENT_BY_LEVEL, CONTENT_MATRIX, expectedContent, OPTIONAL_WORDS_BY_LEVEL, previewLevelPlan, VISIBLE_STARTS } from "./content-matrix";
+import { CONTENT_BY_LEVEL, CONTENT_MATRIX, expectedContent, previewLevelPlan, VISIBLE_STARTS } from "./content-matrix";
+import { collocationWordSql } from "../word-learning-scope";
 import collocations from "../../data/jlpt_collocation_content.json";
 
 const rankCounts = (table: string, column: string) => new Map(
-  (db.exec(`SELECT ${column}, COUNT(*) FROM ${table} GROUP BY ${column}`)[0]?.values ?? [])
+  (db.exec(`SELECT ${column}, COUNT(*) FROM ${table} w ${table === "words" ? `WHERE NOT ${collocationWordSql()}` : ""} GROUP BY ${column}`)[0]?.values ?? [])
     .map(([level, count]) => [String(level), Number(count)])
 );
 
@@ -22,6 +23,10 @@ describe("起点×目标预期学习量", () => {
   beforeAll(async () => {
     const SQL = await initSqlJs();
     db = new SQL.Database(new Uint8Array(readFileSync(fileURLToPath(new URL("../../../public/nihongo.db", import.meta.url)))));
+    for (const entry of collocations.entries) db.run(
+      "INSERT INTO words (kanji,kana,meaning,pos,jlpt_level) VALUES (?,?,?,'固定搭配',?)",
+      [entry.surface, entry.kana, entry.meaning, entry.level]
+    );
     await loadKanjiCharData();
     materializeKanjiChars();
     materializeConfusionCards();
@@ -34,16 +39,10 @@ describe("起点×目标预期学习量", () => {
       kanji: rankCounts("kanji_char_memory", "level_rank"),
       confusion: rankCounts("confusion_progress", "level_rank")
     };
-    const existingWords = new Set((db.exec("SELECT kanji, kana FROM words")[0]?.values ?? []).map(([kanji, kana]) => `${kanji}\u0000${kana}`));
-    const migratedWords = new Map<string, number>();
-    for (const entry of collocations.entries) {
-      if (existingWords.has(`${entry.surface}\u0000${entry.kana}`) || ("t" in entry && entry.t === 2)) continue;
-      migratedWords.set(entry.level, (migratedWords.get(entry.level) ?? 0) + 1);
-    }
     JLPT_TARGETS.forEach((level, rank) => {
       for (const kind of Object.keys(actual) as Array<keyof typeof actual>) {
         const seedCount = actual[kind].get(kind === "words" || kind === "grammar" ? level : String(rank)) ?? 0;
-        expect(CONTENT_BY_LEVEL[level][kind], `${kind} ${level}`).toBe(seedCount + (kind === "words" ? migratedWords.get(level) ?? 0 : 0));
+        expect(CONTENT_BY_LEVEL[level][kind], `${kind} ${level}`).toBe(seedCount);
       }
     });
   });
@@ -63,39 +62,32 @@ describe("起点×目标预期学习量", () => {
     expect(cases).toBe(140);
   });
 
-  it("会五十音→2026-12-06 考 N3：3851 词只剩 56 天，至少 69/天；50 上限明确报不可行", () => {
+  it("会五十音→2026-12-06 考 N3：3664 个普通词只剩 56 天，至少 66/天；50 上限明确报不可行", () => {
     const input = { startingLevel: "kana" as const, target: "N3" as const, examDate: new Date(2026, 11, 6), today: new Date(2026, 8, 23) };
     const plan = previewLevelPlan(input);
-    expect(plan.content.words).toBe(3851);
+    expect(plan.content.words).toBe(3664);
     expect(plan.intakeDays).toBe(56);
-    expect(plan.required.words).toBe(69);
+    expect(plan.required.words).toBe(66);
     expect(plan.daily.words).toBe(50);
     expect(plan.feasible).toBe(false);
-    expect(previewLevelPlan({ ...input, today: new Date(2026, 8, 24) }).required.words).toBe(71);
-    expect(previewLevelPlan({ ...input, examDate: new Date(2027, 11, 5) }).required.words).toBe(10);
+    expect(previewLevelPlan({ ...input, today: new Date(2026, 8, 24) }).required.words).toBe(67);
+    expect(previewLevelPlan({ ...input, examDate: new Date(2027, 11, 5) }).required.words).toBe(9);
   });
 
   it("熟悉度设为 0 把起点本级也纳入新学；不会五十音额外预留假名时间", () => {
-    expect(expectedContent("N4", "N3", { words: 0, grammar: 75, kanji: 75, confusion: 75 }).words).toBe(2931);
-    expect(expectedContent("N4", "N3").words).toBe(2069);
+    expect(expectedContent("N4", "N3", { words: 0, grammar: 75, kanji: 75, confusion: 75 }).words).toBe(2752);
+    expect(expectedContent("N4", "N3").words).toBe(1906);
     const base = { target: "N3" as const, examDate: new Date(2026, 11, 6), today: new Date(2026, 8, 23) };
     expect(previewLevelPlan({ ...base, startingLevel: "kana-none" }).intakeDays).toBe(49);
     expect(previewLevelPlan({ ...base, startingLevel: "kana" }).intakeDays).toBe(56);
   });
 
-  it("选学增量与 A 的分档逐级吻合，35 份静态表不受开关污染", () => {
-    expect(OPTIONAL_WORDS_BY_LEVEL).toEqual({ N5: 0, N4: 0, N3: 27, N2: 261, N1: 142 });
-    for (const level of JLPT_TARGETS) expect(OPTIONAL_WORDS_BY_LEVEL[level]).toBe(
-      collocations.entries.filter((entry) => entry.level === level && "t" in entry && entry.t === 2).length
-    );
+  it("三档搭配都不增加普通词推荐量，35 份静态表与开关无关", () => {
     for (const start of VISIBLE_STARTS) for (const target of JLPT_TARGETS) {
-      const first = JLPT_TARGETS.indexOf(start as typeof target) + 1;
-      const extra = JLPT_TARGETS.slice(first, JLPT_TARGETS.indexOf(target) + 1)
-        .reduce((sum, level) => sum + OPTIONAL_WORDS_BY_LEVEL[level], 0);
-      expect(expectedContent(start, target, undefined, true).words).toBe(CONTENT_MATRIX[start][target].words + extra);
+      expect(expectedContent(start, target, undefined, true)).toEqual(CONTENT_MATRIX[start][target]);
       expect(expectedContent(start, target, undefined, false)).toEqual(CONTENT_MATRIX[start][target]);
     }
-    expect(expectedContent("N3", "N3", { words: 0, grammar: 75, kanji: 75, confusion: 75 }, true).words).toBe(2096);
-    expect(expectedContent("kana", "N1", undefined, true).words - expectedContent("kana", "N1", undefined, false).words).toBe(430);
+    expect(expectedContent("N3", "N3", { words: 0, grammar: 75, kanji: 75, confusion: 75 }, true).words).toBe(1906);
+    expect(expectedContent("kana", "N1", undefined, true).words).toBe(10919);
   });
 });

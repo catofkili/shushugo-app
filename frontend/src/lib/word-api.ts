@@ -1,4 +1,4 @@
-import { newWordEligibleSql, wordLearningScopeSql, wordStartedSql } from "./word-learning-scope";
+import { collocationWordSql, newWordEligibleSql, wordLearningScopeSql, wordStartedSql } from "./word-learning-scope";
 import { getDatabase } from "./database";
 import { priorGateSql, undoPriorValidation } from "./prior-pacing";
 import { displayedPromptKeyOf, displayedPromptPeers } from "./models/question-meaning-index";
@@ -236,6 +236,7 @@ const pickFilteredWordNext = (options: WordSessionOptions): WordCard | null => {
     LEFT JOIN word_notes n ON n.word_id = w.id
     WHERE p.known_forever = 0
       AND ${newWordEligibleSql()}
+      AND NOT ${collocationWordSql()}
       ${filter.clause}
     ORDER BY ${newWordOrderSql("w")}
     LIMIT 1
@@ -250,6 +251,7 @@ const pickFilteredWordNext = (options: WordSessionOptions): WordCard | null => {
     JOIN progress p ON p.word_id = w.id
     LEFT JOIN word_notes n ON n.word_id = w.id
     WHERE p.known_forever = 0
+      AND (${wordStartedSql()} OR NOT ${collocationWordSql()})
       ${filter.clause}
     ORDER BY p.fsrs_due ASC, p.last_seen_on ASC, w.importance DESC, w.shuffle_rank DESC
     LIMIT 1
@@ -503,6 +505,7 @@ export function startEncore(customSize?: number): WordSessionResponse {
       JOIN words w ON w.id = p.word_id
       WHERE p.known_forever = 0
         AND ${newWordEligibleSql()}
+        AND NOT ${collocationWordSql()}
         AND p.word_id NOT IN (SELECT word_id FROM stage1_tasks WHERE reviewed_on = ?)
       ORDER BY ${newWordOrderSql("w")}
       LIMIT ?
@@ -639,10 +642,14 @@ export function addWordsToQueue(wordIds: number[]): {
       SELECT t.word_id
       FROM stage1_tasks t
       JOIN progress p ON p.word_id = t.word_id
+      JOIN words w ON w.id = t.word_id
       WHERE t.reviewed_on = ?
         AND t.task_type = 'new'
         AND NOT ${wordStartedSql()}
         AND p.known_forever = 0
+        AND (NOT ${collocationWordSql()} OR EXISTS (
+          SELECT 1 FROM dictionary_discovered_words d WHERE d.word_id = w.id
+        ))
         AND t.word_id NOT IN (${placeholders})
       ORDER BY t.order_index DESC
       LIMIT 1
@@ -666,7 +673,15 @@ export function addWordsToQueue(wordIds: number[]): {
       [day, id],
       0
     );
-    if (alreadyQueued) { queuedToday += 1; return; }
+    if (alreadyQueued) {
+      // 原本在独立日额里的搭配被点名后不能超额又被裁掉：先腾普通名额，已答满时保留为显式加餐。
+      if (stage1NewTaskCount(day) > quota && !freeOneNewSlot()) db.run(`
+        UPDATE stage1_tasks SET task_type = 'encore_new' WHERE reviewed_on = ? AND word_id = ?
+          AND task_type = 'new' AND word_id IN (SELECT w.id FROM words w WHERE ${collocationWordSql()})
+      `, [day, id]);
+      queuedToday += 1;
+      return;
+    }
     if (queuedToday >= quota) return;
     if (stage1NewTaskCount(day) >= quota && !freeOneNewSlot()) return;
     db.run(`

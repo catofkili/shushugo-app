@@ -1053,8 +1053,8 @@ npx tsc --noEmit -p . && npx vitest run src/lib/pool-change-guard.test.ts src/li
 
 作者当天拍板的原意（转述，非逐字引文）：「自谦敬辞必须背；一般固定表达次之；惯用句、谚语、四字熟语更弱。」任务 A 的逐条归档是决定源，不按 `kind` 再猜一次档位。`jlpt_collocation_content.json` 的 `t=0` 是 core，省略 `t` 是 common，`t=2` 是 optional；`study-core.collocationTier` 保留兼容导出，实现移到 `collocation-tier.ts`。
 
-- **core 必背**：正常投放，算本级完成；同级排普通词之前。
-- **common 常用**：正常投放，算本级完成；同级排普通词之后。
+- **core 必背**：正常投放，算本级完成；同级排普通词之前。**已被下节取代：固定搭配不再进普通队列，档位只决定固定搭配队列内部的先后。**
+- **common 常用**：正常投放，算本级完成；同级排普通词之后。**已被下节取代：固定搭配不再进普通队列，档位只决定固定搭配队列内部的先后。**
 - **optional 选学**：`studyPreferences.includeOptionalExpressions` 默认 false；关闭时未学卡不投放、不占新词名额、不增加本级完成分母、起点估算、推荐量、首页新词角标或备考缺口。打开时同级排 common 后，并纳入这些口径。
 - 级别排序仍走 `newWordLevelRankSql` / 计划级别顺推。词典点名词的既有显式优先例外保留；同档原有重要度、随机以及历史欠账只在档位之后决定先后。首次露面的实际挑卡也尊重这份顺序，不能只排任务表再让排片随机打乱。已经开始的学习步骤仍走原排片器。
 
@@ -1191,3 +1191,63 @@ fresh build 主包现为 **1,898,552 B**：C 历史 **1,925,754 → 1,898,552 B*
 第三次最终 `VITEST_MAX_WORKERS=2 bash scripts/ci-local.sh` 退出 0：前端 1,532 项通过，
 原生全部 32 个脚本、Taro 分包闸门和云同步检查通过；净增 10 项测试，生产 grep 零命中。
 未提交，未运行 dev server 或 GUI；既有 Quote 图标构建警告及真机验收边界见上述记录。
+
+## 固定搭配单独每日配额（2026-11-02 作者反馈）
+
+本节取代上节「core 在同级普通词之前、common 在之后」及固定搭配参与本级完成/普通词计划量的规则；上节原文保留为决策记录。
+作者反馈（转述，非逐字引文）：固定搭配优先级应略低于其他词汇；普通词快学完时，后半段几乎全是相似的「名词＋助词＋动词」，短时间集中出现，压力巨大、学不动，原本预期越到后面越快却卡住。希望后台给它们单独强度，每天两三个。
+
+作者已核实的真实数据：目标 N3，普通词还剩 **7** 个未学，固定搭配还剩 **163** 条未学；11-02 当天新学 **24** 个，其中 **22** 个是固定搭配；固定搭配当天作答 **148** 次、忘记 **92** 次。这组数据由作者提供，本任务不访问 `frontend/.local/live.db` 或 5173 复查。前一版把 common 放在普通词后面，仍会在每级末尾集中出现，不能解决这个问题。
+
+### 六条现行判据与实现
+
+1. **普通新词不再自动投放三档固定搭配。** 身份统一用 `word-learning-scope.ts` 的 `collocationWordSql(w)`，仅按 `words.pos='固定搭配'` 判断，不依赖档位索引或内容 ID。
+   `createStage1Tasks` / `reconcileStage1NewQuota` 的普通名额、`startEncore` 的新词补齐、`pickFilteredWordNext` 的未学及最终兜底、`tomorrowWordAudioPlan` 的新词候选均排除搭配。
+   `encoreRemainingCount` 原本只有 `wordStartedSql` 的到期复习候选，已核对无新词入口，保持包含到期搭配，不能直接加「不是固定搭配」误删复习。
+   词典点名/词库批量加入的 `dictionary_discovered_words`、单条立即加入的 `addWordToTodayEncore`、批量 `addWordsToQueue` 和 `pickedWordIds` 保留显式例外及原有开关资格；手动点名不受自动投放的 3 条上限拦截。
+2. **后台独立日额。** 常量 `COLLOCATION_DAILY_NEW = 3` 放在 `frontend/src/lib/word-api/stage1.ts`，不加偏好、设置、表列、内容版本或 app_state 键。
+   `remainingCollocationQuota` 从 `reviews` 去重数「今天首次真实作答的搭配」：以前没有任何方向的流水，且不是 `priorBaselineSql('words', …)` 基线；重复作答/换方向不重复计数，先验首答不占名额。
+   今天已经学的所有搭配均先扣减，包括任务外的显式学习；作者今天已有 22 条，因此今天自动新搭配为 0。普通每日量由 `dailyNewQuota()` 读取，含五十音门槛、轻量期和 `levelAdvanceNewCap` 的覆盖；有效 dailyGoal 为 0，自动搭配也为 0。
+   `topUpStage1NewTasks` 分别补普通名额与搭配名额；`stage1NewTaskCount` 只计普通名额（保留显式点名的原配额语义），自动搭配不挤占 dailyGoal。
+   搭配先按 `newWordLevelRankSql` / `currentPlanLevelRanks` 分级，同级 core → common → optional，再按原 importance / 随机；optional 仍只在 `includeOptionalExpressions=true` 时进入。
+   `pickStage1Next` 继续尊重级别与档位的首次出题顺序；上一张是今天新学搭配时，只要还有别的可出卡就先出别的卡，只剩新搭配则允许收尾，不新增会话状态。
+3. **当天旧任务原地收口。** `createStage1Tasks` 在已有任务路径也调用 `reconcileStage1NewQuota`，先保留最多「3 − 今日已新学搭配」个尚未开始的自动搭配，超额移走；保留项按级别、档位、原顺序选择，旧自动 `encore_new` 同样受约束。
+   空出的普通名额由 `topUpStage1NewTasks` 补普通词；已答、已开始/先验、熟知任务与 `review` 行不因搭配日额删除。显式点名任务保留原入口语义。既有复习计划不因这次改动清空重抽；不提升 `STAGE1_PLAN_VERSION` 来触发重建。
+4. **本级完成只看普通词。** `levelProgress` 的单词分子/分母同时排除三档搭配，`levelAdvancePrompt` 的 95% 仍沿原阈值提问；`levelUnseenContent` 在暂停收尾、回补有无剩余时也排除搭配。
+   N3 普通词已全学、搭配仍全未学也可提问；选择「先不加」后，普通词收尾到 100% 就起算一周，搭配不能把暂停一直拖住。
+5. **普通词计划量与推荐量同口径。** `remainingPlanWords` 排除搭配，`previewCurrentLevelPlan` / `dailyPlanView` 继承；`examPreset` 的无起点设置兜底查询也排除搭配；`jlpt/status.ts` 只在供每日推荐使用的 `wordUnseen` 排除搭配。
+   `plan/content-matrix.ts` 的 35 份基表同步改为普通词量，optional 开关不再增加普通词推荐量；新表和数值见每日计划专题的同日增补。
+   总词量、进度总览、词汇量测验、首页角标、备考覆盖与真实「已学几个」仍沿上节既有统计，不因独立日额再减去搭配；`learnedLevel` 的水平推断也不改。
+6. **复习照旧。** 已开始的三档搭配仍走同一份 FSRS、先验放行、到期、复习上限和重刷排片；此次不改 `fsrs-store.ts`、记忆状态、到期日或流水。新搭配首答后就是已开始的卡，不再从未学配额补发同一张。
+
+### 对上节调用点清单的逐项增补
+
+| 原清单入口 | 本次处理 |
+| --- | --- |
+| `word-api/stage1.ts`：建表、收口、实际挑卡 | 新增独立常量、按真实首答扣额、分开补位、旧任务清理与相邻新搭配隔离；任务仍用已有 `new` / `encore_new` / `review` 类型 |
+| `word-api/stage1.ts`：明日音频、续杯余量 | 音频新词候选排除搭配；余量本来只有已开始卡，核对后保持原式及搭配复习 |
+| `word-api/filters.ts` / `mixed-session.ts` | 继续复用原级别/档位排序和 stage1 调度，无第二套固定搭配池 |
+| `word-api.ts`：筛选、加餐、词库添加 | 筛选未学/兜底及自动加餐新词排除搭配；批量加入腾位只腾普通名额，不抢独立搭配名额；显式加入入口和点名记录保留 |
+| `word-api/picked.ts` | 无改动，保留显式自选清单例外 |
+| `studyPreferences.ts` / `level-advance.ts` | 95% 单词分子/分母、暂停和回补剩余排除全部搭配 |
+| `daily-plan.ts` / `plan/content-matrix.ts` | 真实剩余与 35 份静态普通词计划统一排除三档搭配 |
+| `jlpt/status.ts` | 每日推荐的新词剩余排除搭配，覆盖总量和已学统计不变 |
+| `fsrs-store.ts` / `level-plan.ts` | 无改动，FSRS 复习与起点先验继续遵守上节资格；先验首答不占独立新学额 |
+| `word-api/stats.ts` / `progress-api.ts` / `analytics/stats.ts` / `study-load.ts` / `kana-words.ts` / `vocab-test.ts` / 拼写及方向播种 | 不扩大这次统计或题型改动范围，保留分档会话已定口径 |
+
+回归在 `collocation-daily.test.ts`（使用实际小程序 sql.js/wasm 和出厂 schema）及 `plan-level-matrix.test.ts` 的搭配新轨道：普通 10＋搭配 3、N3 普通词耗尽后给 N2、已新学 5 时清 8 条旧未答、0 配额、重复/方向/先验首答、级别优先于档位、相邻隔离、optional 开关、95% 与暂停、推荐量、筛选/音频/加餐和显式例外。
+既有 `word-learning-scope.test.ts` 的任务插入顺序、完成分母和计划缺口断言随新口径调整；`content-matrix.test.ts` 从包含 core/common 的规模改为全三档剔除的普通词规模。
+
+按作者本任务的协调约束，不改页面/设置、Taro src、档位索引/生成脚本，不重建 `wechat-miniprogram/src/shared/web.js` 或 `taro-spike-2/reports/**`；合并分档后统一生成共享包并做小程序运行/包体与视觉验收。本任务不启动 dev server、不连接或刷新 5173，不宣称产物、视觉或真机已验收。
+
+### 本任务假设核实与回归验收
+
+- **a 成立**：素材恰为 790 个不同的表记＋读音，和出厂库没有重名；`ensureJlptCollocationContent` 为新增行统一写入 `pos='固定搭配'`。三档数量为 core 51、common 309、optional 430，身份片段能识别全部条目，不依赖档位存储。
+- **b 成立**：stage1 有按 `reviewed_on` 的当天任务表；`dailyNewQuota` → `getDailyWordGoal` 读取有效 dailyGoal，含 `levelAdvanceNewCap` 封顶。真实首次作答可由任意方向 `reviews` 的最早学习日和 `priorBaselineSql` 区分。
+- **c 成立**：`levelProgress` 原来按级别查询 words 得到单词覆盖分母；本次对分子、分母同时加普通词限制。
+
+`npm run check` 及作者指定的七个 Vitest 文件全部通过，**129 项测试**；另跑 `src/lib/word-api` 与 `src/lib/prior-pacing.test.ts`，**15 个文件、143 项测试**全部通过，覆盖配额、手动加入、作答预算回滚及先验调度。`git diff --check` 通过。
+
+视觉检查未完成：Playwright 默认浏览器版本未安装，改用本机已缓存的 Chromium 后，启动被沙箱的 `MachPortRendezvousServer Permission denied` 拦截，未取得页面或窄屏截图。没有下载浏览器、启动 dev server、连接 5173 或访问真实学习库；小程序构建及共享产物仍按作者本任务约定留待协调合并后统一验收。
+
+本次提交尝试另被文件沙箱阻断：当前 worktree 的 Git 元数据在 `/Users/lsc/Documents/shushugo/.git/worktrees/colloc-daily`，不在会话可写范围内，`git add` 无法创建 `index.lock`（`Operation not permitted`），因此尚未形成提交。实现与测试均留在 `claude/collocation-daily` 的工作区；没有改主目录源码、切换分支或绕过权限。

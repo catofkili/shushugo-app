@@ -1,6 +1,9 @@
 import { optionalWordSql } from "./collocation-tier";
 import { getStudyPreferences } from "./studyPreferences";
 
+/** 三档固定搭配共用身份；与档位的存储形式无关，空词性仍属于普通词。 */
+export const collocationWordSql = (w = "w") => `(COALESCE(${w}.pos, '') = '固定搭配')`;
+
 /** 任一方向的真实流水、见过或已有 FSRS 都不再是新词；先验同样属于已开始的卡。 */
 export const wordStartedSql = (p = "p") => `(
   COALESCE(${p}.seen_count, 0) > 0 OR ${p}.fsrs_state IS NOT NULL

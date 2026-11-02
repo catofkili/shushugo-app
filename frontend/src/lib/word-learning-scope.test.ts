@@ -100,16 +100,16 @@ describe("固定搭配分档的共享学习口径", () => {
     expect(tasks()).toEqual([CORE, NORMAL, COMMON]);
     expect(count(newWordEligibleSql())).toBe(3);
   });
-  it("关闭时新词队列不含 optional，core 在高权重普通词之前，common 在其后", () => {
+  it("关闭时普通词与独立搭配名额分开入队，不含 optional，首次出题仍按档位", () => {
     createStage1Tasks(today());
-    expect(tasks()).toEqual([CORE, NORMAL, COMMON]);
+    expect(tasks()).toEqual([NORMAL, CORE, COMMON]);
     expect(count(newWordEligibleSql())).toBe(3);
     expect(pickStage1Next(new Set(), { deterministic: true })?.id).toBe(CORE);
   });
-  it("打开时 optional 进第四个名额，实际首次出题顺序也在 common 之后", () => {
+  it("打开时 optional 进入第三个搭配名额，实际首次出题顺序在 common 之后", () => {
     toggle(true);
     createStage1Tasks(today());
-    expect(tasks()).toEqual([CORE, NORMAL, COMMON, OPTIONAL]);
+    expect(tasks()).toEqual([NORMAL, CORE, COMMON, OPTIONAL]);
     const picked: number[] = [];
     for (let i = 0; i < 4; i++) {
       const card = pickStage1Next(new Set(), { deterministic: true })!;
@@ -124,7 +124,7 @@ describe("固定搭配分档的共享学习口径", () => {
     db.run("INSERT INTO stage1_tasks (reviewed_on,word_id,task_type,order_index) VALUES (?,?,'new',1)", [today(), OPTIONAL]);
     toggle(false);
     createStage1Tasks(today());
-    expect(tasks()).toEqual([CORE, NORMAL, COMMON]);
+    expect(tasks()).toEqual([NORMAL, CORE, COMMON]);
     db.run("UPDATE progress SET seen_count=1 WHERE word_id=?", [OPTIONAL]);
     db.run("INSERT INTO stage1_tasks (reviewed_on,word_id,task_type,order_index) VALUES (?,?,'new',4)", [today(), OPTIONAL]);
     createStage1Tasks(today());
@@ -140,25 +140,25 @@ describe("固定搭配分档的共享学习口径", () => {
     expect(tasks()).not.toContain(OPTIONAL);
     expect(rowsFor("SELECT word_id FROM stage1_tasks WHERE task_type='review'").map((row) => Number(row.word_id))).toContain(OPTIONAL);
   });
-  it("本级学完的分母跟开关变化；已学 optional 始终保留且不会挡住完成", () => {
+  it("本级学完只看普通词，搭配开关及已学搭配不影响完成", () => {
     db.run("UPDATE progress SET seen_count=1 WHERE word_id IN (?,?,?)", [CORE, NORMAL, COMMON]);
     expect(levelAdvancePrompt()).toMatchObject({ kind: "words", level: "N3", percent: 100 });
     expect(levelUnseenContent("words", "N3")).toBe(0);
     toggle(true);
-    expect(levelAdvancePrompt()).toBeNull();
-    expect(levelUnseenContent("words", "N3")).toBe(1);
+    expect(levelAdvancePrompt()).toMatchObject({ percent: 100 });
+    expect(levelUnseenContent("words", "N3")).toBe(0);
     db.run("UPDATE progress SET seen_count=1 WHERE word_id=?", [OPTIONAL]);
     toggle(false);
     expect(levelAdvancePrompt()).toMatchObject({ percent: 100 });
   });
-  it("首页角标、真实计划缺口和备考页都只数合格新词，显式预览参数可覆盖偏好", () => {
+  it("首页与备考覆盖总量保留搭配，普通词计划缺口不受搭配开关影响", () => {
     expect(getWordStats().unseenCount).toBe(3);
-    expect(remainingPlanWords("kana", "N3")).toBe(3);
+    expect(remainingPlanWords("kana", "N3")).toBe(1);
     const off = getJlptPlanStatus().coverage.words.total;
-    expect(remainingPlanWords("kana", "N3", undefined, true)).toBe(4);
+    expect(remainingPlanWords("kana", "N3", undefined, true)).toBe(1);
     toggle(true);
     expect(getWordStats().unseenCount).toBe(4);
-    expect(remainingPlanWords("kana", "N3")).toBe(4);
+    expect(remainingPlanWords("kana", "N3")).toBe(1);
     expect(getJlptPlanStatus().coverage.words.total).toBe(off + 1);
   });
   it("optional 不出内联拼写，保留普通词拼写与已有 always_spell 标记", () => {
@@ -172,14 +172,14 @@ describe("固定搭配分档的共享学习口径", () => {
     expect(tasks()).toHaveLength(3);
     toggle(true);
     createStage1Tasks(today());
-    expect(tasks()).toEqual([CORE, NORMAL, COMMON, OPTIONAL]);
+    expect(tasks()).toEqual([NORMAL, CORE, COMMON, OPTIONAL]);
   });
   it("打开偏好的冷启动也回填今日已答任务，不能把完成过的名额补成额外新词", () => {
     toggle(true);
     db.run("INSERT INTO reviews (word_id,answer,score_after,reviewed_on) VALUES (?,'know',0,?)", [OPTIONAL, today()]);
     db.run("UPDATE progress SET seen_count=1,fsrs_due='2099-01-01' WHERE word_id=?", [OPTIONAL]);
     createStage1Tasks(today());
-    expect(tasks()).toEqual([OPTIONAL, CORE, NORMAL, COMMON]);
+    expect(tasks()).toEqual([OPTIONAL, NORMAL, CORE, COMMON]);
     expect(tasks()).toHaveLength(4);
   });
   it("起点先验不激活关闭的未学 optional，也不覆盖已有 FSRS", async () => {
