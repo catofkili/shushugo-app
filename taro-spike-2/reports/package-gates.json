@@ -2,23 +2,23 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1895372,
+      "bytes": 1896854,
       "passes": true
     },
     "study": {
-      "bytes": 1391785,
+      "bytes": 1391803,
       "passes": true
     },
     "account": {
-      "bytes": 326936,
+      "bytes": 327936,
       "passes": true
     },
     "content-pages": {
-      "bytes": 1175874,
+      "bytes": 1177174,
       "passes": true
     },
     "features": {
-      "bytes": 588539,
+      "bytes": 587100,
       "passes": true
     },
     "content": {
@@ -26,15 +26,15 @@
       "passes": true
     },
     "grammar-foundation": {
-      "bytes": 670030,
+      "bytes": 663544,
       "passes": true
     },
     "grammar-advanced": {
-      "bytes": 547231,
+      "bytes": 531416,
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 311041,
+      "bytes": 312337,
       "passes": true
     },
     "core": {
@@ -42,20 +42,20 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 1118600,
+      "bytes": 1125220,
       "passes": true
     },
     "jlpt-bank": {
-      "bytes": 764759,
+      "bytes": 764681,
       "passes": true
     },
     "jlpt-bank-2": {
-      "bytes": 585141,
+      "bytes": 585414,
       "passes": true
     }
   },
   "maxUnapprovedPageComponentBytes": 100000,
-  "duplicateSourceModuleCount": 91,
+  "duplicateSourceModuleCount": 93,
   "duplicatedModules": [
     {
       "source": "frontend/src/lib/vocab-test.ts",
@@ -78,7 +78,7 @@
     },
     {
       "source": "frontend/src/data/verb-conjugation-foundation.ts",
-      "bytes": 35039,
+      "bytes": 35053,
       "packages": [
         "content-pages",
         "grammar-pages"
@@ -86,7 +86,7 @@
     },
     {
       "source": "frontend/src/pages/Library.tsx",
-      "bytes": 33565,
+      "bytes": 33711,
       "packages": [
         "grammar-pages",
         "lazy"
@@ -121,7 +121,7 @@
     },
     {
       "source": "frontend/src/data/grammar_title_furigana.json",
-      "bytes": 30888,
+      "bytes": 30250,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -147,9 +147,19 @@
     },
     {
       "source": "frontend/src/lib/daily-plan.ts",
-      "bytes": 23304,
+      "bytes": 23349,
       "packages": [
         "account",
+        "lazy",
+        "study"
+      ]
+    },
+    {
+      "source": "frontend/src/lib/study-focus.ts",
+      "bytes": 21967,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
         "lazy",
         "study"
       ]
@@ -167,16 +177,6 @@
       "bytes": 20612,
       "packages": [
         "grammar-pages",
-        "study"
-      ]
-    },
-    {
-      "source": "frontend/src/lib/study-focus.ts",
-      "bytes": 19874,
-      "packages": [
-        "content-pages",
-        "grammar-pages",
-        "lazy",
         "study"
       ]
     },
@@ -201,7 +201,7 @@
     },
     {
       "source": "frontend/src/pages/ImmersiveGrammar.tsx",
-      "bytes": 16048,
+      "bytes": 16121,
       "packages": [
         "grammar-pages",
         "lazy"
@@ -217,7 +217,7 @@
     },
     {
       "source": "frontend/src/pages/FavoritesPage.tsx",
-      "bytes": 15826,
+      "bytes": 15899,
       "packages": [
         "content-pages",
         "grammar-pages"
@@ -367,7 +367,7 @@
     },
     {
       "source": "frontend/src/pages/GrammarDetail.tsx",
-      "bytes": 9738,
+      "bytes": 9811,
       "packages": [
         "content-pages",
         "grammar-pages"
@@ -494,20 +494,20 @@
       ]
     },
     {
-      "source": "frontend/src/lib/team-rules.ts",
-      "bytes": 4899,
+      "source": "frontend/src/components/GrammarPointPopover.tsx",
+      "bytes": 4969,
       "packages": [
         "content-pages",
+        "grammar-pages",
         "lazy",
         "study"
       ]
     },
     {
-      "source": "frontend/src/components/GrammarPointPopover.tsx",
-      "bytes": 4896,
+      "source": "frontend/src/lib/team-rules.ts",
+      "bytes": 4899,
       "packages": [
         "content-pages",
-        "grammar-pages",
         "lazy",
         "study"
       ]
@@ -644,12 +644,21 @@
     },
     {
       "source": "frontend/src/lib/grammar-title-furigana.ts",
-      "bytes": 2469,
+      "bytes": 2748,
       "packages": [
         "content-pages",
         "grammar-pages",
         "lazy",
         "study"
+      ]
+    },
+    {
+      "source": "frontend/src/components/GrammarMeaning.tsx",
+      "bytes": 2499,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy"
       ]
     },
     {
@@ -740,6 +749,16 @@
         "content-pages",
         "grammar-pages",
         "lazy"
+      ]
+    },
+    {
+      "source": "frontend/src/lib/grammar-meaning.ts",
+      "bytes": 1260,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy",
+        "study"
       ]
     },
     {
@@ -875,7 +894,7 @@
       ]
     }
   ],
-  "duplicatedCoreModuleCount": 40,
+  "duplicatedCoreModuleCount": 41,
   "duplicatedCoreModules": [
     {
       "source": "frontend/src/lib/vocab-test.ts",
@@ -930,7 +949,7 @@
     },
     {
       "source": "frontend/src/lib/daily-plan.ts",
-      "bytes": 23304,
+      "bytes": 23349,
       "packages": [
         "account",
         "lazy",
@@ -940,7 +959,7 @@
     },
     {
       "source": "frontend/src/lib/study-focus.ts",
-      "bytes": 19874,
+      "bytes": 21967,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -1180,7 +1199,7 @@
     },
     {
       "source": "frontend/src/lib/grammar-title-furigana.ts",
-      "bytes": 2469,
+      "bytes": 2748,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -1226,6 +1245,17 @@
         "lazy"
       ],
       "reason": "Ordinal maps are derived only from bundled grammar records and are safe package-local content caches."
+    },
+    {
+      "source": "frontend/src/lib/grammar-meaning.ts",
+      "bytes": 1260,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy",
+        "study"
+      ],
+      "reason": "Splits a grammar meaning string into paragraphs and table rows; pure functions over the argument, no module-local state."
     },
     {
       "source": "frontend/src/lib/haptics.weapp.ts",
@@ -1319,6 +1349,7 @@
     "frontend/src/lib/plan/load-model.ts": "Plan load estimates are pure calculations over supplied quotas and fixed age coefficients, with no module-local user state.",
     "frontend/src/lib/study-totals.ts": "Study totals are queried from the shared database on demand; query results are not cached.",
     "frontend/src/lib/grammar-numbering.ts": "Ordinal maps are derived only from bundled grammar records and are safe package-local content caches.",
+    "frontend/src/lib/grammar-meaning.ts": "Splits a grammar meaning string into paragraphs and table rows; pure functions over the argument, no module-local state.",
     "frontend/src/lib/haptics.weapp.ts": "Haptics call the Mini Program vibration API per invocation and keep no module state.",
     "frontend/src/lib/level-setup-flow.ts": "Setup completion uses shared database, preferences and progress events on each call; the module owns no session state.",
     "frontend/src/lib/yield-to-paint.ts": "The helper schedules a paint yield and retains no state.",
@@ -1335,7 +1366,7 @@
   "duplicatedPageComponents": [
     {
       "source": "frontend/src/pages/Library.tsx",
-      "bytes": 33565,
+      "bytes": 33711,
       "packages": [
         "grammar-pages",
         "lazy"
@@ -1380,7 +1411,7 @@
     },
     {
       "source": "frontend/src/pages/ImmersiveGrammar.tsx",
-      "bytes": 16048,
+      "bytes": 16121,
       "packages": [
         "grammar-pages",
         "lazy"
@@ -1398,7 +1429,7 @@
     },
     {
       "source": "frontend/src/pages/FavoritesPage.tsx",
-      "bytes": 15826,
+      "bytes": 15899,
       "packages": [
         "content-pages",
         "grammar-pages"
@@ -1485,7 +1516,7 @@
     },
     {
       "source": "frontend/src/pages/GrammarDetail.tsx",
-      "bytes": 9738,
+      "bytes": 9811,
       "packages": [
         "content-pages",
         "grammar-pages"
@@ -1542,7 +1573,7 @@
     },
     {
       "source": "frontend/src/components/GrammarPointPopover.tsx",
-      "bytes": 4896,
+      "bytes": 4969,
       "packages": [
         "content-pages",
         "grammar-pages",
@@ -1622,6 +1653,16 @@
         "study"
       ],
       "reason": "The lazy overlays and account setup page render this stateless presentational wrapper using the shared mascot adapter."
+    },
+    {
+      "source": "frontend/src/components/GrammarMeaning.tsx",
+      "bytes": 2499,
+      "packages": [
+        "content-pages",
+        "grammar-pages",
+        "lazy"
+      ],
+      "reason": "The grammar card, library and detail pages render this stateless presentational block from a meaning string passed as a prop; it keeps no module-level state."
     },
     {
       "source": "frontend/src/components/Disclosure.weapp.tsx",
@@ -1747,6 +1788,7 @@
     "frontend/src/components/SubgroupedMembers.tsx": "Distinction subgroup frames are rendered by the study sheet and confusion card (lazy, study) and by the confusion page and distinction quiz (grammar-pages); pure markup with no state.",
     "frontend/src/components/streak/StreakFlame.tsx": "The streak flame is drawn by the home chip (lazy tabs), study celebrations and the streak detail page (content-pages); pure CSS markup with no state.",
     "frontend/src/components/MascotSay.tsx": "The lazy overlays and account setup page render this stateless presentational wrapper using the shared mascot adapter.",
+    "frontend/src/components/GrammarMeaning.tsx": "The grammar card, library and detail pages render this stateless presentational block from a meaning string passed as a prop; it keeps no module-level state.",
     "frontend/src/components/Disclosure.weapp.tsx": "Zoo, grammar, account, and study pages render this small disclosure in isolated package graphs; open state belongs to each mounted control and no user data is cached.",
     "frontend/src/components/ExampleSentence.tsx": "Example sentences are rendered from both content and grammar route packages.",
     "frontend/src/components/ScrollArea.weapp.tsx": "The lazy overlays and independent account routes render native ScrollViews; scroll state belongs to the mounted control.",
@@ -1757,7 +1799,7 @@
     "frontend/src/components/DailyPlanSlider.weapp.tsx": "The lazy setup panel and account/study plan pages render native Sliders; values and commit callbacks are owned by each mounted parent, not this stateless adapter.",
     "frontend/src/components/JapaneseRubyText.weapp.tsx": "Ruby text is used by lazy tabs and independently loaded content/grammar routes."
   },
-  "duplicatedPageComponentBytes": 360332,
+  "duplicatedPageComponentBytes": 363269,
   "unapprovedPageComponents": [],
   "stalePageComponentAllowlist": [],
   "unapprovedPageComponentBytes": 0,
@@ -1776,7 +1818,7 @@
     },
     {
       "source": "frontend/src/styles.css",
-      "bytes": 132405
+      "bytes": 132440
     },
     {
       "source": "frontend/src/lib/sync-api.ts",
@@ -1784,7 +1826,7 @@
     },
     {
       "source": "frontend/src/design.css",
-      "bytes": 99032
+      "bytes": 99754
     },
     {
       "source": "taro-spike-2/node_modules/react-reconciler/cjs/react-reconciler.production.min.js",
@@ -1800,7 +1842,7 @@
     },
     {
       "source": "frontend/src/lib/study-core.ts",
-      "bytes": 82070
+      "bytes": 82492
     },
     {
       "source": "taro-spike-2/src/platform/WeappPage.tsx",

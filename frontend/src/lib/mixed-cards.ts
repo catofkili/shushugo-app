@@ -2,10 +2,11 @@
  * 混合学习里「另外两种卡」的会话入口（docs/MIXED_STUDY_PLAN.md 第 2 节）：
  * 单独汉字卡、疑难连线卡。语法走 grammar-quiz 自己那套，单词走 stage1。
  *
- * 每日新学数和复习上限从 studyPreferences 读（kanjiDailyGoal / kanjiReviewCap …，复习 0 = 到期全出、-1 = 不出）。
+ * 每日新学数和复习上限从 studyPreferences 读（kanjiDailyGoal / kanjiReviewCap …，复习 0 = 默认上限、-1 = 不出，见 review-budget.ts 的 planReviewLimit）。
  * 汉字的候选按备考目标等级过滤。
  */
-import { getEffectiveStudyPreferences, getStudyPreferences, PLAN_REVIEW_DISABLED } from "./studyPreferences";
+import { getEffectiveStudyPreferences, getStudyPreferences } from "./studyPreferences";
+import { planReviewLimit } from "./review-budget";
 import { today } from "./study-core";
 import {
   createKanjiCharTasks, kanjiCharCard, kanjiCharDataLoaded, kanjiCharProgress, loadKanjiCharData,
@@ -20,8 +21,8 @@ import type { WordAnswer } from "../types/vocabulary";
 const LEVEL_RANK: Record<string, number> = { N5: 0, N4: 1, N3: 2, N2: 3, N1: 4 };
 export const targetLevelRank = () => LEVEL_RANK[getStudyPreferences().jlptTarget] ?? 2;
 
-const UNLIMITED = 100000;
-const reviewQuota = (cap: number) => cap === PLAN_REVIEW_DISABLED ? 0 : cap > 0 ? cap : UNLIMITED;
+const kanjiReviewQuota = (cap: number, day: string) => planReviewLimit(cap, "kanji", day);
+const confusionReviewQuota = (cap: number, day: string) => planReviewLimit(cap, "confusion", day);
 
 export const loadMixedCardData = loadKanjiCharData;
 export const mixedCardDataLoaded = kanjiCharDataLoaded;
@@ -41,7 +42,7 @@ export interface ConfusionCardSession { card: MatchingCard | null; done: number;
 export const getKanjiCardSession = (db: object, day = today()): KanjiCardSession => {
   materializeOnce(db);
   const prefs = getEffectiveStudyPreferences();
-  createKanjiCharTasks({ fresh: prefs.kanjiDailyGoal, review: reviewQuota(prefs.kanjiReviewCap) }, targetLevelRank(), day);
+  createKanjiCharTasks({ fresh: prefs.kanjiDailyGoal, review: kanjiReviewQuota(prefs.kanjiReviewCap, day) }, targetLevelRank(), day);
   const next = pickKanjiCharNext(day);
   const progress = kanjiCharProgress(day);
   return { card: next ? kanjiCharCard(next) : null, ...progress };
@@ -53,7 +54,7 @@ export const undoKanjiCardAnswer = () => undoLastKanjiCharReview();
 export const getConfusionCardSession = (db: object, day = today()): ConfusionCardSession => {
   materializeOnce(db);
   const prefs = getEffectiveStudyPreferences();
-  createConfusionTasks({ fresh: prefs.confusionDailyGoal, review: reviewQuota(prefs.confusionReviewCap) }, targetLevelRank(), day);
+  createConfusionTasks({ fresh: prefs.confusionDailyGoal, review: confusionReviewQuota(prefs.confusionReviewCap, day) }, targetLevelRank(), day);
   const next = pickConfusionNext(day);
   const progress = confusionCardProgress(day);
   return { card: next ? matchingCard(next) : null, ...progress };
@@ -77,9 +78,9 @@ export const mixedCardCounts = (db: object, day = today()) => {
   const prefs = getEffectiveStudyPreferences();
   const rank = targetLevelRank();
   // 小程序 iPhone 每次冷启动都算角标；只建任务和数进度，不为未进入的会话选卡、拼题面。
-  createKanjiCharTasks({ fresh: prefs.kanjiDailyGoal, review: reviewQuota(prefs.kanjiReviewCap) }, rank, day);
+  createKanjiCharTasks({ fresh: prefs.kanjiDailyGoal, review: kanjiReviewQuota(prefs.kanjiReviewCap, day) }, rank, day);
   const kanji = kanjiCharProgress(day);
-  createConfusionTasks({ fresh: prefs.confusionDailyGoal, review: reviewQuota(prefs.confusionReviewCap) }, rank, day);
+  createConfusionTasks({ fresh: prefs.confusionDailyGoal, review: confusionReviewQuota(prefs.confusionReviewCap, day) }, rank, day);
   const confusion = confusionCardProgress(day);
   return {
     kanjiDone: kanji.done, kanjiRemaining: kanji.remaining,

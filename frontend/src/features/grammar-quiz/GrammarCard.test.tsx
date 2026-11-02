@@ -2,10 +2,12 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { GrammarCard } from "./GrammarCard";
 import type { GrammarQuizCard } from "../../lib/grammar-quiz";
+import { grammarPoints } from "../../data/grammar";
+import { JapaneseRuby } from "../../components/JapaneseRuby";
+import { getGrammarTitleFurigana } from "../../lib/grammar-title-furigana";
 
 const card: GrammarQuizCard = {
   id: 312,
-  question: "～て済む／で済む",
   pattern: "～て済む／で済む",
   formation: "动词て形／名词で＋済む",
   attachment: "动词て形／名词で",
@@ -30,16 +32,41 @@ describe("GrammarCard title furigana", () => {
     expect(html.match(/<rt>す<\/rt>/g)).toHaveLength(2);
   });
 
-  it("删掉中文分类括号的题面也保留注音", () => {
+  it("普通考题翻面前也保留标题注音", () => {
     const html = renderToStaticMarkup(
       <GrammarCard
-        card={{ ...card, pattern: "基数詞（基数词）", question: "基数詞", attachment: null }}
+        card={{ ...card, attachment: null }}
         revealed={false}
         onReveal={() => undefined}
         onAnswer={() => undefined}
       />
     );
 
-    expect(html).toContain("<rt>きすうし</rt>");
+    expect(html).toContain("<rt>す</rt>");
+  });
+
+  it.each(["pdf-n5-015", "pdf-n5-016"])("读音题 %s 的考题、混合首学卡及列表标题均不露注音", (id) => {
+    const point = grammarPoints.find((point) => point.id === id)!;
+    for (const isNew of [false, true]) {
+      const html = renderToStaticMarkup(
+        <GrammarCard
+          card={{ ...card, pattern: point.title, attachment: null, isNew, meaning: point.meaning }}
+          revealed={false}
+          onReveal={() => undefined}
+          onAnswer={() => undefined}
+        />
+      );
+      expect(html).not.toContain("<rt>");
+      expect(html).not.toContain("いっぽん");
+      expect(html).not.toContain("ついたち");
+      const revealed = renderToStaticMarkup(
+        <GrammarCard card={{ ...card, pattern: point.title, meaning: point.meaning }} revealed onReveal={() => undefined} onAnswer={() => undefined} />
+      );
+      // 读音在答案面的表格里：每个单元格各占一格，整段原文已不是连续字符串
+      expect(revealed).toContain(id === "pdf-n5-015" ? "いっぽん" : "ついたち");
+      expect(revealed).toContain("border-t");
+    }
+    const title = renderToStaticMarkup(<JapaneseRuby text={point.title} furigana={getGrammarTitleFurigana(id)} />);
+    expect(title).not.toContain("<rt>");
   });
 });

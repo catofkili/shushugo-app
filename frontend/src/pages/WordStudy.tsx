@@ -56,7 +56,7 @@ import { yieldToPaint } from "../lib/yield-to-paint";
 import { CapybaraWalk } from "../components/CapybaraMascot";
 import { accrueStudyTime, createStudyClock, drainStudySeconds, noteStudyInteraction, STUDY_IDLE_LIMIT_MS } from "../lib/study-clock";
 import { useApp } from "../app/AppContext";
-import { claimStudyFocusReward, continueStudyFocus, enterStudyFocus, finishStudyFocusAtDailyCompletion, getStudyFocusSnapshot, isStudyFocusArmed, recordStudyFocusAnswer, recordStudyFocusTime, leaveStudyFocus, resumeStudyFocus, sameStudyFocusState, setStudyFocusArmed, startStudyFocus, stopStudyFocus, STUDY_FOCUS_BASELINE_DAYS, STUDY_FOCUS_MIN_WORDS, STUDY_FOCUS_WINDOW_MS, undoStudyFocusAnswer, type StudyFocusSnapshot } from "../lib/study-focus";
+import { claimStudyFocusReward, continueStudyFocus, enterStudyFocus, finishStudyFocusAtDailyCompletion, getStudyFocusMinutes, getStudyFocusSnapshot, isStudyFocusArmed, recordStudyFocusAnswer, recordStudyFocusTime, leaveStudyFocus, resumeStudyFocus, sameStudyFocusState, setStudyFocusArmed, startStudyFocus, stopStudyFocus, STUDY_FOCUS_BASELINE_DAYS, undoStudyFocusAnswer, type StudyFocusSnapshot } from "../lib/study-focus";
 import { useStudyActivity, useStudyBreakTabBar } from "../hooks/useStudyActivity";
 
 import { SpellingCardView } from "../features/spelling/SpellingCardView";
@@ -66,6 +66,7 @@ import { today } from "../lib/study-core";
 import { DailyReviewInvite, DailyReviewTopBar, DailyReviewComplete } from "../features/word-study/DailyReviewRound";
 import { answerDailyReviewRound, createDailyReviewRound, dailyReviewRoundDone, nextDailyReviewId, roundWritesFsrs, type DailyReviewRound } from "../lib/word-api/daily-review-round";
 import { StreakSpark } from "../components/streak/StreakMoments";
+import { ListeningPrompt, useListeningReverseCard } from "../features/word-study/ListeningPrompt";
 
 interface WordStudyProps {
   initialMode?: StudyMode;
@@ -283,7 +284,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
   const [focusSnapshot, setFocusSnapshot] = useState<StudyFocusSnapshot>(() => {
     const snapshot = getStudyFocusSnapshot();
     return isStudyFocusArmed() && snapshot.status === "off"
-      ? { ...snapshot, status: "running", remainingSeconds: STUDY_FOCUS_WINDOW_MS / 1000 }
+      ? { ...snapshot, status: "running", remainingSeconds: snapshot.minutes * 60 }
       : snapshot;
   });
   const focusBreakRef = useRef(false);
@@ -1107,6 +1108,9 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     return () => { previewRunRef.current += 1; };
   }, [card, stats, previewEligible, runPreviews]);
 
+  const listening = useListeningReverseCard(card, phase, spellingKey, preferences.voiceId,
+    !loading && !revealed && !other && !dailyReviewOverlay && focusSnapshot.status !== "break");
+
   const revealAnswer = useCallback(() => {
     if (!card || loading || revealed || submitting || reliefActive || dailyReviewOverlay) return;
     revealedAtRef.current = performance.now();
@@ -1127,8 +1131,9 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
       setNoteMemoryOpen(false);
       setActivePopover(null);
     }
-    speakCard(card);
-  }, [buddySession, card, dailyReviewOverlay, loading, previewEligible, reliefActive, revealed, runPreviews, speakCard, submitting]);
+    // 听音题出卡已经播过；失败退回看字后也不在翻面重试同一条音频。
+    if (!listening.candidate) speakCard(card);
+  }, [buddySession, card, dailyReviewOverlay, listening.candidate, loading, previewEligible, reliefActive, revealed, runPreviews, speakCard, submitting]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -1554,16 +1559,16 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     return createPortal(
       <ScrollArea className="study-focus-veil">
         <section className="study-focus-dialog" role="dialog" aria-modal="true" aria-labelledby="study-focus-title">
-          <span className="study-focus-kicker"><Timer size={16} /> 十分钟专注</span>
+          <span className="study-focus-kicker"><Timer size={16} /> {summary?.minutes ?? focusSnapshot.minutes} 分钟专注</span>
           <h2 id="study-focus-title">休息一下</h2>
-              <p className="study-focus-lead">这 10 分钟背了 <b>{summary?.words ?? 0}</b> 个词，记住 <b>{remembered}</b> 个，模糊 <b>{summary?.fuzzy ?? 0}</b> 个，没记住 <b>{summary?.forgotten ?? 0}</b> 个。</p>
+              <p className="study-focus-lead">这 {summary?.minutes ?? focusSnapshot.minutes} 分钟背了 <b>{summary?.words ?? 0}</b> 个词，记住 <b>{remembered}</b> 个，模糊 <b>{summary?.fuzzy ?? 0}</b> 个，没记住 <b>{summary?.forgotten ?? 0}</b> 个。</p>
               {summary && !summary.qualified ? (
                 <p className="study-focus-comparison">
-                  这段不到 {STUDY_FOCUS_MIN_WORDS} 个词，不算进对比，也不发柚子。下一段多背几个吧！
+                  这段不到 {summary.minWords} 个词，不算进对比，也不发柚子。下一段多背几个吧！
                 </p>
               ) : summary?.baselineWindows ? (
                 <p className="study-focus-comparison">
-                  最近 {STUDY_FOCUS_BASELINE_DAYS} 天里平均每十分钟记住 {baseline?.toFixed(1)} 个词；
+                  最近 {STUDY_FOCUS_BASELINE_DAYS} 天里平均每 {summary.minutes} 分钟记住 {baseline?.toFixed(1)} 个词；
                   {summary.rememberedDelta! > 0
                     ? `这次多记 ${summary.rememberedDelta!.toFixed(1)} 个${summary.efficiencyChangePercent === null ? "。之前平均是 0，无法计算百分比。" : `，效率提升 ${summary.efficiencyChangePercent.toFixed(0)}%。`}`
                     : summary.rememberedDelta === 0
@@ -1580,7 +1585,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
                   caption={focusSnapshot.rewardClaimed ? `已领取 ${reward} 柚子` : `点击宝箱领取 ${reward} 柚子`}
                 />
               )}
-              {summary?.qualified && reward === 0 && <p className="study-focus-comparison">今天的九档柚子奖励已领完。</p>}
+              {summary?.qualified && reward === 0 && <p className="study-focus-comparison">今天的专注柚子已经领完。</p>}
               {summary?.qualified && reward > 0 && !focusSnapshot.rewardClaimed && (
                 <p className="study-focus-chest-hint">先领取本段奖励，再选择之后的学习方式。</p>
               )}
@@ -1590,7 +1595,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
                   继续倒计时
                 </button>
               </div>
-              <span className="study-focus-next">继续后开始下一段 10:00</span>
+              <span className="study-focus-next">继续后开始下一段 {getStudyFocusMinutes()}:00</span>
         </section>
       </ScrollArea>,
       document.body
@@ -1990,6 +1995,9 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
                   {card.pos && (
                     <span className="rounded-sm bg-[#81D8CF]/10 px-1.5 py-0.5 text-[11px] font-bold text-white/60">{card.pos}</span>
                   )}
+                  {listening.active && (
+                    <span className="rounded-sm border border-white/15 px-1.5 py-0.5 text-[11px] font-bold text-white/60">听音</span>
+                  )}
                   {/* 自/他动词是高频易错属性，统一放在题目面，翻面前就能看到。 */}
                   <TransitivityBadge card={card} />
                   {card.honorificLabel && (
@@ -2012,7 +2020,9 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
                 <ScrollArea className="max-h-24 w-full px-1 sm:max-h-28">
                   {isUnitKanji ? (
                     <p className="jp-serif break-words text-4xl font-semibold leading-tight sm:text-6xl lg:text-7xl">{unitTarget?.text}</p>
-                  ) : isReversePhase ? (
+                  ) : isReversePhase ? listening.active ? (
+                    <ListeningPrompt onReplay={listening.replay} />
+                  ) : (
                     <>
                       <p className="jp-serif break-words text-4xl font-semibold leading-tight sm:text-6xl lg:text-7xl">{primaryAnswerText(card)}</p>
                       <ReadingLine card={card} className="jp mt-1 text-xl text-white/72 sm:text-2xl lg:text-3xl" />
@@ -2031,6 +2041,12 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
                 <div className="zoo-reveal-in w-full min-w-0">
                   {isReversePhase ? (
                     <>
+                      {listening.active && (
+                        <>
+                          <p className="jp-serif text-5xl font-semibold leading-none sm:text-6xl lg:text-7xl"><KanjiAnswer card={card} /></p>
+                          <ReadingLine card={card} className="jp mb-6 mt-2 text-2xl text-white/86 sm:text-3xl lg:text-4xl" />
+                        </>
+                      )}
                       <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/55">释义</p>
                       <p className="mx-auto mt-4 max-w-2xl text-2xl font-semibold leading-9 text-white/88">{card.meaning}</p>
                     </>
@@ -2214,7 +2230,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
               ) : (
                 <div>
                   {/* 翻面前这一屏最大的字必须是题面（在卡片上方），这里只留一句小提示；「答案已隐藏」大字是废话 */}
-                  <p className="text-sm text-white/55">{isReversePhase ? "想一想中文意思" : "想一想怎么读、怎么写"}</p>
+                  {!listening.active && <p className="text-sm text-white/55">{isReversePhase ? "想一想中文意思" : "想一想怎么读、怎么写"}</p>}
                 </div>
               )}
             </ScrollArea>

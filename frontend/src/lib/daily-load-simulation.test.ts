@@ -222,7 +222,7 @@ async function simulate(scenario: Scenario): Promise<Simulation> {
     saveStudyPreferences({ ...defaultStudyPreferences, dailyGoal: 5, grammarDailyGoal: timeline ? 3 : 5,
       reviewCap: 600, jlptTarget: scenario.target, jlptPlanEnabled: false });
     if (timeline) {
-      // 起点评估不是新用户注册。10-13学习日前已有119/146条覆盖（114条流水+5条仅存已学进度）。
+      // 起点评估不是新用户注册。10-13学习日前已有119/145条覆盖（114条流水+5条仅存已学进度）。
       // 用生产取卡/评分建立合成前史，不把这40天的合成日期冒称用户原始流水，也不手写 FSRS due。
       for (let offset = -40; offset < 0; offset += 1) {
         vi.setSystemTime(start + offset * DAY_MS);
@@ -239,7 +239,7 @@ async function simulate(scenario: Scenario): Promise<Simulation> {
         }
       }
       expect(firstValue<number>("SELECT COUNT(DISTINCT grammar_id) FROM grammar_reviews", [], 0)).toBe(119);
-      expect(firstValue<number>("SELECT COUNT(*) FROM grammar_points WHERE level='N3'", [], 0)).toBe(146);
+      expect(firstValue<number>("SELECT COUNT(*) FROM grammar_points WHERE level='N3'", [], 0)).toBe(145);
       saveStudyPreferences({ ...getStudyPreferences(), grammarDailyGoal: 3 });
       vi.setSystemTime(new Date("2026-10-13T16:09:36Z"));
     }
@@ -247,7 +247,7 @@ async function simulate(scenario: Scenario): Promise<Simulation> {
       target: scenario.target, examDate: "", startedOn: today(), planEnabled: false });
     if (timeline) {
       const priors = rowsFor("SELECT stability, due FROM level_prior_baselines WHERE entity = 'grammar'");
-      expect(priors).toHaveLength(127);
+      expect(priors).toHaveLength(122);
       expect(priors.every(row => row.stability === 30 && String(row.due).slice(0, 10) >= "2026-10-14"
         && String(row.due).slice(0, 10) <= "2026-10-28")).toBe(true);
     }
@@ -268,7 +268,7 @@ async function simulate(scenario: Scenario): Promise<Simulation> {
   randomState = initialRandom;
   if (scenario.event === "incident") {
     const priors = rowsFor("SELECT stability, due FROM level_prior_baselines WHERE entity = 'grammar'");
-    expect(priors).toHaveLength(127);
+    expect(priors).toHaveLength(122);
     expect(new Set(priors.map(row => row.stability))).toEqual(new Set([30]));
     expect(new Set(priors.map(row => String(row.due).slice(0, 10))).size).toBe(14);
     expect(priors.every(row => Date.parse(String(row.due)) >= START && Date.parse(String(row.due)) < START + 14 * DAY_MS)).toBe(true);
@@ -332,7 +332,7 @@ async function simulate(scenario: Scenario): Promise<Simulation> {
       if (!active) continue;
       if (day === 15 && scenario.event === "incident") expect(firstValue<number>(
         `SELECT COUNT(*) FROM grammar_progress WHERE ${pendingPriorSql("grammar", "grammar_progress.grammar_id")} AND fsrs_due <= ?`,
-        [studyDayEnd().toISOString()], 0)).toBe(127);
+        [studyDayEnd().toISOString()], 0)).toBe(122);
 
       const baselines = byKind(kind => new Set(rowsFor("SELECT entity_key FROM level_prior_baselines WHERE entity = ?", [kind]).map(row => String(row.entity_key))));
       const history = byKind(kind => {
@@ -391,9 +391,10 @@ async function simulate(scenario: Scenario): Promise<Simulation> {
       if (selectedKinds.includes("kanji")) finishTasks("kanji", () => pickKanjiCharNext(date), recordKanjiCharReview);
       if (selectedKinds.includes("confusion")) finishTasks("confusion", () => pickConfusionNext(date), recordConfusionReview);
       if (timeline) {
-        if (day <= 9) expect(record.cards.grammar.fresh).toBe(3);
+        // N3 清理后剩 145 条：已有 119 条，八天各学 3 条，第九天只剩 2 条。
+        if (day <= 9) expect(record.cards.grammar.fresh).toBe(day === 9 ? 2 : 3);
         if (day === 9) expect(firstValue<number>(`SELECT COUNT(*) FROM grammar_progress p
-          JOIN grammar_points g ON g.id=p.grammar_id WHERE g.level='N3' AND p.seen_count>0`, [], 0)).toBe(146);
+          JOIN grammar_points g ON g.id=p.grammar_id WHERE g.level='N3' AND p.seen_count>0`, [], 0)).toBe(145);
         if (day >= 10 && day <= 15) {
           expect(record.cards.grammar.fresh).toBe(0);
           expect(record.cards.grammar.answers, "空的是新学，期间仍每天正常复习").toBeGreaterThan(0);

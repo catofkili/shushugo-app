@@ -807,7 +807,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 425,
+        "id": 419,
         "surface": "～かねない"
       }
     },
@@ -832,7 +832,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 445,
+        "id": 439,
         "surface": "～次第だ／次第で（は）"
       }
     },
@@ -857,7 +857,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 456,
+        "id": 450,
         "surface": "～たとたん（に）"
       }
     },
@@ -882,7 +882,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 444,
+        "id": 438,
         "surface": "～次第"
       }
     },
@@ -907,7 +907,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 479,
+        "id": 473,
         "surface": "～どころではない"
       }
     },
@@ -957,7 +957,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 494,
+        "id": 488,
         "surface": "～に応じて／に応じ"
       }
     },
@@ -982,7 +982,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 472,
+        "id": 466,
         "surface": "～というものではない／というものでもない"
       }
     },
@@ -1007,7 +1007,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 562,
+        "id": 556,
         "surface": "～ていただけるとありがたいんですが"
       }
     },
@@ -1032,7 +1032,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 544,
+        "id": 538,
         "surface": "～ものの"
       }
     },
@@ -1082,7 +1082,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 557,
+        "id": 551,
         "surface": "お／ご～いただけませんか"
       }
     },
@@ -1107,7 +1107,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 463,
+        "id": 457,
         "surface": "～てからでないと／てからでなければ"
       },
       "order": [
@@ -1138,7 +1138,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 538,
+        "id": 532,
         "surface": "～も～なら～も～だ"
       },
       "order": [
@@ -1169,7 +1169,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 512,
+        "id": 506,
         "surface": "～に沿って／に沿い"
       },
       "order": [
@@ -1200,7 +1200,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 556,
+        "id": 550,
         "surface": "～をもとに（して）"
       },
       "order": [
@@ -1231,7 +1231,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 555,
+        "id": 549,
         "surface": "～をめぐって／をめぐり"
       },
       "order": [
@@ -1288,7 +1288,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 488,
+        "id": 482,
         "surface": "～ないことはない／ないこともない"
       },
       "passageId": "n2-trial1-p1"
@@ -1340,7 +1340,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 465,
+        "id": 459,
         "surface": "～（の）ではあるまいか"
       },
       "passageId": "n2-trial1-p1"
@@ -1366,7 +1366,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 473,
+        "id": 467,
         "surface": "～というより"
       },
       "passageId": "n2-trial1-p1"
@@ -2142,7 +2142,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 415,
+        "id": 409,
         "surface": "～得る／得ない"
       }
     },
@@ -2167,7 +2167,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 541,
+        "id": 535,
         "surface": "～ものだから"
       }
     },
@@ -2192,7 +2192,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 478,
+        "id": 472,
         "surface": "～ところだった"
       }
     },
@@ -2217,7 +2217,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 432,
+        "id": 426,
         "surface": "～代わりに"
       }
     },
@@ -2242,7 +2242,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 414,
+        "id": 408,
         "surface": "～（よ）うではないか／うじゃないか"
       }
     },
@@ -2267,7 +2267,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 457,
+        "id": 451,
         "surface": "～ついでに"
       }
     },
@@ -2292,7 +2292,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 521,
+        "id": 515,
         "surface": "～にわたって／にわたり"
       }
     },
@@ -2317,7 +2317,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 503,
+        "id": 497,
         "surface": "～に応えて／～に応え"
       }
     },
@@ -2367,7 +2367,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 560,
+        "id": 554,
         "surface": "～（さ）せていただけませんか"
       }
     },
@@ -2392,7 +2392,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 426,
+        "id": 420,
         "surface": "～かのようだ"
       }
     },
@@ -2442,7 +2442,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 543,
+        "id": 537,
         "surface": "～ものなら"
       },
       "order": [
@@ -2473,7 +2473,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 505,
+        "id": 499,
         "surface": "～に先立って／～に先立ち"
       },
       "order": [
@@ -2504,7 +2504,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 482,
+        "id": 476,
         "surface": "～としか言いようがない"
       },
       "order": [
@@ -2535,7 +2535,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 453,
+        "id": 447,
         "surface": "～たところ"
       },
       "order": [
@@ -2566,7 +2566,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 545,
+        "id": 539,
         "surface": "～も～ば～も"
       },
       "order": [
@@ -2649,7 +2649,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 442,
+        "id": 436,
         "surface": "～際は／際に（は）"
       },
       "passageId": "n2-trial2-p1"
@@ -3477,7 +3477,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 559,
+        "id": 553,
         "surface": "お／ご～申し上げる"
       }
     },
@@ -3502,7 +3502,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 418,
+        "id": 412,
         "surface": "～限り（は）／限りでは"
       }
     },
@@ -3527,7 +3527,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 443,
+        "id": 437,
         "surface": "せざるを得ず"
       }
     },
@@ -3552,7 +3552,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 420,
+        "id": 414,
         "surface": "～かけだ／かける"
       }
     },
@@ -3577,7 +3577,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 498,
+        "id": 492,
         "surface": "に限らず"
       }
     },
@@ -3602,7 +3602,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 470,
+        "id": 464,
         "surface": "てまで"
       }
     },
@@ -3627,7 +3627,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 424,
+        "id": 418,
         "surface": "しかねます"
       }
     },
@@ -3652,7 +3652,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 539,
+        "id": 533,
         "surface": "～ものか／もんか"
       }
     },
@@ -3677,7 +3677,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 433,
+        "id": 427,
         "surface": "～気味"
       }
     },
@@ -3702,7 +3702,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 499,
+        "id": 493,
         "surface": "に限る"
       }
     },
@@ -3727,7 +3727,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 558,
+        "id": 552,
         "surface": "お／ご～願えませんか"
       }
     },
@@ -3777,7 +3777,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 493,
+        "id": 487,
         "surface": "にあたって"
       },
       "order": [
@@ -3808,7 +3808,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 520,
+        "id": 514,
         "surface": "に基づく"
       },
       "order": [
@@ -3839,7 +3839,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 428,
+        "id": 422,
         "surface": "からこそ"
       },
       "order": [
@@ -3870,7 +3870,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 516,
+        "id": 510,
         "surface": "に伴って"
       },
       "order": [
@@ -3901,7 +3901,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 412,
+        "id": 406,
         "surface": "以上は"
       },
       "order": [
@@ -4010,7 +4010,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 529,
+        "id": 523,
         "surface": "～はともかく（として）"
       },
       "passageId": "n2-trial3-p1"
@@ -4036,7 +4036,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 474,
+        "id": 468,
         "surface": "～といっても過言ではない"
       },
       "passageId": "n2-trial3-p1"
@@ -4812,7 +4812,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 481,
+        "id": 475,
         "surface": "～ところを"
       }
     },
@@ -4837,7 +4837,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 549,
+        "id": 543,
         "surface": "～わりに（は）"
       }
     },
@@ -4862,7 +4862,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 523,
+        "id": 517,
         "surface": "～抜きでは／抜きには／を抜きにしては"
       }
     },
@@ -4887,7 +4887,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 447,
+        "id": 441,
         "surface": "～ずにすむ／ないですむ／なくてすむ"
       }
     },
@@ -4962,7 +4962,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 508,
+        "id": 502,
         "surface": "～にしては"
       }
     },
@@ -4987,7 +4987,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 547,
+        "id": 541,
         "surface": "～ようでは"
       }
     },
@@ -5012,7 +5012,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 410,
+        "id": 404,
         "surface": "～あげく（に）"
       }
     },
@@ -5037,7 +5037,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 536,
+        "id": 530,
         "surface": "～もかまわず"
       }
     },
@@ -5062,7 +5062,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 490,
+        "id": 484,
         "surface": "～ながら（も）"
       }
     },
@@ -5087,7 +5087,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 437,
+        "id": 431,
         "surface": "～ことだから"
       }
     },
@@ -5112,7 +5112,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 467,
+        "id": 461,
         "surface": "～てばかりはいられない"
       },
       "order": [
@@ -5143,7 +5143,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 527,
+        "id": 521,
         "surface": "～ばかりか"
       },
       "order": [
@@ -5174,7 +5174,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 484,
+        "id": 478,
         "surface": "～とともに"
       },
       "order": [
@@ -5205,7 +5205,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 533,
+        "id": 527,
         "surface": "～反面／半面"
       },
       "order": [
@@ -5236,7 +5236,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 422,
+        "id": 416,
         "surface": "～かと思えば／かと思うと"
       },
       "order": [
@@ -5371,7 +5371,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 540,
+        "id": 534,
         "surface": "～ものがある"
       },
       "passageId": "n2-trial4-p1"
@@ -6147,7 +6147,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 561,
+        "id": 555,
         "surface": "～（さ）せてやっていただけませんか"
       }
     },
@@ -6172,7 +6172,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 468,
+        "id": 462,
         "surface": "～てはじめて"
       }
     },
@@ -6222,7 +6222,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 469,
+        "id": 463,
         "surface": "～ではすまされない"
       }
     },
@@ -6247,7 +6247,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 416,
+        "id": 410,
         "surface": "～甲斐がある／甲斐がない／甲斐もなく"
       }
     },
@@ -6272,7 +6272,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 480,
+        "id": 474,
         "surface": "～ところに／ところへ"
       }
     },
@@ -6297,7 +6297,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 495,
+        "id": 489,
         "surface": "～に（は）かかわらず／にかかわりなく"
       }
     },
@@ -6322,7 +6322,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 534,
+        "id": 528,
         "surface": "～ほか（は）ない／よりほか（は）ない"
       }
     },
@@ -6347,7 +6347,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 459,
+        "id": 453,
         "surface": "～つつ（も）"
       }
     },
@@ -6372,7 +6372,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 501,
+        "id": 495,
         "surface": "～に決まっている"
       }
     },
@@ -6422,7 +6422,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 421,
+        "id": 415,
         "surface": "～がちだ"
       }
     },
@@ -6447,7 +6447,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 552,
+        "id": 546,
         "surface": "～を通じて／を通して"
       },
       "order": [
@@ -6478,7 +6478,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 464,
+        "id": 458,
         "surface": "～てでも"
       },
       "order": [
@@ -6509,7 +6509,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 446,
+        "id": 440,
         "surface": "～末（に）"
       },
       "order": [
@@ -6540,7 +6540,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 471,
+        "id": 465,
         "surface": "～というものだ"
       },
       "order": [
@@ -6571,7 +6571,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 550,
+        "id": 544,
         "surface": "～をかねて"
       },
       "order": [
@@ -6602,7 +6602,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 440,
+        "id": 434,
         "surface": "～ことにはならない"
       },
       "passageId": "n2-trial5-p1"
@@ -6706,7 +6706,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 452,
+        "id": 446,
         "surface": "～だけのことはある"
       },
       "passageId": "n2-trial5-p1"
@@ -8982,7 +8982,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 518,
+        "id": 512,
         "surface": "～にほかならない"
       },
       "order": [
@@ -9013,7 +9013,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 423,
+        "id": 417,
         "surface": "～か～ないかのうちに"
       },
       "order": [
@@ -9044,7 +9044,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 439,
+        "id": 433,
         "surface": "～ごとに"
       },
       "order": [
@@ -9075,7 +9075,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 492,
+        "id": 486,
         "surface": "～てたまらない"
       },
       "order": [
@@ -9106,7 +9106,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 506,
+        "id": 500,
         "surface": "～に従って／に従い"
       },
       "order": [
@@ -9137,7 +9137,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 548,
+        "id": 542,
         "surface": "～ようなら／ようだったら"
       },
       "order": [
@@ -9168,7 +9168,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 515,
+        "id": 509,
         "surface": "～につけ／につけては／につけても"
       },
       "order": [
@@ -9199,7 +9199,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 477,
+        "id": 471,
         "surface": "～どころか"
       },
       "order": [
@@ -9230,7 +9230,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 513,
+        "id": 507,
         "surface": "～に違いない"
       },
       "order": [
@@ -9261,7 +9261,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 413,
+        "id": 407,
         "surface": "～上は"
       },
       "order": [
@@ -9292,7 +9292,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 483,
+        "id": 477,
         "surface": "～としたら／とすれば"
       },
       "order": [
@@ -9323,7 +9323,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 531,
+        "id": 525,
         "surface": "～はもちろん"
       },
       "order": [
@@ -9354,7 +9354,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 535,
+        "id": 529,
         "surface": "～まい／まいか"
       },
       "order": [
@@ -9385,7 +9385,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 507,
+        "id": 501,
         "surface": "～にしたら／にすれば／にしても"
       },
       "order": [
@@ -9416,7 +9416,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 537,
+        "id": 531,
         "surface": "～も同然だ"
       },
       "order": [

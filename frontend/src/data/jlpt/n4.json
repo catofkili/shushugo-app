@@ -2132,7 +2132,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 154,
+        "id": 149,
         "surface": "～なければならない"
       },
       "furigana": {
@@ -2221,7 +2221,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 155,
+        "id": 150,
         "surface": "～なくてもいい"
       },
       "furigana": {
@@ -2310,7 +2310,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 243,
+        "id": 238,
         "surface": "お／ご～ください"
       },
       "furigana": {
@@ -2384,7 +2384,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 144,
+        "id": 139,
         "surface": "～てしまう／ちゃう"
       },
       "furigana": {
@@ -2433,7 +2433,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 128,
+        "id": 123,
         "surface": "～ず（に）"
       },
       "furigana": {
@@ -2512,7 +2512,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 145,
+        "id": 140,
         "surface": "～てみる"
       },
       "furigana": {
@@ -2571,7 +2571,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 157,
+        "id": 152,
         "surface": "～すぎる"
       },
       "furigana": {
@@ -2625,7 +2625,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 160,
+        "id": 155,
         "surface": "～やすい"
       },
       "furigana": {
@@ -2719,7 +2719,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 184,
+        "id": 179,
         "surface": "～かもしれない"
       },
       "furigana": {
@@ -2808,7 +2808,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 185,
+        "id": 180,
         "surface": "～つもりだ"
       },
       "furigana": {
@@ -2892,7 +2892,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 178,
+        "id": 173,
         "surface": "～し／～し～し"
       },
       "furigana": {
@@ -2951,7 +2951,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 211,
+        "id": 206,
         "surface": "～ことがある"
       },
       "furigana": {
@@ -3010,7 +3010,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 183,
+        "id": 178,
         "surface": "必ず"
       },
       "furigana": {
@@ -3071,7 +3071,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 174,
+        "id": 169,
         "surface": "疑問詞＋か"
       },
       "order": [
@@ -3170,7 +3170,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 213,
+        "id": 208,
         "surface": "～という"
       },
       "order": [
@@ -3249,7 +3249,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 201,
+        "id": 196,
         "surface": "～かわりに"
       },
       "order": [
@@ -3383,7 +3383,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 205,
+        "id": 200,
         "surface": "～なく"
       },
       "order": [
@@ -3478,7 +3478,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 221,
+        "id": 216,
         "surface": "～てもらう"
       },
       "passageId": "n4-trial1-p1"
@@ -3530,7 +3530,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 197,
+        "id": 192,
         "surface": "～ようになる"
       },
       "passageId": "n4-trial1-p1"
@@ -3556,7 +3556,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 180,
+        "id": 175,
         "surface": "～より"
       },
       "passageId": "n4-trial1-p1"
@@ -5676,7 +5676,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 129,
+        "id": 124,
         "surface": "～たがる"
       },
       "furigana": {
@@ -5730,7 +5730,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 217,
+        "id": 212,
         "surface": "～てあげる"
       },
       "furigana": {
@@ -5789,7 +5789,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 153,
+        "id": 148,
         "surface": "～てはいけない"
       },
       "furigana": {
@@ -5848,7 +5848,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 161,
+        "id": 156,
         "surface": "～にくい"
       },
       "furigana": {
@@ -5922,7 +5922,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 150,
+        "id": 145,
         "surface": "～のに"
       },
       "furigana": {
@@ -5971,7 +5971,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 181,
+        "id": 176,
         "surface": "～まま"
       },
       "furigana": {
@@ -6060,7 +6060,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 164,
+        "id": 159,
         "surface": "～うちに"
       },
       "furigana": {
@@ -6149,7 +6149,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 188,
+        "id": 183,
         "surface": "～たら"
       },
       "furigana": {
@@ -6233,7 +6233,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 231,
+        "id": 226,
         "surface": "いらっしゃる"
       },
       "furigana": {
@@ -6388,7 +6388,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 212,
+        "id": 207,
         "surface": "～ことができる"
       },
       "furigana": {
@@ -6432,7 +6432,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 206,
+        "id": 201,
         "surface": "～によると／によれば"
       },
       "furigana": {
@@ -6503,7 +6503,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 195,
+        "id": 190,
         "surface": "～ため（に）"
       },
       "furigana": {
@@ -6582,7 +6582,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 137,
+        "id": 132,
         "surface": "被动助动词「れる／られる」"
       },
       "order": [
@@ -6651,7 +6651,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 191,
+        "id": 186,
         "surface": "～と"
       },
       "order": [
@@ -6720,7 +6720,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 143,
+        "id": 138,
         "surface": "～てくる"
       },
       "order": [
@@ -6787,7 +6787,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 162,
+        "id": 157,
         "surface": "～方"
       },
       "order": [
@@ -6903,7 +6903,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 141,
+        "id": 136,
         "surface": "～ておく／とく"
       },
       "passageId": "n4-trial2-p1"
@@ -6929,7 +6929,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 225,
+        "id": 220,
         "surface": "～てくれる"
       },
       "passageId": "n4-trial2-p1"
@@ -6955,7 +6955,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 198,
+        "id": 193,
         "surface": "～ようにする"
       },
       "passageId": "n4-trial2-p1"
@@ -9297,7 +9297,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 135,
+        "id": 130,
         "surface": "可能助动词「れる／られる」"
       },
       "furigana": {
@@ -9391,7 +9391,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 136,
+        "id": 131,
         "surface": "使役助动词「せる／させる」"
       },
       "furigana": {
@@ -9470,7 +9470,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 166,
+        "id": 161,
         "surface": "～ているところだ"
       },
       "furigana": {
@@ -9618,7 +9618,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 159,
+        "id": 154,
         "surface": "～つづける"
       },
       "furigana": {
@@ -9702,7 +9702,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 170,
+        "id": 165,
         "surface": "～たばかり"
       },
       "furigana": {
@@ -9756,7 +9756,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 171,
+        "id": 166,
         "surface": "～までに"
       },
       "furigana": {
@@ -9820,7 +9820,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 176,
+        "id": 171,
         "surface": "～または"
       },
       "furigana": {
@@ -9854,7 +9854,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 230,
+        "id": 225,
         "surface": "～（さ）せてください／～（さ）せないでください"
       },
       "furigana": {
@@ -9948,7 +9948,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 194,
+        "id": 189,
         "surface": "～といい"
       },
       "furigana": {
@@ -9992,7 +9992,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 199,
+        "id": 194,
         "surface": "～（よ）うとする"
       },
       "furigana": {
@@ -10096,7 +10096,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 202,
+        "id": 197,
         "surface": "ちっとも～ない"
       },
       "furigana": {
@@ -10170,7 +10170,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 240,
+        "id": 235,
         "surface": "召し上がる"
       },
       "furigana": {
@@ -10264,7 +10264,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 208,
+        "id": 203,
         "surface": "～か～ないか"
       },
       "order": [
@@ -10358,7 +10358,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 179,
+        "id": 174,
         "surface": "～ほど～ない"
       },
       "order": [
@@ -10457,7 +10457,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 200,
+        "id": 195,
         "surface": "～ではなく"
       },
       "order": [
@@ -10561,7 +10561,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 187,
+        "id": 182,
         "surface": "～はずだ／はずがない"
       },
       "order": [
@@ -10644,7 +10644,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 209,
+        "id": 204,
         "surface": "～かどうか"
       },
       "passageId": "n4-trial3-p1"
@@ -10670,7 +10670,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 182,
+        "id": 177,
         "surface": "～のうち"
       },
       "passageId": "n4-trial3-p1",
@@ -10722,7 +10722,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 226,
+        "id": 221,
         "surface": "～てくださる"
       },
       "passageId": "n4-trial3-p1"
@@ -10748,7 +10748,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 142,
+        "id": 137,
         "surface": "～ていく"
       },
       "passageId": "n4-trial3-p1",
@@ -12660,7 +12660,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 246,
+        "id": 241,
         "surface": "おる"
       },
       "furigana": {
@@ -12724,7 +12724,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 132,
+        "id": 127,
         "surface": "～ようだ"
       },
       "furigana": {
@@ -12768,7 +12768,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 190,
+        "id": 185,
         "surface": "～ば"
       },
       "furigana": {
@@ -12832,7 +12832,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 140,
+        "id": 135,
         "surface": "禁止助动词「な」"
       },
       "furigana": {
@@ -12881,7 +12881,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 158,
+        "id": 153,
         "surface": "～だす"
       },
       "furigana": {
@@ -12954,7 +12954,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 247,
+        "id": 242,
         "surface": "参る"
       },
       "furigana": {
@@ -13021,7 +13021,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 204,
+        "id": 199,
         "surface": "～ないで"
       },
       "furigana": {
@@ -13065,7 +13065,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 216,
+        "id": 211,
         "surface": "さしあげる"
       },
       "furigana": {
@@ -13244,7 +13244,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 138,
+        "id": 133,
         "surface": "使役被动助动词「される／させられる」"
       },
       "furigana": {
@@ -13308,7 +13308,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 130,
+        "id": 125,
         "surface": "～がる"
       },
       "furigana": {
@@ -13352,7 +13352,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 146,
+        "id": 141,
         "surface": "～もの"
       },
       "furigana": {
@@ -13401,7 +13401,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 147,
+        "id": 142,
         "surface": "～こと"
       },
       "order": [
@@ -13470,7 +13470,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 220,
+        "id": 215,
         "surface": "いただく"
       },
       "order": [
@@ -13538,7 +13538,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 189,
+        "id": 184,
         "surface": "～なら"
       },
       "order": [
@@ -13612,7 +13612,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 214,
+        "id": 209,
         "surface": "～（よ）うと思う"
       },
       "order": [
@@ -13713,7 +13713,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 222,
+        "id": 217,
         "surface": "～ていただく"
       },
       "passageId": "n4-trial4-p1"
@@ -15685,7 +15685,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 133,
+        "id": 128,
         "surface": "～らしい"
       },
       "furigana": {
@@ -15739,7 +15739,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 134,
+        "id": 129,
         "surface": "～みたいだ"
       },
       "furigana": {
@@ -15793,7 +15793,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 165,
+        "id": 160,
         "surface": "～ところ"
       },
       "furigana": {
@@ -15872,7 +15872,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 168,
+        "id": 163,
         "surface": "～ばかり"
       },
       "furigana": {
@@ -15916,7 +15916,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 223,
+        "id": 218,
         "surface": "くれる"
       },
       "furigana": {
@@ -15960,7 +15960,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 235,
+        "id": 230,
         "surface": "おっしゃる"
       },
       "furigana": {
@@ -16037,7 +16037,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 234,
+        "id": 229,
         "surface": "お越しになる"
       },
       "furigana": {
@@ -16158,7 +16158,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 139,
+        "id": 134,
         "surface": "命令助动词「れ／ろ」"
       },
       "furigana": {
@@ -16207,7 +16207,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 262,
+        "id": 257,
         "surface": "ございます"
       },
       "furigana": {
@@ -16268,7 +16268,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 203,
+        "id": 198,
         "surface": "おもに"
       },
       "furigana": {
@@ -16327,7 +16327,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 210,
+        "id": 205,
         "surface": "～だい／かい"
       },
       "furigana": {
@@ -16376,7 +16376,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 250,
+        "id": 245,
         "surface": "存じている"
       },
       "furigana": {
@@ -16465,7 +16465,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 152,
+        "id": 147,
         "surface": "～てもかまわない"
       },
       "order": [
@@ -16522,7 +16522,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 227,
+        "id": 222,
         "surface": "やる（N4-2）"
       },
       "order": [
@@ -16590,7 +16590,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 219,
+        "id": 214,
         "surface": "もらう"
       },
       "order": [
@@ -16664,7 +16664,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 248,
+        "id": 243,
         "surface": "申す"
       },
       "order": [
@@ -16864,7 +16864,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 229,
+        "id": 224,
         "surface": "～てちょうだい"
       },
       "passageId": "n4-trial5-p1"
@@ -21806,7 +21806,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 193,
+        "id": 188,
         "surface": "もし～ても"
       },
       "order": [
@@ -21881,7 +21881,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 156,
+        "id": 151,
         "surface": "～なくてはならない／なくてはいけない"
       },
       "order": [
@@ -21951,7 +21951,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 192,
+        "id": 187,
         "surface": "もし"
       },
       "order": [
@@ -22015,7 +22015,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 215,
+        "id": 210,
         "surface": "あげる"
       },
       "order": [
@@ -22079,7 +22079,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 228,
+        "id": 223,
         "surface": "～てやる"
       },
       "order": [
@@ -22142,7 +22142,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 186,
+        "id": 181,
         "surface": "～たつもりで"
       },
       "order": [
@@ -22216,7 +22216,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 255,
+        "id": 250,
         "surface": "拝借する"
       },
       "order": [
@@ -22274,7 +22274,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 233,
+        "id": 228,
         "surface": "おいでになる"
       },
       "order": [
@@ -22332,7 +22332,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 236,
+        "id": 231,
         "surface": "ご存知です"
       },
       "order": [
@@ -22383,7 +22383,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 237,
+        "id": 232,
         "surface": "ご覧になる"
       },
       "order": [
@@ -22445,7 +22445,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 242,
+        "id": 237,
         "surface": "お／ご～になる"
       },
       "order": [
@@ -22508,7 +22508,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 244,
+        "id": 239,
         "surface": "敬语助动词「れる／られる」"
       },
       "order": [
@@ -22566,7 +22566,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 260,
+        "id": 255,
         "surface": "お／ご～いたす"
       },
       "order": [
@@ -22636,7 +22636,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 241,
+        "id": 236,
         "surface": "お／ご～なさる"
       },
       "order": [
@@ -22705,7 +22705,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 249,
+        "id": 244,
         "surface": "申し上げる"
       },
       "order": [
@@ -22768,7 +22768,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 252,
+        "id": 247,
         "surface": "お目にかかる"
       },
       "order": [
@@ -22832,7 +22832,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 256,
+        "id": 251,
         "surface": "うかがう"
       },
       "order": [
@@ -22890,7 +22890,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 259,
+        "id": 254,
         "surface": "お／ご～する"
       },
       "order": [
@@ -22964,7 +22964,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 245,
+        "id": 240,
         "surface": "いたす"
       },
       "order": [
@@ -23009,7 +23009,7 @@
       },
       "target": {
         "type": "grammar",
-        "id": 254,
+        "id": 249,
         "surface": "拝見する"
       },
       "order": [

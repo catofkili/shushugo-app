@@ -1,6 +1,6 @@
 {
-  "sourceBytes": 1511024,
-  "totalEntries": 769,
+  "sourceBytes": 1481393,
+  "totalEntries": 753,
   "packages": [
     {
       "root": "grammar-foundation",
@@ -10,12 +10,12 @@
         "N3"
       ],
       "levelCounts": {
-        "N5": 127,
+        "N5": 122,
         "N4": 136,
-        "N3": 146
+        "N3": 145
       },
-      "entries": 409,
-      "bytes": 669479
+      "entries": 403,
+      "bytes": 662993
     },
     {
       "root": "grammar-advanced",
@@ -24,11 +24,11 @@
         "N1"
       ],
       "levelCounts": {
-        "N2": 155,
-        "N1": 205
+        "N2": 153,
+        "N1": 197
       },
-      "entries": 360,
-      "bytes": 546682
+      "entries": 350,
+      "bytes": 530867
     }
   ]
 }

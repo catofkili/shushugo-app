@@ -143,7 +143,7 @@ for (const [label, sql] of [
     `${label} 必须原样到对端（本机 ${core.firstValue(left, sql)} / 对端 ${core.firstValue(other, sql)}）`);
 }
 // 语法收藏存的是 grammar.ts 的字符串 id（和网页同一批行）
-assert.equal(core.firstValue(other, "SELECT item_id FROM content_favorites WHERE item_type = 'grammar'"), 'pdf-n5-017');
+assert.equal(core.firstValue(other, "SELECT item_id FROM content_favorites WHERE item_type = 'grammar'"), 'pdf-n5-019');
 const backAgain = new SQL.Database(await exportSyncSnapshot(other));
 assert.equal(core.firstValue(backAgain, 'SELECT COUNT(*) FROM content_favorites'), core.firstValue(left, 'SELECT COUNT(*) FROM content_favorites'),
   '对端再导出一次仍然带着这些行');

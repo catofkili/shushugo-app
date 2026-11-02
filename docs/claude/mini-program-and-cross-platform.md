@@ -944,3 +944,10 @@ Taro smoke、1,900,000 B 预算与重复模块闸门、cloudflare-sync check / t
 - **体积数字要重测**：上文 1,895,372 B（余量 4,628 B）是**改写存在时**的 fresh build。还原后主包字节会略有出入，
   合并进 main 时 `taro-spike-2/reports/**` 本来就要在主目录重建一次，**以那次重建的主包字节为准**；若超过 1,900,000 B，
   先看还有哪些只被分包页面使用的模块能像 `level-starting-point` 那样挪进懒加载块，不要提预算、不要删允许清单。
+
+### 2026-11-02 更正：「HEAD 既有的 Quote 缺口」是我自己加的图标造成的
+
+任务 D 报告里写的 `Lucide 小程序资源缺少导出或生成映射：Quote`、`Quote 未导出` 警告，**不是历史缺口**，是 `2199a6ef`（Claude 在浏览器里看网页版开关，嫌它缺图标，补了 lucide 的 `Quote`）引入的：
+小程序只带 `taro-spike-2/scripts/build-lucide-icons.cjs` 里 `names` 列表那一小撮 lucide 图标，网页直接用整个 lucide，所以网页看着正常，小程序构建会报错、设置页拿到 `undefined` 组件。
+已换成列表里本来就有的 `BookOpenText`（`SettingsPage.tsx`），不动映射文件。
+**教训**：在 `frontend/src` 的共享页面里新用一个 lucide 图标之前，先在 `build-lucide-icons.cjs` 的 `names` 里 grep 它；不在就换一个在的，别为一个图标去扩映射。

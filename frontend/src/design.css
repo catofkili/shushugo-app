@@ -869,6 +869,11 @@
 .fin-reward-block { margin-top: 12px; }
 .fin-reward-layout { display: grid; grid-template-columns: 164px minmax(0, 1fr); align-items: center; gap: 8px; margin-top: 8px; }
 .fin-reward-layout .study-focus-chest-claim { margin: 0; }
+.study-focus-minutes { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; margin: 12px 0 6px; }
+.study-focus-minutes button { display: grid; justify-items: center; min-height: 48px; border: 1px solid var(--ds-line); border-radius: 12px; padding: 5px 2px; background: var(--ds-surface); color: var(--ds-ink); line-height: 1.15; }
+.study-focus-minutes b { font-size: 16px; font-weight: 850; }
+.study-focus-minutes small { font-size: 10px; font-weight: 700; opacity: .72; }
+.study-focus-minutes button.is-on { border-color: var(--ds-primary); background: color-mix(in srgb, var(--ds-primary) 18%, var(--ds-surface)); box-shadow: inset 0 0 0 1px var(--ds-primary); }
 .fin-reward-details { min-width: 0; }
 .fin-reward-heading { margin: 0 0 6px; color: var(--ds-ink-2); font-size: 12px; font-weight: 800; }
 .fin-reward-sources { display: grid; gap: 7px; margin: 0; padding: 0; list-style: none; }

@@ -42,7 +42,7 @@ const dbPaths = [
 // 这里、scripts/bake-seed-db.mjs、src/lib/study-core.ts,外加
 // src/data/furigana_overrides.json 的 version(对不上会直接抛错,是有意的)。
 export const FURIGANA_VERSION = "2026-08-15-kuromoji-ipadic-v5-bunsetsu-morph-v1";
-const GRAMMAR_DATASET_VERSION = "2026-10-20-grammar-connection-examples-v1";
+const GRAMMAR_DATASET_VERSION = "2026-11-02-grammar-tables-v2";
 
 const hasKanji = (text) => /[\u3400-\u9fff々〇]/u.test(String(text ?? ""));
 // 语法标题里有少量为中文解释的括号（例如「基数詞（基数词）」）。
@@ -577,8 +577,10 @@ const main = async () => {
   for (const point of grammarPoints) {
     const title = String(point.title ?? "");
     const tokenizedTitle = maskChineseTitleNotes(title);
-    const result = tokenizeSentence(tokenizer, tokenizedTitle);
-    const override = overrides.grammarTitle.get(`grammarTitle\u0000${point.id}`);
+    // 两道读音题的读音就是答案；按 id 同时禁用自动和人工标题注音，例句照常生成。
+    const readingQuestion = point.id === "pdf-n5-015" || point.id === "pdf-n5-016";
+    const result = readingQuestion ? { annotations: [], unresolved: [] } : tokenizeSentence(tokenizer, tokenizedTitle);
+    const override = readingQuestion ? undefined : overrides.grammarTitle.get(`grammarTitle\u0000${point.id}`);
     const annotations = override ?? result.annotations;
     grammarTitleEntries.push({
       id: String(point.id),

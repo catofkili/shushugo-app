@@ -253,7 +253,8 @@ export function verifyJlptBank(bank, db, expectedLevel = bank?.level, { complete
     }
 
     if (question.target === null) {
-      if (question.kind !== "passage") error(where, "只有 passage 题允许 target 为 null");
+      // 语法题可以考出厂卡未收录的形式；删类目卡后不能挂到无关句型或跨级词条上。
+      if (!['grammar-form', 'sentence-order', 'passage'].includes(question.kind)) error(where, "只有文法题允许 target 为 null");
     } else if (!isRecord(question.target)) {
       error(where, "target 必须是对象或 null");
     } else {
@@ -426,7 +427,7 @@ function runSelfTest() {
   bad("passage id", (b) => { q(b).kind = "passage"; q(b).stem = "[1]"; q(b).target = null; q(b).passageId = "missing"; }, "不在 passages 中");
   bad("passage missing marker", (b) => { q(b).kind = "passage"; q(b).stem = "[1]"; q(b).target = null; q(b).passageId = "p"; b.passages.p = "文章没有空号。"; }, "不含 [1]");
   bad("passage marker missing question", (b) => { b.passages.p = "文章 [2] 有空。"; }, "没有对应题目");
-  bad("null target", (b) => { q(b).target = null; }, "只有 passage 题");
+  bad("vocab null target", (b) => { q(b).kind = "context"; q(b).id = "n3-v-trial1-01"; q(b).target = null; }, "只有文法题");
   bad("word target missing", (b) => { q(b).target = { type: "word", id: 999, surface: "词" }; }, "words.id=999 不存在");
   bad("word target level", (b) => { q(b).target = { type: "word", id: 3, surface: "词" }; }, "jlpt_level=N4");
   bad("grammar target missing", (b) => { q(b).target.id = 999; }, "grammar_points.id=999 不存在");
@@ -463,6 +464,10 @@ function runSelfTest() {
   assert.deepEqual(positive, { errors: [], warnings: [] }, JSON.stringify(positive));
   count += 1;
   const standaloneStar = structuredClone(fixtureBank());
+  const unlinkedGrammar = structuredClone(fixtureBank());
+  q(unlinkedGrammar).target = null;
+  assert.deepEqual(verifyJlptBank(unlinkedGrammar, db, "N3", { completeSets: false }).errors, []);
+  count += 1;
   q(standaloneStar).kind = "sentence-order";
   q(standaloneStar).stem = "＿＿ ★ ＿＿ ＿＿";
   q(standaloneStar).order = [1, 2, 3, 4];

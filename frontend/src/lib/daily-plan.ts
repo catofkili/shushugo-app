@@ -5,7 +5,7 @@ import { newWordEligibleSql, wordLearningScopeSql, wordStartedSql } from "./word
  * 状态就是 studyPreferences 里那几个字段，这里只是把它们按「四种卡 × 新学 / 复习」摆成一个视图，
  * 再配上圆环要的两样东西：各类型的池子（段长按 √池子压缩）和建议下限。
  *
- * 复习那一半：单词走 reviewCap（0 = 自动、-1 = 不限、n = 上限）；另外三种各自一个 cap（0 = 到期全出、-1 = 不出复习）。
+ * 复习那一半：单词走 reviewCap（0 = 自动、-1 = 不限、n = 上限）；另外三种各自一个 cap（0 = 该类默认上限、-1 = 不出复习，见 planReviewLimit）。
  */
 import { defaultStudyPreferences, getEffectiveStudyPreferences, getStudyPreferences, kanaGatePending, saveStudyPreferences, PLAN_REVIEW_DISABLED, REVIEW_CAP_UNLIMITED, type StudyPreferences } from "./studyPreferences";
 import { getJlptPlanStatus } from "./jlpt/status";
@@ -13,7 +13,7 @@ import { levelsInScope, JLPT_TARGETS, type JlptTarget } from "./jlpt/plan";
 import { firstValue, rowsFor, studyDayEnd } from "./study-core";
 import { kanjiCharPool, kanjiCharPriorCount } from "./kanji-char-cards";
 import { confusionCardPool, confusionPriorCount } from "./confusion-cards";
-import { dailyReviewCap } from "./review-budget";
+import { dailyReviewCap, planReviewLimit, type PlanReviewKind } from "./review-budget";
 import { plannedDueCount, WORD_FSRS } from "./fsrs-store";
 import { forecastPriorReleases, priorIdsForEntity, pendingPriorSql, PRIOR_ENTITIES } from "./prior-pacing";
 import { grammarReviewPool, PLAN_GRAMMAR_LEVEL } from "./grammar-quiz";
@@ -90,7 +90,7 @@ const wordReviewCount = (cap: number, due: number) => {
  * 这样圆环、大卡、小路三处是同一个数。今天还没生成时是 0，生成后当天不变。
  */
 const wordExtras = () => getDailyReliefProgress().total + getDailyTailProgress().total;
-const pick = (cap: number, due: number) => (cap === PLAN_REVIEW_DISABLED ? 0 : cap > 0 ? Math.min(cap, due) : due);
+const pick = (cap: number, due: number, kind: PlanReviewKind) => Math.min(due, planReviewLimit(cap, kind));
 
 /** 级别起点只补足旧级别的先验；目标级别以上已有的真实学习/批量认识记录必须从今日剩余量中扣掉。 */
 export const remainingPlanWords = (startingLevel: string, target: JlptTarget, familiarity?: { words: number }, includeOptional?: boolean) => {
@@ -145,13 +145,13 @@ export const dailyPlanView = (prefs: StudyPreferences = getEffectiveStudyPrefere
     },
     {
       kind: "kanji", label: PLAN_LABELS.kanji,
-      fresh: prefs.kanjiDailyGoal, review: pick(prefs.kanjiReviewCap, kanji.due - priorExtras.kanji) + priorExtras.kanji,
+      fresh: prefs.kanjiDailyGoal, review: pick(prefs.kanjiReviewCap, kanji.due - priorExtras.kanji, "kanji") + priorExtras.kanji,
       pool: kanji,
       suggest: { fresh: intakeDays > 0 ? amortize(kanji.unseen, intakeDays) : 0, review: kanji.due }
     },
     {
       kind: "confusion", label: PLAN_LABELS.confusion,
-      fresh: prefs.confusionDailyGoal, review: pick(prefs.confusionReviewCap, confusion.due - priorExtras.confusion) + priorExtras.confusion,
+      fresh: prefs.confusionDailyGoal, review: pick(prefs.confusionReviewCap, confusion.due - priorExtras.confusion, "confusion") + priorExtras.confusion,
       pool: confusion,
       suggest: { fresh: intakeDays > 0 ? amortize(confusion.unseen, intakeDays) : 0, review: confusion.due }
     }
@@ -187,7 +187,7 @@ export const arrangedPlan = (view: DailyPlanView): Record<PlanKind, { fresh: num
 /**
  * 圆环 / 表单改完写回。数字直接落进偏好，不做二次解释；单词复习那段先减掉减负 + 压轴再存。
  * ⚠️ **复习数没动的段，cap 原样留着**：显示的是 min(到期, cap)，不比对就写回等于把「上限 400」
- * 悄悄改成「今天到期的 354」，明天到期多了也只给 354；三种 0（到期全出 / 自动）同理会被写死成一个数。
+ * 悄悄改成「今天到期的 354」，明天到期多了也只给 354；三种 0（默认上限 / 自动）同理会被写死成一个数。
  * ⚠️ **「没动」比的是用户看到的那份 `shown`，不能在这里重算**（2026-09-22 修）：面板的数是挂载时算的，
  * 之后减负 / 压轴生成了、或答题让到期数掉下来了，重算出来的「显示值」就和圆环上那个不一样 ——
  * 于是拖别的段也会把单词 cap 写死成挂载时的到期数（用户的 400 很可能就是这样变成 341 的），

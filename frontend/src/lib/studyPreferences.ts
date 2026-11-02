@@ -40,7 +40,7 @@ export interface StudyPreferences {
    */
   kanjiDailyGoal: number;
   confusionDailyGoal: number;
-  /** 语法 / 汉字 / 辨析的每日复习上限：0 = 到期全出（语法例外：0 = 默认 60，见 grammar-quiz.ts 的 GRAMMAR_DEFAULT_REVIEW_CAP），PLAN_REVIEW_DISABLED = 不出复习（单词那个仍是 reviewCap） */
+  /** 语法 / 汉字 / 辨析的每日复习上限：0 = 该类自动档（随近 14 天学习量，封顶语法 60 / 汉字 40 / 辨析 20，且不超过单词上限，见 review-budget.ts 的 autoPlanReviewCap），PLAN_REVIEW_DISABLED = 不出复习（单词那个仍是 reviewCap） */
   grammarReviewCap: number;
   kanjiReviewCap: number;
   confusionReviewCap: number;
@@ -151,7 +151,7 @@ const clampSmallGoal = (value: number, max: number) => {
 
 /** 复习上限「不限」：当天所有到期的词一次全给，不截断、不顺延 */
 export const REVIEW_CAP_UNLIMITED = -1;
-/** 分类复习额度的专用哨兵；区别于 0（到期全出），用于用户明确把该类计划调到 0。 */
+/** 分类复习额度的专用哨兵；区别于 0（该类默认上限），用于用户明确把该类计划调到 0。 */
 export const PLAN_REVIEW_DISABLED = -1;
 /**
  * 复习上限能存的最大数 = 圆环「今天总量」输入框的上限（DailyPlanPanel）。

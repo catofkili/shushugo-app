@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import type { GrammarPoint } from "../types/grammar";
 import { JapaneseRuby } from "./JapaneseRuby";
 import { GrammarTermHint } from "./GrammarTermHint";
+import { meaningSummary } from "../lib/grammar-meaning";
 import { getGrammarTitleFuriganaByPattern } from "../lib/grammar-title-furigana";
 import { touchEventsEnabled } from "../lib/touch-adapter";
 
@@ -54,7 +55,7 @@ export const GrammarPointPopover = ({ point, targetText, children }: {
           </div>
           <button type="button" className="token-dictionary-close" onClick={close} aria-label="关闭语法解释">×</button>
         </div>
-        <p className="mt-3 text-sm font-semibold leading-6">{point.meaning}</p>
+        <p className="mt-3 text-sm font-semibold leading-6">{meaningSummary(point.meaning)}</p>
         <div className="token-dictionary-conjugation mt-3 rounded-xl p-3">
           <p className="text-[11px] font-bold uppercase tracking-[0.14em] opacity-65">接续</p>
           <p className="jp mt-1 text-sm font-semibold"><GrammarTermHint text={point.structure} /></p>

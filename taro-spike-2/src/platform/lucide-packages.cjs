@@ -56,6 +56,9 @@ module.exports = {
     "account",
     "content-pages"
   ],
+  "bookopentext": [
+    "account"
+  ],
   "download": [
     "account"
   ],

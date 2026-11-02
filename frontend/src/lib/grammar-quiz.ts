@@ -2,8 +2,8 @@ import { getDatabase } from "./database";
 import { parseFurigana } from "./furigana-data";
 import { ensureGrammarProgressInitialized } from "./grammar-api";
 import { firstValue, rowsFor, studyDayEnd, today } from "./study-core";
-import { dailyReviewCap } from "./review-budget";
-import { getDailyGrammarGoal, getEffectiveStudyPreferences, getReviewCapPreference, levelAdvanceNewCap, levelAdvanceTarget, PLAN_REVIEW_DISABLED } from "./studyPreferences";
+import { PLAN_REVIEW_AUTO, planReviewLimit } from "./review-budget";
+import { getDailyGrammarGoal, getEffectiveStudyPreferences, levelAdvanceNewCap, levelAdvanceTarget } from "./studyPreferences";
 import { levelsInScope } from "./jlpt/plan";
 import { planLevelRankSql, priorBaselineSql } from "./plan-level-order";
 import { priorGateSql, priorIdsForEntity, undoPriorValidation, withPriorValidation } from "./prior-pacing";
@@ -37,7 +37,6 @@ import {
 import { patternAttachment } from "./grammar-formation";
 import type { FuriganaAnnotation } from "../types/furigana";
 import type { WordAnswer } from "../types/vocabulary";
-import { grammarQuizQuestion } from "../data/grammar-quiz-questions";
 
 /**
  * 语法考题：题面是日语句型，答案是它的接续 + 中文意。
@@ -72,8 +71,6 @@ const QUEUE_KEY = "grammar" as const;
 
 export interface GrammarQuizCard {
   id: number;
-  /** 题面：逐条人工审过的句型；答案面的完整 pattern 不在这里提前显示。 */
-  question: string;
   /** 答案里的句型原文 */
   pattern: string;
   /** 答案上半：接续 */
@@ -155,14 +152,13 @@ export const grammarReviewEntity = (level: string): FsrsEntity => {
 };
 
 /**
- * 语法没设上限（0）时的每日普通复习上限：单独 60，且不超过单词那个上限。
+ * 语法没设上限（0）时的每日普通复习上限：跟着近 14 天的语法量走，封顶 60，且不超过单词那个上限（review-budget.ts 的 autoPlanReviewCap）。
  * 原来 0 直接沿用单词上限（约 600），一个等级才一百来条，等于不设限；
  * 2026-10-29 多日负荷模拟里首答忘一半的情景，语法复习逐日涨到 113 条/天（daily-load-simulation.test.ts）。
- * 先验额度另算，不受它约束（prior-pacing.ts）。
+ * 10-29 定的是固定 60；11-02 改成随学习量自适应，60 留作封顶。先验额度另算，不受它约束（prior-pacing.ts）。
  */
-export const GRAMMAR_DEFAULT_REVIEW_CAP = 60;
-const grammarReviewLimit = (cap: number, day?: string) =>
-  cap === PLAN_REVIEW_DISABLED ? 0 : cap > 0 ? cap : Math.min(GRAMMAR_DEFAULT_REVIEW_CAP, dailyReviewCap(getReviewCapPreference(), day));
+export const GRAMMAR_DEFAULT_REVIEW_CAP = PLAN_REVIEW_AUTO.grammar.ceiling;
+const grammarReviewLimit = (cap: number, day?: string) => planReviewLimit(cap, "grammar", day);
 
 /** 圆环也读计划使用的同一份池子；先验额度在普通复习上限之外。 */
 export const grammarReviewPool = (level: string, cap?: number) => {
@@ -333,7 +329,6 @@ const rowToCard = (row: Record<string, unknown>): GrammarQuizCard => {
   const exampleFurigana = parseFurigana(row.example_furigana);
   return {
     id: Number(row.id),
-    question: grammarQuizQuestion(pattern),
     pattern,
     formation,
     attachment: patternAttachment(pattern, formation),

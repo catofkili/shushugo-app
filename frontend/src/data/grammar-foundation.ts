@@ -92,7 +92,7 @@ export const grammarFoundationRules: GrammarFoundationRule[] = [
         ]
       }
     ],
-    relatedGrammarIds: ["pdf-n5-001", "pdf-n5-003", "pdf-n5-023", "pdf-n5-029", "pdf-n5-034"]
+    relatedGrammarIds: ["pdf-n5-001", "pdf-n5-003", "pdf-n5-019", "pdf-n5-021", "pdf-n5-022", "pdf-n5-029", "pdf-n5-034"]
   },
   {
     id: "ellipsis-and-question-slots",
@@ -112,7 +112,7 @@ export const grammarFoundationRules: GrammarFoundationRule[] = [
     summary: "动词、い形容词和な形容词／名词谓语会随句法环境改变形式；名词本体、副词、连体词、接续词和助词通常不按这种方式活用。",
     patterns: ["动词：書く→書かない", "い形容词：暑い→暑かった", "名词＋助动成分：学生＋だった", "助词：が／を／に"],
     checkpoints: ["变化发生在词尾或后接成分，不是整句话随意变形。", "先确认词类，才能知道该查哪张活用表。"],
-    relatedGrammarIds: ["pdf-n5-017", "pdf-n5-029", "pdf-n5-034", "pdf-n5-046"]
+    relatedGrammarIds: ["pdf-n5-022", "pdf-n5-029", "pdf-n5-034", "pdf-n5-046"]
   },
   {
     id: "verb-conjugation-system",
@@ -172,7 +172,7 @@ export const grammarFoundationRules: GrammarFoundationRule[] = [
         ]
       }
     ],
-    relatedGrammarIds: ["pdf-n5-017", "pdf-n5-019", "pdf-n5-020", "pdf-n5-021", "pdf-n5-022"]
+    relatedGrammarIds: ["pdf-n5-019", "pdf-n5-020", "pdf-n5-021", "pdf-n5-022"]
   },
   ...verbConjugationRules,
   {
@@ -197,7 +197,7 @@ export const grammarFoundationRules: GrammarFoundationRule[] = [
         ]
       }
     ],
-    relatedGrammarIds: ["pdf-n5-029", "pdf-n5-032", "pdf-n5-034", "pdf-n5-037"]
+    relatedGrammarIds: ["pdf-n5-029", "pdf-n5-034", "pdf-n5-070"]
   },
   {
     id: "forms-are-attachment-points",
@@ -263,7 +263,7 @@ export const grammarFoundationRules: GrammarFoundationRule[] = [
     summary: "指示词、形容词、名词和完整小句都可以放在名词前。先找到最后的中心名词，再向前确定修饰范围。",
     patterns: ["この本", "高い山", "静かな町", "日本語の本", "昨日買った本"],
     checkpoints: ["小句修饰名词时不用ます／です收尾。", "被修饰名词在小句中的角色通常不再用一个额外代词表示。"],
-    relatedGrammarIds: ["pdf-n5-008", "pdf-n5-031", "pdf-n5-036", "pdf-n5-023"]
+    relatedGrammarIds: ["pdf-n5-008", "pdf-n5-031", "pdf-n5-036", "pdf-n5-021"]
   },
   {
     id: "subordinate-clause-form",
@@ -273,7 +273,7 @@ export const grammarFoundationRules: GrammarFoundationRule[] = [
     summary: "整句即使以です／ます结束，名词修饰、引用、名词化和多数接续结构内部仍使用普通形。礼貌主要落在整句最后，不需要每层都加ます／です。",
     patterns: ["昨日買った本です", "明日行くと思います", "日本語を勉強することは楽しいです"],
     checkpoints: ["先划出小句边界，再判断每个谓语属于哪一层。", "名词、な形容词在某些接续前是否保留だ，要按后项规则判断。"],
-    relatedGrammarIds: ["pdf-n5-023", "pdf-n4-020", "pdf-n4-021", "pdf-n4-086"]
+    relatedGrammarIds: ["pdf-n5-021", "pdf-n5-022", "pdf-n4-020", "pdf-n4-021", "pdf-n4-086"]
   },
   {
     id: "clause-linking-and-scope",
@@ -353,7 +353,7 @@ export const grammarFoundationRules: GrammarFoundationRule[] = [
     summary: "普通体／敬体决定句末对听者是否礼貌；尊敬语抬高动作主体，谦让语压低自己一方。用了です／ます不等于已经正确使用尊敬语或谦让语。",
     patterns: ["普通体：行く", "敬体：行きます", "尊敬：いらっしゃる", "谦让：伺う"],
     checkpoints: ["先确认动作是谁做，再选尊敬或谦让。", "从句常用普通形，但整句最后仍可用敬体。", "礼貌程度还受场合、关系和固定表达影响。"],
-    relatedGrammarIds: ["pdf-n5-023", "pdf-n4-098", "pdf-n4-109", "pdf-n4-111", "pdf-n3-140"]
+    relatedGrammarIds: ["pdf-n5-019", "pdf-n4-098", "pdf-n4-109", "pdf-n4-111"]
   },
 ];
 

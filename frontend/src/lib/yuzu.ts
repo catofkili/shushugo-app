@@ -31,8 +31,9 @@ export const YUZU = {
   /** 加餐,一天一次 */
   encore: 50,
   achievement: 200,
-  /** 每个学习日的专注奖励档位；最后一段可在计划完成时满五分钟领取。 */
+  /** 每个学习日的专注奖励档位（每档 10 分钟，合计 222；单段时长可调，见下面的「格」）；最后一段可在计划完成时满一半时间领取。 */
   focus: [100, 50, 25, 23, 12, 6, 3, 2, 1],
+  /** 10 分钟一段的门槛；其它时长按比例（focusMinimumMs / focusMinimumWords）。 */
   focusMinimumMs: 5 * 60 * 1000,
   focusMinimumWords: 10,
   /** 补签:30 天内第 1/2/3 张,再往后按最后一档 */
@@ -127,30 +128,78 @@ export const yuzuToday = () => {
     .map((row) => ({ kind: String(row.kind), key: String(row.key), amount: Number(row.amount) }));
 };
 
-/** 档位由已到账账本决定，凌晨四点换学习日。零值的 claim 只用于幂等。 */
-export const nextStudyFocusYuzu = (day = today()): number => {
-  const count = firstValue<number>("SELECT COUNT(*) FROM yuzu_ledger WHERE kind = 'focus' AND day = ?", [day], 0);
-  return YUZU.focus[count] ?? 0;
+/**
+ * 专注奖励按「格」记账：5 分钟一格，一天 18 格 = 原来九个 10 分钟档（222 柚子、90 分钟）。
+ * 一段倒计时不管多长，只是占连续的几格，所以单段时长可调，一天的总量和总时长不变。
+ */
+export const FOCUS_SLOT_MINUTES = 5;
+export const DEFAULT_STUDY_FOCUS_MINUTES = 10;
+/** 可选的单段时长（分钟），都是一格的整数倍。 */
+export const STUDY_FOCUS_MINUTES: readonly number[] = [5, 10, 15, 20, 30];
+/** 每格柚子：每 10 分钟一档对半摊给两格，累计四舍五入——10 分钟一段恰好还是 YUZU.focus，总和不变。 */
+const FOCUS_SLOT_YUZU = (() => {
+  const slots: number[] = [];
+  let exact = 0;
+  for (const tier of YUZU.focus) {
+    for (let half = 0; half < 2; half++) {
+      const before = Math.round(exact);
+      exact += tier / 2;
+      slots.push(Math.round(exact) - before);
+    }
+  }
+  return slots;
+})();
+const slotsPerRound = (minutes: number) => Math.max(1, Math.round(minutes / FOCUS_SLOT_MINUTES));
+const sum = (values: number[]) => values.reduce((total, value) => total + value, 0);
+
+/** 门槛随时长按比例走（每分钟约一个词、至少一半的时间），否则 30 分钟背 10 个词就能领一百多。 */
+export const focusMinimumMs = (minutes: number): number =>
+  Math.ceil(YUZU.focusMinimumMs * minutes / DEFAULT_STUDY_FOCUS_MINUTES / 60_000) * 60_000;
+export const focusMinimumWords = (minutes: number): number =>
+  Math.round(YUZU.focusMinimumWords * minutes / DEFAULT_STUDY_FOCUS_MINUTES);
+
+/** 某个时长从头领起，每一段依次是多少柚子（开场说明用）。 */
+export const focusRoundRewards = (minutes: number): number[] => {
+  const size = slotsPerRound(minutes);
+  const rounds: number[] = [];
+  for (let at = 0; at < FOCUS_SLOT_YUZU.length; at += size) rounds.push(sum(FOCUS_SLOT_YUZU.slice(at, at + size)));
+  while (rounds.length && !rounds[rounds.length - 1]) rounds.pop();
+  return rounds;
 };
 
-/** 专注窗口至少 5 分钟且背过 10 个词，才能从休息页或每日完成宝箱领取。 */
-export const claimStudyFocusYuzu = (windowId: string): number => {
+/** 今天已经付到第几格。新账 `日:sN` 一行一格；旧账 `日:N` 是第 N 个 10 分钟档（= 第 2N-1、2N 格）。 */
+const paidFocusSlots = (day: string): number =>
+  rowsFor("SELECT key FROM yuzu_ledger WHERE kind = 'focus' AND day = ?", [day]).reduce((max, row) => {
+    const tail = String(row.key).split(":").pop() ?? "";
+    const slot = tail.startsWith("s") ? Number(tail.slice(1)) : Number(tail) * 2;
+    return Number.isFinite(slot) ? Math.max(max, slot) : max;
+  }, 0);
+
+/** 下一段（该时长）能领多少：已到账的格数决定，凌晨四点换学习日。 */
+export const nextStudyFocusYuzu = (day = today(), minutes = DEFAULT_STUDY_FOCUS_MINUTES): number => {
+  const paid = paidFocusSlots(day);
+  return sum(FOCUS_SLOT_YUZU.slice(paid, paid + slotsPerRound(minutes)));
+};
+
+/** 专注窗口达到该时长的门槛（一半时间、背够词数），才能从休息页或每日完成宝箱领取。 */
+export const claimStudyFocusYuzu = (windowId: string, minutes = DEFAULT_STUDY_FOCUS_MINUTES): number => {
   ensureYuzuScale();
   const window = rowsFor(`SELECT completed_at FROM study_focus_windows
     WHERE id = ? AND kind = 'focus' AND active_ms >= ? AND words >= ?`,
-  [windowId, YUZU.focusMinimumMs, YUZU.focusMinimumWords])[0];
+  [windowId, focusMinimumMs(minutes), focusMinimumWords(minutes)])[0];
   if (!window || firstValue<number>("SELECT COUNT(*) FROM yuzu_ledger WHERE kind = 'focus_claim' AND key = ?", [windowId], 0)) return 0;
   const day = studyDate(new Date(Number(window.completed_at)));
   const db = getDatabase();
   let reward = 0;
   db.run("SAVEPOINT claim_study_focus");
   try {
-    const tier = firstValue<number>("SELECT COUNT(*) FROM yuzu_ledger WHERE kind = 'focus' AND day = ?", [day], 0);
-    const amount = YUZU.focus[tier] ?? 0;
-    if (amount > 0) {
-      // 日 + 档位是稳定身份。两台设备同时领同一档时同步取并集，不会翻倍。
-      db.run("INSERT OR IGNORE INTO yuzu_ledger(kind, key, amount, day) VALUES ('focus', ?, ?, ?)", [`${day}:${tier + 1}`, amount, day]);
-      if (firstValue<number>("SELECT changes()", [], 0)) reward = amount;
+    const paid = paidFocusSlots(day);
+    for (let slot = paid; slot < Math.min(paid + slotsPerRound(minutes), FOCUS_SLOT_YUZU.length); slot++) {
+      const amount = FOCUS_SLOT_YUZU[slot];
+      if (amount <= 0) continue;
+      // 日 + 格号是稳定身份。两台设备（哪怕单段时长不同）领到同一格，同步取并集，不会翻倍。
+      db.run("INSERT OR IGNORE INTO yuzu_ledger(kind, key, amount, day) VALUES ('focus', ?, ?, ?)", [`${day}:s${slot + 1}`, amount, day]);
+      if (firstValue<number>("SELECT changes()", [], 0)) reward += amount;
     }
     db.run("INSERT OR IGNORE INTO yuzu_ledger(kind, key, amount, day) VALUES ('focus_claim', ?, 0, ?)", [windowId, day]);
     db.run("RELEASE claim_study_focus");

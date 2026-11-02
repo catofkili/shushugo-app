@@ -2,6 +2,8 @@ import { useEffect, useLayoutEffect, useMemo, useState, type CSSProperties } fro
 import { CheckCircle2, ChevronDown, Layers, PenLine, Search, Star, StickyNote, X, XCircle } from "lucide-react";
 import { FloatingDoodlePen } from "../components/FloatingDoodlePen";
 import { GrammarTermHint } from "../components/GrammarTermHint";
+import { GrammarMeaning } from "../components/GrammarMeaning";
+import { meaningSummary } from "../lib/grammar-meaning";
 import { JapaneseRuby } from "../components/JapaneseRuby";
 import { grammarKeyPointFor } from "../lib/grammar-key-points";
 import { grammarPoints } from "../data/grammar";
@@ -113,7 +115,7 @@ const GrammarExplanation = ({
         </button>
       </div>
       <h2 data-grammar-point-id={point.id} data-grammar-highlight-block="title" className="jp-serif mt-4 text-5xl font-semibold leading-none"><JapaneseRuby text={point.title} furigana={getGrammarTitleFurigana(point.id)} /></h2>
-      <p data-grammar-point-id={point.id} data-grammar-highlight-block="meaning" className="mt-4 text-xl leading-8 text-white/86">{point.meaning}</p>
+      <GrammarMeaning meaning={point.meaning} data-grammar-point-id={point.id} data-grammar-highlight-block="meaning" className="mt-4 text-xl leading-8 text-white/86" />
       <p data-grammar-point-id={point.id} data-grammar-highlight-block="formation" className="jp mt-4 rounded-2xl border border-white/15 bg-[#373b3b] px-3 py-2 text-sm leading-7 text-white/78">
         <GrammarTermHint text={point.connection ?? point.structure} />
       </p>
@@ -454,7 +456,7 @@ export const Library = ({
                     <p className="jp mt-2 text-xs font-semibold leading-5 text-white/45">{formationRules[0]}</p>
                   )}
                   <h3 data-grammar-point-id={point.id} data-grammar-highlight-block="title" className="jp-serif mt-1 text-2xl font-semibold leading-tight"><JapaneseRuby text={point.title} furigana={getGrammarTitleFurigana(point.id)} /></h3>
-                  <p data-grammar-point-id={point.id} data-grammar-highlight-block="meaning" className="mt-2 text-sm font-semibold leading-6 text-white/65">{point.meaning}</p>
+                  <p data-grammar-point-id={point.id} data-grammar-highlight-block="meaning" className="mt-2 text-sm font-semibold leading-6 text-white/65">{meaningSummary(point.meaning)}</p>
                   {/* 第二条接续摆正下方，和上面那条一上一下对着看 ——
                       只有真的分两条规则的卡才有（55/731），见 splitFormationRules。 */}
                   {formationRules[1] && (
