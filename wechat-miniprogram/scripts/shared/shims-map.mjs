@@ -28,7 +28,7 @@ export function createSharedShims(root) {
     [`${data}/grammar_seed`, shim('seed-guard.js')],
     [`${data}/jlpt_meaning_overrides`, shim('seed-guard.js')],
     [`${data}/jlpt_example_overrides`, shim('seed-guard.js')],
-    [`${data}/jlpt_collocation_content`, shim('seed-guard.js')],
+    [`${data}/jlpt_collocation_content`, shim('jlpt-collocations.js')],
     [`${data}/jlpt_level_overrides`, shim('seed-guard.js')],
     [`${data}/kana_reading_fixes`, shim('seed-guard.js')],
     [`${data}/dictionary_supplement_seed`, shim('seed-guard.js')],

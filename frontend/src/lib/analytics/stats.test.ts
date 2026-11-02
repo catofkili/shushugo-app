@@ -28,7 +28,8 @@ beforeEach(() => {
     kana TEXT NOT NULL,
     meaning TEXT NOT NULL,
     pos TEXT NOT NULL,
-    jlpt_level TEXT
+    jlpt_level TEXT,
+    collocation_tier INTEGER
   )`);
   db.run(`CREATE TABLE progress (
     word_id INTEGER PRIMARY KEY,

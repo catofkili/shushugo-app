@@ -9,6 +9,7 @@
 const stores = require('./content-store');
 
 const SOURCES = {
+  jlptCollocations: () => require.async('../features/content/jlpt-collocations.js'),
   questionMeanings: () => require.async('../content/question-meanings.js'),
   kanjiUnitRuntime: () => require.async('../content/kanji-unit-runtime.js'),
   distinctionReviews: () => require.async('../features/content/distinction-reviews.js'),
@@ -21,6 +22,7 @@ const SOURCES = {
 
 // Node 回归没有 require.async；动态 require 只在 Node 分支用，避免微信把同步依赖提进主包。
 const NODE_SOURCES = {
+  jlptCollocations: '../features/content/jlpt-collocations.js',
   questionMeanings: '../content/question-meanings.js',
   kanjiUnitRuntime: '../content/kanji-unit-runtime.js',
   distinctionReviews: '../features/content/distinction-reviews.js',

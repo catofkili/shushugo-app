@@ -63,5 +63,6 @@ await store.saveDatabase();
 fs.writeFileSync(dbPath, Buffer.from('corrupted database'));
 await store.closeDatabase();
 const restored = await store.restoreDatabase();
-assert.equal(Number(restored.exec('SELECT COUNT(*) FROM words')[0].values[0][0]), 10919);
+// 真实启动现在先补 790 条固定搭配；恢复快照必须保留完整的出厂词 + 迁移内容。
+assert.equal(Number(restored.exec('SELECT COUNT(*) FROM words')[0].values[0][0]), 11709);
 console.log(JSON.stringify({ ok: true, dataRoot, source: store.getStatus().source, bytes: fs.statSync(prevPath).size }, null, 2));

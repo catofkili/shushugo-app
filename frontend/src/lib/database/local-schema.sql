@@ -1,3 +1,23 @@
+-- 出厂库/旧备份已有 words 时，CREATE 不补列；ensureUserTables 的 ALTER 负责升级。
+CREATE TABLE IF NOT EXISTS words (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  meaning TEXT NOT NULL,
+  kana TEXT NOT NULL,
+  kanji TEXT NOT NULL,
+  pos TEXT NOT NULL,
+  verb_type TEXT,
+  importance INTEGER NOT NULL DEFAULT 3,
+  shuffle_rank REAL,
+  example_jp TEXT,
+  example_meaning TEXT,
+  jlpt_level TEXT,
+  example_furigana TEXT NOT NULL DEFAULT '',
+  example_tokens TEXT NOT NULL DEFAULT '',
+  example_lemmas TEXT NOT NULL DEFAULT '',
+  sense_key TEXT NOT NULL DEFAULT '',
+  collocation_tier INTEGER
+);
+
 CREATE TABLE IF NOT EXISTS grammar_points (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   pattern TEXT NOT NULL UNIQUE,

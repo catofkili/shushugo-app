@@ -155,6 +155,12 @@ node frontend/scripts/verify-jlpt-collocation-candidates.mjs
 | `0` | `core` |
 | `2` | `optional` |
 
+**现行（任务 D）**：内容 JSON 的 `t` 继续使用上述紧凑编码；迁移将缺省值写成 1，
+在 `words.collocation_tier INTEGER` 保存 0 / 1 / 2。NULL 固定搭配按 common 处理。
+读取只比较该列，正文保持异步加载，主包不再携带运行时身份索引。下面保留任务 A 当时尚未接入队列的历史状态。
+
+#### 历史：任务 A 的边界
+
 0 / 2 只是内容传输编码，不是数据库值或排期权重。消费者通过 `frontend/src/lib/study-core.ts`
 导出的 `collocationTier` 读取；内容类型相应增加 `t?: 0 | 2`。本次仅增加类型和该纯函数，未接入任何调用方。
 `ensureJlptCollocationContent` 仍只插入原有词条字段，**不写 tier 入 DB**，固定搭配内容版本保持
@@ -198,3 +204,65 @@ N3 core ∈ [15, 30]、N2 core ∈ [8, 20]、惯用句提升上限及总数 790�
 读取函数的缺省 common、core、optional 三种情况覆盖在 `seed-migrations.test.ts`；
 原有迁移和内容矩阵测试继续核对条数、迁移幂等及既有计划计数。
 
+
+### 2026-11-02 为什么从索引改成列
+
+任务 C 把索引从 **37,965 → 22,877 B**，仍随 `collocation-tier.ts` 进入主包 `common.js`，
+主包 **1,925,754 B**，超 1,900,000 B 闸门 **25,754 B**。实际小程序 vendored wasm 支持 `json_each`，
+问题是数据进入主包且每个 SQL 片段重复展开；stage1 语句从去过滤对照的 1,920 字符膨胀到
+B 原状 **46,223**、压缩后 **33,453** 字符（97,599 / 70,685 UTF-8 B），不能靠提高预算解决。
+
+任务 D 改成列比较后，捕获同一条真实 stage1 语句为 **2,122 字符 / 2,178 UTF-8 B**；
+首页 total 从 9,994 字符 / 21,238 B 降到 **463 / 471 B**，unseenCount 从 10,293 / 21,537 B
+降到 **762 / 770 B**。辨析/汉字批读仍为 158 / 178 字符，未改成员或分组。
+同依赖 fresh build 对照：A (`5bd94d14`) 主包 **1,898,450 B**，B/C (`ed8eb9b2`) **1,925,740 B**，
+D 当前源码 **1,903,415 B**；C 历史数字比同环境重建多 14 B，分别保留，不能混为同一次构建。
+D 比 C 历史值少 22,339 B，但仍超闸门 **3,415 B**，尚未达到包体目标。
+本次 HEAD `2199a6ef` 另有 Quote 图标映射缺失：资产链在该处失败；上述 D 数字来自继续执行的真实编译及后续测量，
+不是整条构建链通过的证明。候选模块、各分包和未决项见
+[任务 D 验收记录](claude/mini-program-and-cross-platform.md#2026-11-02-任务-d固定搭配档位列与包体复核未完成)。
+
+旧设备：`local-schema.sql` 的建表定义包含 `collocation_tier INTEGER`；已有表/旧整库备份靠
+`ensureUserTables` 的结构指纹变化触发 `ALTER TABLE words ADD COLUMN collocation_tier INTEGER`，
+出厂 `public/nihongo.db` 不重生成。内容版本升为 `2026-10-18-jlpt-collocations-zh-v4`，
+v3 设备会重跑固定搭配迁移，在同一事务里按 `pos='固定搭配' AND kanji=? AND kana=?`
+更新全部 790 条（已存在行也更新，普通词不变）；JSON 缺省 `t` 写成 1。
+`retireRemovedCollocations` 重跑时仍保留已接触卡的熟知状态与历史；内容和版本继续走 `persistContentSoon()` 整库落盘。
+回归覆盖全部 790 条、v3 重跑、旧备份 export/reopen 后 ALTER+补档位、NULL 搭配和同形普通词。
+
+**小程序升级边界**：当前 Taro `database-runtime.weapp.ts` 只调用 `ensureUserTables`，
+`jlpt_collocation_content` 实际仍被 `shims-map.mjs` 映射到 `seed-guard.js`，没有已存在的懒加载迁移路径。
+原生小程序同样以下载出厂库为内容来源，未调用该迁移。仅更新共享生成物会补列，却不会填档位；
+790 条若保持 NULL 就都会按 common 处理，optional 开关因而无法正确过滤。补齐内容分包、入口与回归需要扩大文件白名单，
+本次已向作者确认，尚未获得授权，未擅自修改这些文件，也未宣称双端迁移已完成。
+
+
+#### 任务 D 第二次修正：包体复核通过
+
+上面 **1,903,415 B、超 3,415 B** 为第一次尝试的历史值。
+继续把仅首次设定保存 / 备考重估使用的异步先验事务移入 `lazy/level-starting-point`，
+保留 `level-plan.ts` 原 Promise 接口、幂等签名检查、事务及主包数据库实例。
+fresh build 主包现为 **1,898,552 B**：C 历史 **1,925,754 → 1,898,552 B**，
+比 1,900,000 B 闸门低 **1,448 B**，比历史 1,898,464 B 基线多 88 B。
+新增异步块 5,592 B，全部分包及重复模块闸门通过；档位列的 SQL 长度和 v4 升级路径不变。
+各分包、候选判据、CI 和既存小程序升级/图标边界见
+[第二次修正记录](claude/mini-program-and-cross-platform.md#2026-11-02-任务-d-第二次修正主包回到闸门内)。
+
+
+#### 2026-11-02 第三次修正：小程序真实启动补档位
+
+现行实现补齐了先前记录的启动缺口：网页 ensureSeedData、Taro ensureDatabase、
+原生 ensureDatabase / restoreDatabase 都等待同一个 v4 内容迁移，旧设备按 ALTER + v4 补档位。
+迁移主体和 790 条正文留在异步分包；主包仍只读 words.collocation_tier，NULL 搭配按 common。
+其它汉字/辨析物化也改用参数化批量 VALUES，生产源码与共享生成物的指定 grep 零命中。
+最终 fresh 主包 **1,925,754 → 1,895,372 B**，低于 1,900,000 B 闸门 4,628 B；
+stage1 仍为 **2,122 字符 / 2,178 B**，对照旧索引 33,453 字符 / 70,685 B。
+此前索引 37,965 → 22,877 B、仍超 25,754 B 的历史数字保留。
+新增实际小程序开库升级 / 备份恢复 / 失败重试和批写原子性共 6 项，总计净增 10 项回归。
+细节、分包字节和 CI 结果见
+[第三次修正记录](claude/mini-program-and-cross-platform.md#2026-11-02-任务-d-第三次修正小程序实际执行-v4生产-sql-零残留)。
+
+
+第三次最终 `VITEST_MAX_WORKERS=2 bash scripts/ci-local.sh` 退出 0：前端 1,532 项通过，
+原生全部 32 个脚本、Taro 分包闸门和云同步检查通过；净增 10 项测试，生产 grep 零命中。
+未提交，未运行 dev server 或 GUI；既有 Quote 图标构建警告及真机验收边界见上述记录。

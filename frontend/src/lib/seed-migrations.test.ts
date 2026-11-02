@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import initSqlJs, { type Database } from "sql.js";
@@ -28,7 +28,8 @@ vi.mock("./storage", () => ({
   saveRecoverySnapshot: async () => "test"
 }));
 
-import { collocationTier, ensureSeedData } from "./study-core";
+import content from "../data/jlpt_collocation_content.json";
+import { collocationTier, ensureSeedData, ensureUserTables, JLPT_COLLOCATION_CONTENT_VERSION } from "./study-core";
 
 const SQL = await initSqlJs();
 const seedPath = fileURLToPath(new URL("../../public/nihongo.db", import.meta.url));
@@ -58,6 +59,8 @@ describe("冷启动：所有版本门控的迁移都要能真的跑一遍", () =
     testDb = new SQL.Database(new Uint8Array(readFileSync(seedPath)));
   });
 
+  afterEach(async () => { await vi.dynamicImportSettled(); testDb.close(); });
+
   it("清空全部版本戳后重跑 ensureSeedData 不炸", async () => {
     const words = one("SELECT COUNT(*) FROM words");
     const grammar = one("SELECT COUNT(*) FROM grammar_points");
@@ -78,6 +81,61 @@ describe("冷启动：所有版本门控的迁移都要能真的跑一遍", () =
     expect(one("SELECT COUNT(*) FROM progress p JOIN words w ON w.id = p.word_id WHERE w.pos = '固定搭配'")).toBe(790);
     // 版本戳被重新写回去了 = 迁移确实执行到了收尾，不是提前 return
     expect(one("SELECT COUNT(*) FROM app_state")).toBeGreaterThan(0);
+  });
+
+  it("迁移后全部 790 条的列档位逐条等于内容 JSON，已存在行也更新且不影响同形普通词", async () => {
+    ensureUserTables();
+    const entry = content.entries.find((row) => row.t === 0)!;
+    testDb.run("INSERT INTO words (kanji,kana,meaning,pos,collocation_tier) VALUES (?,?, '已有释义','固定搭配',2)", [entry.surface, entry.kana]);
+    const existingId = one("SELECT last_insert_rowid()");
+    testDb.run("INSERT INTO words (kanji,kana,meaning,pos) VALUES (?,?, '普通词','名词')", [entry.surface, entry.kana]);
+    const normalId = one("SELECT last_insert_rowid()");
+    await ensureSeedData();
+    for (const row of content.entries) {
+      const values = testDb.exec("SELECT collocation_tier FROM words WHERE pos='固定搭配' AND kanji=? AND kana=?", [row.surface, row.kana])[0]?.values;
+      expect(values, `${row.surface}/${row.kana}`).toEqual([[row.t ?? 1]]);
+    }
+    expect(one(`SELECT collocation_tier FROM words WHERE id=${existingId}`)).toBe(0);
+    expect(testDb.exec(`SELECT meaning FROM words WHERE id=${existingId}`)[0].values[0][0]).toBe("已有释义");
+    expect(testDb.exec(`SELECT collocation_tier FROM words WHERE id=${normalId}`)[0].values[0][0]).toBeNull();
+  });
+
+  it("v3 设备升到 v4 会重跑补档位，已退役卡和学习流水保持不变", async () => {
+    await ensureSeedData();
+    testDb.run("UPDATE words SET collocation_tier=NULL");
+    testDb.run("UPDATE app_state SET value='2026-10-18-jlpt-collocations-zh-v3' WHERE key='jlpt_collocation_content_version'");
+    testDb.run("INSERT INTO words (kanji,kana,meaning,pos) VALUES ('時間がかかる','じかんがかかる','旧搭配','固定搭配')");
+    const retired = one("SELECT last_insert_rowid()");
+    testDb.run("INSERT INTO progress (word_id,seen_count,known_forever) VALUES (?,3,1)", [retired]);
+    testDb.run("INSERT INTO reviews (word_id,answer,score_after,reviewed_on) VALUES (?,'know',0,'2026-11-01')", [retired]);
+    const before = one("SELECT COUNT(*) FROM reviews");
+    requestFullSnapshot.mockClear();
+    await ensureSeedData();
+    expect(one("SELECT COUNT(*) FROM words WHERE collocation_tier IS NOT NULL")).toBe(790);
+    expect(testDb.exec("SELECT value FROM app_state WHERE key='jlpt_collocation_content_version'")[0].values[0][0]).toBe(JLPT_COLLOCATION_CONTENT_VERSION);
+    expect(JLPT_COLLOCATION_CONTENT_VERSION).toMatch(/-v4$/);
+    expect(one(`SELECT known_forever FROM progress WHERE word_id=${retired}`)).toBe(1);
+    expect(one(`SELECT seen_count FROM progress WHERE word_id=${retired}`)).toBe(3);
+    expect(one("SELECT COUNT(*) FROM reviews")).toBe(before);
+    expect(requestFullSnapshot).toHaveBeenCalled();
+  });
+
+  it("导入缺列的 v3 旧备份后，启动 ALTER 补列并重跑内容迁移补档位", async () => {
+    await ensureSeedData();
+    testDb.run("UPDATE app_state SET value='2026-10-18-jlpt-collocations-zh-v3' WHERE key='jlpt_collocation_content_version'");
+    testDb.run("ALTER TABLE words DROP COLUMN collocation_tier");
+    // 旧备份携带的是加列前的结构指纹，不是本版本刚写下的指纹。
+    testDb.run("UPDATE app_state SET value='v3-before-collocation-tier' WHERE key='runtime_schema_user_ddl'");
+    const backup = testDb.export();
+    testDb.close();
+    testDb = new SQL.Database(backup);
+    expect(testDb.exec("PRAGMA table_info(words)")[0].values.some((row) => row[1] === "collocation_tier")).toBe(false);
+    await ensureSeedData();
+    expect(testDb.exec("PRAGMA table_info(words)")[0].values.some((row) => row[1] === "collocation_tier")).toBe(true);
+    expect(one("SELECT COUNT(*) FROM words WHERE collocation_tier IS NOT NULL")).toBe(790);
+    expect(one("SELECT COUNT(*) FROM words WHERE collocation_tier=0")).toBe(51);
+    expect(one("SELECT COUNT(*) FROM words WHERE collocation_tier=1")).toBe(309);
+    expect(one("SELECT COUNT(*) FROM words WHERE collocation_tier=2")).toBe(430);
   });
 
   it("连着跑两次是幂等的（第二次应该全部提前 return）", async () => {

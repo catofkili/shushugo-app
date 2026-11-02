@@ -2,15 +2,15 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1925754,
-      "passes": false
+      "bytes": 1895372,
+      "passes": true
     },
     "study": {
       "bytes": 1391785,
       "passes": true
     },
     "account": {
-      "bytes": 326865,
+      "bytes": 326936,
       "passes": true
     },
     "content-pages": {
@@ -42,7 +42,7 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 930493,
+      "bytes": 1118600,
       "passes": true
     },
     "jlpt-bank": {
@@ -1800,12 +1800,12 @@
     },
     {
       "source": "frontend/src/lib/study-core.ts",
-      "bytes": 87499
+      "bytes": 82070
     },
     {
       "source": "taro-spike-2/src/platform/WeappPage.tsx",
-      "bytes": 70944
+      "bytes": 71141
     }
   ],
-  "passes": false
+  "passes": true
 }

@@ -1,7 +1,7 @@
 {
   "expectedTargetCount": 12,
-  "callCount": 23,
-  "resolvedTargetCount": 23,
+  "callCount": 25,
+  "resolvedTargetCount": 25,
   "calls": [
     {
       "caller": "common.js",
@@ -67,6 +67,16 @@
       "caller": "runtime.js",
       "request": "./lazy/sync-merge.js",
       "target": "lazy/sync-merge.js"
+    },
+    {
+      "caller": "runtime.js",
+      "request": "./lazy/jlpt-collocations.js",
+      "target": "lazy/jlpt-collocations.js"
+    },
+    {
+      "caller": "runtime.js",
+      "request": "./lazy/level-starting-point.js",
+      "target": "lazy/level-starting-point.js"
     },
     {
       "caller": "runtime.js",

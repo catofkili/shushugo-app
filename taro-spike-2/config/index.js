@@ -18,6 +18,8 @@ const attributeSelectors = attributeSelectorPlugin.collectAttributeSelectors([
 // 原生小程序那份垫片派发到 globalThis.window——Taro 页面听不到，而且缺 withProgressEventsMuted：
 // 「预算下一张」在小程序里每次都抛 TypeError、全部退回同步路径（2026-09-26 W10 真机对比时查出）。
 shims.delete(path.join(frontend, 'src/lib/progress-events'));
+// 固定搭配是独立 v4 迁移，正文随 lazy/jlpt-collocations 加载，不能替成 seed-guard。
+shims.delete(path.join(frontend, 'src/data/jlpt_collocation_content'));
 const weappEnv = require(path.join(root, 'src/platform/weapp-env.weapp.cjs'));
 const { platformAdapters } = require('./platform-adapters.cjs');
 const previewTimingEnabled = process.env.TARO_PREVIEW_TIMING === '1';

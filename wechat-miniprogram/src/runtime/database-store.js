@@ -111,15 +111,22 @@ async function ensureContentLoaded() {
 
 async function ensureDatabase() {
   await ensureContentLoaded();
-  if (database) return database;
+  if (database) {
+    await require('../shared/web').studyCore.ensureJlptCollocationContent();
+    return database;
+  }
 
   const existing = await loadExistingDatabase();
-  if (existing) return existing.database;
+  if (existing) {
+    await require('../shared/web').studyCore.ensureJlptCollocationContent();
+    return existing.database;
+  }
 
   const seed = await readSeedFromCodePackage() ?? await downloadSeedDatabase();
   database = await openAndValidate(seed);
   ensureStudySchema(database);
   databaseSource = 'seed';
+  await require('../shared/web').studyCore.ensureJlptCollocationContent();
   return database;
 }
 
@@ -137,6 +144,7 @@ async function restoreDatabase() {
   databaseSource = null;
   const existing = await loadExistingDatabase();
   if (!existing) throw new Error('用户目录没有可恢复的数据库');
+  await require('../shared/web').studyCore.ensureJlptCollocationContent();
   return existing.database;
 }
 

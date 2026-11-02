@@ -87,26 +87,6 @@ type DictionarySupplementSeed = {
 
 export { collocationTier, type CollocationTier } from "./collocation-tier";
 
-type JlptCollocationContentEntry = {
-  surface: string;
-  kana: string;
-  level: "N1" | "N2" | "N3" | "N4" | "N5";
-  kind: string;
-  meaning: string;
-  jmdict_ent_seq: number;
-  // Compact content-only tier: absent = common, 0 = core, 2 = optional; never written to DB.
-  t?: 0 | 2;
-};
-
-type JlptCollocationContent = {
-  schema_version: number;
-  status: string;
-  reviewed_at: string;
-  entries: JlptCollocationContentEntry[];
-  removed: { surface: string; kana: string }[];
-};
-
-
 const JLPT_SEED_VERSION = "2026-06-15-jlpt10k";
 // Keep this aligned with the metadata already baked into public/nihongo.db so
 // a fresh install does not replay all 11k metadata updates on first launch.
@@ -135,7 +115,7 @@ export const GRAMMAR_SEED_ROW_COUNT = 769;
 export const DICTIONARY_SUPPLEMENT_VERSION = "2026-08-16-handwritten-v1";
 // v3（2026-10-18）内容和 v2 一样，只为让 retireRemovedCollocations 再跑一次：
 // 起点重估曾把已退役的行 known_forever 清回 0（见 level-plan.ts 重置那段）。
-export const JLPT_COLLOCATION_CONTENT_VERSION = "2026-10-18-jlpt-collocations-zh-v3";
+export const JLPT_COLLOCATION_CONTENT_VERSION = "2026-10-18-jlpt-collocations-zh-v4";
 
 const loadJlptWordSeed = async (): Promise<JlptWordSeedRow[]> => {
   const payload = await import("../data/jlpt_words_seed.json");
@@ -218,11 +198,6 @@ const loadDictionarySupplementSeed = async (): Promise<DictionarySupplementSeed>
   return payload.default as DictionarySupplementSeed;
 };
 
-const loadJlptCollocationContent = async (): Promise<JlptCollocationContent> => {
-  const payload = await import("../data/jlpt_collocation_content.json");
-  return payload.default as JlptCollocationContent;
-};
-
 // 热路径按 Database 实例短路；冷启动再查 app_state 中随库保存的 SQL 指纹。
 // 导入/恢复换库后 WeakSet 不会误认新实例；指纹缺失或 SQL 变化时完整重跑结构迁移。
 const schemaReadyDbs = new WeakSet<object>();
@@ -231,6 +206,7 @@ export const USER_SCHEMA_FINGERPRINT_KEY = "runtime_schema_user_ddl";
 const USER_SCHEMA_DDL = [
   "CREATE TABLE IF NOT EXISTS app_state (key TEXT PRIMARY KEY, value TEXT NOT NULL)",
   ...LOCAL_SCHEMA_SQL.split(";").map((sql) => sql.trim()).filter(Boolean),
+  "ALTER TABLE words ADD COLUMN collocation_tier INTEGER",
   "ALTER TABLE words ADD COLUMN jlpt_level TEXT",
   "ALTER TABLE words ADD COLUMN example_furigana TEXT NOT NULL DEFAULT ''",
   "ALTER TABLE words ADD COLUMN example_tokens TEXT NOT NULL DEFAULT ''",
@@ -280,6 +256,9 @@ export const ensureUserTables = () => {
   }
   db.run("CREATE TABLE IF NOT EXISTS app_state (key TEXT PRIMARY KEY, value TEXT NOT NULL)");
   const wordColumns = rowsFor("PRAGMA table_info(words)").map((row) => String(row.name ?? ""));
+  if (!wordColumns.includes("collocation_tier")) {
+    db.run("ALTER TABLE words ADD COLUMN collocation_tier INTEGER");
+  }
   if (!wordColumns.includes("jlpt_level")) {
     db.run("ALTER TABLE words ADD COLUMN jlpt_level TEXT");
   }
@@ -395,95 +374,11 @@ export const ensureSeedData = async () => {
   await perfTimeAsync("启动 · 内容迁移 / 振假名", ensureFuriganaAnnotations);
 };
 
-// 固定搭配是 JLPT 主词库之后的第二层种子。它独立于 10k JLPT seed 版本，
-// 这样已有用户不会因为基础词库版本已满足而永远收不到新增表达；只按表记＋读音
-// 插入缺失行，不覆盖用户可能自行导入或改写的同形词条。
-const ensureJlptCollocationContent = async () => {
+// 小程序也必须在统计/取卡前等迁移完成；主体和 790 条内容留在懒加载分包。
+export const ensureJlptCollocationContent = async () => {
   if (getState("jlpt_collocation_content_version", "") === JLPT_COLLOCATION_CONTENT_VERSION) return;
-
-  const content = await loadJlptCollocationContent();
-  if (content.status !== "content_ready_runtime_migration" || content.entries.length !== 790) {
-    throw new Error(`固定搭配内容版本无效: status=${content.status} entries=${content.entries.length}`);
-  }
-  if (content.entries.some((entry) => !entry.surface || !entry.kana || !entry.meaning || !/^N[1-5]$/.test(entry.level))) {
-    throw new Error("固定搭配内容存在缺少表记、读音、释义或等级的条目");
-  }
-
-  const db = getDatabase();
-  const existing = new Set(
-    rowsFor("SELECT kanji, kana FROM words")
-      .map((row) => `${String(row.kanji ?? "")}\u0000${String(row.kana ?? "")}`)
-  );
-  const insertedIds: number[] = [];
-  db.run("BEGIN TRANSACTION");
-  try {
-    content.entries.forEach((entry) => {
-      const key = `${entry.surface}\u0000${entry.kana}`;
-      if (existing.has(key)) return;
-      db.run(`
-        INSERT INTO words (
-          meaning, kana, kanji, pos, verb_type, importance,
-          shuffle_rank, example_jp, example_meaning, example_furigana, example_tokens, example_lemmas, jlpt_level
-        )
-        VALUES (?, ?, ?, ?, NULL, ?, ABS(RANDOM()) / 9223372036854775807.0, '', '', '', '', '', ?)
-      `, [entry.meaning, entry.kana, entry.surface, "固定搭配", 3, entry.level]);
-      const newId = firstValue<number>("SELECT last_insert_rowid()", [], 0);
-      if (newId > 0) insertedIds.push(newId);
-      existing.add(key);
-    });
-    insertedIds.forEach((wordId) => db.run("INSERT OR IGNORE INTO progress (word_id) VALUES (?)", [wordId]));
-    retireRemovedCollocations(content.removed);
-    setState("jlpt_collocation_content_version", JLPT_COLLOCATION_CONTENT_VERSION);
-    db.run("COMMIT");
-  } catch (error) {
-    db.run("ROLLBACK");
-    throw error;
-  }
-  persistContentSoon();
-};
-
-// v2（2026-10-10）删掉了 92 条「拼起来就懂」的搭配（写真を撮る、時間がかかる……）。
-// 老库里的这些行分两种处理：
-// - 从没碰过的（progress 没见过，且除 progress 外没有任何表用 word_id 指着它）→ 删行。
-//   带 word_id 的表现查 sqlite_master，不手抄名单 —— 以后加表不用记得回来登记。
-//   progress 走同步触发器留墓碑，别的设备不会把它同步回来。
-// - 碰过的（作答、新词任务、便签、收藏……）→ 不删，标「熟知」退出排期。删行不可逆，
-//   开机自动迁移不许连带删学习记录（见 docs/claude/storage-and-persistence.md 老库重复词条）。
-//   作者实测库里 N5/N4 那 33 条都已作为新词推过（stage1_tasks + seen_count=1），
-//   作者嫌「太显然」的正是它们，所以「留着照常排期」不算解决。
-const retireRemovedCollocations = (removed: { surface: string; kana: string }[]) => {
-  if (!removed.length) return;
-  const db = getDatabase();
-  const columnsOf = (table: string) => rowsFor(`PRAGMA table_info("${table}")`).map((column) => String(column.name));
-  const wordTables = rowsFor("SELECT name FROM sqlite_master WHERE type = 'table' AND name <> 'words'")
-    .map((row) => String(row.name))
-    .filter((table) => columnsOf(table).includes("word_id"));
-  const referencing = wordTables.filter((table) => table !== "progress");
-  // 反向、汉字、拼写各有一张记忆表，只标 progress 的话换个方向还会被排出来。
-  const knowable = wordTables.filter((table) => columnsOf(table).includes("known_forever"));
-  const touched = (id: number) =>
-    // 「标记熟知」不经作答也会写 progress，所以不能只看 seen_count。
-    firstValue<number>(`
-      SELECT COUNT(*) FROM progress WHERE word_id = ? AND (
-        COALESCE(seen_count, 0) > 0 OR COALESCE(known_forever, 0) <> 0
-        OR last_seen_on IS NOT NULL OR mastered_on IS NOT NULL
-      )
-    `, [id], 0) > 0
-    || referencing.some((table) => firstValue<number>(`SELECT COUNT(*) FROM "${table}" WHERE word_id = ?`, [id], 0) > 0)
-    || firstValue<number>("SELECT COUNT(*) FROM content_favorites WHERE item_type = 'word' AND item_id = ?", [String(id)], 0) > 0
-    || getState("current_card", "") === String(id);
-  removed.forEach(({ surface, kana }) => {
-    rowsFor("SELECT id FROM words WHERE kanji = ? AND kana = ? AND pos = '固定搭配'", [surface, kana])
-      .map((row) => Number(row.id))
-      .forEach((id) => {
-        if (touched(id)) {
-          knowable.forEach((table) => db.run(`UPDATE "${table}" SET known_forever = 1 WHERE word_id = ? AND known_forever = 0`, [id]));
-          return;
-        }
-        db.run("DELETE FROM progress WHERE word_id = ?", [id]);
-        db.run("DELETE FROM words WHERE id = ?", [id]);
-      });
-  });
+  const { migrateJlptCollocationContent } = await import(/* webpackMode: "lazy", webpackChunkName: "lazy/jlpt-collocations" */ "./jlpt-collocation-migration");
+  await migrateJlptCollocationContent();
 };
 
 const ensureDictionarySupplementSeed = async () => {

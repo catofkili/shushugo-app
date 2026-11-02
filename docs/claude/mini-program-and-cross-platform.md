@@ -619,3 +619,328 @@ Taro `config/index.js` 的 `sql.js$` → `src/platform/sql-js.weapp.cjs` →
 原生小程序全部检查（含 check-shared、check-parity）通过；Taro smoke/闸门自测通过后在同一主包预算处退出 1，
 后续 cloudflare-sync 检查未由该次脚本执行。首次与构建并行的全量测试有 8 项 5 秒超时，错开构建并降低并发后全部通过，未改测试超时或断言。
 因此不能将本次 `ci-local.sh` 写成全绿，也没有提交、合并、推送、启动 dev server 或打开 GUI；视觉/真机验收按作者安排留给后续。
+
+
+任务 D 的列方案与剩余阻塞见下节；任务 C 上面的历史体积、JSON1 和未通过记录均保留。
+
+## 2026-11-02 任务 D：固定搭配档位列与包体复核（未完成）
+
+### 实现与接口
+
+- `study-core.ts` 的结构指纹 DDL 和实际 ALTER 加入 `words.collocation_tier INTEGER`；
+  `database/local-schema.sql` 补入与出厂表一致的 `CREATE TABLE IF NOT EXISTS words` 定义及此列。
+  CREATE 不会给旧表补列，因此仍必须保留启动 ALTER；出厂 `public/nihongo.db` 没有改动。
+- 内容版本从 v3 升为 `2026-10-18-jlpt-collocations-zh-v4`。插入缺失行之后，在同一事务内对每条内容
+  执行 `UPDATE words SET collocation_tier=? WHERE pos='固定搭配' AND kanji=? AND kana=?`；
+  已有行同样更新，JSON 缺省 `t` 写成 1。仍用 `persistContentSoon()`，没有改成增量落盘。
+- `retireRemovedCollocations` 本身幂等：不存在的行无操作，未碰过的行删除，已接触的行只将未熟知状态标成 1；
+  v3→v4 的新增测试同时断言旧退役卡、seen_count 和 reviews 总数不变。
+- `collocation-tier.ts` 仅比较列；保留 `optionalWordSql(id)` / `newWordTierRankSql(id)` 的名字、参数、返回含义，
+  保留 `collocationTier(entry)` / `CollocationTier` 及 `study-core` 兼容导出。
+  `word-learning-scope.ts` 的三个导出和实现无需改动。排序为 core → 普通词 → common → optional，NULL 搭配为 common。
+  未改 `stage1.ts` / `filters.ts` 的排序结构，也未静态导入正文。
+- 删除 `frontend/src/data/collocation_tier_index.json` 和生成脚本；`build-shared.mjs` 删除专用 INLINE_DATA 许可，
+  已重新生成 `wechat-miniprogram/src/shared/web.js`。原本纯索引身份比对测试改为真实迁移后逐条核对数据库。
+
+### 调用点和列枚举审查
+
+`newWordTierRankSql`：`word-api/stage1.ts` 的 createStage1Tasks / pickStage1Next（两处）及
+`word-api/filters.ts` 的 newWordOrderSql（一处）。`optionalWordSql` 的直接调用方见下表：
+
+| 文件 | 用途 |
+| --- | --- |
+| `word-learning-scope.ts` | 学习范围与新词资格 |
+| `word-api/directions.ts` | 汉字读音产出卡播种 |
+| `spelling/store.ts`、`spelling/study.ts` | 独立拼写播种和内联拼写 |
+
+JS `wordCollocationTier` 原生产调用点为 **0**，仅共享学习口径测试引用。
+对 `colloc-daily/frontend/src` 只读 rg 也只命中函数定义和测试；因此保留同名薄封装，改为读传入行的
+`pos` / `collocation_tier`，不再按表记、读音查索引。该分支旧测试合并时需像本分支一样把档位写入夹具并 SELECT 此列。
+本分支该封装的测试读取使用 `SELECT pos,collocation_tier FROM words WHERE id=?`。
+`collocationIdsSql` 在两 worktree 都无外部调用，已删除；`tierIds` 仅为索引内部实现，同删。
+
+核对 `sync/tables.ts`：`words` 是出厂内容表，**不进云同步快照或用户增量**，本列不需要同步字段登记。
+`exportDatabase` / 整库备份直接 export SQLite 字节，不枚举 words 列；`importDatabase` 仅验证必需表。
+旧备份重开后的结构指纹是旧版，启动 ALTER 会补列；v3 内容标记使 v4 迁移随后补档位。
+`word-list-import.ts` / `materializeCustomWords` 明列插入/更新既有字段，未覆盖该列，新增普通词默认为 NULL。
+`mergeWordInto` 枚举搬迁的是 word_id 从表，不重建 words 行或复制其字段；存活行保留档位，删除行无需额外搬元数据。
+已存在的同身份固定搭配由迁移逐行更新，因此没有新增导入、导出、同步或合并格式。
+
+### 回归和 SQL 长度
+
+新增 5 个具名用例，替换旧索引测试 1 个，净增 4 个：
+
+1. 全部 790 条迁移后逐项等于 JSON，已有行也更新，普通词同形行和既有释义保持。
+2. v3 设备升级 v4 后补档位，退役卡/学习流水保持，要求整库落盘。
+3. v3 旧备份缺列，export/reopen 后启动 ALTER 补列，51 / 309 / 430 三档补齐。
+4. NULL 固定搭配不隐藏，排在普通词之后、optional 之前。
+5. 同形非固定搭配即使列值为 2，也仍按普通词保留和排序。
+
+另修正 `analytics/stats.test.ts`、`spelling/store.test.ts` 两份绕过启动过程的旧夹具，使其包含新列；
+不改断言或 5 秒超时。定向四文件 **48 项通过**。仍保留实际小程序 vendored wasm 的 JSON1 回归，
+但生产代码不再需要它处理档位。首轮全量测试暴露的缺列夹具已修复，最终 CI 结果见下方。
+
+离线独立内存库使用真实出厂 schema + 790 条内容，并用小程序 vendored wasm 捕获
+`getWordStats` / stage1 的真实 SQL（没有读取学习库）。临时测试与库保存在 `/private/tmp/colloc-d/`，
+测试文件已移除，不进入补丁。长度按字符数与 UTF-8 字节分别记录：
+
+| 查询 | C 压缩索引（字符 / B） | D 列比较（字符 / B） |
+| --- | ---: | ---: |
+| stage1 新词选择 | 33,453 / 70,685 | 2,122 / 2,178 |
+| 首页 total | 9,994 / 21,238 | 463 / 471 |
+| 首页 unseenCount | 10,293 / 21,537 | 762 / 770 |
+| 辨析关系批读 | 158 / 158 | 158 / 158 |
+| 汉字候选批读 | 178 / 178 | 178 / 178 |
+
+### Fresh build、B 的增量与剩余 3,415 B
+
+当前实际 HEAD 为 `2199a6ef`，不是任务描述最后列出的 `ed8eb9b2`：最新提交仅给设置开关加 Quote 图标。
+依赖沿用 C 已隔离的当前 worktree node_modules；没有安装依赖、联网、起服务或启动 GUI。
+先按 C 的完整构建链执行，`build-lucide-icons.cjs` 报 `Lucide 小程序资源缺少导出或生成映射：Quote`。
+这是 HEAD 中既存的 Taro 缺口，两处映射文件都在本任务允许清单之外，已向作者请求扩围，未擅改。
+
+为完成包体诊断，继续执行 `taro build --type weapp --no-check`（只跳 Doctor），以及 CSS 拆分/字体、
+恢复内容、语法内容、异步路径、measure-packages、WeChat API 和预算闸门。
+Webpack 实际编译成功，但明确警告 Quote 未导出；预算闸门因主包超限退出 1。因此**整条 build:weapp 并未通过**。
+当前提交级 reports 三份按这次真实编译/测量更新，其余重新生成的 reports 内容相同。
+`src/package-assets/**` / lucide 资源没有留下 tracked 副作用；最终 Git 变更限制在任务允许范围。
+
+另外用 `git archive` 在本 worktree 临时目录分别展开 `5bd94d14`、`ed8eb9b2`，串行 fresh build；
+共用相同隔离依赖，均无 Quote 警告。临时目录已删除，仅保留 `/private/tmp/colloc-d/` 中的对照 sizes/stats。
+A fresh 主包 **1,898,450 B**，B/C fresh **1,925,740 B**，故 B/C 实际增加 **27,290 B**；
+D **1,903,415 B**，比同环境 B/C 减少 **22,325 B**，仍比 A 多 **4,965 B**。
+A 的 common.js 为 **795,156 B**，B/C **822,446 B**，D **800,131 B**，D 相对 A 多 **4,975 B**。
+C 的历史报告为 1,925,754 B，历史基线 1,898,464 B，比本次对应重建均多 14 B，保留历史数字而不改写。
+
+| 包 | C 历史（ed8eb9b2）B | D 当前 B |
+| --- | ---: | ---: |
+| main | 1,925,754 | 1,903,415 |
+| study | 1,391,785 | 1,391,785 |
+| account | 326,865 | 326,936 |
+| content-pages | 1,175,874 | 1,175,874 |
+| features | 588,539 | 588,539 |
+| content | 1,619,465 | 1,619,465 |
+| grammar-foundation | 670,030 | 670,030 |
+| grammar-advanced | 547,231 | 547,231 |
+| grammar-pages | 311,041 | 311,041 |
+| core | 279,124 | 279,124 |
+| lazy | 930,493 | 930,493 |
+| jlpt-bank | 764,759 | 764,759 |
+| jlpt-bank-2 | 585,141 | 585,141 |
+
+主包 **1,903,415 > 1,900,000 B**，超 **3,415 B**；所有分包在预算内，未许可核心/页面重复均为 0。
+没有提高预算、删除允许清单、改闸门或手改 reports。referral smoke 因前置预算失败未在构建链继续，稍后单独执行。
+
+以下是 `common.js` 里最大的可拆分方向；大小为 webpack stats 的模块 size，**不是压缩后可节省字节**，
+不能把这几列直接当作移走后主包会减少的量。没有单个完整模块同时满足「仅由分包页面使用」和「可直接移走」。
+
+| 候选（stats 模块 size） | 可挪部分和需要先解决的问题 |
+| --- | --- |
+| `word-api.ts + 8 modules`，144,158 | 其中 favorites-api 8,512、部分方向/历史入口可与页面拆分；主体含主包排片和进度入口，不能整体懒加载，也不能顺手改 stage1 排序。 |
+| `sync-api.ts + 2 modules`，120,556 | 账号管理/备份等仅在 account 操作时调用的请求函数可拆到分包；登录会话、令牌、并发同步与事件状态必须继续唯一，主外壳静态依赖此模块，不能直接挪整份。 |
+| `storage.ts + local-delta.ts`，90,430 | 备份导入导出辅助路径可评估按 account 操作加载；写盘队列、数据库实例、增量回放和生命周期必须在启动期可靠就绪，不能整模块移动。 |
+| `confusion-subgroups.ts + data`，65,451（纯内容 62,099） | 纯数据可放 features 内容分包；但 confusion-groups 的首页/学习统计也消费它，必须先补 hydration 等待与失败重试，不能直接把默认空表当加载成功。 |
+
+B/C 的主要新增模块 size：索引 10,166、collocation-tier 2,740、word-learning-scope 1,908、
+stage1 相对 A +2,392；D 删除索引、collocation-tier 改为短列比较，但 B 的资格与队列逻辑仍保留。
+本任务没有发现能按作者许可安全直接移动的单个候选，故仅报告，留作者决定下一步拆分。
+
+### 最终验收状态
+
+`VITEST_MAX_WORKERS=2 bash scripts/ci-local.sh` 最终退出 **1**：
+frontend typecheck / lint / **1,526 项通过、27 项跳过** / 生产构建（含 verify-release-db）通过；
+原生小程序 **32 个脚本全部通过**，含 check-shared / check-parity；Taro 的 smoke/闸门自测通过，
+随后在真实主包预算处失败（1,903,415 B，超 3,415 B）。未改测试超时、断言、预算或允许清单。
+CI 因此没有进入 cloudflare-sync；已另行运行该目录的 `npm run check && npm test`，全部通过。
+构建链被预算挡住的 referral smoke 已单独执行并通过。
+
+索引文件名在 `frontend/src` / `taro-spike-2/src` / `wechat-miniprogram/src` 非测试非 vendor 源码中零命中；
+固定搭配 SQL 中的 `json_each` 也零命中。**题目给出的整个目录 grep 不会零命中**：HEAD 原有的
+`kanji-char-cards.ts:98`、`confusion-cards.ts:122,128`、`kanji-unit-scheduler.ts:308,313`
+共 5 处 `json_each(?)` 仍在，生成的 web.js 同样保留它们。这是已有的汉字/辨析 WASM 批处理，
+并非词形索引或内联身份列表；没有为迎合 grep 改名掩盖、改成逐行写入或删掉这些性能路径。
+因此宽泛 grep 这条验收尚未满足，需作者明确是否仅要求移除固定搭配的 json_each 内联。
+
+未决：① 主包仍超 3,415 B，候选需作者决定拆分；② HEAD 的 Quote 图标缺少 Taro 导出/生成映射；
+③ 小程序没有本题预期的内容迁移加载链，需扩大文件白名单才能补齐；④ 上述原有非搭配 json_each 的 grep 范围。
+本任务没有改页面；按本次明确禁令未启动 dev server、微信开发者工具或其他 GUI，未做视觉/真机验收。
+未联网、未提交、未推送、未碰学习页或 colloc-daily 工作树（仅只读核对调用）。
+
+
+### 2026-11-02 任务 D 第二次修正：主包回到闸门内
+
+上面「未完成」和 1,903,415 B 是第一次尝试的实测历史。第二次修正保留既有列迁移和测试，
+只继续处理该次尚余的 3,415 B，没有提高预算、删允许清单或改写历史 reports 来通过闸门。
+
+**可以安全挪走的单个候选**：`level-plan.ts` 原模块 size 为 24,993 B。
+其中 `applyLevelStartingPoint` 的先验计算、候选查询与事务只由 `saveLevelPlanSettings`（首次设定）
+和 `recalibrateLevelStartingPoint`（备考页）触发；调用界面分别位于 `lazy/tabs` / account 和 study，
+不是主包开库、统计、同步恢复 UI 偏好时必须执行的路径。首次设定本身已在懒加载外壳中。
+该函数原来就是 Promise 接口，可以等待独立块就绪后再执行事务，不需要用空数据占位。
+
+将原计算、SQL、事务和全部历史踩坑注释原样移至 `frontend/src/lib/level-starting-point.ts`，
+入口保留 `applyLevelStartingPoint(settings, now = new Date())` 的名称、参数和返回值。
+原来的先验签名检查仍在入口、加载之前；已应用的设置直接返回。
+需要变更时才 `import(/* webpackMode: "lazy", webpackChunkName: "lazy/level-starting-point" */ ...)`，
+并等待原事务完成。失败向原调用方传播，没有吞异常或预先写版本标记。
+数据库、进度事件、FSRS、内容 store、写盘队列仍引用主包原实例，没有新增缓存、接口或配置。
+`stage1.ts` / `filters.ts` 和 `collocation-tier.ts` / `word-learning-scope.ts` 的对外接口保持。
+
+fresh stats 中该模块只出现于 `lazy/level-starting-point`，源码 size **11,199 B**，
+实际异步文件 **5,592 B**；common.js **800,131 → 795,137 B**，
+主包 **1,903,415 → 1,898,552 B**（减少 **4,863 B**）。
+相对 C 历史 1,925,754 B 减少 **27,202 B**；相对 C 历史基线 1,898,464 B 仅多 **88 B**。
+与同环境 A fresh 1,898,450 B 相比多 102 B，两个基线仍分别保留。
+
+| 包 | C 历史 B | D 第一次 B | D 第二次 B |
+| --- | ---: | ---: | ---: |
+| main | 1,925,754 | 1,903,415 | 1,898,552 |
+| study | 1,391,785 | 1,391,785 | 1,391,785 |
+| account | 326,865 | 326,936 | 326,936 |
+| content-pages | 1,175,874 | 1,175,874 | 1,175,874 |
+| features | 588,539 | 588,539 | 588,539 |
+| content | 1,619,465 | 1,619,465 | 1,619,465 |
+| grammar-foundation | 670,030 | 670,030 | 670,030 |
+| grammar-advanced | 547,231 | 547,231 | 547,231 |
+| grammar-pages | 311,041 | 311,041 | 311,041 |
+| core | 279,124 | 279,124 | 279,124 |
+| lazy | 930,493 | 930,493 | 936,085 |
+| jlpt-bank | 764,759 | 764,759 | 764,759 |
+| jlpt-bank-2 | 585,141 | 585,141 | 585,141 |
+
+全部 13 个包均 ≤ 1,900,000 B，主包余量 **1,448 B**。
+核心重复许可仍为原来的 40 项，未许可核心/页面重复、过期许可均为 0；分包总闸门 `passes: true`。
+`require-async-paths.json` 由校验脚本真实更新为 24 个目标，含新块的字面量 require.async 路径；
+CSS/字体、出厂内容恢复、语法分包、WeChat API 和 referral smoke 均通过。
+现有隔离依赖未重装；构建和 Vitest 串行，未改测试超时或断言。
+
+这次仍按 C 的 `taro build --type weapp --no-check` 及完整后处理测量，没有启动服务或 GUI。
+HEAD 的 Quote 图标映射问题和小程序缺内容迁移链是上面已记录的既存问题；
+本次第二次修正未获扩围答复前不修改白名单外的启动/图标文件。
+因此包体通过不能当成完整资产链、双端档位升级或设备验收通过。
+汉字/辨析原有 5 处 JSON 批处理也继续保留，宽泛 grep 的既有例外仍在。
+
+全量 CI 的第二次结果在下方补记。
+
+
+**第二次全量 CI 实测**：`VITEST_MAX_WORKERS=2 bash scripts/ci-local.sh` 退出 **0**，末行「全部通过」。
+frontend check / lint（0 error、51 个既有 warning）/ 184 个测试文件、1,526 项通过、27 项跳过 /
+生产构建（含 verify-release-db）通过；原生小程序 32 个脚本通过，含 check-shared / check-parity；
+Taro smoke、分包闸门和 cloudflare-sync check / test 均通过。
+没有与 Taro 构建并行跑 Vitest。定向起点/分档/迁移的 36 项也通过；新增测试净增仍为 4（seed +3、scope +1）。
+最终 tracked / untracked 源码和生成物都在任务白名单内，未改出厂库、排片排序、预算、允许清单或 colloc-daily。
+未联网、未启动 dev server/GUI、未提交或推送。CI 全绿只证明本节列出的命令，不替代上面的内容加载链、图标和设备验收。
+
+
+### 2026-11-02 任务 D 第三次修正：小程序实际执行 v4，生产 SQL 零残留
+
+本节是现行实现，取代上面第一、二次尝试的「小程序迁移未接通 / 宽泛 grep 未满足」状态；
+历史数字、失败原因和尝试均保留。Round 3 明确要求修复这两项，因此在原文件白名单之外，
+补入完成迁移所必需的 Taro 开库入口 / shim 覆盖，以及原生小程序分包 loader / 开库入口 / 内容生成物。
+这些文件只是接通同一份迁移，没有修改页面、排片排序、预算或允许清单。
+
+**迁移入口与分包**：`study-core.ensureJlptCollocationContent()` 保留版本判断，按需等待
+`lazy/jlpt-collocations` 中的 `jlpt-collocation-migration.ts`。迁移主体、全部踩坑注释和
+`retireRemovedCollocations` 一起搬入该块，仍在单事务内更新 790 条档位、退役旧卡和写 v4 标记，
+成功后继续 `persistContentSoon()`。网页 `ensureSeedData` 仍调用同一个入口。
+Taro `database-runtime.weapp.ts` 在 ALTER / 同步结构之后 **await 此入口才返回数据库**；
+`config/index.js` 仅对固定搭配正文取消 seed-guard 替换，其余种子守卫保持。
+webpack stats 确认正文模块 **133,596 B** 和迁移模块 **8,383 B** 都只位于
+`lazy/jlpt-collocations`；实际异步文件 **182,515 B**，主包没有 790 条内容或索引。
+
+原生 `database-store.js` 在恢复旧库、新装种子、再次取库和 `restoreDatabase` 返回前等待同一迁移。
+`shims-map.mjs` 将此正文换成 `jlpt-collocations.js` loader：按需通过 `shared/content.js`
+的字面量 `require.async('../features/content/jlpt-collocations.js')` 取正文。
+`build-shared.mjs` 从同一 JSON 生成该分包内容；无正文内联许可。
+原生共享打包会将 import() 转成 Promise，不能把 shim 模块本身做成 thenable：
+namespace 会被 Promise 提前展开，随后 `.default` 变成 undefined。
+现用普通 loader 函数，由内容读取器调用并等待；失败由内容 loader 清掉 pending，后续调用可以重试。
+迁移失败不会放行数据库，也不会预写 v4；Taro opening 会清空并允许重试。
+原生持久化本来就写整库，因此它的 requestFullSnapshot shim 仍为空操作，scheduleSave 会完整 export。
+
+**移除其余 5 处 JSON 批处理 SQL**：`kanji-char-cards.ts`、`confusion-cards.ts`、
+`kanji-unit-scheduler.ts` 改用 `database/batch-values.ts` 的参数化多行 VALUES，
+每批最多 700 个绑定参数，低于旧 SQLite 的 999 限制；没有换名字隐藏 JSON 表函数，也没有退回逐行解析。
+SAVEPOINT 使所有批次原子化且可嵌套，后续批失败会撤销之前批次，外层事务仍能继续。
+字符/单元的输入顺序、自增 ID、OR IGNORE、新增量计数和 withoutSyncStamp 保持；
+辨析等级回填用 ON CONFLICT 只更新 level_rank，不覆盖记忆或同步时间戳。
+指定目录的非测试非 vendor 生产源码（含重新生成的 web.js）中，
+`collocation_tier_index|json_each` **零命中**；测试中仅保留实际 wasm 的历史 JSON1 能力断言。
+
+**新增升级与批写回归**（在先前净增 4 项之上再增 6 项，共净增 10 项）：
+
+- `collocation-weapp-upgrade.test.ts`：实际 Taro 开库入口 + 发布用 vendored wasm；
+  v3→v4 逐条匹配 790 条、optional 430 条可过滤且 core 最前、第二次不重复请求整库落盘；
+  缺列旧备份重开后 ALTER + 51 / 309 / 430；写入中途失败回滚且可以重试。
+- `collocation-native-upgrade.test.ts`：在独立 Node 进程调用真实原生开库/恢复入口与生成的 web.js，
+  仅替换文件 I/O 和 WASM 开库适配器，使用同一 vendored wasm，证明分包 loader 不再触发 seed-guard，
+  旧库和旧备份都在返回前补齐 v4 档位。
+- `database/batch-values.test.ts`：跨批顺序 / 返回计数 / 幂等 / 嵌套事务；后批失败时整批回滚，
+  外层事务继续可用，upsert 保留原 ID。另由既有汉字/辨析测试验证实际物化路径。
+
+SQL 长度仍为本节前面记录的列比较结果：stage1 **2,122 字符 / 2,178 B**，
+首页 total **463 / 471 B**、unseenCount **762 / 770 B**；未改 stage1 / filters 的结构。
+`words` 不参与同步，备份按 SQLite 字节导出，不需要追加同步字段；出厂数据库没有改动，
+verify-release-db 继续按出厂库本意校验，未改断言或绕过校验。
+原函数调用点仍见上面的「调用点和列枚举审查」，新迁移入口的生产调用方是
+网页 ensureSeedData、Taro ensureDatabase、原生 ensureDatabase / restoreDatabase。
+colloc-daily 只读核对：仍需保留 wordCollocationTier 薄封装；其测试合并时需要写入并读取列，未改该工作树。
+
+**本次 fresh 构建**：沿用当前 worktree 隔离依赖，`taro build --type weapp --no-check` 后按 C
+顺序完成 CSS / 字体、原样恢复正文、语法分包、async 路径、测量、API、包体和 referral 检查。
+未运行会失败的 Quote 资产生成链，也未将其写成完整 build:weapp 通过；HEAD 既有 Quote 导出缺口仍在，
+编译仍给相同警告，和本次档位迁移无关。构建未留下 package-assets / lucide tracked 副作用。
+以下 reports 由真实 fresh 构建重新生成；25 个 require.async 目标都存在，重复模块许可仍为原来的 40 项。
+
+| 包 | C / ed8eb9b2 历史 B | D 第三次 B |
+| --- | ---: | ---: |
+| main | 1,925,754 | 1,895,372 |
+| study | 1,391,785 | 1,391,785 |
+| account | 326,865 | 326,936 |
+| content-pages | 1,175,874 | 1,175,874 |
+| features | 588,539 | 588,539 |
+| content | 1,619,465 | 1,619,465 |
+| grammar-foundation | 670,030 | 670,030 |
+| grammar-advanced | 547,231 | 547,231 |
+| grammar-pages | 311,041 | 311,041 |
+| core | 279,124 | 279,124 |
+| lazy | 930,493 | 1,118,600 |
+| jlpt-bank | 764,759 | 764,759 |
+| jlpt-bank-2 | 585,141 | 585,141 |
+
+主包 **1,925,754 → 1,895,372 B**，下降 **30,382 B**，比 1,900,000 B 闸门低 **4,628 B**，
+比历史 1,898,464 B 基线低 **3,092 B**。所有分包通过，未许可核心/页面重复、过期许可均为 0。
+本次仅数据和加载路径变更；按作者禁令未起 dev server、未开 GUI、未做视觉/真机验收。
+
+
+第三次 CI 首次执行时 frontend **1,532 项通过、27 项跳过**，随后原生 runtime-sim-smoke
+仍断言启动词数为旧出厂库 10,919，实际因为新接通的内容迁移变成 11,709，因而失败。
+将该处固定预期更新为 **11,709（10,919 + 790）**，仍严格校验恢复词数；没有改超时、
+删除断言、改成范围判断或绕过迁移。这个既有测试文件是实际接通原生迁移所必需的相应更新。
+新增原生升级回归还逐档断言 51 / 309 / 430，避免单纯总数掩盖档位缺失。
+
+
+**第三次最终验收**：`VITEST_MAX_WORKERS=2 bash scripts/ci-local.sh` 退出 **0**，末行「全部通过」。
+frontend check / lint（0 error、51 个既有 warning）/ **187 个文件通过、1,532 项通过、27 项跳过** /
+生产构建（含原样 verify-release-db）通过；原生小程序 32 个脚本全部通过，含 check-shared / check-parity；
+Taro smoke、1,900,000 B 预算与重复模块闸门、cloudflare-sync check / test 全部通过。
+净增测试用例经逐文件计数为 10；生产 grep 零命中，git diff --check 通过。
+全程没有并行跑构建和 Vitest，也没有改超时、删断言、提预算、删允许清单或手改 reports。
+最后仍有的边界仅是 HEAD 既有 Quote 图标构建警告，以及按禁令未做 GUI/真机检查；
+两项退回原因（小程序未迁移、生产 JSON 表函数残留）均已修复并有实测证据。
+所有改动留在当前 worktree，没有提交、推送、合并、启动服务、联网或写入其它工作树。
+
+### 2026-11-02 任务 D 收尾：撤回对 5 处既有 `json_each` 批处理的改写（Claude 审查后还原）
+
+- **起因是验收写得太宽**：任务 D 的验收写成「`frontend/src` 等整个目录里 `json_each` 零命中」，本意只是确认**档位**不再用 `json_each` 内联。
+  Codex 为了满足字面要求，把汉字 / 辨析的 5 处既有 `json_each(?)` 批量写入（`confusion-cards.ts` 两处、`kanji-char-cards.ts` 一处、
+  `kanji-unit-scheduler.ts` 两处）改成 ≤700 绑定的多行 `VALUES`（新增 `database/batch-values.ts`）。
+- **为什么还原**：这 5 处是 10-19 小程序冷启动提速的成果，判据就是「单条语句、不逐条解析」（见上文「冷启动过三五秒才好」一节）。
+  改写后 `kanji_units`（7 列）每批最多 100 行，要拆成几十条语句，在 iPhone 解释执行的 wasm 上没有实测过；辨析的 `UPDATE ... FROM json_each` 也被改成了 UPSERT，语义虽然在现有数据上等价，但没有理由动它。
+  已把这三个文件还原到 `2199a6ef` 的版本，删除 `batch-values.ts` 及其测试；`web.js` 已重新生成，`check-shared` 通过，前端 1530 项、原生小程序 32 个脚本、Taro 闸门自测全部通过。
+  **固定搭配的档位相关 `json_each` / 索引文件仍然零残留**（档位现在是 `words.collocation_tier` 一列）。
+- **教训**：验收的 grep 要限定到「这次引入的符号和文件」，别写成整个目录零命中。否则 worker 会把无关的、有意为之的代码一起改掉来满足字面。
+  那 5 处 `json_each` 是有意保留的，别再以「JSON 表函数残留」为由改它们。
+- **体积数字要重测**：上文 1,895,372 B（余量 4,628 B）是**改写存在时**的 fresh build。还原后主包字节会略有出入，
+  合并进 main 时 `taro-spike-2/reports/**` 本来就要在主目录重建一次，**以那次重建的主包字节为准**；若超过 1,900,000 B，
+  先看还有哪些只被分包页面使用的模块能像 `level-starting-point` 那样挪进懒加载块，不要提预算、不要删允许清单。

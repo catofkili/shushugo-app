@@ -19,7 +19,8 @@
  * 规则：
  *  - 需要平台能力的模块用 SHIMS 表换成小程序自己的实现（库句柄、落盘、权益、正字法数据…），
  *    shim 里对 ../runtime ../core ../data ../vendor 的 require 保持字面量，运行时从 src/shared/ 相对解析。
- *  - 出厂种子（jlpt_words_seed 等）换成一访问就抛错的守卫：内容走下载的 nihongo.db，迁移只在网页跑。
+ *  - 出厂种子（jlpt_words_seed 等）换成一访问就抛错的守卫：内容走下载的 nihongo.db。
+ *    固定搭配是独立版本迁移，正文由 features/content 异步加载，两端启动都必须等待。
  *  - localStorage / window / document 由 scripts/shared/polyfill.js 提供替身（内联在 web.js 顶部）。
  *  - 产物必须提交；`npm run check-shared` 会重新构建一次比对，漂了就拒绝。
  *
@@ -43,8 +44,8 @@ const HEADER = '/* 由 scripts/build-shared.mjs 从 frontend/src 生成，别手
 // The same platform replacements are consumed by the Taro spike's Webpack config.
 const SHIMS = createSharedShims(root);
 // 允许直接打进主包的 src/data JSON（都不大）
-// 固定搭配迁移正文仍走出厂库守卫；三端队列只内联词形、读音、档位小索引。
-const INLINE_DATA = new Set(['english_origins.json', 'kanji_orthography.json', 'collocation_tier_index.json']);
+// 固定搭配档位读取 words.collocation_tier，不把词形清单内联进主包。
+const INLINE_DATA = new Set(['english_origins.json', 'kanji_orthography.json']);
 
 const plugin = {
   name: 'shushugo-shims',
@@ -102,6 +103,7 @@ outputs.set('src/shared/content-store.js', HEADER + fs.readFileSync(shim('conten
 
 // ---- 分包内容 ----
 const jsonModule = (file) => HEADER + 'module.exports = ' + JSON.stringify(JSON.parse(fs.readFileSync(path.join(data, file), 'utf8'))) + ';\n';
+outputs.set('src/features/content/jlpt-collocations.js', jsonModule('jlpt_collocation_content.json'));
 outputs.set('src/content/question-meanings.js', jsonModule('question_meaning_overrides.json'));
 outputs.set('src/content/kanji-unit-runtime.js', jsonModule('kanji_reading_unit_runtime.json'));
 outputs.set('src/content/kanji-reading-usage.js', jsonModule('kanji_reading_usage.json'));

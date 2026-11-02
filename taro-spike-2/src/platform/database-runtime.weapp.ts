@@ -1,7 +1,7 @@
 import config from '../../../wechat-miniprogram/src/config';
 import { readyForPage } from '../../scripts/taro-content.cjs';
 import { downloadFile, readCompressedFile, readFile, removeFile } from '../../../wechat-miniprogram/src/runtime/wx-promise';
-import { ensureUserTables } from '../../../frontend/src/lib/study-core';
+import { ensureJlptCollocationContent, ensureUserTables } from '../../../frontend/src/lib/study-core';
 import { getDatabase, importDatabase } from '../../../frontend/src/lib/database';
 import { getLocalDataRevision, loadDatabase, registerPersistenceLifecycle, saveDatabase } from '../../../frontend/src/lib/storage';
 import { ensureSyncSchema } from '../../../frontend/src/lib/sync/schema';
@@ -77,13 +77,14 @@ export async function ensureDatabase(
       await perfTimeAsync('启动 · 导入出厂库', () => importDatabase(seed!, { validateBackup: true }));
       observer?.onStage?.('database-import', elapsed(started));
     }
-    // Seed-content migrations import web-only catalog modules guarded out of Mini Program bundles.
+    // 其它种子仍走下载库；固定搭配必须在返回数据库前完成独立迁移。
     started = Date.now();
     perfTime('启动 · 用户表结构', ensureUserTables);
     observer?.onStage?.('user-schema', elapsed(started));
     started = Date.now();
     perfTime('启动 · 同步结构', ensureSyncSchema);
     observer?.onStage?.('sync-schema', elapsed(started));
+    await perfTimeAsync('启动 · 固定搭配内容迁移', ensureJlptCollocationContent);
     registerPersistenceLifecycle();
     if (!restored) {
       // 首次装机那次整库写盘（出厂库十几 MB）不让用户等：推迟到页面出来之后。没写成只是下次启动再下一遍出厂库。

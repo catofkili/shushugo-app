@@ -3,7 +3,6 @@ import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import initSqlJs, { type Database } from "sql.js";
 import content from "../data/jlpt_collocation_content.json";
-import tierIndex from "../data/collocation_tier_index.json";
 
 let db: Database;
 let SQL: Awaited<ReturnType<typeof initSqlJs>>;
@@ -58,7 +57,7 @@ describe("固定搭配分档的共享学习口径", () => {
     db.run("UPDATE progress SET known_forever=1");
     for (const [id, tier] of [[CORE, "core"], [COMMON, "common"], [OPTIONAL, "optional"]] as const) {
       const entry = content.entries.find((entry) => entry.level === "N3" && collocationTier(entry) === tier)!;
-      db.run("INSERT INTO words (id,kanji,kana,meaning,pos,jlpt_level,importance,shuffle_rank,example_jp,example_meaning) VALUES (?,?,?,?,'固定搭配','N3',3,0,'','')", [id, entry.surface, entry.kana, entry.meaning]);
+      db.run("INSERT INTO words (id,kanji,kana,meaning,pos,jlpt_level,importance,shuffle_rank,example_jp,example_meaning,collocation_tier) VALUES (?,?,?,?,'固定搭配','N3',3,0,'','',?)", [id, entry.surface, entry.kana, entry.meaning, entry.t ?? 1]);
     }
     db.run("INSERT INTO words (id,kanji,kana,meaning,pos,jlpt_level,importance,shuffle_rank,example_jp,example_meaning) VALUES (?, '通常テスト','つうじょうてすと','普通词','名词','N3',10,0,'','')", [NORMAL]);
     db.run("INSERT INTO progress (word_id) VALUES (?), (?), (?), (?)", [CORE, NORMAL, COMMON, OPTIONAL]);
@@ -85,18 +84,21 @@ describe("固定搭配分档的共享学习口径", () => {
   it("小程序实际 wasm 支持档位集合使用的 json_each", () => {
     expect(firstValue<string>("SELECT json_group_array(value) FROM json_each('[1,2,3]')", [], "")).toBe("[1,2,3]");
   });
-  it("运行时小索引与 A 的全部词形、读音和档位完全相同", () => {
-    expect(tierIndex).toEqual(Object.fromEntries([["core", 0], ["optional", 2]].map(([tier, code]) => [tier,
-      content.entries.filter((entry) => "t" in entry && entry.t === code)
-        .map((entry) => entry.surface === entry.kana ? entry.surface : [entry.surface, entry.kana])
-    ])));
-    for (const entry of content.entries) {
-      expect(wordCollocationTier({ kanji: entry.surface, kana: entry.kana, pos: "固定搭配" })).toBe(collocationTier(entry));
-    }
-    const entry = content.entries.find((entry) => collocationTier(entry) === "optional")!;
-    expect(wordCollocationTier({ kanji: entry.surface, kana: entry.kana, pos: "固定搭配" })).toBe("optional");
-    expect(wordCollocationTier({ kanji: entry.surface, kana: "其它读音", pos: "固定搭配" })).toBe("common");
-    expect(wordCollocationTier({ kanji: entry.surface, kana: entry.kana, pos: "名词" })).toBeNull();
+  it("NULL 固定搭配按 common 排序且不当作 optional 隐藏", () => {
+    db.run("UPDATE words SET collocation_tier=NULL WHERE id=?", [COMMON]);
+    expect(wordCollocationTier(rowsFor("SELECT pos,collocation_tier FROM words WHERE id=?", [COMMON])[0])).toBe("common");
+    createStage1Tasks(today());
+    expect(tasks()).toEqual([CORE, NORMAL, COMMON]);
+    expect(count(newWordEligibleSql())).toBe(3);
+    toggle(true);
+    createStage1Tasks(today());
+    expect(tasks()).toEqual([CORE, NORMAL, COMMON, OPTIONAL]);
+  });
+  it("同形非固定搭配即使列值为 optional 也不隐藏或改变普通词排序", () => {
+    db.run("UPDATE words SET kanji=(SELECT kanji FROM words WHERE id=?), kana=(SELECT kana FROM words WHERE id=?), collocation_tier=2 WHERE id=?", [OPTIONAL, OPTIONAL, NORMAL]);
+    createStage1Tasks(today());
+    expect(tasks()).toEqual([CORE, NORMAL, COMMON]);
+    expect(count(newWordEligibleSql())).toBe(3);
   });
   it("关闭时新词队列不含 optional，core 在高权重普通词之前，common 在其后", () => {
     createStage1Tasks(today());

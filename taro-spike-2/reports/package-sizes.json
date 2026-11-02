@@ -2,8 +2,8 @@
   "limitBytes": 2097152,
   "packages": {
     "main": {
-      "bytes": 1925754,
-      "mib": 1.837,
+      "bytes": 1895372,
+      "mib": 1.808,
       "passes": true
     },
     "study": {
@@ -12,7 +12,7 @@
       "passes": true
     },
     "account": {
-      "bytes": 326865,
+      "bytes": 326936,
       "mib": 0.312,
       "passes": true
     },
@@ -52,8 +52,8 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 930493,
-      "mib": 0.887,
+      "bytes": 1118600,
+      "mib": 1.067,
       "passes": true
     },
     "jlpt-bank": {
@@ -67,7 +67,7 @@
       "passes": true
     }
   },
-  "totalBytes": 11116101,
+  "totalBytes": 11273897,
   "files": [
     {
       "path": "lazy/tabs.js",
@@ -77,7 +77,7 @@
     {
       "path": "common.js",
       "package": "main",
-      "bytes": 822470
+      "bytes": 791835
     },
     {
       "path": "grammar-foundation/grammar.js",
@@ -153,6 +153,11 @@
       "path": "jlpt-bank/jlpt-n1.js",
       "package": "jlpt-bank",
       "bytes": 225596
+    },
+    {
+      "path": "lazy/jlpt-collocations.js",
+      "package": "lazy",
+      "bytes": 182515
     },
     {
       "path": "features/content/kanji-variants.js",
@@ -292,7 +297,7 @@
     {
       "path": "account/settings/index.js",
       "package": "account",
-      "bytes": 31944
+      "bytes": 32015
     },
     {
       "path": "content-pages/assets/brand/item-voice-female-2.png",
@@ -820,6 +825,11 @@
       "bytes": 6869
     },
     {
+      "path": "runtime.js",
+      "package": "main",
+      "bytes": 6796
+    },
+    {
       "path": "study/talk/index.wxss",
       "package": "study",
       "bytes": 6792
@@ -838,11 +848,6 @@
       "path": "content-pages/streak/index.js",
       "package": "content-pages",
       "bytes": 6696
-    },
-    {
-      "path": "runtime.js",
-      "package": "main",
-      "bytes": 6543
     },
     {
       "path": "content-pages/streak/index.wxss",
@@ -998,6 +1003,11 @@
       "path": "study/kana-audio/tsu.aac",
       "package": "study",
       "bytes": 5593
+    },
+    {
+      "path": "lazy/level-starting-point.js",
+      "package": "lazy",
+      "bytes": 5592
     },
     {
       "path": "study/kana-audio/sa.aac",
