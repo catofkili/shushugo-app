@@ -33,6 +33,7 @@ import {
   undoLastGrammarQuizAnswer,
   type GrammarQuizAnswer
 } from "./grammar-quiz";
+import { autoPlanReviewCap, PLAN_REVIEW_AUTO } from "./review-budget";
 import { getStubbornGrammarToday } from "./word-api/stubborn-today";
 import { grammarQuizQuestion, MANUAL_GRAMMAR_QUESTIONS } from "../data/grammar-quiz-questions";
 import { GRAMMAR_SEED_ROW_COUNT, today } from "./study-core";
@@ -71,14 +72,29 @@ describe("语法考题（和单词同一套 FSRS）", () => {
     expect([...patternsByQuestion].filter(([, patterns]) => patterns.length > 1)).toEqual([]);
   });
 
-  it("语法复习上限没设（0）时默认 60，不再沿用单词的约 600", () => {
+  it("语法复习上限没设（0）时走自动档（没历史 = floor），不再沿用单词的约 600", () => {
     grammarReviewPool("N1", 0);
     testDb.run(`UPDATE grammar_progress SET seen_count = 1, fsrs_state = 2, fsrs_stability = 5, fsrs_difficulty = 5,
       fsrs_reps = 1, fsrs_last_review = '2020-01-01T00:00:00.000Z', fsrs_due = '2020-01-06T00:00:00.000Z'`);
     const pool = grammarReviewPool("N1", 0);
     expect(pool.due).toBeGreaterThan(GRAMMAR_DEFAULT_REVIEW_CAP);
-    expect(pool.review).toBe(GRAMMAR_DEFAULT_REVIEW_CAP);
+    expect(pool.review).toBe(PLAN_REVIEW_AUTO.grammar.floor);
     expect(grammarReviewPool("N1", 30).review).toBe(30);
+  });
+
+  it("自动档跟着近 14 天的语法量走：中位数 × 1.5，爆量那天不抬上限，封顶 60", () => {
+    grammarReviewPool("N1", 0);
+    const ids = testDb.exec("SELECT id FROM grammar_points LIMIT 100")[0].values.map((row) => Number(row[0]));
+    const answer = (day: string, n: number) => ids.slice(0, n).forEach((id) =>
+      testDb.run("INSERT INTO grammar_reviews (grammar_id, answer, score_after, reviewed_on) VALUES (?, 'know', 0, ?)", [id, day]));
+    ["2026-11-01", "2026-10-31", "2026-10-30", "2026-10-29"].forEach((day) => answer(day, 24));
+    answer("2026-10-28", 100); // 爆量那天
+    answer("2026-10-01", 100); // 窗口外
+    answer("2026-11-02", 100); // 当天自己不算
+    expect(autoPlanReviewCap("grammar", "2026-11-02")).toBe(36);
+    expect(autoPlanReviewCap("grammar", "2026-12-31")).toBe(PLAN_REVIEW_AUTO.grammar.floor);
+    ["2026-12-01", "2026-12-02", "2026-12-03"].forEach((day) => answer(day, 50));
+    expect(autoPlanReviewCap("grammar", "2026-12-04")).toBe(PLAN_REVIEW_AUTO.grammar.ceiling);
   });
 
   it("复习上限是一天的总量：答掉一条不会从到期池里再补一条", () => {
@@ -93,7 +109,7 @@ describe("语法考题（和单词同一套 FSRS）", () => {
       session = submitGrammarQuizAnswer("N1", session.card.id, "know");
     }
     expect(session.card).toBeNull();
-    expect(seen.size).toBe(GRAMMAR_DEFAULT_REVIEW_CAP);
+    expect(seen.size).toBe(PLAN_REVIEW_AUTO.grammar.floor);
   });
 
   it("prepares the planned grammar examples on page entry without recording answers", () => {

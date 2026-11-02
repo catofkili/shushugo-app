@@ -11,7 +11,7 @@
 
 import { firstValue, rowsFor, getState, setState, today } from "./database/db-utils";
 import { fsrsDueCount } from "./fsrs-store";
-import { MAX_DAILY_REVIEW, REVIEW_CAP_UNLIMITED } from "./studyPreferences";
+import { getReviewCapPreference, MAX_DAILY_REVIEW, PLAN_REVIEW_DISABLED, REVIEW_CAP_UNLIMITED } from "./studyPreferences";
 
 const AUTO_CAP_MIN = 60;
 const AUTO_CAP_MAX = 150;
@@ -120,6 +120,46 @@ export function dailyReviewCap(userCap: number, day = today()): number {
   if (userCap > 0) return Math.min(Math.max(Math.floor(userCap), 1), MAX_DAILY_REVIEW);
   return autoReviewCap(recentReviewAverages(day).avgDailyWords);
 }
+
+/**
+ * 语法 / 汉字 / 辨析没设上限（0）时的自动档：**跟着这个用户自己这一类的学习量走**（2026-11-02，作者定的方向）。
+ * 上限 = 近 14 天有学这一类的日子里，每天答过的条数取中位数 × 1.5，夹在 [floor, ceiling]。
+ * - 为什么要有：汉字 / 辨析原来 0 = 到期全出，和 10-29 之前的语法一样没有天花板（语法 10-28 一天排了 154 条）；
+ *   一个平时每天十几条的人，池子被范围放开 / 种子升版 / 合并撑大那天，当天就整批出。
+ * - 为什么是中位数不是平均：爆量那一天本身不该把之后两周的上限抬上去。
+ * - 为什么乘 1.5：给正常的起伏和新学留余量；上限卡住的部分顺延，下一天还在池子里。连续几天学得多，上限自己会跟上去。
+ * - ceiling：语法 60 是作者 10-29 定的默认上限，保留为封顶；汉字 40 / 辨析 20 是 11-02 按作者真实库
+ *   （近三周汉字每天 14–22 张、辨析 7 张）定的封顶，正常日子碰不到。
+ * - floor：没有历史（新用户、刚开这一类）时给的量，约等于新学额度 5 条 / 天几天后的自然复习量。
+ * 用户自己设了数（> 0）就用用户的，不受 floor / ceiling 约束（作者 10-29 定：用户设的上限优先）。
+ * 先验额度另算，不受它约束（prior-pacing.ts）。
+ */
+export const PLAN_REVIEW_AUTO = {
+  grammar: { table: "grammar_reviews", key: "grammar_id", floor: 20, ceiling: 60 },
+  kanji: { table: "kanji_char_reviews", key: "char", floor: 15, ceiling: 40 },
+  confusion: { table: "confusion_reviews", key: "group_key", floor: 8, ceiling: 20 }
+} as const;
+export type PlanReviewKind = keyof typeof PLAN_REVIEW_AUTO;
+const PLAN_REVIEW_WINDOW_DAYS = 14;
+
+export const autoPlanReviewCap = (kind: PlanReviewKind, day = today()): number => {
+  const { table, key, floor, ceiling } = PLAN_REVIEW_AUTO[kind];
+  const counts = rowsFor(`
+    SELECT COUNT(DISTINCT ${key}) AS n FROM ${table}
+    WHERE reviewed_on < ? AND reviewed_on >= date(?, '-${PLAN_REVIEW_WINDOW_DAYS} day')
+    GROUP BY reviewed_on
+  `, [day, day]).map((row) => Number(row.n)).sort((x, y) => x - y);
+  const median = counts.length ? (counts[(counts.length - 1) >> 1] + counts[counts.length >> 1]) / 2 : 0;
+  return Math.min(Math.max(Math.round(median * 1.5), floor), ceiling);
+};
+
+/**
+ * 语法 / 汉字 / 辨析的普通复习上限，三类一个口径：PLAN_REVIEW_DISABLED = 不出；
+ * 0 = 该类自动档（autoPlanReviewCap），且不超过单词上限；n = 用户自己定的。
+ * 计划（daily-plan）和出题（grammar-quiz / mixed-cards）都从这里取，别各写一份。
+ */
+export const planReviewLimit = (cap: number, kind: PlanReviewKind, day = today()) =>
+  cap === PLAN_REVIEW_DISABLED ? 0 : cap > 0 ? cap : Math.min(autoPlanReviewCap(kind, day), dailyReviewCap(getReviewCapPreference(), day));
 
 /**
  * 疲劳检测：今天答题已不少于 40 个，且最近 20 个的出错率 ≥40% 并比全天
