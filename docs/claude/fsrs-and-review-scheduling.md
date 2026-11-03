@@ -958,6 +958,9 @@ SHUSHUGO_PERSONA_SIM=1 PERSONA_SIM_IDS=self PERSONA_SIM_SEEDS=10 PERSONA_SIM_RAN
   先后被误杀两次（exit 143、`Test timed out`）。整套 `SHUSHUGO_PERSONA_SIM=1 PERSONA_SIM_PARALLEL=4` 一条命令
   在 10 核 / 16 GB 机器上墙钟约 125 分钟（子进程累计约 458 分钟）；内存只剩两三 GB 时别开到 4 以上。
   父进程失败时子进程的 vitest worker 会变成孤儿（cwd 在本 worktree），要手动 kill 再重跑。
+- ⚠️ **11-02 基线的冻结库和原始 summary.json 没保留**（跑在 worktree 的 gitignore 目录里，删 worktree 时一起没了；报告里只有聚合数和冻结库 SHA）。
+  以后新排法要对比，**用同一份新冻结库把现行排法和新排法各跑一遍**，别拿新排法的结果直接比 11-02 那份报告 —— 库已经往前走了，self 的起点不同。
+  长跑的冻结库和输出别只放在要删的 worktree 里：要么跑完先把 summary.json 拷到主目录 `frontend/.local/`，要么删 worktree 前先挪走。
 
 ### 语法复习上限：默认 60，管的是一天的总量（2026-10-29，作者定）
 
