@@ -909,6 +909,56 @@ cd frontend && SHUSHUGO_LOAD_SIM=1 npx vitest run src/lib/daily-load-simulation.
 - 原来有两个 `it.fails`（首答忘一半 / 几乎全忘）：语法普通复习一路涨到每天 113 / 276 条。2026-10-29 当天修掉，现在是正式断言，见下一节。
 - 单词作答走 `submitWordAnswer`。不要为了测试给 `word-api.ts` 的内部函数加 `export`：哪怕只加一个 export，也会让小程序 `web.js` 产物变化，`check-shared` 就红。
 
+### 像人的人设模拟（2026-11-02）
+
+入口在 `frontend/src/lib/persona-sim/persona-load-simulation.test.ts`，人设及统计口径在同目录
+`model.ts`，逐卡驱动在 `simulator.ts`，真实流水标定在 `calibration.ts`。这些文件只供测试，
+生产代码不 import；小程序 `build-shared.mjs` 只从固定入口依赖图打包，不扫描本目录。
+原有多日负荷情景和断言保持原样，人设模拟用于测现行排法的基线，后续新排法应复用相同输入与种子。
+
+```bash
+cd frontend
+# 默认跳过；不启动网页、不联网。以下直接调用本地安装的 Vitest。
+PERSONA_SIM_SMOKE=1 npm_config_offline=true ./node_modules/.bin/vitest run src/lib/persona-sim/persona-load-simulation.test.ts --configLoader runner --no-cache --maxWorkers 1
+# 完整模式：8个人设，默认各20个种子；只读冻结库，不写回。
+SHUSHUGO_PERSONA_SIM=1 npm_config_offline=true ./node_modules/.bin/vitest run src/lib/persona-sim/persona-load-simulation.test.ts --configLoader runner --no-cache --maxWorkers 1
+# 实际长跑宜逐人设分批，每条命令控制在20分钟内；结果会合并成同一份summary。
+SHUSHUGO_PERSONA_SIM=1 PERSONA_SIM_IDS=break PERSONA_SIM_SEEDS=20 npm_config_offline=true ./node_modules/.bin/vitest run src/lib/persona-sim/persona-load-simulation.test.ts --configLoader runner --no-cache --maxWorkers 1
+# 较慢的人设继续细分：1-4、5-8、9-10，最后一段会读取前面的分片生成完整汇总。
+SHUSHUGO_PERSONA_SIM=1 PERSONA_SIM_IDS=self PERSONA_SIM_SEEDS=10 PERSONA_SIM_RANGE=1-2 npm_config_offline=true ./node_modules/.bin/vitest run src/lib/persona-sim/persona-load-simulation.test.ts --configLoader runner --no-cache --maxWorkers 1
+```
+
+- smoke 只跑 `cram`、`break` 各2种子、各10天，另完整复跑两个人设的第1种子并逐字节比较。
+  完整模式按人设分组，每个子进程至多2种子，两个子进程并行；不把四类题拆开，保留共享混合队列。
+  `PERSONA_SIM_IDS` 可选人设，`PERSONA_SIM_SEEDS` 调整完整模式种子数（至少10），
+  `PERSONA_SIM_RANGE` 可在同一完整种子数下只跑某一连续范围（按2种子边界切，self/light可单种子）；
+  `SHUSHUGO_LIVE_DB` 可指定另一份冻结副本。smoke 输出在单独的 `smoke/` 目录，不覆盖完整基线。
+- 预算是人设基准分钟乘σ=0.3对数正态噪声，缺席、固定假期及次日负担反馈都用独立种子流。
+  每张按应用 `SECONDS_PER_CARD` 扣时间；重学也扣，下一张放不进预算就停。
+  选卡/FSRS/流水继续走正式入口，混合轮换交给 `pickMixedNext`；五十音调用
+  `nextKanaStep` / `recordKanaAnswer`，级别提示调用 `answerLevelAdvance`。
+  第三个学习日起的简单词也走 `kana-words` 的选词/评分入口；`KanaPrimer.pickStep` 没有导出，
+  仅其界面内的穿插规则在模拟器照用，保持隔三题、每日最多10词、最多重试一次；掌握后重排当天新词。
+  light 的合成前史建造参数不带进正式人设，临时复习cap会恢复到默认自动档。
+- 复习概率按答前FSRS的R、分题型系数、当天疲劳相乘；新卡、先验首答独立定率，
+  当天重复重学每步0.85。self用近60个完整日的作答数乘标准秒数估计预算，
+  用真实流水重放FSRS标定系数，绝不拿作者边看视频边学的历史用时估计速度。
+  旧记录的模式推断、五十音概率近似、light合成前史和缺席日潜在计划等局限在报告中逐项说明。
+- 每日区分晨间整份队列、实际答题（含重学）、日终到期积压与未验证先验。
+  M1–M6及self的N4语法缺口都保留逐种子/逐日证据，不能把覆盖率写成掌握或通过率，
+  不能把未观察到恢复当作0天，也不能把语法默认上限解释成用户持久偏好被写坏。
+- 完整原始数据是 `frontend/.local/persona-sim/summary.json`（gitignore）；报告是
+  [`docs/audits/2026-11-02-persona-load-baseline.md`](../audits/2026-11-02-persona-load-baseline.md)。
+  输出只含聚合数，不含任何词条或语法原文；冻结库在运行前后校验SHA-256一致。
+  分片及light前史缓存还核对模拟器源码指纹，不能只凭git HEAD复用未提交草稿的旧结果；
+  只改报告生成文字不会重跑模拟，改模拟规则后必须用新指纹把全部种子重跑。
+- ⚠️ **并行数和超时（2026-11-02 实测后补）**：`PERSONA_SIM_PARALLEL`（默认 2 路子进程）、
+  `PERSONA_SIM_CHILD_TIMEOUT_MS`（默认 60 分钟，父进程的子进程计时器和子进程里每个种子的 `it` 超时共用）。
+  原来两处都写死 19 分钟：self 从 73 MB 真实库起步，一个种子 60 天约 20 分钟，4 路并行抢 CPU 更慢，
+  先后被误杀两次（exit 143、`Test timed out`）。整套 `SHUSHUGO_PERSONA_SIM=1 PERSONA_SIM_PARALLEL=4` 一条命令
+  在 10 核 / 16 GB 机器上墙钟约 125 分钟（子进程累计约 458 分钟）；内存只剩两三 GB 时别开到 4 以上。
+  父进程失败时子进程的 vitest worker 会变成孤儿（cwd 在本 worktree），要手动 kill 再重跑。
+
 ### 语法复习上限：默认 60，管的是一天的总量（2026-10-29，作者定）
 
 `grammar-quiz.ts` 的 `GRAMMAR_DEFAULT_REVIEW_CAP = 60`、`grammarReviewLimit`、`planIds`。
