@@ -53,7 +53,8 @@ const session = {
   rotationBefore: 0,
   /** 按作答顺序记的卡种，「上一个」按栈顶分派 —— 四种各有一份互不知道对方的撤销栈 */
   undo: [] as MixedKind[],
-  grammarCanUndo: false
+  grammarCanUndo: false,
+  poolObserved: false
 };
 
 // 语法用哪一级：备考范围（N5 → 目标）整个一起，新条目按计划级别顺推（PLAN_GRAMMAR_LEVEL）。
@@ -68,6 +69,7 @@ export const resetMixedSession = () => {
   session.rotationBefore = 0;
   session.undo = [];
   session.grammarCanUndo = false;
+  session.poolObserved = false;
 };
 
 const otherOfKind = (kind: MixedOtherItem["kind"]): MixedOtherItem | null => {
@@ -108,6 +110,19 @@ const pickOther = (): MixedOtherItem | null => {
  * 单词没了就一直出别的卡，三种都没了才是 null —— 完成只能由这里说。
  */
 export const pickMixedNext = ({ word, afterWord = false }: { word: boolean; afterWord?: boolean }): "word" | MixedOtherItem | null => {
+  // reset 也供经典模式清撤销栈；真正进入混合队列才观测，调用桩留在学习分包。
+  if (!session.poolObserved) {
+    session.poolObserved = true;
+    const db = getDatabase();
+    const level = grammarLevel();
+    void import(/* webpackMode: "lazy", webpackChunkName: "lazy/pool-anomaly" */ "./pool-anomaly")
+      .then(({ observePool }) => {
+        observePool("words", {}, db);
+        observePool("grammar", level, db);
+        observePool("kanji", undefined, db);
+        observePool("confusion", undefined, db);
+      }).catch(() => {});
+  }
   if (afterWord) session.wordsSince += 1;
   if (word && session.wordsSince < MIXED_EVERY) return "word";
   // 到点了就清零，哪怕三种都没了：不清的话之后每答一个单词都要去问一遍三种会话，那是好几条 SQL。

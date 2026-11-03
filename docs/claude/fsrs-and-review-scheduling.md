@@ -1036,7 +1036,241 @@ FSRS 自然到期是平滑、可预测的；一夜之间多出几十条，基本
 - 要拍板：保护档份额（建议一半）。注意 09-18 的模拟结论——**任何有偏好的选法都会结构性饿死一批词**；
   保护档只占一半、只覆盖 7 天内的新词，是为了把这个副作用限制在很小的范围里，落地前要用 `scratchpad/sim.mjs` 那套重跑一遍。
 
-### ③ 待作者拍板：到期量自检、拦截、上报（回答「什么时候算出事」）
+### ③ 简单版已做（2026-11-03）：截断前到期池自检与数字上报
+
+> **同日返工的现行调用与手调口径见本节末「主包零观察入口、偏好签名」增补。**
+> 下列初版调用清单、`manual` 保存选项及「改回仍打标」说明保留为历史；不能再照它们给主包加调用桩。
+
+**本次作者确认的口径优先于下面保留的原设计。** 11-02 起普通复习已经由
+`planReviewLimit` / `dailyReviewCap` 截住，`pool-change-guard.test.ts` 也证明真实出题不会
+超过上限；原设计用「排进计划的普通复习 > 自动档两倍」已经检测不到问题。
+这一版只检测、记录和上报，**不增加任何拦截、不改 due、出题、先验放行或复习上限**。
+隔离档、来源分档以及下文「自动档 × 3」都仍是历史提案，未在本次实现。
+
+#### 现行触发与池子口径
+
+实现是 `frontend/src/lib/pool-anomaly.ts` 的 `checkPoolAnomaly`，由 `observePool` 在学习会话中懒调用。
+每类每学习日只核对一次实际量；同日后续调用只更新明日预测，不再计算实际量、待验证数或阈值。
+学习日仍以本机凌晨四点为界，明天的截止时间使用日历日期推进，不用固定加 24 小时猜边界。
+
+- `actual` = 今天学习日结束前到期、符合当前会话资格的**完整池子**，在普通 cap、顽固词每日闸和先验限速之前统计。
+  包括普通已学卡与全部待验证先验；不是今日任务表、已安排数、放行先验数或页面的待做数。
+- `predicted` = 昨天最后一次会话，按当时同一份资格条件数出的「明天学习日结束前到期的条数」。
+  今天没有对应日期的预测就跳过检查；隔几天回来形成的积压属于正常情况，不补报。
+- 触发必须同时满足：`actual >= 2 * cap`、`actual - predicted >= 30`、当天该类没有手调标记。
+  **永远只认增长**；学完一级、收尾或自然到期量变少均不报。
+- 语法 / 汉字 / 辨析的 `cap` 分别直接取 `autoPlanReviewCap(kind, day)`；单词直接取
+  `autoReviewCap(recentReviewAverages(day).avgDailyWords)`。不用用户设置的固定值、停用值或「不限」，
+  也不拿 `planReviewLimit` 再受单词上限裁剪后的结果代替自动档基线。
+- `pending` = actual 中符合 `pendingPriorSql` 的待验证先验条数，判据仍是有先验基线且没有任何真实流水。
+
+资格不另抄一版：语法用 `grammarReviewEntity(level)`，保留单级 / `PLAN_GRAMMAR_LEVEL` 的实际范围；
+单词用 `WORD_FSRS`、`wordFilterSql` 与 `wordLearningScopeSql`；汉字 / 辨析新增的
+`kanjiCharReviewEntity` / `confusionReviewEntity` 只透出正式 card-log 的 `exclude` 与已见条件。
+汉字仍须能出题，辨析仍排除不可匹配和已掌握组；两者只有新卡按目标等级过滤，已学复习原本没有该限制，诊断也不额外加。
+空 due 的旧卡沿正式会话：单词 / 语法计到期，汉字 / 辨析不计。预测和 actual 使用同一过滤条件、只换截止时间。
+
+#### 设备本地键、手调与合并
+
+`app_state.pool_anomaly` 是一个有界 JSON 对象，只有 `words / grammar / kanji / confusion` 四个槽位：
+
+```json
+{
+  "grammar": {
+    "forecast": { "forDay": "2026-11-04", "due": 127, "merged": false },
+    "checked": "2026-11-03",
+    "reported": "2026-11-03",
+    "manual": "2026-11-02"
+  }
+}
+```
+
+`forecast` 先供今日对账，再替换成明日的最后一次预测；同一 forDay 后写覆盖前写，合并标记从新预测重新计。
+`checked` / `reported` / `manual` 的日期存在值里，不按日期累加键。此键加入 `sync/tables.ts` 的
+`DEVICE_LOCAL_STATE_KEYS`，云快照导出、导入和墓碑处理均沿用现有设备本地键过滤；照常进入本机持久化。
+不能只挡导出：旧快照或整库格式仍可能带着对端的诊断键，导入也必须挡住。
+
+- `saveStudyPreferences` 比较规范化前后的已保存值：各类新学量 / 各类复习上限只标对应类；
+  备考开关、目标、考试类型或考期变化标四类；选学表达开关只标单词。主题、音量、动效、锚点补写、原样保存均不算。
+  同日先改再改回也保留当天标记。`fromLevelPlanSync` 的同步回填不算手调；`enforceKanaGate` 的启动/合并后自动改量显式用 `manual: false`。
+- `saveLevelPlanSettings` 的写入段移到既有 `lazy/level-starting-point` 模块，保留同一个公开入口与原写入顺序，
+  手动保存偏好显式带 `manual: true`；起点 / 熟悉度真正变化时，先验应用入口按受影响类别标记。
+  `recalibrateLevelStartingPoint` 也经同一入口，已经应用过的相同签名不重复标记。
+- `answerLevelAdvance` 有效的往上 / 回补 / 先不加都只标所回答的类；首页自动记「本级收尾完成时刻」不算手调。
+- `mergeDatabaseBytes` 在同一合并事务提交前，给本机现存预测加 `merged: true`，不写 manual，**不抑制上报**。
+  之后生成的新预测是合并后的新基线，merged 重置为 false。诊断模块加载或记录失败都不能阻断设置保存、合并或学习。
+
+#### 调用位置、性能与上报结构
+
+网页与 Taro 都运行同一份 `frontend/src/lib`：`word-api.getWordSession`、
+`grammar-quiz.getGrammarQuizSession`、`mixed-cards.getKanjiCardSession / getConfusionCardSession`。
+混合模式通过 `mixed-session` 转入相同入口；首页 `getWordStats` / `grammarPlanRemaining` /
+`mixedCardCounts` 不触发诊断，不给冷启动追加同步 SQL。各类按实际进入的会话更新自己的预测。
+动态 import 明确标 `webpackMode: "lazy"`、`webpackChunkName: "lazy/pool-anomaly"`，不能省掉注释：
+Taro 默认把没有 lazy 标记的 import() 按 eager 编译，会把检测代码塞进主包。
+原生小程序仅用 `npm run build-shared` 从同源生成 `src/shared/web.js`，不手写业务副本。
+
+同一同步调用栈反复取某类会话会合并成一次观测；回调绑定数据库实例，导入/换库后不会写进新库。
+首次有效对账用一条聚合 SQL 合计 actual、pending 和明日 predicted；后续只多一条预测 COUNT。
+没有逐卡读取内容、没有全库记录搬到 JS 后统计，也没有新增同步启动查询。
+标记模块不静态引用调度模块，避免首次设起点的懒加载环；查询所需模块在实际观测时才取。
+
+直接用 `sync-api.postFeedbackReport`，不进入意见反馈的 pending 队列，不重试、不弹错、不显示 UI。
+先写 `checked`，符合触发时同时写 `reported` 并安排落盘，再异步发送；离线、未登录、HTTP 失败都静默结束。
+服务端仍是 `cloudflare-sync/src/index.ts`，自托管 `selfhost/server.mjs` 加载同一份构建的 Worker，未改服务端：
+
+- `index.ts:464-469` 仅接受四种 kind，且要求 message/platform/app_version/route 为字符串；使用
+  `kind="error"`、`route="pool-anomaly"`，版本与平台放既有 `app_version / platform`。
+- `message` 只装 JSON `{kind, day, actual, predicted, cap, pending, merged, manual:false}`。
+  没有词、语法条目、例句、ID、用户输入、联系人或诊断快照；不调用 `collectDiagnostics`。
+- `index.ts:478-487` 截断 message 到 2000 字并写入原 `feedback_reports`；本载荷远低于上限。
+  网络请求沿用原函数的可选认证，匿名与离线都不能影响学习。
+
+#### 跑法与回归
+
+`pool-anomaly.test.ts` 默认被 Vitest 收集；以出厂库的内存副本、真实评分、设置、会话和导出/合并建立前史，
+只替换本机存储适配和 fetch，绝不改 due。覆盖 10-28 式放开范围的单次纯数字上报、自然到期 / 原有积压、
+间隔三天、各类手调 / 原样保存 / 主题和其他类变动、一级学完三选一、起点重估、完成一级后的骤降、
+最后一次预测、凌晨四点边界、离线 / 未登录、四类合并扩池、用户不限仍取自动 cap，以及设备本地键双向过滤。
+`pool-change-guard.test.ts` 继续禁联网并验证原有上限和先验限速，不能因诊断上报让它抛错。
+
+```sh
+cd frontend
+npx tsc --noEmit -p . && npx vitest run src/lib/pool-anomaly.test.ts src/lib/pool-change-guard.test.ts src/lib/grammar-quiz.test.ts src/lib/prior-pacing.test.ts
+cd ../wechat-miniprogram
+npm run build-shared && npm test
+cd ../taro-spike-2
+npm run build:weapp
+```
+
+以下原设计逐条保留，供追溯 11-02 的判断；与本节现行口径冲突的部分不在本版执行。
+
+#### 2026-11-03 返工：主包零观察入口、偏好签名（现行）
+
+**这一增补取代上面初版的低层会话调用、偏好保存打标和逐次作答更新预测说明，原记录不删除。**
+初版虽然把检测正文放进 `lazy/pool-anomaly`，五个动态 import 调用桩仍留在 `common.js`；
+主包达到 **1,900,906 B**，超过 1,900,000 B 闸门。HEAD 提交 `21bacd76` 的报告为 **1,899,888 B**，
+只剩 112 B，不能用「正文已懒加载」代替主包实测。
+
+**现行观察入口只有两处，网页和 Taro 共用同一份源码：**
+
+| 入口 | 何时观察、范围 | Taro 构建归属 |
+| --- | --- | --- |
+| `lib/mixed-session.ts` 的 `pickMixedNext` | `resetMixedSession` 后第一次真正进入混合队列，对四类各调一次 `observePool`；后续选卡不重复调用。单词传 `{}`，是正式 stage1 计划的范围：已开始的复习不按目标等级硬过滤；语法传实际用于 `getGrammarQuizSession` 的 `grammarLevel()`；汉字 / 辨析沿正式复习资格 | `lazy/tabs.js`，属于 `lazy` 分包；不是主包，也不是名为 `study` 的分包 |
+| `pages/GrammarQuiz.tsx` 的 `[level]` effect | 进入或切到某一级时，只观察该级 grammar；答题、撤销和加餐不因此重复观察 | `lazy/tabs.js`，同属 `lazy` 分包 |
+
+这两处在修改前先查过 webpack stats，构建后还须复核；检测正文仍在 `lazy/pool-anomaly.js`。
+`grammar-quiz.ts`、`mixed-cards.ts` 的两处、`word-api.ts`、`studyPreferences.ts` 中原来的五个动态调用全部移除。
+`resetMixedSession` 在经典模式也会清撤销栈，所以只清观察标记，不能在那里直接观察。
+首页角标和这些底层会话函数均不再触发诊断，冷启动没有新增诊断 COUNT。
+
+**已接受的覆盖缺口：经典（非混合）单词模式不会触发单词到期池检查，也不会写单词预测。**
+本次明确不改 `WordStudy.tsx`，不能为了补这个缺口把调用塞回主包的 `getWordSession`。
+汉字 / 辨析的底层函数也不单独触发，四类由混合会话开场统一观察；单级语法另由语法页面覆盖。
+预测以最后一次会话开场为准，长会话中连续作答不再更新预测；要取作答后的新基线须重新进入会话。
+
+**手调改为预测签名比较。** `forecast.signature` 是按固定字段顺序取值后 `JSON.stringify` 的字符串，
+读取 `getStudyPreferences()` 已保存、规范化的值；不读 `getEffectiveStudyPreferences()` 的动态额度。
+因此学完一级、考后轻量期等覆盖层造成的自然降速，不会仅因有效额度变化被误记成手调。
+
+| 签名范围 | 字段（顺序固定） |
+| --- | --- |
+| 四类共享 | `jlptPlanEnabled`、`jlptTarget`、`planExamKind`、`jlptExamDate` |
+| 单词追加 | `dailyGoal`、`reviewCap`、`includeOptionalExpressions` |
+| 语法追加 | `grammarDailyGoal`、`grammarReviewCap` |
+| 汉字追加 | `kanjiDailyGoal`、`kanjiReviewCap` |
+| 辨析追加 | `confusionDailyGoal`、`confusionReviewCap` |
+
+同一天第一次检查，若预测日期、`forecast.scope` 与当前会话相符，而签名不同，就把该类记为当天手调，跳过上报，
+同时照常写新签名的明日预测。旧版本预测缺签名也跳过一次，不拿未知偏好状态做对账。
+主题、音量、动效、计划起算日期 `jlptPlanStartedOn`、其他类的独立额度不在本类签名内。
+签名只进设备本地诊断状态，不进入反馈载荷；`forecast.scope` 的同范围比较继续保留。
+
+**签名方案的明确边界**：检查前改新学量再改回，最终签名相同，照常检查并可能上报；不再保留初版的「曾改过」事件历史。
+它也不能区分手动、自动假名闸或云端偏好回填：相关保存值确实变了就同样跳过该类；仅合并学习数据、偏好未变时，
+仍照常上报且带 `merged: true`。四类合并扩池回归因此保持目标和偏好一致，只改变先验数据，避免把两种语义混在一起。
+
+`saveStudyPreferences` 的 `manual` 选项与 `markPoolPreferenceChange` 均已删除；
+`studyPreferences.ts`、`kana-progress.ts` 恢复到 HEAD，`level-starting-point.ts` 的保存调用不再传 `manual`。
+换起点、起点重估、一级学完三选一的 `markPoolManual` 保留，仍在学习分包；
+`SETTINGS_KEYS` 继续由 `level-plan.ts` 唯一导出，先验保存复用它，不能再抄字段表。
+为给主包留出余量，既有异步 `saveLevelPlanSettings` 的规范化与写入一起留在 `lazy/level-starting-point`；
+熟悉度归一化、考期默认、原样保存保留起算日期、实际先验起点计算和持久化顺序沿用原逻辑。
+
+**回归入口与夹具更正**：`pool-anomaly.test.ts` 经真实 `mixed-session` 开场触发四类，
+语法单级入口渲染真实 `GrammarQuiz` 并执行挂载 effect（Node 没有 DOM，只替换计时和音频预取）。
+不再假定直接调用 `getGrammarQuizSession` 会自动观察。同范围撑大夹具按审查意见，预测时暂时把 N5/N4 先验 due 挪远，
+第二天原样放回；这只改内存测试库，生产自检仍不修改 due。上面初版「测试绝不改 due」的笼统表述以此增补为准。
+另保留自然到期、隔三天、手调、只改主题、降速、断网 / 未登录、换范围、四类合并、03:59 边界和首页角标等场景，
+并新增断言经典 / 底层会话不触发、同一次混合开场四类各一次、单级语法只检查 grammar。
+
+**本次主包实测与闸门：**
+
+| 状态 | main.bytes | 相对 1,900,000 B 闸门 |
+| --- | ---: | ---: |
+| HEAD `21bacd76` 已提交报告 | 1,899,888 | 余 112 |
+| 返工前已有实现 | 1,900,906 | 超 906 |
+| 移除五处调用后的第一次重建 | 1,900,157 | 超 157 |
+| 规范化段也移入已有先验分包后的最终重建 | **1,899,722** | **余 278** |
+
+最终比 HEAD 小 **166 B**，比返工前小 **1,184 B**；所有分包及重复模块闸门 `passes: true`。
+从 dist 实际文件重新求和与报告相等；`common.js` 中 `observePool`、`markPoolManual`、
+`markPoolPreferenceChange` 和指向检测块 650 的 `.e(650)` 均为零。
+检测模块只在 `lazy/pool-anomaly.js`，两个观察入口只在 `lazy/tabs.js`；
+起点手调在 `lazy/level-starting-point.js`，一级学完手调在 `lazy/tabs.js`。
+没有增加预算或改允许清单；构建只改变四份报告：`package-gates.json`、`package-sizes.json`、
+`require-async-paths.json`、`webpack-stats.json`，Taro 的 `src/` 没有残留资产副作用。
+
+**机器验收（2026-11-03）：** `npx tsc --noEmit -p .` 通过；作者指定的四个 Vitest 文件，
+加上因保存代码迁移和开场状态变动补跑的 `level-plan.test.ts`、`mixed-session.test.ts`，
+共 **6 文件、109 项通过、1 项既有 TODO**。原生 `npm run build-shared` 已重建 `src/shared/web.js`，
+`npm test` 的 **32 个脚本全部通过**，包含共享包新鲜度和双端配对检查；Taro `npm test` 也通过。
+三个禁止变更的文件执行 `git diff HEAD --quiet -- frontend/src/lib/studyPreferences.ts frontend/src/lib/kana-progress.ts frontend/src/pages/WordStudy.tsx`
+退出 0；`git diff --check` 通过。
+
+| `pool-anomaly.test.ts` 用例 | 结果 |
+| --- | --- |
+| 10-28 式同范围撑大，N5/N4 先验 due 挪远后放回 | 一次纯统计上报，重复进入不再报 |
+| 自然到期且原有积压超过两倍自动档 | 不报 |
+| 昨天单级 N3、今天混合计划范围 | 范围不同，不比不报 |
+| 单级语法页面进入同级 | 只检查 grammar，至多报一次 |
+| 隔三天没有打开 | 无当日预测，不报 |
+| 改备考目标 | 签名不同，不报 |
+| 改本类新学量 | 签名不同，不报 |
+| 改本类复习上限 | 签名不同，不报 |
+| 改考期 | 签名不同，不报 |
+| 改备考开关 | 签名不同，不报 |
+| 改考试类型 | 签名不同，不报 |
+| 只改主题 | 仍报语法异常 |
+| 只改其他类新学量 | 仍报语法异常 |
+| 原样保存偏好 | 仍报语法异常 |
+| 改新学量再改回 | 签名相同，照常检查并上报 |
+| 原样保存计划、只改语法熟悉度 | 前者不打标，后者仅标语法 |
+| 真实首答触发起点重估及随后改自报起点 | 四类手调标记保留，跳过上报 |
+| 自动假名闸 | 保存处不打标，观测时只跳过单词，语法仍检查 |
+| 一级学完往上 / 回补 / 先不加 | 只标所回答的类 |
+| 高强度用户学完一级 | 同范围、同偏好下池子确实下降，不报 |
+| 作答后重新进入混合会话、同日重复进入 | 预测更新，actual 四类各只 COUNT 一次 |
+| 首页角标 | 无诊断 COUNT、无诊断状态写入 |
+| 经典单词和共享底层会话，随后进入混合 | 前者不观察，后者四类各一次 |
+| 本机 03:59 | 仍归前一学习日，截止为凌晨四点 |
+| 断网抛错 | 调用方正常，当日记已报且不重试 |
+| 未登录响应 | 调用方正常，当日记已报且不重试 |
+| 同偏好下四类合并扩池、用户单词不限 | 四类均报 merged=true，仍用自动 cap，本地键双向隔离 |
+
+**环境与未验收边界：** 原样 `npm run build:weapp` 复现仓库已记录的 Taro Doctor
+`system-configuration` NULL object panic。最终使用 package.json 中同一条完整构建链，
+只给 Taro 编译追加 `--no-check`；资产、CSS、异步内容、API、测量、包体 / 重复模块与 referral 检查均实际通过。
+没有改 package.json。独立网页端口 5278 被 `listen EPERM` 拒绝，微信开发者工具 `cli open` 也在初始化监听时
+被同样限制拒绝；实际页面、窄屏视觉及开发者工具运行尚未验收，5173 未连接或刷新。
+反馈请求在测试中被替换，只核对了客户端载荷和现有服务端校验，没有向生产发送报告。
+
+收尾 `git add` 被文件权限阻止：Git 元数据位于主仓库的 `.git/worktrees/pool-anomaly`，
+创建 `index.lock` 返回 `Operation not permitted`，所以未提交、合回 main 或删除 worktree。
+验收基于本 worktree 的 HEAD `21bacd76` 加本次改动；当时 main 领先两个提交，且主目录
+`WordStudy.tsx` 有另一会话的未提交改动，均未写入或切换。本次产物不能充当已合入 main 后的验收。
+
+#### 11-02 原始设计（保留）
 
 - **只认「涨」，不认「跌」**（作者 11-02 原话的意思）：平时强度低、某天**没手动调**却突然变高 → 触发。
   反过来**降速不是异常**：高强度用户学完一级、快完成计划时自然降下来，绝不报。
@@ -1051,6 +1285,10 @@ FSRS 自然到期是平滑、可预测的；一夜之间多出几十条，基本
   来源分布（有无真实作答、先验、合并）、版本号、当天的手调标记。不发学习内容。每类每天最多一条。
 - 最后一道死保险：每类每天普通复习不超过「自动档上限 × 3」，用户自己设的数除外。自检漏了也不会再出一天一百多条。
 - 要拍板：自动上报能不能接受（只发数字）；阈值 2 倍 / 30 条（我拍的，应拿作者真实库按天回放校准，看过去三个月会误报几次）。
+
+- **预测带会话范围（Claude 审查时补，2026-11-03）**：`forecast.scope` 记下写预测的会话范围（语法是级别参数，单词是会话筛选项的 JSON，汉字 / 辨析为空），
+  第二天只拿**同一范围**的池子比。原因：筛选会话、单级语法的池子比计划池小得多，昨天只练 N3、今天开混合计划，池子差几十条是正常的，不比就会每天误报。
+  代价：「调用点把范围参数从 A 改成 B」这类代码改动（10-28 正是这种）运行时抓不到——那一类归 ④ 的 CI 断言管；③ 抓的是同一范围里池子被数据路径（种子、先验、合并）一夜撑大。
 
 ### ④ 已做（2026-11-02）：CI 里先挡（最便宜、最早）
 

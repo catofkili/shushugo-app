@@ -3,6 +3,7 @@ import { ComboBadge } from "../components/ComboBadge";
 import { playKnow, playDontKnow } from "../lib/zoo-sounds";
 import { triggerMemoryHaptic } from "../lib/haptics";
 import { getStudyPreferences } from "../lib/studyPreferences";
+import { getDatabase } from "../lib/database";
 import { ArrowLeft, ListOrdered, Plus, Undo2 } from "lucide-react";
 import type { JLPTLevel } from "../types/grammar";
 import { GrammarCard } from "../features/grammar-quiz/GrammarCard";
@@ -52,6 +53,9 @@ export const GrammarQuiz = ({ initialLevel, onBack }: GrammarQuizProps) => {
 
   useEffect(() => {
     setSession(getGrammarQuizSession(level));
+    const db = getDatabase();
+    void import(/* webpackMode: "lazy", webpackChunkName: "lazy/pool-anomaly" */ "../lib/pool-anomaly")
+      .then(({ observePool }) => observePool("grammar", level, db)).catch(() => {});
     void prefetchExamples(grammarAudioPlan(level));
     setRevealed(false);
     setShowRanking(false);

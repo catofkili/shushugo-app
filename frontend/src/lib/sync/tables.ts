@@ -189,6 +189,8 @@ export const DEVICE_LOCAL_STATE_KEYS = new Set([
   "last_answer",
   // 到期弹窗是设备本地的已读状态；同步后不能让另一台设备错过提醒。
   "level_trial_expiry_noticed",
+  // 到期池预测、手调、已检查/已报及合并来源都属于本机观测，不随账号迁移。
+  "pool_anomaly",
   ...CONTENT_MIGRATION_STATE_KEYS
 ]);
 
