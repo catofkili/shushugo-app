@@ -52,9 +52,17 @@ node question-meaning-review/validate-manual-batch.mjs
 ## 辨析题面同时进释义层
 
 `distinction` 条目不只管题面：`node question-meaning-review/sync-distinction-meanings.mjs`
-把它们的 `questionMeaning` 写进 `frontend/src/data/jlpt_meaning_overrides.json`（→ `words.meaning`），
+把它们的 `questionMeaning` 导出到 `frontend/scripts/manual-meaning-reviewed/distinction-source.json`。
+随后运行 `node frontend/scripts/build-manual-meaning-overrides.mjs`，由这个唯一写入口生成
+`frontend/src/data/jlpt_meaning_overrides.json`（→ `words.meaning`），
 反向题答案面、辨析气泡、词库看到的才是分得开的那句话。跑完要 bump `JLPT_WORD_METADATA_VERSION`
 并重烤出厂库，见 CLAUDE.md「释义有两层」。
+
+2026-11-05 起同步脚本不再直接改完整释义覆盖表。`frontend/npm test` 会只读重建并逐字节比较
+覆盖表，同时校验辨析源头记录是否和批次一致；不能只改覆盖表，也不能漏跑辨析导出。
+当前来源、优先级和历史排序原因见 `frontend/scripts/manual-meaning-reviewed/README.md`。
+本次 C1 只恢复可重建性，输出一个字节也没变，因此不升内容版本、不烤库；上面的升版步骤
+只适用于之后实际修改释义内容的任务。
 
 ## 辨析题面和练习页
 

@@ -1,0 +1,32 @@
+[
+  {
+    "kanji": "(フ) milli",
+    "kana": "ミリ",
+    "meaning": "毫米；毫（千分之一）",
+    "provenance": {
+      "kind": "其他：2026-09-22 计量前缀复核",
+      "commit": "c89338609fa0a2f60ddabd9646502dcbdfe5c3f1",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:268 (id=3748)"
+    }
+  },
+  {
+    "kanji": "nano",
+    "kana": "ナノ",
+    "meaning": "纳米；纳（十亿分之一）",
+    "provenance": {
+      "kind": "其他：2026-09-22 计量前缀复核",
+      "commit": "c89338609fa0a2f60ddabd9646502dcbdfe5c3f1",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:922 (id=9989)"
+    }
+  },
+  {
+    "kanji": "(フ) kilo",
+    "kana": "キロ",
+    "meaning": "公里；公斤；千（前缀）",
+    "provenance": {
+      "kind": "其他：2026-09-22 计量前缀复核",
+      "commit": "c89338609fa0a2f60ddabd9646502dcbdfe5c3f1",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:138 (id=1617)"
+    }
+  }
+]

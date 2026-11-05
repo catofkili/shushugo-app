@@ -51,6 +51,8 @@ rm -f "$TMP_ZIP" "$OUTPUT"
 #   frontend/eslint.config.js —— 没有它 npm run lint 起不来。
 #   cloudflare-sync/scripts —— Worker 的 npm test 跑的是这里的规则测试。
 # 打完包之后下面会解压到临时目录真跑一遍 check/lint/test/build,别把那一步删了。
+# 2026-11-05：frontend/npm test 会从源头重建释义，必须同时带上两个旧人工源头目录、
+# 辨析批次和导出脚本；只有 frontend/scripts 下的新源头记录仍然不够。
 git archive \
   --format=zip \
   --output="$TMP_ZIP" \
@@ -89,6 +91,10 @@ git archive \
   frontend/tailwind.config.js \
   frontend/tsconfig.json \
   frontend/vite.config.ts \
+  manual-meaning-rewrite \
+  manual-meaning-polish \
+  question-meaning-review/sync-distinction-meanings.mjs \
+  'question-meaning-review/manual-batch-*.json' \
   scripts/build-ios.sh \
   scripts/package-preview.sh \
   scripts/setup-xcode.sh

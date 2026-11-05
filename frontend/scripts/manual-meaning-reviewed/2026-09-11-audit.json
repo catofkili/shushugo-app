@@ -1,0 +1,4852 @@
+[
+  {
+    "kanji": "〜代",
+    "kana": "〜だい",
+    "meaning": "～费用；～价位；～左右；～一代；～年龄段",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:142 (id=1691)"
+    }
+  },
+  {
+    "kanji": "〜口",
+    "kana": "〜くち",
+    "meaning": "口；入口；（量词）口",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:72 (id=844)"
+    }
+  },
+  {
+    "kanji": "〜製",
+    "kana": "〜せい",
+    "meaning": "～制造；产自～；由～制成",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:141 (id=1690)"
+    }
+  },
+  {
+    "kanji": "antenna",
+    "kana": "アンテナ",
+    "meaning": "天线；收集信息或意见的渠道；敏锐的感知力",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:374 (id=4856)"
+    }
+  },
+  {
+    "kanji": "boom",
+    "kana": "ブーム",
+    "meaning": "热潮；时尚；繁荣；吊杆",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:385 (id=4899)"
+    }
+  },
+  {
+    "kanji": "cabinet",
+    "kana": "キャビネット",
+    "meaning": "柜子；设备外壳",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:902 (id=9839)"
+    }
+  },
+  {
+    "kanji": "cool",
+    "kana": "クール",
+    "meaning": "凉爽的；冷静的；冷漠的；时髦的；帅气的",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:806 (id=8748)"
+    }
+  },
+  {
+    "kanji": "counter",
+    "kana": "カウンター",
+    "meaning": "计数器；柜台；吧台；酒吧柜台",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:522 (id=6555)"
+    }
+  },
+  {
+    "kanji": "double",
+    "kana": "ダブル",
+    "meaning": "双重；双倍；双层翻边",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:592 (id=7127)"
+    }
+  },
+  {
+    "kanji": "down",
+    "kana": "ダウン",
+    "meaning": "下降；减少；击倒；被击倒；因病或疲劳等无法行动；昏倒；羽绒",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:469 (id=5824)"
+    }
+  },
+  {
+    "kanji": "flash",
+    "kana": "フラッシュ",
+    "meaning": "闪光灯；手电筒；短场景；新闻快讯",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:903 (id=9853)"
+    }
+  },
+  {
+    "kanji": "follow",
+    "kana": "フォロー",
+    "meaning": "跟随；关注；支援；补位；善后",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:816 (id=8812)"
+    }
+  },
+  {
+    "kanji": "gallery",
+    "kana": "ギャラリー",
+    "meaning": "走廊；画廊；剧场楼座",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:955 (id=10391)"
+    }
+  },
+  {
+    "kanji": "hit",
+    "kana": "ヒット",
+    "meaning": "安打；成功；热门作品；击打",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:723 (id=8001)"
+    }
+  },
+  {
+    "kanji": "main",
+    "kana": "メイン",
+    "meaning": "主要的；主要部分",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:927 (id=10057)"
+    }
+  },
+  {
+    "kanji": "pack",
+    "kana": "パック",
+    "meaning": "包；包装物；打包；包装；面膜",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:594 (id=7132)"
+    }
+  },
+  {
+    "kanji": "pitch",
+    "kana": "ピッチ",
+    "meaning": "速度；速率；间距；间隔；音高",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:960 (id=10490)"
+    }
+  },
+  {
+    "kanji": "program",
+    "kana": "プログラム",
+    "meaning": "节目单；日程；宣传册；计算机程序；编程",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:165 (id=2720)"
+    }
+  },
+  {
+    "kanji": "punch",
+    "kana": "パンチ",
+    "meaning": "拳击；打孔；打孔器；潘趣酒",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:946 (id=10282)"
+    }
+  },
+  {
+    "kanji": "report",
+    "kana": "レポート",
+    "meaning": "报告；报告书；课程报告",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:145 (id=1770)"
+    }
+  },
+  {
+    "kanji": "sign",
+    "kana": "サイン",
+    "meaning": "签名；标志；信号；手势",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:114 (id=1391)"
+    }
+  },
+  {
+    "kanji": "slide",
+    "kana": "スライド",
+    "meaning": "幻灯片；透明片；滑动；滑倒；调整位置或日程",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:648 (id=7418)"
+    }
+  },
+  {
+    "kanji": "spice",
+    "kana": "スパイス",
+    "meaning": "香料",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:956 (id=10395)"
+    }
+  },
+  {
+    "kanji": "vision",
+    "kana": "ビジョン",
+    "meaning": "未来构想；前景；大屏幕；想象力；洞察力",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:501 (id=6255)"
+    }
+  },
+  {
+    "kanji": "あれ",
+    "kana": "あれ",
+    "meaning": "那个；咦；哎呀",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:48 (id=231)"
+    }
+  },
+  {
+    "kanji": "いかが",
+    "kana": "いかが",
+    "meaning": "怎么样；如何",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:64 (id=757)"
+    }
+  },
+  {
+    "kanji": "いたずら",
+    "kana": "いたずら",
+    "meaning": "恶作剧；淘气；顽皮；消遣；爱好",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:589 (id=7121)"
+    }
+  },
+  {
+    "kanji": "うまみ",
+    "kana": "うまみ",
+    "meaning": "鲜味；美味；滋味；技巧；妙处；魅力",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:558 (id=7041)"
+    }
+  },
+  {
+    "kanji": "おかげ",
+    "kana": "おかげ",
+    "meaning": "多亏；幸亏；托……的福",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:143 (id=1709)"
+    }
+  },
+  {
+    "kanji": "おなじみ",
+    "kana": "おなじみ",
+    "meaning": "熟悉的；知名的；常客；老熟人；老朋友",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:921 (id=9987)"
+    }
+  },
+  {
+    "kanji": "お祖母さん",
+    "kana": "おばあさん",
+    "meaning": "祖母；奶奶；外婆；老奶奶",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:80 (id=2297)"
+    }
+  },
+  {
+    "kanji": "お返し",
+    "kana": "おかえし",
+    "meaning": "回礼；报复；找零",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:266 (id=3737)"
+    }
+  },
+  {
+    "kanji": "かじる",
+    "kana": "かじる",
+    "meaning": "咬；啃；涉猎；略懂",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:215 (id=3411)"
+    }
+  },
+  {
+    "kanji": "がたがた",
+    "kana": "がたがた",
+    "meaning": "嘎嘎作响；颤抖；哆嗦；摇晃；发牢骚；抱怨",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:613 (id=7218)"
+    }
+  },
+  {
+    "kanji": "がっちり",
+    "kana": "がっちり",
+    "meaning": "结实的；牢固的；紧绷的；精明的；会算计的",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:710 (id=7935)"
+    }
+  },
+  {
+    "kanji": "からから",
+    "kana": "からから",
+    "meaning": "干燥；干巴巴；空洞；空空的；（发出）喀啦喀啦声",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:193 (id=3175)"
+    }
+  },
+  {
+    "kanji": "かわいがる",
+    "kana": "かわいがる",
+    "meaning": "疼爱；宠爱；偏爱；抚摸；轻抚",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:590 (id=7123)"
+    }
+  },
+  {
+    "kanji": "くさい",
+    "kana": "くさい",
+    "meaning": "臭的；有臭味；可疑的；做作的；俗气的",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:235 (id=3579)"
+    }
+  },
+  {
+    "kanji": "くじける",
+    "kana": "くじける",
+    "meaning": "气馁；受挫；扭伤；折断",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:642 (id=7396)"
+    }
+  },
+  {
+    "kanji": "ぐずぐず",
+    "kana": "ぐずぐず",
+    "meaning": "磨蹭；拖拉；抱怨；嘟囔；天气不稳定",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:711 (id=7941)"
+    }
+  },
+  {
+    "kanji": "くたびれる",
+    "kana": "くたびれる",
+    "meaning": "疲惫；疲劳；磨损；变旧；厌倦",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:211 (id=3400)"
+    }
+  },
+  {
+    "kanji": "くっつく",
+    "kana": "くっつく",
+    "meaning": "粘住；贴住；紧跟；亲近；关系密切",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:363 (id=4811)"
+    }
+  },
+  {
+    "kanji": "ごろごろ",
+    "kana": "ごろごろ",
+    "meaning": "轰隆声；滚动；到处都是；大量存在；无所事事",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:378 (id=4873)"
+    }
+  },
+  {
+    "kanji": "さえ",
+    "kana": "さえ",
+    "meaning": "连……都；只要；仅仅；除此之外；而且",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:551 (id=7015)"
+    }
+  },
+  {
+    "kanji": "ざっくり",
+    "kana": "ざっくり",
+    "meaning": "粗略地；大致；粗糙地；松散地；一刀切下；用力掰开；深深切开；裂开很大",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:615 (id=7222)"
+    }
+  },
+  {
+    "kanji": "しきりに",
+    "kana": "しきりに",
+    "meaning": "频繁地；反复地；热切地；强烈地；非常地；厉害地",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:636 (id=7374)"
+    }
+  },
+  {
+    "kanji": "したたか",
+    "kana": "したたか",
+    "meaning": "强硬的；顽强的；难对付的；狠狠地；大量地",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:267 (id=3740)"
+    }
+  },
+  {
+    "kanji": "しっかり",
+    "kana": "しっかり",
+    "meaning": "牢牢地；好好地；仔细地；可靠地",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:100 (id=1084)"
+    }
+  },
+  {
+    "kanji": "しなやか",
+    "kana": "しなやか",
+    "meaning": "柔韧的；有弹性的；优雅的；柔美的；文雅的",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:713 (id=7954)"
+    }
+  },
+  {
+    "kanji": "しびれる",
+    "kana": "しびれる",
+    "meaning": "麻木；发麻；触电发麻；兴奋陶醉",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:371 (id=4850)"
+    }
+  },
+  {
+    "kanji": "しらじら",
+    "kana": "しらじら",
+    "meaning": "渐渐发亮；苍白；装傻；说得明显",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:1010 (id=10865)"
+    }
+  },
+  {
+    "kanji": "すさまじい",
+    "kana": "すさまじい",
+    "meaning": "可怕的；糟糕的；惊人的；巨大的；骇人的；荒谬的",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:809 (id=8768)"
+    }
+  },
+  {
+    "kanji": "そぐわない",
+    "kana": "そぐわない",
+    "meaning": "不合适；不相称；不合身份",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:936 (id=10173)"
+    }
+  },
+  {
+    "kanji": "そっちのけ",
+    "kana": "そっちのけ",
+    "meaning": "忽视；置之不理；胜过；不亚于",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:810 (id=8780)"
+    }
+  },
+  {
+    "kanji": "それを",
+    "kana": "それを",
+    "meaning": "尽管如此；即便如此；然而",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:289 (id=3910)"
+    }
+  },
+  {
+    "kanji": "タイムサービス",
+    "kana": "タイムサービス",
+    "meaning": "限时特卖；限时促销",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:297 (id=2359)"
+    }
+  },
+  {
+    "kanji": "ただ",
+    "kana": "ただ",
+    "meaning": "免费；只是；不过",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:51 (id=313)"
+    }
+  },
+  {
+    "kanji": "ついている",
+    "kana": "ついている",
+    "meaning": "走运；附着；附带；包含",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:287 (id=3906)"
+    }
+  },
+  {
+    "kanji": "どこか",
+    "kana": "どこか",
+    "meaning": "某处；不知为何；总觉得有点",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:65 (id=772)"
+    }
+  },
+  {
+    "kanji": "とんでもない",
+    "kana": "とんでもない",
+    "meaning": "异想天开的；意想不到的；荒谬的；不得了的；绝对不；没什么",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:381 (id=4891)"
+    }
+  },
+  {
+    "kanji": "とんとん",
+    "kana": "とんとん",
+    "meaning": "轻敲声；顺利进行；势均力敌；收支相抵",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:280 (id=3815)"
+    }
+  },
+  {
+    "kanji": "にぎわう",
+    "kana": "にぎわう",
+    "meaning": "人多热闹；繁荣；兴旺；生意兴隆",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:719 (id=7985)"
+    }
+  },
+  {
+    "kanji": "ぬるい",
+    "kana": "ぬるい",
+    "meaning": "温的；不冷不热",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:53 (id=353)"
+    }
+  },
+  {
+    "kanji": "ねばねば",
+    "kana": "ねばねば",
+    "meaning": "黏糊糊的；黏性；黏糊糊地",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:640 (id=7390)"
+    }
+  },
+  {
+    "kanji": "のち",
+    "kana": "のち",
+    "meaning": "之后；后来；未来；死后；后世",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:657 (id=7480)"
+    }
+  },
+  {
+    "kanji": "のどか",
+    "kana": "のどか",
+    "meaning": "恬静的；平静的；安宁的；天气温和宜人的",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:721 (id=7991)"
+    }
+  },
+  {
+    "kanji": "はじく",
+    "kana": "はじく",
+    "meaning": "弹开；弹拨；排斥；用算盘计算",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:776 (id=8451)"
+    }
+  },
+  {
+    "kanji": "ばったり",
+    "kana": "ばったり",
+    "meaning": "砰然倒下；偶然遇见；突然中止",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:384 (id=4896)"
+    }
+  },
+  {
+    "kanji": "ばね",
+    "kana": "ばね",
+    "meaning": "弹簧；弹跳力；跳板；推动力",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:644 (id=7408)"
+    }
+  },
+  {
+    "kanji": "ぱらぱら",
+    "kana": "ぱらぱら",
+    "meaning": "零星飘落；淅淅沥沥；翻阅书页；稀疏；零散；断断续续",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:581 (id=7082)"
+    }
+  },
+  {
+    "kanji": "ぴたり",
+    "kana": "ぴたり",
+    "meaning": "紧贴；准确；突然停止",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:967 (id=10552)"
+    }
+  },
+  {
+    "kanji": "ひらめく",
+    "kana": "ひらめく",
+    "meaning": "闪现；闪烁；闪耀；飘动；摇曳；突然想到",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:548 (id=6986)"
+    }
+  },
+  {
+    "kanji": "へこむ",
+    "kana": "へこむ",
+    "meaning": "凹陷；塌陷；被击败；屈服；放弃；消沉；沮丧",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:596 (id=7134)"
+    }
+  },
+  {
+    "kanji": "ぼろぼろ",
+    "kana": "ぼろぼろ",
+    "meaning": "破烂不堪；碎裂；散落",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:386 (id=4906)"
+    }
+  },
+  {
+    "kanji": "ぼんやり",
+    "kana": "ぼんやり",
+    "meaning": "模糊地；发呆地；漫无目的地",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:387 (id=4907)"
+    }
+  },
+  {
+    "kanji": "まとまり",
+    "kana": "まとまり",
+    "meaning": "统一性；连贯性；协调性；收束；结论；完成",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:817 (id=8820)"
+    }
+  },
+  {
+    "kanji": "もっとも",
+    "kana": "もっとも",
+    "meaning": "合理，理所当然；不过（转折）",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:213 (id=3407)"
+    }
+  },
+  {
+    "kanji": "もむ",
+    "kana": "もむ",
+    "meaning": "揉；搓；揉皱；按摩；争论；激烈讨论",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:618 (id=7231)"
+    }
+  },
+  {
+    "kanji": "やつ",
+    "kana": "やつ",
+    "meaning": "家伙；东西；他；她",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:472 (id=5853)"
+    }
+  },
+  {
+    "kanji": "よる",
+    "kana": "よる",
+    "meaning": "靠近；顺道拜访；根据；取决于",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:76 (id=853)"
+    }
+  },
+  {
+    "kanji": "一人前",
+    "kana": "いちにんまえ",
+    "meaning": "一人份；成年人；独当一面；成熟合格",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:639 (id=7386)"
+    }
+  },
+  {
+    "kanji": "一回り",
+    "kana": "ひとまわり",
+    "meaning": "一圈；一轮；大（或小）一号；十二年一轮",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:279 (id=3811)"
+    }
+  },
+  {
+    "kanji": "一層",
+    "kana": "いっそう",
+    "meaning": "更加；一层；底层",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:359 (id=4792)"
+    }
+  },
+  {
+    "kanji": "一時",
+    "kana": "いちじ",
+    "meaning": "一点钟；曾经；一时；暂时",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:197 (id=3209)"
+    }
+  },
+  {
+    "kanji": "万全",
+    "kana": "ばんぜん",
+    "meaning": "万全；完美；毫无缺陷",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:949 (id=10315)"
+    }
+  },
+  {
+    "kanji": "三角",
+    "kana": "さんかく",
+    "meaning": "三角形；三角形状",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:584 (id=7097)"
+    }
+  },
+  {
+    "kanji": "上場",
+    "kana": "じょうじょう",
+    "meaning": "上市；挂牌；演出；上台表演",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:272 (id=3768)"
+    }
+  },
+  {
+    "kanji": "不信",
+    "kana": "ふしん",
+    "meaning": "不信任；怀疑；不诚实；不虔诚",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:842 (id=9317)"
+    }
+  },
+  {
+    "kanji": "不幸",
+    "kana": "ふこう",
+    "meaning": "不幸；悲伤；灾祸；事故；死亡；丧亲",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:605 (id=7200)"
+    }
+  },
+  {
+    "kanji": "不景気",
+    "kana": "ふけいき",
+    "meaning": "经济不景气；经营不佳；冷清；阴郁；愁闷",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:701 (id=7876)"
+    }
+  },
+  {
+    "kanji": "不用意",
+    "kana": "ふようい",
+    "meaning": "未准备好的；粗心的；不谨慎的；轻率的",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:928 (id=10083)"
+    }
+  },
+  {
+    "kanji": "世知辛い",
+    "kana": "せちがらい",
+    "meaning": "世道艰难；吝啬；斤斤计较；唯利是图",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:932 (id=10128)"
+    }
+  },
+  {
+    "kanji": "両",
+    "kana": "りょう",
+    "meaning": "两边；双方；（车辆）辆；（车厢）节",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:128 (id=1585)"
+    }
+  },
+  {
+    "kanji": "亡者",
+    "kana": "もうじゃ",
+    "meaning": "死者；鬼；利欲熏心的人；执迷于金钱或权力的人",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:877 (id=9675)"
+    }
+  },
+  {
+    "kanji": "仇[あだ]",
+    "kana": "あだ",
+    "meaning": "敌人；对手；怨恨；仇恨；伤害",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:1030 (id=10987)"
+    }
+  },
+  {
+    "kanji": "仕切り",
+    "kana": "しきり",
+    "meaning": "隔断；分隔；结算；热身仪式",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:904 (id=9856)"
+    }
+  },
+  {
+    "kanji": "仕切る",
+    "kana": "しきる",
+    "meaning": "分隔；划分；主持；管理；负责安排；结算账目",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:760 (id=8282)"
+    }
+  },
+  {
+    "kanji": "仰ぐ",
+    "kana": "あおぐ",
+    "meaning": "仰望；敬仰；尊敬；请教；寻求指导",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:751 (id=8184)"
+    }
+  },
+  {
+    "kanji": "低気圧",
+    "kana": "ていきあつ",
+    "meaning": "低气压；低压系统；气旋；坏脾气；低落情绪；紧张局势",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:535 (id=6772)"
+    }
+  },
+  {
+    "kanji": "何げない",
+    "kana": "なにげない",
+    "meaning": "随意的；若无其事的；漫不经心的；普通的；日常的",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:742 (id=8092)"
+    }
+  },
+  {
+    "kanji": "修める",
+    "kana": "おさめる",
+    "meaning": "学习；修完课程；修养；掌握；整顿生活；弥补过错",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:624 (id=7284)"
+    }
+  },
+  {
+    "kanji": "健康",
+    "kana": "けんこう",
+    "meaning": "健康；健康的",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:137 (id=19)"
+    }
+  },
+  {
+    "kanji": "傑作",
+    "kana": "けっさく",
+    "meaning": "杰作",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:638 (id=7385)"
+    }
+  },
+  {
+    "kanji": "傷",
+    "kana": "きず",
+    "meaning": "伤口；伤痕；划痕；瑕疵",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:107 (id=1239)"
+    }
+  },
+  {
+    "kanji": "優しい",
+    "kana": "やさしい",
+    "meaning": "温柔的；和蔼的",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:70 (id=829)"
+    }
+  },
+  {
+    "kanji": "先",
+    "kana": "さき",
+    "meaning": "前面；之前；目的地；去处",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:74 (id=847)"
+    }
+  },
+  {
+    "kanji": "先約",
+    "kana": "せんやく",
+    "meaning": "先前约定；预先约好的约会；预约；先前协议",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:1016 (id=10904)"
+    }
+  },
+  {
+    "kanji": "免疫",
+    "kana": "めんえき",
+    "meaning": "免疫；免疫接种；对某事习以为常；不受影响",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:957 (id=10413)"
+    }
+  },
+  {
+    "kanji": "共",
+    "kana": "とも",
+    "meaning": "一起；共同；同样；双方都；全都；都不",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:269 (id=3757)"
+    }
+  },
+  {
+    "kanji": "共に",
+    "kana": "ともに",
+    "meaning": "共同；一起；同时；连同；双方都",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:399 (id=4996)"
+    }
+  },
+  {
+    "kanji": "内",
+    "kana": "うち",
+    "meaning": "内部；家里；在……期间；趁……之前",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:68 (id=824)"
+    }
+  },
+  {
+    "kanji": "内外",
+    "kana": "ないがい",
+    "meaning": "内外；国内外；大约",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:913 (id=9944)"
+    }
+  },
+  {
+    "kanji": "内実",
+    "kana": "ないじつ",
+    "meaning": "内情；实情；实际上；事实上",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:910 (id=9921)"
+    }
+  },
+  {
+    "kanji": "再生",
+    "kana": "さいせい",
+    "meaning": "再生；播放；复苏；复兴；再利用；回收",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:261 (id=3707)"
+    }
+  },
+  {
+    "kanji": "冬枯れ",
+    "kana": "ふゆがれ",
+    "meaning": "冬季枯萎；冬日萧条；冬季生意低迷",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:991 (id=10740)"
+    }
+  },
+  {
+    "kanji": "冴[さ]える",
+    "kana": "さえる",
+    "meaning": "清澈明亮；鲜明清脆；头脑清醒；机敏；精神振作；开朗",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:712 (id=7950)"
+    }
+  },
+  {
+    "kanji": "出来る",
+    "kana": "できる",
+    "meaning": "能；可以；形成；建成；完成",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:78 (id=2203)"
+    }
+  },
+  {
+    "kanji": "切れ目",
+    "kana": "きれめ",
+    "meaning": "间隙；中断；暂停；间隔；切口；刻痕",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:770 (id=8400)"
+    }
+  },
+  {
+    "kanji": "別個",
+    "kana": "べっこ",
+    "meaning": "另一个；不同；分开；离散",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:876 (id=9659)"
+    }
+  },
+  {
+    "kanji": "利口",
+    "kana": "りこう",
+    "meaning": "聪明的；机灵的；乖巧的；听话的",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:328 (id=4454)"
+    }
+  },
+  {
+    "kanji": "加減",
+    "kana": "かげん",
+    "meaning": "程度；状况；健康状况；调节；适度",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:396 (id=4944)"
+    }
+  },
+  {
+    "kanji": "勝手",
+    "kana": "かって",
+    "meaning": "任性的；擅自的；自作主张；方便；情形",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:317 (id=4291)"
+    }
+  },
+  {
+    "kanji": "化ける",
+    "kana": "ばける",
+    "meaning": "变成某种形态；伪装自己；转变；蜕变",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:741 (id=8089)"
+    }
+  },
+  {
+    "kanji": "医院",
+    "kana": "いいん",
+    "meaning": "诊所；医生诊所",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:822 (id=8854)"
+    }
+  },
+  {
+    "kanji": "半端",
+    "kana": "はんぱ",
+    "meaning": "残余；碎片；不完整；零头；半途而废的；敷衍的；不彻底的",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:789 (id=8562)"
+    }
+  },
+  {
+    "kanji": "単位",
+    "kana": "たんい",
+    "meaning": "单位；群体；整体；学分",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:174 (id=3011)"
+    }
+  },
+  {
+    "kanji": "厳しい",
+    "kana": "きびしい",
+    "meaning": "严格；严厉；严峻；艰难",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:95 (id=993)"
+    }
+  },
+  {
+    "kanji": "取り付ける",
+    "kana": "とりつける",
+    "meaning": "安装；装配；取得同意；争取到；常去某家店购买",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:247 (id=3631)"
+    }
+  },
+  {
+    "kanji": "取り入れる",
+    "kana": "とりいれる",
+    "meaning": "收进；采用；吸收；收割",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:412 (id=5093)"
+    }
+  },
+  {
+    "kanji": "取り次ぐ",
+    "kana": "とりつぐ",
+    "meaning": "转达；通报来客或电话；代为接待；充当中介；代办货物",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:763 (id=8316)"
+    }
+  },
+  {
+    "kanji": "取り立てる",
+    "kana": "とりたてる",
+    "meaning": "征收债务；催收；提拔；特别强调；着重介绍",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:832 (id=9075)"
+    }
+  },
+  {
+    "kanji": "取り結ぶ",
+    "kana": "とりむすぶ",
+    "meaning": "缔结；调停；讨好；巴结",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:1011 (id=10869)"
+    }
+  },
+  {
+    "kanji": "口コミ",
+    "kana": "くちコミ",
+    "meaning": "口头传播；网络评论；网上评价",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:757 (id=8244)"
+    }
+  },
+  {
+    "kanji": "口数",
+    "kana": "くちかず",
+    "meaning": "说话的字数；供养人数；份数；物品数；申请数",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:925 (id=10024)"
+    }
+  },
+  {
+    "kanji": "只今",
+    "kana": "ただいま",
+    "meaning": "我回来了；现在；刚才",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:84 (id=2554)"
+    }
+  },
+  {
+    "kanji": "叫ぶ",
+    "kana": "さけぶ",
+    "meaning": "喊叫；大喊；尖叫；呼吁；主张；坚持；抗议；申诉",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:583 (id=7091)"
+    }
+  },
+  {
+    "kanji": "合わせて",
+    "kana": "あわせて",
+    "meaning": "总共；合计；此外；同时",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:271 (id=3763)"
+    }
+  },
+  {
+    "kanji": "同期",
+    "kana": "どうき",
+    "meaning": "同期；同一时期；同届者；同步；同步化",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:665 (id=7556)"
+    }
+  },
+  {
+    "kanji": "同行",
+    "kana": "どうこう",
+    "meaning": "陪同；一同前往；同行；同一银行；该银行",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:628 (id=7318)"
+    }
+  },
+  {
+    "kanji": "向き",
+    "kana": "むき",
+    "meaning": "朝向；方向；适合……；面向……；倾向",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:180 (id=3149)"
+    }
+  },
+  {
+    "kanji": "吟味",
+    "kana": "ぎんみ",
+    "meaning": "仔细审查；仔细调查；斟酌挑选",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:753 (id=8195)"
+    }
+  },
+  {
+    "kanji": "含み",
+    "kana": "ふくみ",
+    "meaning": "含意；言外之意；余地；意味；情调；语气",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:507 (id=6304)"
+    }
+  },
+  {
+    "kanji": "呼びかける",
+    "kana": "よびかける",
+    "meaning": "呼喊；招呼；呼吁；劝告；号召",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:223 (id=3480)"
+    }
+  },
+  {
+    "kanji": "唱える",
+    "kana": "となえる",
+    "meaning": "念诵；吟诵；呼喊；大声喊；提倡；主张",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:766 (id=8346)"
+    }
+  },
+  {
+    "kanji": "困難",
+    "kana": "こんなん",
+    "meaning": "困难的；困难；困境",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:312 (id=4241)"
+    }
+  },
+  {
+    "kanji": "坊ちゃん",
+    "kana": "ぼっちゃん",
+    "meaning": "别人家的儿子；男孩；少爷；富家涉世未深的年轻人",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:608 (id=7205)"
+    }
+  },
+  {
+    "kanji": "型どおり",
+    "kana": "かたどおり",
+    "meaning": "按惯例的；正式的；规定的；老套的",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:1012 (id=10873)"
+    }
+  },
+  {
+    "kanji": "境内",
+    "kana": "けいだい",
+    "meaning": "寺庙、神社等的境内；场地",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:890 (id=9747)"
+    }
+  },
+  {
+    "kanji": "変調",
+    "kana": "へんちょう",
+    "meaning": "异常；变调；调制",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:1002 (id=10810)"
+    }
+  },
+  {
+    "kanji": "大切",
+    "kana": "たいせつ",
+    "meaning": "重要；珍贵；爱护；认真对待",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:37 (id=58)"
+    }
+  },
+  {
+    "kanji": "大口",
+    "kana": "おおぐち",
+    "meaning": "大嘴；夸夸其谈；大额；大量",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:836 (id=9203)"
+    }
+  },
+  {
+    "kanji": "大層",
+    "kana": "たいそう",
+    "meaning": "非常地；极其地；极端的；过度的；数量很多的；壮观的；了不起的",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:661 (id=7533)"
+    }
+  },
+  {
+    "kanji": "大部",
+    "kana": "たいぶ",
+    "meaning": "篇幅长的；大部头的；大部分；大多；相当多",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:485 (id=6066)"
+    }
+  },
+  {
+    "kanji": "天地",
+    "kana": "てんち",
+    "meaning": "天地；宇宙；世界；自然；领域；上下",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:781 (id=8489)"
+    }
+  },
+  {
+    "kanji": "失礼",
+    "kana": "しつれい",
+    "meaning": "失礼；冒昧；失陪；告辞",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:106 (id=1229)"
+    }
+  },
+  {
+    "kanji": "始末",
+    "kana": "しまつ",
+    "meaning": "处理；收拾；善后；事情经过；结果",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:761 (id=8284)"
+    }
+  },
+  {
+    "kanji": "姿勢",
+    "kana": "しせい",
+    "meaning": "姿势；态度；立场",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:226 (id=3491)"
+    }
+  },
+  {
+    "kanji": "嬉々",
+    "kana": "きき",
+    "meaning": "欣喜；兴高采烈",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:1029 (id=10983)"
+    }
+  },
+  {
+    "kanji": "安価",
+    "kana": "あんか",
+    "meaning": "便宜的；肤浅的；轻率的；廉价的",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:361 (id=4806)"
+    }
+  },
+  {
+    "kanji": "定規",
+    "kana": "じょうぎ",
+    "meaning": "尺子；直尺",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:664 (id=7546)"
+    }
+  },
+  {
+    "kanji": "宛名",
+    "kana": "あてな",
+    "meaning": "收件人姓名和地址；收件人",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:597 (id=7138)"
+    }
+  },
+  {
+    "kanji": "宿す",
+    "kana": "やどす",
+    "meaning": "容纳；含有；怀有；承载；怀胎",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:937 (id=10175)"
+    }
+  },
+  {
+    "kanji": "寸法",
+    "kana": "すんぽう",
+    "meaning": "尺寸；大小；范围；计划；打算；安排；日程",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:659 (id=7524)"
+    }
+  },
+  {
+    "kanji": "尋ねる",
+    "kana": "たずねる",
+    "meaning": "询问；打听；查问；寻找",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:108 (id=1258)"
+    }
+  },
+  {
+    "kanji": "少ない",
+    "kana": "すくない",
+    "meaning": "少；不多；稀少",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:59 (id=563)"
+    }
+  },
+  {
+    "kanji": "巨額",
+    "kana": "きょがく",
+    "meaning": "巨额；巨款；大量",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:912 (id=9929)"
+    }
+  },
+  {
+    "kanji": "差し引く",
+    "kana": "さしひく",
+    "meaning": "扣除；减去；打折；考虑到；涨落",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:358 (id=4791)"
+    }
+  },
+  {
+    "kanji": "帰還",
+    "kana": "きかん",
+    "meaning": "返回；归来；遣返；反馈",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:524 (id=6610)"
+    }
+  },
+  {
+    "kanji": "平然",
+    "kana": "へいぜん",
+    "meaning": "镇定；沉着；冷静",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:943 (id=10244)"
+    }
+  },
+  {
+    "kanji": "延長",
+    "kana": "えんちょう",
+    "meaning": "延长；总长度；延续",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:395 (id=4935)"
+    }
+  },
+  {
+    "kanji": "引かれる",
+    "kana": "ひかれる",
+    "meaning": "被吸引；被迷住",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:342 (id=4510)"
+    }
+  },
+  {
+    "kanji": "引きずる",
+    "kana": "ひきずる",
+    "meaning": "拖；拖行；强拉；拖延；拖长；耿耿于怀",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:738 (id=8072)"
+    }
+  },
+  {
+    "kanji": "引き上げる",
+    "kana": "ひきあげる",
+    "meaning": "拉起；拖起；提高；撤回；离开；退出",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:680 (id=7643)"
+    }
+  },
+  {
+    "kanji": "引き立てる",
+    "kana": "ひきたてる",
+    "meaning": "衬托；突出；增强；支持；提拔；鼓舞振作",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:823 (id=8869)"
+    }
+  },
+  {
+    "kanji": "引き落とす",
+    "kana": "ひきおとす",
+    "meaning": "拉下；从账户扣款",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:259 (id=3692)"
+    }
+  },
+  {
+    "kanji": "引っ掛ける",
+    "kana": "ひっかける",
+    "meaning": "挂上；套上；钩住；使上钩；逃避付款",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:219 (id=3448)"
+    }
+  },
+  {
+    "kanji": "引っ込む",
+    "kana": "ひっこむ",
+    "meaning": "缩回；凹陷；退居室内；退出公众视野；别插手",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:393 (id=4932)"
+    }
+  },
+  {
+    "kanji": "当たり",
+    "kana": "あたり",
+    "meaning": "命中；成功；猜中；预测；中奖",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:262 (id=3720)"
+    }
+  },
+  {
+    "kanji": "微妙",
+    "kana": "びみょう",
+    "meaning": "微妙的；棘手的；难以判断的；可疑的",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:233 (id=3549)"
+    }
+  },
+  {
+    "kanji": "怒る",
+    "kana": "おこる",
+    "meaning": "生气；发火；训斥；责骂",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:110 (id=1301)"
+    }
+  },
+  {
+    "kanji": "急",
+    "kana": "きゅう",
+    "meaning": "突然；紧急；陡峭；急速",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:102 (id=1168)"
+    }
+  },
+  {
+    "kanji": "怪物",
+    "kana": "かいぶつ",
+    "meaning": "怪物",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:942 (id=10242)"
+    }
+  },
+  {
+    "kanji": "恐れ",
+    "kana": "おそれ",
+    "meaning": "害怕；恐惧；担心；风险；危险；可能性；敬畏",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:459 (id=5508)"
+    }
+  },
+  {
+    "kanji": "恐れ入る",
+    "kana": "おそれいる",
+    "meaning": "对不起；不好意思；感谢；感激；佩服；赞叹",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:683 (id=7679)"
+    }
+  },
+  {
+    "kanji": "恒常",
+    "kana": "こうじょう",
+    "meaning": "恒常；持久性",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:998 (id=10798)"
+    }
+  },
+  {
+    "kanji": "悟る",
+    "kana": "さとる",
+    "meaning": "察觉；感知；领会；理解；悟道",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:756 (id=8238)"
+    }
+  },
+  {
+    "kanji": "愕[がく]然",
+    "kana": "がくぜん",
+    "meaning": "惊愕；震惊；惊骇",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:887 (id=9723)"
+    }
+  },
+  {
+    "kanji": "愛想",
+    "kana": "あいそ",
+    "meaning": "和蔼；亲切；好感；情意；客套话；恭维",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:735 (id=8044)"
+    }
+  },
+  {
+    "kanji": "成り立ち",
+    "kana": "なりたち",
+    "meaning": "形成过程；由来；结构；构成",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:895 (id=9763)"
+    }
+  },
+  {
+    "kanji": "戒める",
+    "kana": "いましめる",
+    "meaning": "警告；告诫；责备；训斥；禁止；阻止",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:824 (id=8888)"
+    }
+  },
+  {
+    "kanji": "手数",
+    "kana": "てすう",
+    "meaning": "麻烦；费事；步数；拳数",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:482 (id=5995)"
+    }
+  },
+  {
+    "kanji": "手配",
+    "kana": "てはい",
+    "meaning": "安排；准备；警方搜查；搜寻",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:623 (id=7283)"
+    }
+  },
+  {
+    "kanji": "拝む",
+    "kana": "おがむ",
+    "meaning": "合掌礼拜；祈求；恳求；拜见",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:518 (id=6512)"
+    }
+  },
+  {
+    "kanji": "持ち",
+    "kana": "もち",
+    "meaning": "持有；使用；持有者；耐久性；寿命；承担费用",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:238 (id=3585)"
+    }
+  },
+  {
+    "kanji": "捨象",
+    "kana": "しゃしょう",
+    "meaning": "抽象化；舍弃具体细节",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:994 (id=10782)"
+    }
+  },
+  {
+    "kanji": "採る",
+    "kana": "とる",
+    "meaning": "采取；选取；采集；提取",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:225 (id=3488)"
+    }
+  },
+  {
+    "kanji": "控える",
+    "kana": "ひかえる",
+    "meaning": "克制；忍住；记下；做笔记；准备迎接；等候",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:758 (id=8250)"
+    }
+  },
+  {
+    "kanji": "支社長",
+    "kana": "ししゃちょう",
+    "meaning": "分公司负责人；分社经理",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:129 (id=2269)"
+    }
+  },
+  {
+    "kanji": "教授",
+    "kana": "きょうじゅ",
+    "meaning": "教授；讲授；教学",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:296 (id=2029)"
+    }
+  },
+  {
+    "kanji": "散る",
+    "kana": "ちる",
+    "meaning": "飘落；散开；消失；解散",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:313 (id=4253)"
+    }
+  },
+  {
+    "kanji": "散在",
+    "kana": "さんざい",
+    "meaning": "分散存在；散落",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:864 (id=9563)"
+    }
+  },
+  {
+    "kanji": "文言",
+    "kana": "もんごん",
+    "meaning": "措辞；词句；文言文；传统书面汉语",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:911 (id=9928)"
+    }
+  },
+  {
+    "kanji": "新た",
+    "kana": "あらた",
+    "meaning": "新的；新鲜的；新颖的",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:319 (id=4310)"
+    }
+  },
+  {
+    "kanji": "日",
+    "kana": "ひ",
+    "meaning": "日子；白天；太阳；日光",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:69 (id=825)"
+    }
+  },
+  {
+    "kanji": "旬",
+    "kana": "しゅん",
+    "meaning": "时令；最佳时节；流行；当红；新鲜",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:533 (id=6723)"
+    }
+  },
+  {
+    "kanji": "昇る",
+    "kana": "のぼる",
+    "meaning": "上升；攀登；太阳等升起；进京",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:625 (id=7287)"
+    }
+  },
+  {
+    "kanji": "明暗",
+    "kana": "めいあん",
+    "meaning": "明暗；光影",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:791 (id=8650)"
+    }
+  },
+  {
+    "kanji": "昭和",
+    "kana": "しょうわ",
+    "meaning": "昭和风的；带有昭和怀旧色彩的；老派的；古朴的",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:575 (id=7060)"
+    }
+  },
+  {
+    "kanji": "暗然",
+    "kana": "あんぜん",
+    "meaning": "阴暗；晦暗；沮丧；失望；含泪；消沉",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:1009 (id=10859)"
+    }
+  },
+  {
+    "kanji": "曲",
+    "kana": "きょく",
+    "meaning": "乐曲；歌曲；曲调；乐趣",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:156 (id=2165)"
+    }
+  },
+  {
+    "kanji": "更生",
+    "kana": "こうせい",
+    "meaning": "更生；重新做人；重生；重建；恢复；复兴；恢复活力",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:829 (id=9003)"
+    }
+  },
+  {
+    "kanji": "書き残す",
+    "kana": "かきのこす",
+    "meaning": "写下并留下；留下未完成；写到一半；忘记写；遗漏",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:544 (id=6889)"
+    }
+  },
+  {
+    "kanji": "本場",
+    "kana": "ほんば",
+    "meaning": "正宗；发源地；产地；中心；最佳场所；上午场",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:573 (id=2599)"
+    }
+  },
+  {
+    "kanji": "核",
+    "kana": "かく",
+    "meaning": "果核；核心；中心；核武器",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:619 (id=7247)"
+    }
+  },
+  {
+    "kanji": "根こそぎ",
+    "kana": "ねこそぎ",
+    "meaning": "连根拔起；根除；全部；彻底",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:940 (id=10234)"
+    }
+  },
+  {
+    "kanji": "格好",
+    "kana": "かっこう",
+    "meaning": "样子；外表；姿势；服装；打扮",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:101 (id=1143)"
+    }
+  },
+  {
+    "kanji": "案じる",
+    "kana": "あんじる",
+    "meaning": "担心；忧虑；设法筹划；考虑；查究",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:736 (id=8050)"
+    }
+  },
+  {
+    "kanji": "構える",
+    "kana": "かまえる",
+    "meaning": "设立；建造；经营；备好；预先准备；摆好姿势；做好准备",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:759 (id=8251)"
+    }
+  },
+  {
+    "kanji": "横ばい",
+    "kana": "よこばい",
+    "meaning": "横向爬行；叶蝉；持平；趋于稳定",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:731 (id=8031)"
+    }
+  },
+  {
+    "kanji": "横",
+    "kana": "よこ",
+    "meaning": "横向；旁边；躺下（横卧）",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:55 (id=407)"
+    }
+  },
+  {
+    "kanji": "機関",
+    "kana": "きかん",
+    "meaning": "机构；机关；发动机；系统；设施",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:222 (id=3467)"
+    }
+  },
+  {
+    "kanji": "次第",
+    "kana": "しだい",
+    "meaning": "取决于；一……就……；按照；无论……",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:227 (id=3496)"
+    }
+  },
+  {
+    "kanji": "正に",
+    "kana": "まさに",
+    "meaning": "正是；确实；正好在；正要；即将",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:320 (id=4324)"
+    }
+  },
+  {
+    "kanji": "正味",
+    "kana": "しょうみ",
+    "meaning": "净额；实际工作时数；净重；净价；成本价",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:660 (id=7525)"
+    }
+  },
+  {
+    "kanji": "歯車",
+    "kana": "はぐるま",
+    "meaning": "齿轮；组织中的一环",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:410 (id=5082)"
+    }
+  },
+  {
+    "kanji": "歴然",
+    "kana": "れきぜん",
+    "meaning": "明显；清楚",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:850 (id=9393)"
+    }
+  },
+  {
+    "kanji": "段",
+    "kana": "だん",
+    "meaning": "台阶；层；架；等级；段",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:250 (id=3651)"
+    }
+  },
+  {
+    "kanji": "段ボール",
+    "kana": "だんボール",
+    "meaning": "瓦楞纸板；瓦楞纸",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:282 (id=3861)"
+    }
+  },
+  {
+    "kanji": "気が付く",
+    "kana": "きがつく",
+    "meaning": "注意到；意识到；留心；恢复意识",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:570 (id=2159)"
+    }
+  },
+  {
+    "kanji": "気になる",
+    "kana": "きになる",
+    "meaning": "在意；担心；感兴趣；好奇；想做",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:273 (id=3781)"
+    }
+  },
+  {
+    "kanji": "汁",
+    "kana": "しる",
+    "meaning": "汁液；果汁；树液；汤；汤汁；蘸汁",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:228 (id=3505)"
+    }
+  },
+  {
+    "kanji": "没する",
+    "kana": "ぼっする",
+    "meaning": "下沉；落下；落山；去世；消失",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:933 (id=10138)"
+    }
+  },
+  {
+    "kanji": "沸騰",
+    "kana": "ふっとう",
+    "meaning": "沸腾；激化；兴奋；发酵；飙升（价格）",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:251 (id=3656)"
+    }
+  },
+  {
+    "kanji": "洋",
+    "kana": "よう",
+    "meaning": "西方；西洋；海洋；大海；外国的；西方的；欧洲的",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:632 (id=7350)"
+    }
+  },
+  {
+    "kanji": "洋服",
+    "kana": "ようふく",
+    "meaning": "西式服装；衣服",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:63 (id=735)"
+    }
+  },
+  {
+    "kanji": "洗い出す",
+    "kana": "あらいだす",
+    "meaning": "洗去表层使其显露；查明；揭示；仔细查清；开始洗涤",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:560 (id=7047)"
+    }
+  },
+  {
+    "kanji": "洗濯物",
+    "kana": "せんたくもの",
+    "meaning": "洗涤物；洗好的衣物；待洗衣物",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:202 (id=3296)"
+    }
+  },
+  {
+    "kanji": "浴びる",
+    "kana": "あびる",
+    "meaning": "淋浴；洗澡",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:71 (id=832)"
+    }
+  },
+  {
+    "kanji": "浴衣",
+    "kana": "ゆかた",
+    "meaning": "浴衣（日式夏季和服）；浴袍",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:140 (id=1683)"
+    }
+  },
+  {
+    "kanji": "消化",
+    "kana": "しょうか",
+    "meaning": "消化；理解；吸收；消耗；完成（配额）",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:414 (id=5128)"
+    }
+  },
+  {
+    "kanji": "混 沌[とん]",
+    "kana": "こんとん",
+    "meaning": "混沌；混乱；杂乱；不确定",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:889 (id=9740)"
+    }
+  },
+  {
+    "kanji": "渇く",
+    "kana": "かわく",
+    "meaning": "口渴；渴望；渴求",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:569 (id=2154)"
+    }
+  },
+  {
+    "kanji": "渋い",
+    "kana": "しぶい",
+    "meaning": "涩的；苦涩的；朴素雅致的；低调精致的；阴沉的；闷闷不乐的",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:483 (id=6004)"
+    }
+  },
+  {
+    "kanji": "渡り",
+    "kana": "わたり",
+    "meaning": "渡过；通行；进口；迁徙；流浪者",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:872 (id=9627)"
+    }
+  },
+  {
+    "kanji": "渦",
+    "kana": "うず",
+    "meaning": "漩涡；涡流；回旋；急流",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:739 (id=8075)"
+    }
+  },
+  {
+    "kanji": "湿る",
+    "kana": "しめる",
+    "meaning": "潮湿；变湿；情绪低落；无精打采",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:411 (id=5087)"
+    }
+  },
+  {
+    "kanji": "漆",
+    "kana": "うるし",
+    "meaning": "漆；漆树",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:897 (id=9770)"
+    }
+  },
+  {
+    "kanji": "潤い",
+    "kana": "うるおい",
+    "meaning": "水分；滋润；丰富；温暖；情趣；宽裕；利润",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:878 (id=9682)"
+    }
+  },
+  {
+    "kanji": "無実",
+    "kana": "むじつ",
+    "meaning": "无罪；清白；诬告；缺乏事实；空洞",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:848 (id=9365)"
+    }
+  },
+  {
+    "kanji": "無心",
+    "kana": "むしん",
+    "meaning": "天真；心无杂念；无心；无知觉",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:929 (id=10097)"
+    }
+  },
+  {
+    "kanji": "犯す",
+    "kana": "おかす",
+    "meaning": "犯下罪行或错误；违反；侵犯；强奸；玷污",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:604 (id=7197)"
+    }
+  },
+  {
+    "kanji": "狩り",
+    "kana": "かり",
+    "meaning": "狩猎；捕猎；采集；采摘；观赏；追捕；围捕",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:510 (id=6390)"
+    }
+  },
+  {
+    "kanji": "猛",
+    "kana": "もう",
+    "meaning": "精力充沛；凶猛；极度；严重",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:849 (id=9369)"
+    }
+  },
+  {
+    "kanji": "番",
+    "kana": "ばん",
+    "meaning": "号码；轮到的次序；值班；排名",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:127 (id=1582)"
+    }
+  },
+  {
+    "kanji": "疑似",
+    "kana": "ぎじ",
+    "meaning": "模拟的；疑似的",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:1018 (id=10915)"
+    }
+  },
+  {
+    "kanji": "白熱",
+    "kana": "はくねつ",
+    "meaning": "白热；白炽；白光；激烈；达到高潮",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:862 (id=9549)"
+    }
+  },
+  {
+    "kanji": "白衣",
+    "kana": "はくい",
+    "meaning": "白衣；白袍；医生等穿的白大褂；俗人",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:538 (id=6821)"
+    }
+  },
+  {
+    "kanji": "盲目",
+    "kana": "もうもく",
+    "meaning": "盲目；盲信；鲁莽",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:920 (id=9981)"
+    }
+  },
+  {
+    "kanji": "直下",
+    "kana": "ちょっか",
+    "meaning": "正下方；垂直下落",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:534 (id=6732)"
+    }
+  },
+  {
+    "kanji": "直前",
+    "kana": "ちょくぜん",
+    "meaning": "紧接之前；正前方",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:230 (id=3531)"
+    }
+  },
+  {
+    "kanji": "相対",
+    "kana": "そうたい",
+    "meaning": "相对性；相对的；面对；应对",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:484 (id=6047)"
+    }
+  },
+  {
+    "kanji": "相手",
+    "kana": "あいて",
+    "meaning": "对方；对象；伙伴；对手",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:117 (id=1478)"
+    }
+  },
+  {
+    "kanji": "省",
+    "kana": "しょう",
+    "meaning": "部门；省；中国的省；节省；节约",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:437 (id=5381)"
+    }
+  },
+  {
+    "kanji": "真実",
+    "kana": "しんじつ",
+    "meaning": "真相；现实；真实地；确实；绝对真理",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:767 (id=8368)"
+    }
+  },
+  {
+    "kanji": "知らず",
+    "kana": "しらず",
+    "meaning": "不知；不受影响；不管",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:440 (id=5387)"
+    }
+  },
+  {
+    "kanji": "知事",
+    "kana": "ちじ",
+    "meaning": "都道府县知事；地方行政长官",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:662 (id=7536)"
+    }
+  },
+  {
+    "kanji": "砕ける",
+    "kana": "くだける",
+    "meaning": "破碎；崩塌；瓦解；消退；冷却；意志消沉；变得不拘谨；变得亲切",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:599 (id=7161)"
+    }
+  },
+  {
+    "kanji": "確固",
+    "kana": "かっこ",
+    "meaning": "坚定；不可动摇；坚决",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:971 (id=10587)"
+    }
+  },
+  {
+    "kanji": "祝い",
+    "kana": "いわい",
+    "meaning": "庆祝；祝贺；贺礼；祝贺礼物",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:171 (id=2933)"
+    }
+  },
+  {
+    "kanji": "禁煙",
+    "kana": "きんえん",
+    "meaning": "禁烟；戒烟；禁止吸烟",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:147 (id=1819)"
+    }
+  },
+  {
+    "kanji": "空",
+    "kana": "から",
+    "meaning": "空；空手；无效；虚假；无谓；不真诚",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:574 (id=2600)"
+    }
+  },
+  {
+    "kanji": "空洞化",
+    "kana": "くうどうか",
+    "meaning": "空心化；使失去实质；去工业化",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:1013 (id=10888)"
+    }
+  },
+  {
+    "kanji": "突き当たる",
+    "kana": "つきあたる",
+    "meaning": "撞上；走到尽头；遇到困难或问题",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:423 (id=5246)"
+    }
+  },
+  {
+    "kanji": "突っ張る",
+    "kana": "つっぱる",
+    "meaning": "抽筋或绷紧；固执坚持；逞强；装腔作势；蛮横不服管",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:785 (id=8521)"
+    }
+  },
+  {
+    "kanji": "窮屈",
+    "kana": "きゅうくつ",
+    "meaning": "狭窄的；紧的；拘谨的；正式刻板的；拘束不自在的",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:750 (id=8168)"
+    }
+  },
+  {
+    "kanji": "筋",
+    "kana": "すじ",
+    "meaning": "肌肉；筋腱；血管；纤维；情节；脉络",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:400 (id=5003)"
+    }
+  },
+  {
+    "kanji": "節",
+    "kana": "ふし",
+    "meaning": "关节；曲调；竹节；木节；节疤",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:420 (id=5167)"
+    }
+  },
+  {
+    "kanji": "粒状",
+    "kana": "りゅうじょう",
+    "meaning": "颗粒状的；颗粒化的",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:1023 (id=10934)"
+    }
+  },
+  {
+    "kanji": "純",
+    "kana": "じゅん",
+    "meaning": "纯真；纯洁；天真；纯粹；未混杂",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:951 (id=10342)"
+    }
+  },
+  {
+    "kanji": "紙面",
+    "kana": "しめん",
+    "meaning": "版面空间；纸面；书信；文字；文件",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:532 (id=6717)"
+    }
+  },
+  {
+    "kanji": "細かい",
+    "kana": "こまかい",
+    "meaning": "细小的；详细的；琐碎的；细致的",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:103 (id=1206)"
+    }
+  },
+  {
+    "kanji": "細める",
+    "kana": "ほそめる",
+    "meaning": "使变窄；调小火力；减弱",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:939 (id=10200)"
+    }
+  },
+  {
+    "kanji": "細工",
+    "kana": "さいく",
+    "meaning": "加工；手艺；工艺；诡计；手段；暗中摆弄",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:687 (id=7720)"
+    }
+  },
+  {
+    "kanji": "結び",
+    "kana": "むすび",
+    "meaning": "结尾；连接；结；打结",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:270 (id=3760)"
+    }
+  },
+  {
+    "kanji": "繕う",
+    "kana": "つくろう",
+    "meaning": "修补；修理；整理仪容；整饰衣着；掩饰；掩盖错误",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:771 (id=8412)"
+    }
+  },
+  {
+    "kanji": "繋がる",
+    "kana": "つながる",
+    "meaning": "连接；相连；接通；导致；带来（结果）",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:295 (id=172)"
+    }
+  },
+  {
+    "kanji": "置く",
+    "kana": "おく",
+    "meaning": "放；放置；留在",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:45 (id=163)"
+    }
+  },
+  {
+    "kanji": "美意識",
+    "kana": "びいしき",
+    "meaning": "审美意识；仪容意识",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:906 (id=9891)"
+    }
+  },
+  {
+    "kanji": "羽",
+    "kana": "はね",
+    "meaning": "羽毛；翅膀；叶片（扇子、螺旋桨等）",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:353 (id=4745)"
+    }
+  },
+  {
+    "kanji": "翻す",
+    "kana": "ひるがえす",
+    "meaning": "翻转；改变主意；推翻决定；收回话；使旗帜飘扬",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:847 (id=9357)"
+    }
+  },
+  {
+    "kanji": "耳目",
+    "kana": "じもく",
+    "meaning": "耳目；见闻；关注；注意力",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:899 (id=9787)"
+    }
+  },
+  {
+    "kanji": "肝",
+    "kana": "きも",
+    "meaning": "肝脏；内脏；胆量；勇气；要点；关键",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:745 (id=8133)"
+    }
+  },
+  {
+    "kanji": "肥える",
+    "kana": "こえる",
+    "meaning": "变胖；增重；使土壤肥沃；有鉴赏力；有眼光；变得精通",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:516 (id=6472)"
+    }
+  },
+  {
+    "kanji": "胴",
+    "kana": "どう",
+    "meaning": "躯干；身体；腹部；腰部；剑道胸甲；鼓身；乐器主体；船身",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:840 (id=9263)"
+    }
+  },
+  {
+    "kanji": "腕",
+    "kana": "うで",
+    "meaning": "手臂；本领；技术；能力",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:113 (id=1384)"
+    }
+  },
+  {
+    "kanji": "臨む",
+    "kana": "のぞむ",
+    "meaning": "面向；俯瞰；面对；迎接；应对；处理",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:517 (id=6506)"
+    }
+  },
+  {
+    "kanji": "自然",
+    "kana": "しぜん",
+    "meaning": "自然；自然的；自然而然地",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:105 (id=1227)"
+    }
+  },
+  {
+    "kanji": "自重",
+    "kana": "じちょう",
+    "meaning": "自尊；谨慎；克制；保重身体；注意健康",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:869 (id=9609)"
+    }
+  },
+  {
+    "kanji": "至上",
+    "kana": "しじょう",
+    "meaning": "至高；至上",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:909 (id=9904)"
+    }
+  },
+  {
+    "kanji": "色づく",
+    "kana": "いろづく",
+    "meaning": "变色；转红或转黄；成熟变色；进入青春期",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:658 (id=7512)"
+    }
+  },
+  {
+    "kanji": "茫[ぼう]漠",
+    "kana": "ぼうばく",
+    "meaning": "广阔；无边无际；模糊；不明确",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:1039 (id=11054)"
+    }
+  },
+  {
+    "kanji": "華やか",
+    "kana": "はなやか",
+    "meaning": "华丽的；鲜艳的；引人注目的；繁荣的；兴盛的",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:744 (id=8102)"
+    }
+  },
+  {
+    "kanji": "血肉",
+    "kana": "けつにく",
+    "meaning": "血亲；骨肉；肉体",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:1007 (id=10845)"
+    }
+  },
+  {
+    "kanji": "行程",
+    "kana": "こうてい",
+    "meaning": "旅程；路线；距离；行程；日程；活塞行程；开关行程",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:959 (id=10445)"
+    }
+  },
+  {
+    "kanji": "親父",
+    "kana": "おやじ",
+    "meaning": "父亲；老爸；中老年男人；老头；老板",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:626 (id=7290)"
+    }
+  },
+  {
+    "kanji": "観念",
+    "kana": "かんねん",
+    "meaning": "观念；想法；责任感；死心；认命；有所准备",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:397 (id=4971)"
+    }
+  },
+  {
+    "kanji": "角",
+    "kana": "つの",
+    "meaning": "角；鹿角；触角；角状突起",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:961 (id=10497)"
+    }
+  },
+  {
+    "kanji": "言いつける",
+    "kana": "いいつける",
+    "meaning": "吩咐；告发；常说；惯于说",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:404 (id=5030)"
+    }
+  },
+  {
+    "kanji": "訪れ",
+    "kana": "おとずれ",
+    "meaning": "来访；到来；来临；出现；消息；音讯",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:528 (id=6682)"
+    }
+  },
+  {
+    "kanji": "誘い",
+    "kana": "さそい",
+    "meaning": "邀请；介绍；诱惑",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:278 (id=3804)"
+    }
+  },
+  {
+    "kanji": "語学",
+    "kana": "ごがく",
+    "meaning": "语言学习；语言学",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:224 (id=3481)"
+    }
+  },
+  {
+    "kanji": "誰一人",
+    "kana": "だれひとり",
+    "meaning": "（不）任何一个人；（不）一个人也没有",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:466 (id=5696)"
+    }
+  },
+  {
+    "kanji": "講義",
+    "kana": "こうぎ",
+    "meaning": "讲课；讲座；课程",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:148 (id=1839)"
+    }
+  },
+  {
+    "kanji": "貧困",
+    "kana": "ひんこん",
+    "meaning": "贫困；匮乏；短缺",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:700 (id=7872)"
+    }
+  },
+  {
+    "kanji": "賜る",
+    "kana": "たまわる",
+    "meaning": "承蒙赐予；获赐；赐予；授予",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:480 (id=5977)"
+    }
+  },
+  {
+    "kanji": "足下",
+    "kana": "あしもと",
+    "meaning": "脚下；步态；步伐；眼下；当前",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:325 (id=4349)"
+    }
+  },
+  {
+    "kanji": "身につける",
+    "kana": "みにつける",
+    "meaning": "掌握；学会；携带；穿戴",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:276 (id=3797)"
+    }
+  },
+  {
+    "kanji": "身になる",
+    "kana": "みになる",
+    "meaning": "有益；有帮助；对身心有益；设身处地；换位思考",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:1014 (id=10897)"
+    }
+  },
+  {
+    "kanji": "追い込む",
+    "kana": "おいこむ",
+    "meaning": "赶入；驱赶；逼入困境；迫使；加紧推进；拼尽全力",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:486 (id=6081)"
+    }
+  },
+  {
+    "kanji": "逆手",
+    "kana": "さかて",
+    "meaning": "反握；交叉握；反手握",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:917 (id=9975)"
+    }
+  },
+  {
+    "kanji": "達者",
+    "kana": "たっしゃ",
+    "meaning": "健康强壮的；擅长的；高手；专家",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:775 (id=8444)"
+    }
+  },
+  {
+    "kanji": "還元",
+    "kana": "かんげん",
+    "meaning": "还原；返还；减少；化学还原；脱氧",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:746 (id=8135)"
+    }
+  },
+  {
+    "kanji": "酔う",
+    "kana": "よう",
+    "meaning": "醉；晕车；晕船；陶醉；着迷",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:201 (id=3289)"
+    }
+  },
+  {
+    "kanji": "里",
+    "kana": "さと",
+    "meaning": "村庄；乡下；故乡",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:888 (id=9735)"
+    }
+  },
+  {
+    "kanji": "重宝",
+    "kana": "ちょうほう",
+    "meaning": "方便的；有用的；顺手的；派得上用场；宝物",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:764 (id=8334)"
+    }
+  },
+  {
+    "kanji": "鍵",
+    "kana": "かぎ",
+    "meaning": "钥匙；锁；关键；线索",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:57 (id=471)"
+    }
+  },
+  {
+    "kanji": "長",
+    "kana": "ちょう",
+    "meaning": "长；长时间；首长；负责人；长处；优点",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:109 (id=1294)"
+    }
+  },
+  {
+    "kanji": "限る",
+    "kana": "かぎる",
+    "meaning": "限制；限定；限于；最好不过；莫过于",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:405 (id=5031)"
+    }
+  },
+  {
+    "kanji": "陰影",
+    "kana": "いんえい",
+    "meaning": "阴影；阴暗；细微意味；微妙之处",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:976 (id=10638)"
+    }
+  },
+  {
+    "kanji": "隙",
+    "kana": "すき",
+    "meaning": "空隙；空当；间隔；空闲时间；疏忽时机；弱点；破绽；缺陷",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:598 (id=7152)"
+    }
+  },
+  {
+    "kanji": "障害",
+    "kana": "しょうがい",
+    "meaning": "障碍；残障；功能障碍；缺陷",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:416 (id=5135)"
+    }
+  },
+  {
+    "kanji": "雑食",
+    "kana": "ざっしょく",
+    "meaning": "杂食的",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:1005 (id=10827)"
+    }
+  },
+  {
+    "kanji": "難",
+    "kana": "なん",
+    "meaning": "困难；麻烦；困苦；短缺；灾难；危险；过失；缺陷",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:441 (id=5389)"
+    }
+  },
+  {
+    "kanji": "露",
+    "kana": "つゆ",
+    "meaning": "露水；眼泪；一点也不；丝毫不",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:579 (id=7076)"
+    }
+  },
+  {
+    "kanji": "青",
+    "kana": "あお",
+    "meaning": "蓝色；绿色（信号灯）；未成熟",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:60 (id=585)"
+    }
+  },
+  {
+    "kanji": "青い",
+    "kana": "あおい",
+    "meaning": "蓝色的；绿色的；未成熟的；青涩的",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:61 (id=586)"
+    }
+  },
+  {
+    "kanji": "青臭い",
+    "kana": "あおくさい",
+    "meaning": "没经验；幼稚；天真；有青草味",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:934 (id=10139)"
+    }
+  },
+  {
+    "kanji": "非",
+    "kana": "ひ",
+    "meaning": "过错；错误；不顺；不利；不；非",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:698 (id=7868)"
+    }
+  },
+  {
+    "kanji": "面倒",
+    "kana": "めんどう",
+    "meaning": "麻烦；费事；困难；照料；照顾",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:178 (id=3123)"
+    }
+  },
+  {
+    "kanji": "頂戴",
+    "kana": "ちょうだい",
+    "meaning": "领受；得到；接受；吃；喝；享用",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:602 (id=7188)"
+    }
+  },
+  {
+    "kanji": "預かる",
+    "kana": "あずかる",
+    "meaning": "照看；保管；受托负责；暂存；暂不作决定",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:234 (id=3569)"
+    }
+  },
+  {
+    "kanji": "頼りない",
+    "kana": "たよりない",
+    "meaning": "不可靠；模糊不定；无助；孤苦无依；担心；不安",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:633 (id=7352)"
+    }
+  },
+  {
+    "kanji": "顕[あら]わ",
+    "kana": "あらわ",
+    "meaning": "裸露的；暴露的；不加掩饰的；公开的；显露的",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:801 (id=8721)"
+    }
+  },
+  {
+    "kanji": "飲む",
+    "kana": "のむ",
+    "meaning": "喝；服用；抽（烟）",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:42 (id=118)"
+    }
+  },
+  {
+    "kanji": "首尾",
+    "kana": "しゅび",
+    "meaning": "始终；经过；结果；顺利处理",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:879 (id=9684)"
+    }
+  },
+  {
+    "kanji": "骨折る",
+    "kana": "ほねおる",
+    "meaning": "费力；尽力；折断骨头",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:986 (id=10704)"
+    }
+  },
+  {
+    "kanji": "高",
+    "kana": "たか",
+    "meaning": "数量；金额；总量；销售额",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:263 (id=3731)"
+    }
+  },
+  {
+    "kanji": "高名",
+    "kana": "こうめい",
+    "meaning": "著名的；有声望的；您的名字",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:576 (id=7062)"
+    }
+  },
+  {
+    "kanji": "高速",
+    "kana": "こうそく",
+    "meaning": "高速的；快速的；高速公路；快车",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:163 (id=2616)"
+    }
+  },
+  {
+    "kanji": "案内",
+    "kana": "あんない",
+    "meaning": "引导；带路；介绍；通知",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:90 (id=3)"
+    }
+  },
+  {
+    "kanji": "答え",
+    "kana": "こたえ",
+    "meaning": "答案；回答；答复",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:36 (id=28)"
+    }
+  },
+  {
+    "kanji": "相談",
+    "kana": "そうだん",
+    "meaning": "商量；协商；咨询",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:91 (id=56)"
+    }
+  },
+  {
+    "kanji": "病院",
+    "kana": "びょういん",
+    "meaning": "医院；诊所",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:38 (id=64)"
+    }
+  },
+  {
+    "kanji": "電話",
+    "kana": "でんわ",
+    "meaning": "电话；打电话",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:44 (id=137)"
+    }
+  },
+  {
+    "kanji": "会社員",
+    "kana": "かいしゃいん",
+    "meaning": "公司职员；上班族",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:47 (id=175)"
+    }
+  },
+  {
+    "kanji": "stove",
+    "kana": "ストーブ",
+    "meaning": "炉子；取暖器",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:49 (id=295)"
+    }
+  },
+  {
+    "kanji": "どれぐらい",
+    "kana": "どれぐらい",
+    "meaning": "多久；多少",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:52 (id=344)"
+    }
+  },
+  {
+    "kanji": "本",
+    "kana": "ほん",
+    "meaning": "书；（量词）本；本、当前",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:62 (id=706)"
+    }
+  },
+  {
+    "kanji": "心",
+    "kana": "しん",
+    "meaning": "心；中心；核心",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:73 (id=846)"
+    }
+  },
+  {
+    "kanji": "あと",
+    "kana": "あと",
+    "meaning": "之后；还剩；另外",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:75 (id=849)"
+    }
+  },
+  {
+    "kanji": "南側",
+    "kana": "みなみがわ",
+    "meaning": "南侧；南面",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:77 (id=861)"
+    }
+  },
+  {
+    "kanji": "街",
+    "kana": "まち",
+    "meaning": "街道；街区；城镇；市中心",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:94 (id=981)"
+    }
+  },
+  {
+    "kanji": "酒",
+    "kana": "さけ",
+    "meaning": "酒；酒类；饮酒",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:97 (id=1006)"
+    }
+  },
+  {
+    "kanji": "先に",
+    "kana": "さきに",
+    "meaning": "先；提前；事先",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:98 (id=1025)"
+    }
+  },
+  {
+    "kanji": "仕方",
+    "kana": "しかた",
+    "meaning": "做法；方法；办法；没办法",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:104 (id=1211)"
+    }
+  },
+  {
+    "kanji": "位置",
+    "kana": "いち",
+    "meaning": "位置；地点；地位；处境",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:115 (id=1416)"
+    }
+  },
+  {
+    "kanji": "輸出",
+    "kana": "ゆしゅつ",
+    "meaning": "出口；出口贸易",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:118 (id=1511)"
+    }
+  },
+  {
+    "kanji": "対",
+    "kana": "たい",
+    "meaning": "对；相对；一对；成对；对比",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:126 (id=1579)"
+    }
+  },
+  {
+    "kanji": "ご覧になる",
+    "kana": "ごらんになる",
+    "meaning": "看（尊敬语）；观看；尝试做",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:144 (id=1732)"
+    }
+  },
+  {
+    "kanji": "お風呂",
+    "kana": "おふろ",
+    "meaning": "洗澡；浴室；浴缸",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:79 (id=2272)"
+    }
+  },
+  {
+    "kanji": "お爺さん",
+    "kana": "おじいさん",
+    "meaning": "祖父；爷爷；老爷爷",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:81 (id=2315)"
+    }
+  },
+  {
+    "kanji": "脚",
+    "kana": "あし",
+    "meaning": "脚；腿",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:82 (id=2476)"
+    }
+  },
+  {
+    "kanji": "イチゴ",
+    "kana": "イチゴ",
+    "meaning": "草莓",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:83 (id=2528)"
+    }
+  },
+  {
+    "kanji": "来店",
+    "kana": "らいてん",
+    "meaning": "到店；光临",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:179 (id=3130)"
+    }
+  },
+  {
+    "kanji": "産",
+    "kana": "さん",
+    "meaning": "出生；产地；产物；……产；产自……",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:183 (id=3154)"
+    }
+  },
+  {
+    "kanji": "領収書",
+    "kana": "りょうしゅうしょ",
+    "meaning": "收据；付款凭证",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:207 (id=3369)"
+    }
+  },
+  {
+    "kanji": "grand",
+    "kana": "グランド",
+    "meaning": "宏大，盛大",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:216 (id=3417)"
+    }
+  },
+  {
+    "kanji": "申し訳",
+    "kana": "もうしわけ",
+    "meaning": "道歉；借口",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:229 (id=3511)"
+    }
+  },
+  {
+    "kanji": "定期",
+    "kana": "ていき",
+    "meaning": "固定期限；定期的；周期性的",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:231 (id=3536)"
+    }
+  },
+  {
+    "kanji": "期",
+    "kana": "き",
+    "meaning": "时期；时机；机会；时代",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:237 (id=3582)"
+    }
+  },
+  {
+    "kanji": "たとえ",
+    "kana": "たとえ",
+    "meaning": "即使",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:243 (id=3595)"
+    }
+  },
+  {
+    "kanji": "施設",
+    "kana": "しせつ",
+    "meaning": "设施；机构；场所；福利院",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:246 (id=3629)"
+    }
+  },
+  {
+    "kanji": "up",
+    "kana": "アップ",
+    "meaning": "上升；增加；提高；领先；结束",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:256 (id=3671)"
+    }
+  },
+  {
+    "kanji": "左利き",
+    "kana": "ひだりきき",
+    "meaning": "左撇子；爱喝酒的人",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:260 (id=3706)"
+    }
+  },
+  {
+    "kanji": "町内",
+    "kana": "ちょうない",
+    "meaning": "街区内；邻里；社区",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:283 (id=3866)"
+    }
+  },
+  {
+    "kanji": "ぶどう",
+    "kana": "ぶどう",
+    "meaning": "葡萄",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:304 (id=4028)"
+    }
+  },
+  {
+    "kanji": "出来事",
+    "kana": "できごと",
+    "meaning": "事情；发生的事；事件",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:316 (id=4282)"
+    }
+  },
+  {
+    "kanji": "創作",
+    "kana": "そうさく",
+    "meaning": "创作；创造；编造；虚构",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:324 (id=4344)"
+    }
+  },
+  {
+    "kanji": "埃[ほこり]",
+    "kana": "ほこり",
+    "meaning": "尘埃，灰尘",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:331 (id=4464)"
+    }
+  },
+  {
+    "kanji": "温暖化",
+    "kana": "おんだんか",
+    "meaning": "（全球）变暖",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:343 (id=4514)"
+    }
+  },
+  {
+    "kanji": "外来",
+    "kana": "がいらい",
+    "meaning": "外来；门诊",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:344 (id=4525)"
+    }
+  },
+  {
+    "kanji": "観",
+    "kana": "かん",
+    "meaning": "外观；景象；观照；观点；看法",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:345 (id=4531)"
+    }
+  },
+  {
+    "kanji": "ほうき",
+    "kana": "ほうき",
+    "meaning": "扫帚",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:372 (id=4851)"
+    }
+  },
+  {
+    "kanji": "区分",
+    "kana": "くぶん",
+    "meaning": "划分；分隔；分类；分组",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:401 (id=5006)"
+    }
+  },
+  {
+    "kanji": "劇",
+    "kana": "げき",
+    "meaning": "戏剧；剧本",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:402 (id=5015)"
+    }
+  },
+  {
+    "kanji": "桁",
+    "kana": "けた",
+    "meaning": "位数；数量级；横梁",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:403 (id=5017)"
+    }
+  },
+  {
+    "kanji": "収穫",
+    "kana": "しゅうかく",
+    "meaning": "收获；成果；收益；捕获物",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:413 (id=5101)"
+    }
+  },
+  {
+    "kanji": "虹",
+    "kana": "にじ",
+    "meaning": "彩虹",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:424 (id=5248)"
+    }
+  },
+  {
+    "kanji": "くじ",
+    "kana": "くじ",
+    "meaning": "签，抽签",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:451 (id=5418)"
+    }
+  },
+  {
+    "kanji": "錆[さび]",
+    "kana": "さび",
+    "meaning": "锈",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:453 (id=5431)"
+    }
+  },
+  {
+    "kanji": "思いつき",
+    "kana": "おもいつき",
+    "meaning": "想法；念头；计划；一时起意；主意",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:479 (id=5966)"
+    }
+  },
+  {
+    "kanji": "募金",
+    "kana": "ぼきん",
+    "meaning": "募捐；筹款；捐款；捐赠",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:489 (id=6151)"
+    }
+  },
+  {
+    "kanji": "eco",
+    "kana": "エコ",
+    "meaning": "环保的；生态的；节能的",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:493 (id=6217)"
+    }
+  },
+  {
+    "kanji": "蝶[ちょう]",
+    "kana": "ちょう",
+    "meaning": "蝴蝶，蝶类",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:511 (id=6435)"
+    }
+  },
+  {
+    "kanji": "発散",
+    "kana": "はっさん",
+    "meaning": "发散；散发；辐射；扩散；释放情绪；发泄；光线发散",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:515 (id=6468)"
+    }
+  },
+  {
+    "kanji": "一段落",
+    "kana": "いちだんらく",
+    "meaning": "告一段落；进入下一阶段前稳定下来；第一阶段完成；段落",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:523 (id=6597)"
+    }
+  },
+  {
+    "kanji": "運動神経",
+    "kana": "うんどうしんけい",
+    "meaning": "运动神经；运动能力；动作协调性；反应能力",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:525 (id=6644)"
+    }
+  },
+  {
+    "kanji": "序列",
+    "kana": "じょれつ",
+    "meaning": "排名；顺序；等级；层级",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:527 (id=6674)"
+    }
+  },
+  {
+    "kanji": "早期",
+    "kana": "そうき",
+    "meaning": "早期；初期阶段",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:529 (id=6686)"
+    }
+  },
+  {
+    "kanji": "居場所",
+    "kana": "いばしょ",
+    "meaning": "所在；位置；归属之处；适合自己的位置；能自在做自己的地方",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:536 (id=6801)"
+    }
+  },
+  {
+    "kanji": "根っこ",
+    "kana": "ねっこ",
+    "meaning": "根；树桩；问题的根源；根基；基础；起源；来源",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:540 (id=6838)"
+    }
+  },
+  {
+    "kanji": "box",
+    "kana": "ボックス",
+    "meaning": "箱子；容器；垃圾箱；剧场包厢；餐馆包间；乐池；小型方形建筑",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:541 (id=6852)"
+    }
+  },
+  {
+    "kanji": "shuttle",
+    "kana": "シャトル",
+    "meaning": "接驳服务；摆渡服务；织布梭子",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:545 (id=6906)"
+    }
+  },
+  {
+    "kanji": "乖[かい]離",
+    "kana": "かいり",
+    "meaning": "乖离，背离",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:547 (id=6969)"
+    }
+  },
+  {
+    "kanji": "tablet",
+    "kana": "タブレット",
+    "meaning": "药片；药丸；平板电脑；石板；刻字板",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:557 (id=7027)"
+    }
+  },
+  {
+    "kanji": "頭角",
+    "kana": "とうかく",
+    "meaning": "头角",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:562 (id=7051)"
+    }
+  },
+  {
+    "kanji": "銀",
+    "kana": "ぎん",
+    "meaning": "银；银色；银牌；银奖；第二名",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:577 (id=7073)"
+    }
+  },
+  {
+    "kanji": "大学院生",
+    "kana": "だいがくいんせい",
+    "meaning": "研究生；硕士生；博士生",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:578 (id=7075)"
+    }
+  },
+  {
+    "kanji": "赤字",
+    "kana": "あかじ",
+    "meaning": "赤字；亏损；红字；红字批改",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:585 (id=7104)"
+    }
+  },
+  {
+    "kanji": "罪",
+    "kana": "つみ",
+    "meaning": "罪；犯罪；过失；刑罚；判决；惩罚；责任；罪责",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:600 (id=7162)"
+    }
+  },
+  {
+    "kanji": "祝日",
+    "kana": "しゅくじつ",
+    "meaning": "法定节假日；公众假日",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:601 (id=7170)"
+    }
+  },
+  {
+    "kanji": "裸",
+    "kana": "はだか",
+    "meaning": "裸体；裸露；光秃；无遮盖；身无分文",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:609 (id=7210)"
+    }
+  },
+  {
+    "kanji": "額",
+    "kana": "がく",
+    "meaning": "相框；画框；画；金额；数额",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:612 (id=7215)"
+    }
+  },
+  {
+    "kanji": "癌[がん]",
+    "kana": "がん",
+    "meaning": "癌症",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:614 (id=7219)"
+    }
+  },
+  {
+    "kanji": "指先",
+    "kana": "ゆびさき",
+    "meaning": "指尖；手指；脚趾尖；脚趾",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:621 (id=7273)"
+    }
+  },
+  {
+    "kanji": "寺院",
+    "kana": "じいん",
+    "meaning": "佛寺；宗教建筑；教堂；大教堂；清真寺",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:622 (id=7275)"
+    }
+  },
+  {
+    "kanji": "くぎ",
+    "kana": "くぎ",
+    "meaning": "钉子",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:635 (id=7361)"
+    }
+  },
+  {
+    "kanji": "くず",
+    "kana": "くず",
+    "meaning": "碎屑；废物",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:641 (id=7393)"
+    }
+  },
+  {
+    "kanji": "隕[いん]石",
+    "kana": "いんせき",
+    "meaning": "陨石",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:645 (id=7412)"
+    }
+  },
+  {
+    "kanji": "為替",
+    "kana": "かわせ",
+    "meaning": "汇票；汇兑；外汇",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:652 (id=7440)"
+    }
+  },
+  {
+    "kanji": "衛生",
+    "kana": "えいせい",
+    "meaning": "卫生；清洁；健康；厕所；洗手间",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:654 (id=7445)"
+    }
+  },
+  {
+    "kanji": "基盤",
+    "kana": "きばん",
+    "meaning": "根基，基础",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:655 (id=7461)"
+    }
+  },
+  {
+    "kanji": "嗜[し]好",
+    "kana": "しこう",
+    "meaning": "嗜好，爱好",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:673 (id=7619)"
+    }
+  },
+  {
+    "kanji": "活性",
+    "kana": "かっせい",
+    "meaning": "活性；活跃的",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:682 (id=7660)"
+    }
+  },
+  {
+    "kanji": "発信",
+    "kana": "はっしん",
+    "meaning": "发送；传递；提交；发布信息；表达或传达想法",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:697 (id=7862)"
+    }
+  },
+  {
+    "kanji": "浜辺",
+    "kana": "はまべ",
+    "meaning": "海滨；海滩",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:699 (id=7871)"
+    }
+  },
+  {
+    "kanji": "pair",
+    "kana": "ペア",
+    "meaning": "一对；一组两个；双桨船；两个同类的东西",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:725 (id=8005)"
+    }
+  },
+  {
+    "kanji": "一貫",
+    "kana": "いっかん",
+    "meaning": "一贯性；连贯性；整合；一贯重量；一贯寿司",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:737 (id=8062)"
+    }
+  },
+  {
+    "kanji": "究極",
+    "kana": "きゅうきょく",
+    "meaning": "终极的；最终的；最后的",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:749 (id=8167)"
+    }
+  },
+  {
+    "kanji": "経路",
+    "kana": "けいろ",
+    "meaning": "途径；路线；渠道；过程；阶段",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:754 (id=8202)"
+    }
+  },
+  {
+    "kanji": "劇団",
+    "kana": "げきだん",
+    "meaning": "剧团；戏剧公司",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:755 (id=8207)"
+    }
+  },
+  {
+    "kanji": "相場",
+    "kana": "そうば",
+    "meaning": "市价；行情；投机；一般评价；估价；声望",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:772 (id=8421)"
+    }
+  },
+  {
+    "kanji": "てっぺん",
+    "kana": "てっぺん",
+    "meaning": "顶；顶峰；午夜十二点；头顶；头盔顶部",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:782 (id=8490)"
+    }
+  },
+  {
+    "kanji": "日焼け",
+    "kana": "ひやけ",
+    "meaning": "晒伤；晒黑；晒成棕色；日晒变色；河流或土地干涸",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:786 (id=8529)"
+    }
+  },
+  {
+    "kanji": "納入",
+    "kana": "のうにゅう",
+    "meaning": "缴纳；上缴；供货；交货",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:787 (id=8540)"
+    }
+  },
+  {
+    "kanji": "例年",
+    "kana": "れいねん",
+    "meaning": "通常年份；往年；每年；一年一度",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:792 (id=8690)"
+    }
+  },
+  {
+    "kanji": "隔週",
+    "kana": "かくしゅう",
+    "meaning": "每隔一周；每两周",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:825 (id=8899)"
+    }
+  },
+  {
+    "kanji": "厚生",
+    "kana": "こうせい",
+    "meaning": "福利；社会福利",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:828 (id=8996)"
+    }
+  },
+  {
+    "kanji": "講読",
+    "kana": "こうどく",
+    "meaning": "讲解",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:830 (id=9009)"
+    }
+  },
+  {
+    "kanji": "風俗",
+    "kana": "ふうぞく",
+    "meaning": "风俗；习俗；公共道德；成人服务行业",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:843 (id=9328)"
+    }
+  },
+  {
+    "kanji": "返上",
+    "kana": "へんじょう",
+    "meaning": "归还；放弃；让出；交还",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:845 (id=9347)"
+    }
+  },
+  {
+    "kanji": "拮[きっ]抗",
+    "kana": "きっこう",
+    "meaning": "较量，对抗",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:856 (id=9442)"
+    }
+  },
+  {
+    "kanji": "軽装",
+    "kana": "けいそう",
+    "meaning": "轻便服装；轻便装备",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:861 (id=9543)"
+    }
+  },
+  {
+    "kanji": "解禁",
+    "kana": "かいきん",
+    "meaning": "解除禁令；开放时令；发布内容；揭示信息",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:865 (id=9573)"
+    }
+  },
+  {
+    "kanji": "漏 洩[えい]",
+    "kana": "ろうえい",
+    "meaning": "泄漏",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:866 (id=9585)"
+    }
+  },
+  {
+    "kanji": "謳[おう]歌",
+    "kana": "おうか",
+    "meaning": "讴歌，歌颂",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:868 (id=9607)"
+    }
+  },
+  {
+    "kanji": "土壌",
+    "kana": "どじょう",
+    "meaning": "土壤；滋生地；有利环境",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:870 (id=9616)"
+    }
+  },
+  {
+    "kanji": "基調",
+    "kana": "きちょう",
+    "meaning": "基调；基础；趋势；主调",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:873 (id=9642)"
+    }
+  },
+  {
+    "kanji": "reset",
+    "kana": "リセット",
+    "meaning": "重置；重新开始；从头来过",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:882 (id=9702)"
+    }
+  },
+  {
+    "kanji": "風通し",
+    "kana": "かぜとおし",
+    "meaning": "通风；组织内部沟通；开放",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:883 (id=9708)"
+    }
+  },
+  {
+    "kanji": "路線",
+    "kana": "ろせん",
+    "meaning": "路线；线路；方针；路线方向",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:884 (id=9715)"
+    }
+  },
+  {
+    "kanji": "最良",
+    "kana": "さいりょう",
+    "meaning": "最好的；理想的",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:886 (id=9722)"
+    }
+  },
+  {
+    "kanji": "背丈",
+    "kana": "せたけ",
+    "meaning": "身高；高度",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:892 (id=9758)"
+    }
+  },
+  {
+    "kanji": "彗[すい]星",
+    "kana": "すいせい",
+    "meaning": "彗星",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:894 (id=9762)"
+    }
+  },
+  {
+    "kanji": "潤滑油",
+    "kana": "じゅんかつゆ",
+    "meaning": "润滑油；使事情顺利进行的人或事",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:900 (id=9803)"
+    }
+  },
+  {
+    "kanji": "狸[たぬき]",
+    "kana": "たぬき",
+    "meaning": "貉；狡猾的人；老狐狸",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:908 (id=9903)"
+    }
+  },
+  {
+    "kanji": "砂 塵[じん]",
+    "kana": "さじん",
+    "meaning": "沙尘",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:915 (id=9953)"
+    }
+  },
+  {
+    "kanji": "ぬるぬる",
+    "kana": "ぬるぬる",
+    "meaning": "黏滑；油滑；流畅",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:918 (id=9977)"
+    }
+  },
+  {
+    "kanji": "放射状",
+    "kana": "ほうしゃじょう",
+    "meaning": "放射状的；辐射状的",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:919 (id=9979)"
+    }
+  },
+  {
+    "kanji": "家柄",
+    "kana": "いえがら",
+    "meaning": "家族地位；家世；血统；名门",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:923 (id=10007)"
+    }
+  },
+  {
+    "kanji": "杭[くい]",
+    "kana": "くい",
+    "meaning": "桩子",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:924 (id=10018)"
+    }
+  },
+  {
+    "kanji": "自力",
+    "kana": "じりき",
+    "meaning": "靠自己的力量；靠自己努力；自我救赎",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:945 (id=10262)"
+    }
+  },
+  {
+    "kanji": "蛙[かえる]",
+    "kana": "かえる",
+    "meaning": "青蛙，蛤蟆",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:952 (id=10347)"
+    }
+  },
+  {
+    "kanji": "出来栄え",
+    "kana": "できばえ",
+    "meaning": "结果；效果；表现；成效；做工；完成度",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:977 (id=10650)"
+    }
+  },
+  {
+    "kanji": "銀杏[いちょう]",
+    "kana": "いちょう",
+    "meaning": "银杏",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:981 (id=10674)"
+    }
+  },
+  {
+    "kanji": "雁[がん]",
+    "kana": "がん",
+    "meaning": "雁，大雁",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:982 (id=10679)"
+    }
+  },
+  {
+    "kanji": "後手",
+    "kana": "ごて",
+    "meaning": "失去主动；后手；后走；后手棋",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:983 (id=10682)"
+    }
+  },
+  {
+    "kanji": "筋立て",
+    "kana": "すじだて",
+    "meaning": "故事情节；梗概",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:992 (id=10751)"
+    }
+  },
+  {
+    "kanji": "叢[そう]生",
+    "kana": "そうせい",
+    "meaning": "簇生，丛生",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:995 (id=10789)"
+    }
+  },
+  {
+    "kanji": "饗[きょう]宴",
+    "kana": "きょうえん",
+    "meaning": "飨宴，盛宴",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:999 (id=10800)"
+    }
+  },
+  {
+    "kanji": "最速",
+    "kana": "さいそく",
+    "meaning": "最快的",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:1000 (id=10805)"
+    }
+  },
+  {
+    "kanji": "光 芒[ぼう]",
+    "kana": "こうぼう",
+    "meaning": "光芒",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:1003 (id=10814)"
+    }
+  },
+  {
+    "kanji": "税率",
+    "kana": "ぜいりつ",
+    "meaning": "关税；税率",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:1004 (id=10821)"
+    }
+  },
+  {
+    "kanji": "venture",
+    "kana": "ベンチャー",
+    "meaning": "冒险事业；创业项目",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:1025 (id=10962)"
+    }
+  },
+  {
+    "kanji": "一矢",
+    "kana": "いっし",
+    "meaning": "一支箭；反击；回敬",
+    "provenance": {
+      "kind": "2026-09-11 审校（含 2026-09-19 复核最终状态）",
+      "commit": "7ec8d30dadd9768b9446373c6231abde27fab3b5",
+      "reference": "docs/audits/2026-09-15-vocabulary-fixes.md:1026 (id=10971)"
+    }
+  }
+]

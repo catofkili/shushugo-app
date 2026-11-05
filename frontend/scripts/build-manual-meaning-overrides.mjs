@@ -1,10 +1,18 @@
-// 将 manual-meaning-rewrite 中人工撰写的释义整理成运行时迁移覆盖表。
+// 释义覆盖表的唯一写入口；只合并源头，不生成、不改写释义文本。
+// 优先级（后者覆盖前者）：manual-meaning-rewrite/batch-*/meanings.json →
+// manual-meaning-polish/batch-*.json → corrections.json →
+// manual-meaning-reviewed/distinction-source.json → 同目录其他释义 JSON（文件名升序）。
+// legacy-append-order.json 只保存历史追加顺序，不参与释义优先级。
+// 用法：node frontend/scripts/build-manual-meaning-overrides.mjs [--check]
+// --check 只读并逐字节断言产物一致；不能先写再检查，否则手改产物会被静默抹掉。
 // 这里只做 ID -> 日语词形的机械映射；不生成、不改写释义文本。
 
+import assert from "node:assert/strict";
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import initSqlJs from "sql.js";
+import { buildDistinctionMeaningSources } from "../../question-meaning-review/sync-distinction-meanings.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.join(here, "../..");
@@ -13,6 +21,10 @@ const sourceDir = path.join(repoRoot, "manual-meaning-rewrite");
 const polishDir = path.join(repoRoot, "manual-meaning-polish");
 const correctionPath = path.join(polishDir, "corrections.json");
 const outputPath = path.join(here, "../src/data/jlpt_meaning_overrides.json");
+const reviewedDir = path.join(here, "manual-meaning-reviewed");
+const distinctionPath = path.join(reviewedDir, "distinction-source.json");
+const orderPath = path.join(reviewedDir, "legacy-append-order.json");
+const checkOnly = process.argv.includes("--check");
 
 const SQL = await initSqlJs();
 const db = new SQL.Database(new Uint8Array(readFileSync(dbPath)));
@@ -90,10 +102,6 @@ correctionEntries.forEach((entry) => {
   const pair = `${word.kanji}\u0000${word.kana}`;
   byPair.set(pair, { kanji: word.kanji, kana: word.kana, meaning: String(entry.meaning_zh).trim(), merged: false });
 });
-const overrides = [...byPair.values()]
-  .map(({ kanji, kana, meaning }) => ({ kanji, kana, meaning }))
-  .sort((left, right) => `${left.kanji}\u0000${left.kana}`.localeCompare(`${right.kanji}\u0000${right.kana}`));
-
 // 5,163 条人工释义里，落在被合并掉的行上的那些会归并到同一个存活词形，
 // 所以期望值是「解析后互不相同的词形数」——链式合并可能三条并成一条，
 // 按 map 的条目数去减会算错。
@@ -104,7 +112,55 @@ const resolveId = (id) => {
 };
 const expected = new Set(entries.map((entry) => resolveId(entry.id))).size;
 const expectedTotal = expected + polishEntries.length;
-if (overrides.length !== expectedTotal) throw new Error(`人工释义数量异常: ${overrides.length}，期望 ${expectedTotal}`);
+if (byPair.size !== expectedTotal) throw new Error(`人工释义数量异常: ${byPair.size}，期望 ${expectedTotal}`);
 if (entries.length !== 5163) throw new Error(`人工释义条目数异常: ${entries.length}`);
-writeFileSync(outputPath, `${JSON.stringify(overrides, null, 2)}\n`);
-console.log(`✅ 写入 ${outputPath}: ${overrides.length} 条人工释义覆盖（剩余风格修订 ${polishEntries.length} 条，释义纠错 ${correctionEntries.length} 条）`);
+const distinctionEntries = JSON.parse(readFileSync(distinctionPath, "utf8"));
+assert.deepEqual(distinctionEntries, buildDistinctionMeaningSources(),
+  "辨析源头已过期：先运行 node question-meaning-review/sync-distinction-meanings.mjs");
+const reviewedFiles = readdirSync(reviewedDir)
+  .filter((name) => name.endsWith(".json") && !["distinction-source.json", "legacy-append-order.json"].includes(name))
+  .sort();
+for (const [file, records] of [
+  ["distinction-source.json", distinctionEntries],
+  ...reviewedFiles.map((name) => [name, JSON.parse(readFileSync(path.join(reviewedDir, name), "utf8"))]),
+]) {
+  const seenPairs = new Set();
+  for (const entry of records) {
+    const { kanji, kana, meaning, provenance } = entry;
+    assert.ok(typeof kanji === "string" && typeof kana === "string" && kana.length > 0
+      && typeof meaning === "string" && meaning.trim().length > 0, `释义源头格式错误: ${file}`);
+    assert.ok(provenance?.kind && provenance?.reference
+      && (provenance.commit === undefined || /^[a-f0-9]{40}$/.test(provenance.commit)),
+      `释义源头缺出处或提交号格式错误: ${file}: ${kanji} / ${kana}`);
+    const pair = `${kanji}\u0000${kana}`;
+    assert.ok(!seenPairs.has(pair), `同一源头文件重复词形: ${file}: ${kanji} / ${kana}`);
+    seenPairs.add(pair);
+    byPair.set(pair, { kanji, kana, meaning });
+  }
+}
+
+// 旧表是「6,252 条排序结果 + 397 条历史补入 + 受験移到末尾」。只保存这 398 条
+// 的排版顺序，不读取旧产物来决定释义或顺序；否则 CI 无法发现有人直接改了产物。
+const appendedPairs = JSON.parse(readFileSync(orderPath, "utf8"))
+  .map(({ kanji, kana }) => `${kanji}\u0000${kana}`);
+assert.equal(new Set(appendedPairs).size, appendedPairs.length, "历史追加顺序存在重复词形");
+for (const pair of appendedPairs) assert.ok(byPair.has(pair), `历史追加词形缺少释义源头: ${pair}`);
+const appendedSet = new Set(appendedPairs);
+const overrides = [
+  ...[...byPair.keys()].filter((pair) => !appendedSet.has(pair))
+    // 固定 locale，避免本机中文环境和 GitHub Ubuntu 默认环境产生不同排序。
+    .sort((left, right) => left.localeCompare(right, "en")),
+  ...appendedPairs,
+].map((pair) => {
+  const { kanji, kana, meaning } = byPair.get(pair);
+  return { kanji, kana, meaning };
+});
+const output = `${JSON.stringify(overrides, null, 2)}\n`;
+if (checkOnly) {
+  assert.ok(Buffer.from(output).equals(readFileSync(outputPath)),
+    "释义覆盖表与源头生成结果不一致；只改源头，再运行 node frontend/scripts/build-manual-meaning-overrides.mjs");
+} else {
+  writeFileSync(outputPath, output);
+}
+db.close();
+console.log(`✅ ${checkOnly ? "逐字节校验通过" : "写入"} ${outputPath}: ${overrides.length} 条释义覆盖`);

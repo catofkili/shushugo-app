@@ -856,3 +856,130 @@ FSRS 会按这次作答自己纠正；不能为迁移题面重写学习历史或
 
 范围目前只到 N1。以后若加入 N1 以上的词并决定纳入，修改判据里级别判断那一处即可，
 不扩方向、模式或数据库结构。
+
+## ⚠️ 词义普查为什么没起作用，以及下一次必须遵守的四条（2026-11-03 查明）
+
+起因：作者看到 温暖化、何らか、常温、営為 这类释义问题，问「上次全库词义审校（`docs/audits/2026-09-11/vocabulary-meaning-audit.md`，自称 10,919 条逐词查证、已应用）为什么没管用」。逐项核对后，原因有四个，全都有数字：
+
+### 1. 修好的释义只存在于一个「生成文件」里，后来被别的脚本覆盖了
+
+- `frontend/src/data/jlpt_meaning_overrides.json` 名义上由 `frontend/scripts/build-manual-meaning-overrides.mjs` 从 `manual-meaning-rewrite/`、`manual-meaning-polish/`（含 `corrections.json`）生成。
+  但 09-11 审校的 675 条修订**直接写进了这个生成文件**，源头目录里没有任何一份记录（例：`（全球）变暖` 在源头文件里搜不到）。
+- 09-19 的 `question-meaning-review/sync-distinction-meanings.mjs`（提交 7ec8d30d）**也直接改这个文件**，把 1,559 条辨析题面写进释义层，覆盖了一部分审校修订。
+- 结果：审校表里标「已应用」的 675 条，到 11-03 有 **220 条和现在用户看到的释义不一样**。例：何らか 审校定为「某种；某些；以某种方式」，现在是「稍微，一些（某种某些）」—— 审校指出的错词「稍微」又回来了。
+  （220 条里有些是后来有意精简，比如 考える →「思考」，不全是回退；要逐条看。）
+- 11-03 实测：现在重跑生成脚本，覆盖表从 6,650 条变成 6,253 条，**丢 397 条、改动 1,264 条**，审校的修订全部消失。也就是说这个「生成文件」实际上谁都不能重新生成。
+
+### 2. 查证绕道英文，中日同形词的坑原样放过
+
+审校的判据是「JMdict 英文义项」对「中文释义」。英文义项宽的时候，中文的错译照样「相符」：
+- 営為：JMdict = business; occupation → 中文「营，经营」判通过。实际是「（人的）作为、活动」。
+- 常温：JMdict 第二义项有 constant temperature → 中文「恒温；常温」判通过。日常义就是常温、室温，「恒温」放在第一个是误导。
+中日同形词（小心、営為、経営、勉強、深刻……）是中文母语学习者最容易被释义带偏的地方，恰好是英文中转最看不出来的地方。
+
+### 3. 「通过」大多是套话，没有留下真正比对过的证据
+
+10,919 条里判「通过」9,894 条，其中 **4,694 条的核对文字是同一句套话**「人工核对：词典 xxx，释义、词性与例句相符/一致」。这种记录无法区分「真的比对过」和「顺手盖章」。
+
+### 4. （本次会话自己的错）给审校的输入不是用户实际看到的释义
+
+11-02 判级别时，给 Codex 的释义取自 `jlpt_words_seed.json` 第 1 列（种子原文），不是「覆盖表 → 出厂库」之后的线上释义。Codex 标的 17 条「释义疑」里 **13 条在 App 里早已改好**，是误报。
+
+### 下一次普查（以及以后任何释义改动）必须遵守
+
+1. **输入只用线上释义**：`覆盖表.get((kanji, kana)) ?? nihongo.db.words.meaning`。不用种子第 1 列，不用审校表里抄的「当前释义」。
+2. **先盲写、再比对，两次独立运行**：第一次只给 日语词形 + 读音 + 词性 + 日语例句，让审校者自己写中文核心义；第二次才给线上释义，逐条比对。判据直接是中文对日文，**不经英文中转**；JMdict 只用来查义项有哪些，不用来判「相符」。
+3. **闸门查套话**：理由字符串在一批里重复超过 3 次就不合格；每条「需改」必须写出错在哪个义项、应改成什么。批里混入已知错误的「金丝雀」词（作者不告诉审校者），漏抓一个就整批重做。
+   **brief 里举的例子不能是金丝雀，也不能是本批里的词**（11-03 试跑第一版就把 4 个金丝雀写成了 brief 的例子，等于把答案告诉了审校者，只能作废重跑）。
+4. **修订只写进源头文件，覆盖表只能由一个脚本生成**：改释义 = 往源头目录加一条记录（带审校出处），再跑生成脚本。CI 里断言「生成脚本的输出 == 仓库里的覆盖表」，以后谁直接手改覆盖表都会红。辨析同步脚本要改成生成脚本的一个输入，不再直接写覆盖表。
+   - 这条要先把现在覆盖表里「只存在于生成文件」的 397 条 + 1,264 处差异反向导出成源头记录，否则一接 CI 就会把它们全冲掉。
+
+### 2026-11-05 已落地：C1 只恢复源头与可重建性，释义不变
+
+`frontend/scripts/manual-meaning-reviewed/` 补回历史源头；文件格式、逐条出处和排序原因见
+该目录的 `README.md`。这是生成链路重构，不是第二次审校：当前释义里已知有争议的内容
+也原样保存，不能在迁移中顺手改正；内容修订属于 C2。
+
+- `2026-09-11-audit.json`：485 条，来自 09-11 审校及 09-19 复核的最终状态，
+  每条带处理清单路径、行号、词条 ID，以及实际进入 Git 的提交
+  `7ec8d30dadd9768b9446373c6231abde27fab3b5`。审校日期和提交日期不是同一概念。
+- `2026-09-22-prefix-review.json`：3 条计量前缀的后续复核，出处提交
+  `c89338609fa0a2f60ddabd9646502dcbdfe5c3f1`。清单原建议和最终状态不同的，保存最终状态。
+- `distinction-source.json`：完整 1,559 条辨析记录，由
+  `question-meaning-review/sync-distinction-meanings.mjs` 从 `manual-batch-*.json` 导出，
+  每条带批次位置及历史同步提交 `7ec8d30dadd9768b9446373c6231abde27fab3b5`。
+  同步脚本现在只写这份源头，禁止再写完整释义覆盖表。
+- `legacy-append-order.json`：398 个词形，仅保留旧表尾部 397 条补入及 `受験` 的历史位置，
+  没有释义，不参与优先级。不要从覆盖表反读排序，否则手改产物也会左右生成结果。
+
+已按基准实际复算：旧生成器是 6,253 条，缺 397 条、改变 1,264 条；共 1,661 个差异词形。
+其中 1,173 个由辨析批次还原，剩余 488 个由两份人工记录还原（485 + 3）。
+辨析层另有 386 条本来就相同，仍保留完整输入，不能只拿差异片段冒充辨析的全部源头。
+两份人工记录的 488 个提交号逐条和覆盖表的 Git 版本变化核对过，指向该释义最后一次变化，
+不是根据文档日期猜测；审校清单头部记录过的退回决定也必须保留。
+
+唯一覆盖表写入口仍是 `frontend/scripts/build-manual-meaning-overrides.mjs`。
+优先级已写在脚本顶部，后者覆盖前者：rewrite 批次 → polish 批次 → `corrections.json`
+→ `distinction-source.json` → reviewed 目录其他释义 JSON（文件名升序，后文件获胜）。
+原有 ID 链式去重、5,163 条人工重写数量、词形匹配等检查保留；新增源头格式、出处和
+单文件重复词形校验。固定 `en` 排序环境，避免本机与 GitHub runner 默认 locale 不同。
+
+以后改完整释义，在 reviewed 目录新增日期命名的 JSON，写 `kanji`、`kana`、`meaning`、
+`provenance.kind/reference`，能追到提交就写完整 `provenance.commit`，保留审校判断依据。
+若改的是辨析题面，先改 `question-meaning-review/manual-batch-*.json`，再执行第一条；
+普通完整释义改动从第二条开始：
+
+```sh
+node question-meaning-review/sync-distinction-meanings.mjs
+node frontend/scripts/build-manual-meaning-overrides.mjs
+npm --prefix frontend test
+```
+
+断言位于生成器 `--check` 分支：在内存里重新生成，以 `Buffer.equals` **逐字节**比较已提交
+覆盖表，失败退出 1，而且不写文件；也会拒绝与辨析批次不一致的 `distinction-source.json`。
+`frontend/package.json` 的 `npm test` 先执行断言再跑 Vitest；现有 GitHub
+`.github/workflows/ci.yml` frontend job 与 `scripts/ci-local.sh` 均调用该入口，无需另抄名单。
+`frontend/scripts/build-manual-meaning-overrides.test.mjs` 在临时 checkout 中验证独立重建、
+手改产物失败且不被覆盖、辨析源头过期失败、同步脚本只改源头。
+预览包的 `scripts/package-preview.sh` 也补齐旧人工源头、辨析批次和同步脚本，防止包内测试缺输入。
+
+C1 基准为 `500251f073de5928baa461a723cd1c904cc08a69` 的 653,377 字节覆盖表，
+SHA-256 `534b68c4ea6fb919e94d593b91fdfd41ed94f9d06f798b86d8d9abcdb95b90d0`。
+工作树外持久备份为
+`/Users/lsc/Library/Application Support/codex-with-chatgpt/_meaning-baseline/2026-11-05-C1-500251f0/jlpt_meaning_overrides.json`；
+选择该位置是因为会话不能写 `~/Documents/shushugo-wt/_meaning-baseline/`，备份不在 `/tmp`。
+重建结果与此备份逐字节一致，且与 `main` 的覆盖表没有 diff；因此不升内容版本、不重烤出厂库。
+以后实际改释义，仍须按既有流程升内容版本、重烤库，并处理双端共享包和 Taro 构建报告。
+
+本次重建与验收补充：
+
+- 实际运行生成器后，`cmp` 对上述外部备份退出 0，
+  `git diff --exit-code main -- frontend/src/data/jlpt_meaning_overrides.json` 退出 0；
+  `node frontend/scripts/build-manual-meaning-overrides.mjs --check` 输出
+  「逐字节校验通过 … 6650 条释义覆盖」，退出 0。
+- `node question-meaning-review/sync-distinction-meanings.mjs --check` 退出 0，1,559 条源头逐字节一致。
+- `npm --prefix wechat-miniprogram run build-shared` 退出 0，`web.js` 和内容模块重建后无 diff。
+  原生共享包把释义表替换为 seed-guard，完整释义经已有出厂库提供；本次无需改变这个边界。
+- Taro 完整构建链退出 0，仅将链中的 `taro build --type weapp` 换成
+  `taro build --type weapp --no-check`：原命令在 Doctor 的 macOS 原生库报
+  `system-configuration ... Attempted to create a NULL object` 后挂住，按发布专题的既有说明
+  只跳过 Doctor，不跳过导出、素材、CSS、内容、分包、API 和 referral 等其他闸门。
+  本地 `@tarojs/plugin-html` 会改写自己的 runtime，原依赖软链指向主目录会被沙箱拒绝；
+  已在 worktree 内复制该包后再构建，没有修改主目录依赖。
+  三份有变化的报告为 `webpack-stats.json`、`package-sizes.json`、`package-gates.json`，
+  其余报告重建无差异。主包 1,899,887 B（闸门 1,900,000 B），所有分包通过，
+  未许可核心/页面重复及过期许可均为 0。没有改动运行时代码或任何释义。
+- 最终 `VITEST_MAX_WORKERS=2 scripts/ci-local.sh` **退出 0**：frontend 类型、lint、
+  生成一致性、Vitest、网页构建；原生小程序 32 个脚本（含 check-shared / check-parity）；
+  Taro smoke / 分包报告；后端类型与测试全部通过。Vitest 为 191 个文件通过、
+  1,604 条测试通过，另有原本的 5 个文件跳过、30 条测试跳过、1 条 todo；本次没有新增跳过。
+  第一次全量执行已通过，补入回归测试后的默认高并发复跑曾在既有
+  `fsrs-store.test.ts:204` 的 300 次随机抽词测试触发 5,000 ms 超时。
+  该文件与新增生成器测试单独复跑共 15 条通过；最终仅用环境变量把并发限制为 2，
+  没有改该测试、放宽超时、删断言或修改调度实现。最终日志在本机
+  `/private/tmp/c1-ci-local-final.log`（临时验证日志，非生成输入或 CI 依赖）。
+- **视觉检查与开发者工具实际运行未完成**：已尝试独立 Vite 5194，但沙箱拒绝绑定
+  `127.0.0.1:5194`（`listen EPERM`）；独立 Playwright Chrome 进程启动后 SIGABRT，
+  开发者工具 CLI 初始化自身回调端口同样 `listen EPERM`、退出 255。
+  这些是运行验收阻塞，不把构建或 smoke 当作视觉验收。没有访问、刷新或热更新 5173，
+  没有读取个人学习库，没有 push、部署或改主目录工作区。
