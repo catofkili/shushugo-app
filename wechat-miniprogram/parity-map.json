@@ -823,6 +823,13 @@
       "reason": "底栏图标：网页 AppNavigation 读 brand/sheet/nav-*.png，小程序原生 tabBar 读 assets/tabs/*.png（同一套原画缩成 81×81）。要排在 brand/sheet/ 那条前面，find 取第一条命中。"
     },
     {
+      "web": "frontend/public/brand/sheet-anime/",
+      "mini": [
+        "frontend/public/brand/sheet-anime/"
+      ],
+      "reason": "网页专属的「放学后」二次元主题图。用户 2026-11-05 同意先只上网页、小程序商店不提供这件（小程序主包放不下，商品和贴纸表在只进网页包的 frontend/src/lib/anime-theme.ts）。登记自身只为过配对检查，不代表小程序有这套图；要上小程序时改成真实对应项。"
+    },
+    {
       "web": "frontend/public/brand/sheet/",
       "mini": [
         "taro-spike-2/src/assets/brand/",
