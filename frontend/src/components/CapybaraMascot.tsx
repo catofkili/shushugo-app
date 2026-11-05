@@ -78,7 +78,8 @@ const SPLASH_STICKER_KEY = "shushugo:splash-sticker";
 export const setMascotSkin = (itemId: string) => {
   // 主题自带一套贴纸（放学后）、又没装吉祥物皮肤时，用主题那套。yuzu.applyYuzuEquipment 先写 <html data-skin> 再调这里，
   // 所以这里读得到刚换上的主题。不在 yuzu.ts 里做：那份小程序也打包，主包没地方（见 lib/anime-theme.ts 开头）
-  const theme = typeof document === "undefined" ? "" : document.documentElement.getAttribute("data-skin") ?? "";
+  // 用 dataset 的可选链读：这里抛错会被 applyYuzuEquipment 吞掉，连带后面的走法装备一起失效（yuzu.test 的假 document 就踩到过）
+  const theme = (typeof document === "undefined" ? undefined : document.documentElement?.dataset?.skin) ?? "";
   if (!itemId && theme in SKIN_SHEETS && !(theme in MASCOT_SKINS)) itemId = theme;
   // 写在提前返回之前：别的设备卸了皮肤同步过来时 skin 已经是 ''，也要把旧记录清掉
   try {
