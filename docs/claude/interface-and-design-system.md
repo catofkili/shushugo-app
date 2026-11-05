@@ -1006,3 +1006,23 @@ App 里没有接微信 OpenSDK（没有开放平台移动应用 AppID、Universa
   翻面后这块整个换成答案，她自然消失，不和题面、答案抢。钩子是 `WordStudy.tsx` 里那个 div 加的 `word-think` 类，默认样式不用它。
 - ⚠️ 主页大卡里的立绘用 `position: absolute` 贴卡底边（腰部截断线藏进卡边框）。它是 grid 子项，原本有 `grid-row/grid-column`，
   **绝对定位的 grid 子项拿 grid 区域当包含块**，右栏只有 18px 宽，`max-width:100%` 把她压成一条缝 —— 要 `grid-row/column: auto; max-width: none`。
+
+### 第三轮（同日）：合 main 前收尾
+
+- ⚠️ **小程序主包**：第一版把商品、20 个贴纸名、「主题 → 贴纸」映射写进了 `yuzu-catalog.ts` / `mascot-skins.ts` / `yuzu.ts`，
+  这三份小程序也打包，`build:weapp` 主包 1,900,520 B，超上限 520 B。现在全挪进 **`lib/anime-theme.ts`（只被网页版 `CapybaraMascot.tsx` 引入）**：
+  模块加载时往 `YUZU_ITEMS` 里插这件商品；`setMascotSkin` 在没装吉祥物皮肤时读 `<html data-skin>`（`applyYuzuEquipment` 先写属性再调它），主题自带贴纸就用主题那套。
+  三份共享文件回到 main 原样，小程序那边只剩 `mascot.weapp.tsx` 一条正则（`/^(mood|scene|empty)-/`），重建后主包 1,894,819 B。
+  后果：**小程序商店里根本没有这件**；网页上买了同步过去，账本里有这行但小程序不认识，界面照旧是默认外观。
+- ⚠️ `setMascotSkin` 里读主题必须用 `document.documentElement?.dataset?.skin` 这种不会抛的写法：抛错会被 `applyYuzuEquipment` 的 try 吞掉，
+  **连带后面的走法装备一起失效**（`yuzu.test` 的假 document 没有 `getAttribute`，测试就是这么红的）。
+- **启动闪屏不再画水豚**：`setMascotSkin` 每次把「皮肤的默认表情」图址写进 localStorage `shushugo:splash-sticker`，
+  `index.html` 静态闪屏用一行内联脚本换 `<img>`，`main.tsx` 读库闪屏同样读它。键名在三处各写一份字面量 ——
+  不从 `CapybaraMascot` 导出给 `main.tsx` 用，因为小程序替身 `mascot.weapp.tsx` 没有这个导出，`verify-shim-exports` 会拦，而小程序根本不跑 `main.tsx`。对鳄鱼皮肤同样生效。
+- `stickerUrl` 退回规则再加 `empty-*`（查词汇量、辨析练习的空状态）。
+- 商店里这件的预览（`MiniHome`，`.yz-mini[data-skin]`）单独写了一份：天空底、平涂粉卡 + 网点 + 女主、工具格换新图标（`content:url()` 换图，只有网页 / iOS 包会显示这件）。
+- **逐页看过（375×812，无头 Chromium 截图 + 扫 `/brand/sheet/` 默认图）**：主页、单词、语法、我的、柚子商店、词库、疑难辨析、首次设定，浅色深色各一遍。
+  默认水豚图只剩**柚子商店里的商品图**（开心 / 泡汤图标、滚着走、音色音效、吉祥物皮肤的预览四格、补签卡）—— 那是在卖的东西本身长什么样，保留。
+  组队页的队徽（松鼠、猫头鹰等）不是水豚。
+- 无头截图的做法（不抢屏幕）：`frontend/node_modules/playwright` + `~/Library/Caches/ms-playwright/chromium_headless_shell-1228`（playwright 版本要 1243，缓存里只有 1228，用 `executablePath` 指过去就能跑）；
+  新 profile 会先进首次设定，调 `level-plan.saveLevelPlanSettings(...)` 跳过；页面用 `app-store.setAppState({ page })` 切。

@@ -228,3 +228,29 @@ html[data-skin="theme-anime"] .word-think > p {
   background: #fff; color: var(--an-navy) !important; font-weight: 800; box-shadow: 0 3px 0 var(--an-navy);
 }
 html[data-theme="dark"][data-skin="theme-anime"] .word-think > p { background: #2A2F66; color: #F1F0FF !important; border-color: #6E74C8; box-shadow: 0 3px 0 #0B0E2C; }
+
+/* ---------- 柚子商店里这件的预览（迷你主页）：所见即买到，不能是默认绿卡 + 水豚 ----------
+   MiniHome 挂的是 .yz-mini[data-skin]，上面那些 html[data-skin] 规则落不到它身上，单独写一份。
+   图片用 content:url() 换掉 —— 预览只在网页 / iOS 包里出现（小程序商店里没有这件），WebKit / Chromium 都支持 */
+.yz-mini[data-skin="theme-anime"] {
+  background: url("/brand/sheet-anime/bg-day.jpg") center top / cover no-repeat;
+  color: #2C3470;
+}
+.yz-mini[data-skin="theme-anime"][data-theme="dark"] { background-image: url("/brand/sheet-anime/bg-night.jpg"); }
+.yz-mini[data-skin="theme-anime"] .yz-mini-top img { content: url("/brand/sheet-anime/mood-default.png"); object-fit: cover; object-position: 50% 8%; background: #fff; border: 1.5px solid #2C3470; }
+.yz-mini[data-skin="theme-anime"] .yz-mini-top i { background: #fff; opacity: .9; }
+.yz-mini[data-skin="theme-anime"] .yz-mini-hero {
+  position: relative; overflow: hidden;
+  background: radial-gradient(circle, rgba(44, 52, 112, .16) 0 1px, transparent 1.3px) 0 0 / 5px 5px, #FF8DBE;
+  color: #fff; border: 1.5px solid #2C3470; box-shadow: 0 2px 0 #2C3470;
+}
+.yz-mini[data-skin="theme-anime"] .yz-mini-hero b { font-family: "Hiragino Maru Gothic ProN", ui-rounded, sans-serif; -webkit-text-stroke: 2px #2C3470; paint-order: stroke fill; }
+.yz-mini[data-skin="theme-anime"] .yz-mini-hero::after {
+  content: ""; position: absolute; right: -4%; bottom: 0; width: 42%; height: 120%;
+  background: url("/brand/sheet-anime/mood-default.png") right bottom / contain no-repeat;
+}
+.yz-mini[data-skin="theme-anime"] :is(.yz-mini-row i, .yz-mini-tray) { background: rgba(255, 255, 255, .92); border: 1.5px solid #2C3470; box-shadow: 0 2px 0 #2C3470; }
+.yz-mini[data-skin="theme-anime"] .yz-mini-tray img:nth-child(1) { content: url("/brand/sheet-anime/tool-modes.png"); }
+.yz-mini[data-skin="theme-anime"] .yz-mini-tray img:nth-child(2) { content: url("/brand/sheet-anime/tool-wordlist.png"); }
+.yz-mini[data-skin="theme-anime"] .yz-mini-tray img:nth-child(3) { content: url("/brand/sheet-anime/tool-jlpt.png"); }
+.yz-mini[data-skin="theme-anime"] .yz-mini-tray img:nth-child(4) { content: url("/brand/sheet-anime/tool-favorites.png"); }
