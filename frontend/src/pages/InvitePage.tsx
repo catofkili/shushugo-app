@@ -41,12 +41,18 @@ export function InvitePage({ initialCode = "", focusInput = false }: { initialCo
     if (focusInput && me?.canClaim && !me.claim) input.current?.focus?.();
   }, [focusInput, me]);
 
+  // 填码框不看登录 / 账号新旧：没登录、老账号、加载失败都要让人看到「这里能填」，限制只在按钮和提示上说明。
+  const locked = Boolean(me && !me.claim && !me.canClaim);
   const claim = async () => {
+    if (!cloudSession.token) { requireAccount(); return; }
     const version = generation.current;
     setBusy(true); setMessage("");
     try {
       const bound = await claimReferral(code);
-      if (version === generation.current && bound) setMe((value) => value ? { ...value, claim: bound, canClaim: false } : value);
+      if (version === generation.current && bound) {
+        setMe((value) => value ? { ...value, claim: bound, canClaim: false } : value);
+        setMessage("已绑定");
+      }
     } catch (error) {
       if (version === generation.current) setMessage(error instanceof Error ? error.message : "暂时没能绑定，请重试");
     } finally { if (version === generation.current) setBusy(false); }
@@ -79,15 +85,16 @@ export function InvitePage({ initialCode = "", focusInput = false }: { initialCo
         </div>
       </section>
       <div className="invite-stats"><span>已邀请 {me.invitedCount} 人</span>{referralEarningsText(me) && <span>{referralEarningsText(me)}</span>}</div>
-      {me.claim ? <section className="ds-card invite-panel"><b>已绑定</b></section> : me.canClaim && <section className="ds-card invite-panel">
-        <label htmlFor="referral-code">有邀请码？</label>
-        <div className="invite-claim-row">
-          <input id="referral-code" ref={input} autoFocus={focusInput} value={code} maxLength={32} autoCapitalize="characters" autoComplete="off" aria-label="邀请码" placeholder="输入邀请码" onChange={(event) => setCode(event.target.value.toUpperCase())} onKeyDown={(event) => { if (event.key === "Enter" && code.trim() && !busy) void claim(); }} />
-          <button className="ds-btn" disabled={busy || !code.trim()} onClick={() => void claim()}>{busy ? "确认中…" : "确认"}</button>
-        </div>
-      </section>}
-      {referralRules && <p className="invite-rules">{referralRules}</p>}
     </>}
+    {me?.claim ? <section className="ds-card invite-panel"><b>已绑定</b></section> : <section className="ds-card invite-panel">
+      <label htmlFor="referral-code">有邀请码？</label>
+      <div className="invite-claim-row">
+        <input id="referral-code" ref={input} autoFocus={focusInput} disabled={locked} value={code} maxLength={32} autoCapitalize="characters" autoComplete="off" aria-label="邀请码" placeholder="输入邀请码" onChange={(event) => setCode(event.target.value.toUpperCase())} onKeyDown={(event) => { if (event.key === "Enter" && code.trim() && !busy) void claim(); }} />
+        <button className="ds-btn" disabled={locked || busy || !code.trim()} onClick={() => void claim()}>{busy ? "确认中…" : cloudSession.token ? "确认" : "登录后确认"}</button>
+      </div>
+      {locked && <p className="invite-rules">只有注册 7 天内的新账号能填邀请码。</p>}
+    </section>}
+    {me && referralRules && <p className="invite-rules">{referralRules}</p>}
     {message && <p className="invite-message" role="status">{message}</p>}
   </div>;
 }
