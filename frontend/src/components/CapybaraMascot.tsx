@@ -99,11 +99,12 @@ export const stickerUrl = (name: StickerName, skinId = skin) => {
   const sheet = SKIN_SHEETS[skinId];
   if (!sheet) return brandAssetUrl(`sheet/${name}.png`);
   if (sheet.names.has(name)) return brandAssetUrl(`${sheet.dir}/${name}.png`);
-  if (name.startsWith("mood-")) return brandAssetUrl(`${sheet.dir}/mood-default.png`);
+  // scene-*（主页大卡按时段换的那几张）同理：皮肤没画就用皮肤的默认表情，不退回水豚原图（2026-11-05 补，以前鳄鱼皮肤这里会冒出水豚）
+  if (name.startsWith("mood-") || name.startsWith("scene-")) return brandAssetUrl(`${sheet.dir}/mood-default.png`);
   return brandAssetUrl(`sheet/${name}.png`);
 };
 /** 问候条 / 导航栏那枚品牌图标：皮肤自带 App 图标就用皮肤的 */
-export const brandIconUrl = (skinId = skin) => brandAssetUrl(SKIN_SHEETS[skinId] ? `${SKIN_SHEETS[skinId].dir}/app-icon.png` : "shushugo-icon.png");
+export const brandIconUrl = (skinId = skin) => brandAssetUrl(SKIN_SHEETS[skinId]?.names.has("app-icon") ? `${SKIN_SHEETS[skinId].dir}/app-icon.png` : "shushugo-icon.png");
 
 /** 总表上的任意一格。size 是高度，宽度按原图比例走（空状态那排不是正方形）。 */
 export function Sticker({ name, size = 96, className = "", alt = "" }: { name: StickerName; size?: number; className?: string; alt?: string }) {

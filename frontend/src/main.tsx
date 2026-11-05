@@ -5,6 +5,7 @@ import './styles.css';
 import './app.css';
 import './design.css'; // 设计系统（2026-09-23 重做）：在 app.css 之后、skins.css 之前，见 design.css 开头
 import './skins.css'; // 风格主题（纸本 / 圆圆）必须排在 app.css 之后，见 skins.css 开头
+import './skins-anime.css'; // 二次元「放学后」：只进网页包（小程序主包放不下），见文件开头
 import { initDatabase } from './lib/database';
 import { BrowserDatabaseInUseError, LocalArchiveUnreadableError, loadDatabase, registerPersistenceLifecycle } from './lib/storage';
 import { Sticker } from './components/CapybaraMascot';

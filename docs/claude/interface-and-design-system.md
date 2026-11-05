@@ -950,3 +950,31 @@ App 里没有接微信 OpenSDK（没有开放平台移动应用 AppID、Universa
 - `taro-spike-2/src/platform/press-feedback-jsx-runtime.weapp.cjs`：未选中按钮（`aria-pressed === false`）使用 `hover-class="attr-aria-pressed-true"`，`hoverStayTime=1000`。微信 `hover-class` 在渲染层执行，不等逻辑线程，按下即可借用选中样式变绿；已选中的再点是取消，不能继续用绿色假装选中，因此仍用 `is-pressed`，禁用按钮仍是 `none`。
 
 开发者工具验收结果（收尾前已验，按交接记录）：首屏为登录页；点「先不登录」进入选等级；未选中选项的 `hover-class=attr-aria-pressed-true`，已选中为 `is-pressed`，禁用为 `none`。自动化在逻辑线程忙时截不了图，因此这些结果只能证明流程和属性配置；逻辑线程忙时是否立即变绿，仍待作者用计时版预览码在真机看，不能拿模拟器截图当作真机通过。
+
+## 二次元风格主题「放学后」（theme-anime）试做（2026-11-05，分支 claude/anime-skin，未合 main）
+
+用户原话：「做一套足够二次元的前端，图片找 GPT 生成（用 chat，额度少一点），做主页和 tab 栏、背单词页面试试看」。
+
+- **做成柚子商店的第三件「质感主题」**，不是改默认外观：`yuzu-catalog.ts` 加 `theme-anime`（放学后，3000 柚子），
+  样式在 `src/skins-anime.css`，图在 `public/brand/sheet-anime/`。默认皮肤一个像素都不动。
+- **图从哪来**：Chrome 里的 chatgpt.com「聊天」模式（不是 Codex）出了 4 张：水手服 Q 版水豚立绘（透明底）、
+  底栏 2×4 图标合集（第一行物件、第二行水豚抱物件，透明底）、白天 / 夜晚两张竖版天空背景。
+  原图（未压缩）留在 `~/Documents/shushugo-wt/_anime-originals/`。切图：按 4×2 等分格子、按 alpha 裁边、缩到 256 高、pngquant；背景缩到 768×1152 JPEG q78（60–70 KB）。
+  ⚠️ 网页上的生成图是 `blob:` 地址，下载靠页面里 `fetch(blob)` + `<a download>`；Chrome 会停在 `~/Downloads/.com.google.Chrome.*` 临时文件（等「另存为」），直接拷那个临时文件就是完整 PNG。
+- **图怎么套上去**：`mascot-skins.ts` 里登记一套 `theme-anime` 贴纸（`mood-default`、`nav-*`、`tab-*`），
+  `yuzu.applyYuzuEquipment` 在没装吉祥物皮肤时、主题自己有贴纸就顺带套上。所以底栏物件格 / 选中格、主页大卡那只全走原来的 `Sticker` 通道，组件零改动。
+  顺手修两处既有问题：① `stickerUrl` 里 `scene-*`（主页大卡按时段换的那几张）缺图时也退回皮肤的 `mood-default`，以前鳄鱼皮肤这里会冒出水豚；
+  ② `brandIconUrl` 只在皮肤真有 `app-icon` 时才用皮肤的，以前默认每套皮肤都有，`sheet-anime` 没有就是一张坏图。
+- **视觉语言**：整屏固定天空背景图（`body::before`）、白卡 + 藏青 2px 粗描边 + 硬投影（立牌感）、樱粉 / 天蓝 / 柚子黄 / 薄荷四色、
+  圆体字、大字白芯藏青描边（`-webkit-text-stroke` + `paint-order`）。背单词卡 = 对话框（藏青框 + 内圈粉线），题面块去掉卡中卡只留粉色虚线，
+  评分四键四色糖果键（忘记粉 / 模糊黄 / 认识蓝 / 熟知薄荷）。深色一份：夜空背景 + 深蓝半透明卡。
+- ⚠️ **评分键要按类名写，并且前缀 `html[data-theme][data-skin]`**：design.css 的 `[data-theme] .rate-btn:not(.rate-know):not(.rate-forgot):not(.quiz-accent-solid)`
+  特异度 0,5,0，skins.css 那种 `nth-child` 写法盖不过，模糊 / 熟知两格会一直是白的。
+- ⚠️ 顶栏不能全透明：往下滚时卡片从「收集日」标题底下穿过、字叠字；现在是半透明毛玻璃。
+- **只进网页包**（`main.tsx` 引入）。小程序主包只剩几百字节，`skins.css` 已在 Taro 主包里，这份放不进去；
+  小程序的吉祥物皮肤图是从 `skinBaseUrl` 下载的（`mascot-skin-cache.weapp.ts`），要上传图包 + manifest。
+
+**合 main 之前还欠**（作者看过方向再做）：
+1. 小程序：商店里会出现「放学后」但没有样式 —— 要么小程序隐藏这件，要么把样式做成分包 / 远程样式、图包传到 skinBaseUrl。
+2. 主页「学习工具」11 格、组队 / 邀请小图还是原来的软萌画风，和二次元水豚并排不统一；要统一得再出一张工具图合集。
+3. 只做了主页、底栏、背单词卡；语法页、我的页、完成页走的是变量（粉主色、藏青字），没逐页看。

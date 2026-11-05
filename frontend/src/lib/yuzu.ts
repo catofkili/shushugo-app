@@ -7,6 +7,7 @@
  * 数字是拿作者 102 天真实流水回放定的(见 CLAUDE.md「柚子」一节):
  * 奖励和商店价格同时乘 10，保持攒到首件主题所需的学习时间不变。
  */
+import { MASCOT_SKINS } from "./mascot-skins";
 import { YUZU_TITLE_IDS } from "./yuzu-titles";
 import { getDatabase } from "./database";
 import { firstValue, persistSoon, rowsFor, getState, setState, studyDate, today } from "./database/db-utils";
@@ -75,7 +76,7 @@ export const applyYuzuEquipment = (): void => {
     if (skin) document.documentElement.setAttribute("data-skin", skin);
     else document.documentElement.removeAttribute("data-skin");
     setSoundTimbre((equippedItem("sound").replace("sound-", "") || "kalimba") as SoundTimbre);
-    setMascotSkin(equippedItem("mascot"));
+    setMascotSkin(equippedItem("mascot") || (skin && skin in MASCOT_SKINS ? skin : ""));
     setWalkStyle(equippedItem("walk"));
   } catch { /* 表还没建出来(老库第一次启动) */ }
 };
