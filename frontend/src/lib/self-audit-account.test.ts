@@ -8,7 +8,8 @@ vi.mock('@capacitor/preferences', () => ({ Preferences: {
   set: async ({ key, value }: { key: string; value: string }) => { prefs.set(key, value); },
   remove: async ({ key }: { key: string }) => { prefs.delete(key); }
 } }));
-vi.mock('./database', () => ({ getDatabase: () => db }));
+let dbMissing = false;
+vi.mock('./database', () => ({ getDatabase: () => { if (dbMissing) throw new Error('Database not initialized'); return db; } }));
 vi.mock('./secure-token', () => ({ getCloudAccessToken: async () => 'synthetic-token' }));
 vi.mock('./storage', () => ({ flushPendingSave: async () => {}, getLocalDataRevision: () => 0, saveDatabase: async () => {} }));
 vi.mock('./study-core', () => ({ ensureSeedData: async () => {} }));
@@ -17,11 +18,13 @@ vi.mock('./sync/merge', () => ({ mergeDatabaseBytes: async () => {} }));
 vi.mock('./sync/snapshot', () => ({
   exportSyncSnapshot: async () => new Uint8Array([1]),
   compressSyncSnapshot: async (bytes: Uint8Array) => ({ bytes, compression: 'none' }),
+  decompressSyncSnapshot: async (bytes: Uint8Array) => bytes,
   SYNC_PROTOCOL_VERSION: 2,
   SYNC_SNAPSHOT_FORMAT: 'master-nihongo-user-sqlite-v1'
 }));
 beforeAll(async () => { SQL = await initSqlJs(); });
 beforeEach(() => {
+  dbMissing = false;
   vi.stubEnv('VITE_SYNC_API_URL', 'https://self-audit.invalid');
   prefs.clear();
   prefs.set('mn_cloud_sync_email', 'b@example.invalid');
@@ -63,5 +66,41 @@ it('manual upload cannot bind data already owned by another account', async () =
   prefs.set('mn_cloud_sync_owner_email', 'a@example.invalid');
   const { pushCloudBackup } = await import('./sync-api');
   await expect(pushCloudBackup()).rejects.toThrow(/另一个账号/);
+  expect(fetch).not.toHaveBeenCalled();
+});
+
+// 2026-11-05：小程序登录后发起的自动同步。本机有数据、没绑过账号：云端是空账号就上传绑定，云端有数据才报冲突（不混两份）。
+it('auto sync on login uploads unowned local data to an empty cloud account and binds it', async () => {
+  const { autoSyncCloudDatabase } = await import('./sync-api');
+  await expect(autoSyncCloudDatabase('login')).resolves.toMatchObject({ status: 'uploaded' });
+  expect(prefs.get('mn_cloud_sync_owner_email')).toBe('b@example.invalid');
+});
+
+it('auto sync on login keeps unowned local data apart from a cloud account that already has a snapshot', async () => {
+  vi.mocked(fetch).mockImplementation(async () => new Response(JSON.stringify(
+    { available: true, last_modified: '2030-01-01T00:00:00.000Z', generation: 3 }
+  )));
+  const { autoSyncCloudDatabase } = await import('./sync-api');
+  await expect(autoSyncCloudDatabase('login')).resolves.toMatchObject({ status: 'conflict' });
+  expect(prefs.has('mn_cloud_sync_owner_email')).toBe(false);
+  expect(fetch).toHaveBeenCalledTimes(1);
+});
+
+it('auto sync on startup still pulls when the local library is empty although the sync marker says up to date', async () => {
+  db.run('DELETE FROM reviews; CREATE TABLE app_state(key TEXT PRIMARY KEY, value TEXT)');
+  vi.stubGlobal('window', { dispatchEvent: () => true, addEventListener: () => {}, removeEventListener: () => {} });
+  prefs.set('mn_cloud_sync_owner_email', 'b@example.invalid');
+  prefs.set('mn_cloud_sync_state:b%40example.invalid', JSON.stringify({ lastSyncedGeneration: 3, localDirty: false }));
+  vi.mocked(fetch).mockImplementation(async (input) => String(input).endsWith('/status')
+    ? new Response(JSON.stringify({ available: true, last_modified: '2030-01-01T00:00:00.000Z', generation: 3 }))
+    : new Response(new Uint8Array([1]), { headers: { 'content-type': 'application/octet-stream', 'x-sync-last-modified': '2030-01-01T00:00:00.000Z', 'x-sync-generation': '3' } }));
+  const { autoSyncCloudDatabase } = await import('./sync-api');
+  await expect(autoSyncCloudDatabase('startup')).resolves.toMatchObject({ status: 'downloaded' });
+});
+
+it('auto sync skips (no network) while the factory library is still downloading on first install', async () => {
+  dbMissing = true;
+  const { autoSyncCloudDatabase } = await import('./sync-api');
+  await expect(autoSyncCloudDatabase('login')).resolves.toMatchObject({ status: 'skipped' });
   expect(fetch).not.toHaveBeenCalled();
 });

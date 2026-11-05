@@ -168,3 +168,33 @@ gzip 后 1.73 MB。看着离 20 MB 还很远，实际已经用掉 **69.9%** —�
 ## 2026-10-12：拼写上线时单词撤销栈留本机
 
 `spelling_memory.always_spell` 保持 cloud:false；正常单词撤销快照 `app_state.last_answer` 会记录作答前的这个标记，因此 last_answer 加入 `DEVICE_LOCAL_STATE_KEYS`，导出 / 合并两侧沿用现有过滤。不能只看表不上云就忽略 JSON 快照：否则另一个设备拿到并撤销这份快照时，会用别的设备的旧值覆盖本机的拼写标记。正常 reviews / 正向 FSRS 仍同步，当前设备原有两步撤销和本机增量落盘不变。
+
+
+## ⚠️ 小程序的云同步曾经从没启动过：登录后不拉、改动不推（2026-11-05 查明并修）
+
+作者报「同一个微信号登录，还是出先验，学习设置疑似被覆盖」。查下去不是先验判据的问题，是**小程序里没有任何地方在启动时起云同步**：
+
+- 网页 / App 在 `main.tsx` 里 `registerCloudAutoSyncLifecycle()` + `autoSyncCloudDatabase('startup')`；Taro 小程序整个 `taro-spike-2/src` 里只有 `account/login/index.tsx`（「账号」页）调了前者。
+  别处登录（首次设定第一页、付费墙、个人信息页）`cloudWechatMiniLogin` 发出的 `requestCloudAutoSync('login')` 是一个没人监听的 window 事件；
+  本地改动触发的 `requestCloudAutoSync('local-change')`（`storage.ts`）同样落空。只有打开账号页那一次进程里才有同步。
+- **线上证据**（阿里云 `worker.sqlite`，只读查）：`sync_heads` 全库只有 2 行——作者的邮箱开发账号（generation 2515）和 `aaa`（微信，generation 1，09-20 停在那一次）。
+  其余 11 个微信账号（含 10-18 起的测试者）从没传过快照。也就是说：**换手机 / 重装后，同一个微信登进去永远是个空账号**，`shouldShowLevelSetup()` 看到本机没有任何真实记录，先验照弹。
+  登录后 `LevelSetup` 等「第一次同步事件」最多 5 秒——事件根本不会来，等于白等。（10-19 那次「首次设定先登录」的提交假设了登录后会同步。）
+- 修（2026-11-05）：
+  1. `WeappPage.tsx`：`installGlobalEvents()` 里 `registerCloudAutoSyncLifecycle()`（监听器 + 轮询，不碰库）；第一次进页面做完首次设定判断的同一处 `requestCloudAutoSync('startup')`。**不要改成直接 import `autoSyncCloudDatabase`**：
+     走事件版 `requestCloudAutoSync` 自带 catch，也少引一个导出（当时主包只剩 113 B 余量；之后清掉死样式腾出了 5 KB，见 mini-program 专题 2026-11-05 一节）。
+     ⚠️ **启动同步必须放在首页数据算完之后**（`WeappPage` 的 `.then` 里），不能挪进 `ensureDatabase`：算首页数据会 `persistSoon`，同步开头的 `flushPendingSave` 把它冲掉之后才记本机改动号；
+     挪早了，拉取会因「同步期间本机产生了新学习记录」放弃（试过一版，推理出来后撤回）。
+  2. `sync-api.ts` `autoSyncCloudDatabase`：删掉早先对「本机有数据、没绑过账号」的无条件冲突。云端是空账号 → 直接走下面的上传并绑定；云端也有快照 → 落到后面「本机和云端都有学习记录」才报冲突
+     （`!owner` 时 `owner === session.email` 不成立，不会误合并）。原来先不登录、先验、学了几天、再登录的人，永远卡在冲突、永远不上传。
+     `owner` 是另一个账号仍然先拦，不动。
+  3. 同一函数：本机库**是空的**而同步标记还在（库文件丢了 / 重建、`Preferences` 里的标记还在）时，`startup` / `login` 那次照拉，不当作「已是最新」返回 idle。
+  4. `LevelSetup.tsx`：已登录的首次设定也先过那一页（「正在找回学习进度」，最多等 8 秒或第一次同步事件），否则重装后已登录的人立刻进选等级，点几下本机就有了新记录，
+     `pullCloudDatabase` 的 `expectedLocalRevision` 检查会放弃拉取。
+- 测试：`self-audit-account.test.ts` 末三条（空云端上传并绑定 / 云端有快照则冲突不合并 / 空库启动照拉）。
+- ⚠️ 没修、也没验证的：
+  - **真机上没验**（模拟器同样没跑过「登录 → 云端有旧快照 → 找回」一整条）。要验：开发者工具清库后用一个云端有数据的号登录。
+  - `autoSyncCloudDatabase` 里 `return pullCloudDatabase(...)` / `return pushCloudDatabase(...)` 在 `try` 里**没有 `await`**，它们抛的错（包括 401）绕过下面的 `catch`，
+    `handleExpiredSession` 和 429 退避对这两处不生效；调用方 `runAutoSync` 会接住并只打日志。改成 `return await` 很便宜，但会改变过期登录的表现，没顺手动。
+  - 「本机有未绑定数据 + 云端已有快照」的老用户（例如作者的 `aaa`）仍是冲突，要在设置里手动选上传 / 拉取。自动合并有混入别人数据的风险，没替用户决定。
+  - 作者说的「id 没有」没弄清是指什么（账号页没显示用户 ID？还是别的）：代码里没有任何面向用户的账号 ID 展示。

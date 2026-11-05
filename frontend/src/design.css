@@ -971,9 +971,6 @@ button.fin-row:hover { background: var(--ds-inset-2); }
 .jq-levels { display: flex; flex-wrap: wrap; gap: 8px; }
 .jq-card { min-width: 0; padding: 16px; }
 .jq-stack { display: flex; flex-direction: column; gap: 12px; }
-/* align-items 要写明：小程序给所有 button 设了 align-items:center，纵向 flex 会把标题和统计挤到中间 */
-.jq-list-row { display: flex; flex-direction: column; align-items: stretch; gap: 6px; width: 100%; min-height: 64px; padding: 12px 14px; border: 0; border-radius: var(--ds-radius-inset); background: var(--ds-inset); color: var(--ds-ink); text-align: left; }
-.jq-list-row:disabled { opacity: .55; }
 .jq-row-title { font-size: 16px; font-weight: 800; overflow-wrap: anywhere; }
 .jq-row-meta { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; color: var(--ds-ink-2); font-size: 12px; font-weight: 600; }
 .jq-mistakes { justify-content: flex-start; width: 100%; text-align: left; }

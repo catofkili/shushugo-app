@@ -49,6 +49,8 @@ const Step = ({ n, title, hint, children }: { n: number; title: string; hint?: s
 interface Props {
   open: boolean;
   dismissible?: boolean;
+  /** false = 本机库还没好（小程序首次安装，库在后台下）：不查库，保存等一等。默认 true。 */
+  dbReady?: boolean;
   isAuthenticated?: boolean;
   onRequireAuth?: () => void;
   onComplete: (message: string) => void;
@@ -73,11 +75,11 @@ const defaultExamDate = (kind: ExamKind) => {
   return date && (date.getTime() - today.getTime()) / 86_400_000 >= PRESELECT_MIN_DAYS ? formatExamDate(date) : "";
 };
 
-export function LevelSetup({ open, dismissible = false, isAuthenticated = false, onRequireAuth, onComplete, onClose }: Props) {
+export function LevelSetup({ open, dismissible = false, dbReady = true, isAuthenticated = false, onRequireAuth, onComplete, onClose }: Props) {
   const entitlement = useEntitlements();
   // 只在打开 / 关上时读一次：这个组件挂在 AppShell 里一直渲染，原来每次重渲染都要查一遍库里的计划。
   // eslint-disable-next-line react-hooks/exhaustive-deps -- 故意按 open 重读：备考页关了再开要拿到刚存的计划
-  const existing = useMemo(() => getLevelPlanSettings(), [open]);
+  const existing = useMemo(() => dbReady ? getLevelPlanSettings() : null, [open, dbReady]);
   const [startingLevel, setStartingLevel] = useState<StartingLevel>(existing?.startingLevel ?? "kana");
   const [target, setTarget] = useState<JlptTarget>(existing?.target ?? "N3");
   const [examKind, setExamKind] = useState<ExamKind>(existing?.examKind ?? "jlpt");
@@ -97,29 +99,30 @@ export function LevelSetup({ open, dismissible = false, isAuthenticated = false,
   const [claiming, setClaiming] = useState(false);
   // 小程序首次设定先登录（作者 10-19）：老用户云端进度一回来，外层（WeappPage）就把设定关掉，不用再设一遍；
   // 新用户登录过了，最后一页直接是「领取首月会员」。网页 / App 没有这一页。
-  const [loginPage, setLoginPage] = useState(() => !dismissible && !isAuthenticated && Capacitor.getPlatform() === "wechat");
-  // 登录后先等第一次同步落地（最多 5 秒）再进选等级：不然老用户刚点了几下，设定就被找回的进度关掉。
+  // 已登录的也先过这一页：重装 / 换机后启动同步正在拉云端进度，这时进选等级，用户点几下就和拉回来的进度撞车（本机有了新记录，拉取会放弃）。
+  const [loginPage, setLoginPage] = useState(() => !dismissible && Capacitor.getPlatform() === "wechat");
+  // 登录后先等第一次同步落地（最多 8 秒）再进选等级：不然老用户刚点了几下，设定就被找回的进度关掉。
   useEffect(() => {
-    if (!loginPage || !isAuthenticated) return;
+    if (!open || !dbReady || !loginPage || !isAuthenticated) return; // 库没好同步不会跑，库好了才开始等
     const next = () => setLoginPage(false);
-    const timer = setTimeout(next, 5000);
+    const timer = setTimeout(next, 8000);
     window.addEventListener(CLOUD_SYNC_EVENT, next);
     return () => { clearTimeout(timer); window.removeEventListener(CLOUD_SYNC_EVENT, next); };
-  }, [loginPage, isAuthenticated]);
+  }, [open, dbReady, loginPage, isAuthenticated]);
   // 小程序的原生底栏在页面层之外，弹窗盖不住：设定期间点「单词学习」会在没有计划时开始学。网页端弹窗已盖住底栏，这里是空操作。
   useStudyBreakTabBar(open);
   // 估算里唯一查库的一步（目标范围内还没学的词）。只随起点、目标、「单词没学过」变：拖其他滑杆、点日期都不用再查。
   // iPhone 小程序里 wasm 解释执行，原来每次重渲染都跑一遍（2026-10-19 作者：点考试日期卡）。
   const wordsUnfamiliar = familiarity.words === 0; // remainingPlanWords 只看这一点
   const remainingWords = useMemo(
-    () => open && !noExam ? perfTime("设定 · 估算查库", () => remainingPlanWords(startingLevel, target, { words: wordsUnfamiliar ? 0 : 1 })) : 0,
-    [open, noExam, startingLevel, target, wordsUnfamiliar]
+    () => open && dbReady && !noExam ? perfTime("设定 · 估算查库", () => remainingPlanWords(startingLevel, target, { words: wordsUnfamiliar ? 0 : 1 })) : 0,
+    [open, dbReady, noExam, startingLevel, target, wordsUnfamiliar]
   );
   if (!open) return null;
 
   const samePlan = existing?.startingLevel === startingLevel && existing.target === target && existing.examKind === examKind
     && existing.examDate === examDate && JSON.stringify(existing.familiarity) === JSON.stringify(familiarity);
-  const preview = examDate && !noExam ? previewLevelPlan({
+  const preview = dbReady && examDate && !noExam ? previewLevelPlan({
     startingLevel, target, familiarity, remainingWords,
     examDate: parseExamDate(examDate) ?? new Date(Date.now() + 90 * 86_400_000),
     startedOn: samePlan ? parseExamDate(existing?.startedOn ?? "") ?? undefined : undefined
@@ -193,8 +196,8 @@ export function LevelSetup({ open, dismissible = false, isAuthenticated = false,
           {loginPage ? <div className="ls-login">
             <Sticker name="mood-wave" size={128} />
             <p className="ds-kicker mt-4">欢迎来到收集日</p>
-            <h2 className="ls-title">先登录微信</h2>
-            <p className="ls-sub">换手机、重装都能接着学。</p>
+            <h2 className="ls-title">{isAuthenticated ? "正在找回学习进度" : "先登录微信"}</h2>
+            <p className="ls-sub">{isAuthenticated ? "稍等几秒。" : "换手机、重装都能接着学。"}</p>
           </div> : <header className="ls-head">
             <Sticker name={giftPage ? "mood-yay" : "mood-wave"} size={84} className="ls-head-mascot" />
             <div className="min-w-0 flex-1">
@@ -284,9 +287,9 @@ export function LevelSetup({ open, dismissible = false, isAuthenticated = false,
             {noExam ? <>按这个强度：每天 <b>{STUDY_INTENSITY[intensity].words}</b> 个新词</>
               : preview ? <>按这个计划：每天 <b>{preview.required.words}</b> 个新词
               {preview.feasible ? <span className="ds-pill ds-pill-primary">来得及</span> : <span className="ds-pill ds-pill-warn">照上限学不完</span>}</>
-              : "选好考试日期后显示每日计划估算"}
+              : dbReady ? "选好考试日期后显示每日计划估算" : "词库准备中，稍等…"}
           </p>
-          <button disabled={saving || (!noExam && !examDate)} onClick={submit} className="ds-btn focus-ring w-full disabled:opacity-50">{saving ? "正在建立计划…" : "保存并查看今天怎么学 →"}</button>
+          <button disabled={saving || !dbReady || (!noExam && !examDate)} onClick={submit} className="ds-btn focus-ring w-full disabled:opacity-50">{saving ? "正在建立计划…" : dbReady ? "保存并查看今天怎么学 →" : "词库准备中…"}</button>
           </>}
         </div>
       </div>

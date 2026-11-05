@@ -710,9 +710,6 @@ a,
 }
 
 /* 键盘打开时的样式调整 */
-body.keyboard-open {
-  /* 可以在这里添加键盘打开时的特殊样式 */
-}
 
 /* 滚动时的视觉反馈 */
 body.is-scrolling {
@@ -1560,11 +1557,7 @@ select {
   box-shadow: 0 8px 22px rgba(150, 110, 55, 0.06) !important;
 }
 
-[data-theme="light"] .bg-zinc-900,
-[data-theme="light"] .bg-zinc-950,
-[data-theme="light"] .bg-stone-950,
-[data-theme="light"] .dark\:bg-zinc-900,
-[data-theme="light"] .dark\:bg-zinc-950 {
+[data-theme="light"] .bg-zinc-900, [data-theme="light"] .bg-zinc-950, [data-theme="light"] .dark\:bg-zinc-900, [data-theme="light"] .dark\:bg-zinc-950 {
   background: rgba(255, 255, 255, 0.92) !important;
 }
 
@@ -1816,16 +1809,6 @@ select {
   to {
     transform: rotate(360deg);
   }
-}
-
-.stat-label {
-  font-size: 0.875rem;
-  color: var(--color-text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-weight: 600;
-  position: relative;
-  z-index: 1;
 }
 
 /* iOS WebView 导航栏固定 - 强制固定样式 */
@@ -2547,22 +2530,6 @@ select {
    剩下三个反馈态在这里各给一套 —— **黄色系在上面那张翻译表里一个档位都没有**，
    靠 text-yellow-100 在浅底上等于隐形。
    ───────────────────────────────────────────────────────────────────── */
-.vocab-prompt-panel {
-  background: rgba(0, 0, 0, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-[data-theme="light"] .vocab-prompt-panel {
-  background: rgba(255, 255, 255, 0.72) !important;
-  border-color: var(--ds-line) !important;
-}
-
-.vocab-fb-correct { border-color: color-mix(in srgb, var(--ds-primary) 45%, transparent); background: rgba(129, 216, 207, 0.14); color: #BFF4EE; }
-.vocab-fb-wrong   { border-color: rgba(252, 165, 165, 0.55); background: rgba(252, 165, 165, 0.1); color: #FEE2E2; }
-.vocab-fb-unknown { border-color: rgba(253, 224, 71, 0.55); background: rgba(253, 224, 71, 0.1); color: #FEF9C3; }
-
-[data-theme="light"] .vocab-fb-correct { border-color: rgba(92, 143, 50, 0.42) !important; background: rgba(143, 203, 94, 0.16) !important; color: #3F6B22 !important; }
-[data-theme="light"] .vocab-fb-wrong   { border-color: rgba(185, 28, 28, 0.34) !important; background: rgba(185, 28, 28, 0.08) !important; color: #b91c1c !important; }
-[data-theme="light"] .vocab-fb-unknown { border-color: rgba(161, 98, 7, 0.34) !important; background: rgba(202, 138, 4, 0.1) !important; color: #854d0e !important; }
 
 /* 语法卡的主色按钮。颜色由 GrammarCard 的 accent 传进来（语法考题页用主色青绿，
    混合模式用琥珀），所以这里只认变量 —— Tailwind 的 hex 是静态字符串，塞不进变量，

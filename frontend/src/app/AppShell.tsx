@@ -28,6 +28,8 @@ interface AppShellProps {
   paywallTarget?: FeatureId | "general";
   authOpen: boolean;
   levelSetupOpen: boolean;
+  /** 小程序首次安装时库还在下，首次设定先弹出来；库好之前选项能点、保存按钮等着。其它平台不传。 */
+  dbReady?: boolean;
   trialEndedOpen: boolean;
   onAuthenticated(session: CloudSession): Promise<void>;
   onClosePaywall(): void;
@@ -46,6 +48,7 @@ export function AppShell({
   paywallTarget,
   authOpen,
   levelSetupOpen,
+  dbReady,
   trialEndedOpen,
   onAuthenticated,
   onClosePaywall,
@@ -64,6 +67,7 @@ export function AppShell({
           paywallTarget={paywallTarget}
           authOpen={authOpen}
           levelSetupOpen={levelSetupOpen}
+          dbReady={dbReady}
           trialEndedOpen={trialEndedOpen}
           onAuthenticated={onAuthenticated}
           onClosePaywall={onClosePaywall}
@@ -83,6 +87,7 @@ function GlobalOverlays({
   paywallTarget,
   authOpen,
   levelSetupOpen,
+  dbReady,
   trialEndedOpen,
   onAuthenticated,
   onClosePaywall,
@@ -133,7 +138,7 @@ function GlobalOverlays({
       )}
       <AuthDialog open={authOpen} onClose={onCloseAuth} onAuthenticated={onAuthenticated} />
       {levelSetupOpen && (
-        <LevelSetup open isAuthenticated={Boolean(cloudSession.token)} onRequireAuth={() => requireAccount()} onComplete={onLevelSetupComplete} />
+        <LevelSetup open dbReady={dbReady} isAuthenticated={Boolean(cloudSession.token)} onRequireAuth={() => requireAccount()} onComplete={onLevelSetupComplete} />
       )}
       {/* 原来是写死的奶油底 + jp-ink：深色主题下浅底浅字；z-85 也压不过手机底栏（9999） */}
       {trialEndedOpen && <TrialEndedDialog onDismiss={onDismissTrial} onViewPro={onViewPro} />}

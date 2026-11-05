@@ -15,7 +15,6 @@
 .zoo-mode{flex-shrink:0;border:1px solid color-mix(in srgb, var(--ds-primary) 45%, transparent);border-radius:12px;background:var(--zoo-primary-soft);color:var(--zoo-primary-deep);font-size:13px;font-weight:800;padding:8px 14px;white-space:nowrap}
 .zoo-mode:hover{background:#C4E2A2}
 .zoo-studybar{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
-.zoo-face-label{color:var(--zoo-muted,#9A8A78);font-size:11px;font-weight:800;letter-spacing:1.4px}
 .zoo-prompt{margin:12px 0;font-family:"Hiragino Mincho ProN","Noto Serif JP",serif;font-size:28px;font-weight:800;color:var(--zoo-ink);line-height:1.3}
 .zoo-hidden{margin:22px 0;color:#A99A86;font-size:14px;font-weight:600}
 .zoo-hidden small{display:block;margin-top:5px;font-size:12px;font-weight:500}
@@ -129,8 +128,6 @@
 @keyframes zooCardEnter{0%{opacity:0;transform:translateY(10px) scale(.985)}100%{opacity:1;transform:none}}
 
 /* 水豚微反应 */
-.zoo-mood-cheer{animation:zooCapyCheer .5s ease}
-.zoo-mood-sleepy{animation:zooCapyTilt .5s ease}
 @keyframes zooCapyCheer{0%{transform:scale(1)}30%{transform:translateY(-6px) scale(1.08)}60%{transform:translateY(0) scale(.97)}100%{transform:scale(1)}}
 @keyframes zooCapyTilt{0%,100%{transform:rotate(0)}30%{transform:rotate(-6deg)}62%{transform:rotate(4deg)}}
 
@@ -159,8 +156,7 @@
 }
 
 /* ===== 昨日减负：纸牌一样一张张飞走 ===== */
-.daily-relief-banner,
-.daily-tail-banner{
+.daily-relief-banner{
   position:relative;z-index:4;display:flex;align-items:center;justify-content:center;gap:9px;flex-wrap:wrap;margin:0 auto 9px;width:min(900px,100%);border-radius:16px;padding:10px 14px;text-align:center
 }
 .daily-relief-banner{border:1px solid color-mix(in srgb, var(--ds-primary) 45%, transparent);background:linear-gradient(120deg,#F4FBE8,#E4F2D0);color:#4F702F;box-shadow:0 7px 18px rgba(111,168,62,.14);animation:dailyReliefBannerIn .55s cubic-bezier(.18,1.45,.42,1)}
@@ -179,13 +175,10 @@
 @keyframes dailyReliefStamp{0%{opacity:0;transform:scale(.76) rotate(-5deg)}65%{opacity:1;transform:scale(1.07) rotate(1deg)}100%{transform:none}}
 
 /* ===== 真正结尾：轻松的奶油绿压轴 ===== */
-.daily-tail-card{background:linear-gradient(160deg,#FFFDF5,#EEF6DD)!important;border-color:rgba(153,191,104,.58)!important;box-shadow:0 18px 42px rgba(111,168,62,.13),0 0 0 1px rgba(255,255,255,.55) inset!important}
-.daily-tail-banner{border:1px solid rgba(153,191,104,.58);background:linear-gradient(120deg,#F3FBE9,#E4F1D1);color:#5D7B3A}
-.daily-tail-banner span{font-size:12px;font-weight:900;letter-spacing:.12em}.daily-tail-banner strong{font-size:16px;color:#557632}.daily-tail-banner small{font-size:11px;color:#78965A}
 
-[data-theme="dark"] .daily-relief-banner,[data-theme="dark"] .daily-tail-banner{background:linear-gradient(120deg,#3C4D32,#35452D);color:#D4E9B8}
-[data-theme="dark"] .daily-relief-banner strong,[data-theme="dark"] .daily-tail-banner strong{color:#D5E9B8}
-[data-theme="dark"] .daily-relief-banner span,[data-theme="dark"] .daily-tail-banner small{color:#A9C68A}
+[data-theme="dark"] .daily-relief-banner{background:linear-gradient(120deg,#3C4D32,#35452D);color:#D4E9B8}
+[data-theme="dark"] .daily-relief-banner strong{color:#D5E9B8}
+[data-theme="dark"] .daily-relief-banner span{color:#A9C68A}
 [data-theme="dark"] .daily-relief-card{background:linear-gradient(160deg,#3C4535,#303A2E)!important}
 [data-motion="reduced"] .word-study-countdown::before,[data-motion="reduced"] .word-study-countdown::after{animation:none}
 [data-motion="reduced"] .daily-relief-banner-spark{animation:none}
@@ -257,11 +250,6 @@
 
 /* 面板通用件(组队页用;原来地图/温泉也共用) */
 .zoo-panel{border:1.5px solid var(--ds-line);border-radius:20px;background:var(--zoo-surface);box-shadow:0 8px 22px rgba(160,120,60,.12);padding:18px}
-.zoo-panel-kick{color:var(--zoo-primary-deep);font-size:11px;font-weight:800;letter-spacing:1.3px}
-.zoo-panel-kick-spaced{margin-top:22px}
-.zoo-panel-title{font-family:"Hiragino Mincho ProN","Noto Serif JP",serif;font-weight:800;font-size:18px;margin:3px 0 12px;color:var(--zoo-ink)}
-.zoo-panel-note{color:var(--zoo-muted);font-size:12px;line-height:1.7;margin:10px 2px 0}
-.zoo-panel-note-warn{margin:0 0 12px;border:1px solid rgba(232,151,28,.4);border-radius:12px;background:var(--zoo-orange-soft);padding:8px 12px;color:#8A5A08;font-weight:700}
 
 /* ===== 问候条 ===== */
 .zoo-greet{display:flex;align-items:center;gap:10px;margin-bottom:14px}
@@ -294,11 +282,6 @@
 
 /* 通栏:今日复习 */
 .zoo-tile-hero{grid-column:1 / -1;flex-direction:row;align-items:center;justify-content:space-between;background:linear-gradient(120deg,#EDF8DE,#DCF0C4);border-color:color-mix(in srgb, var(--ds-primary) 45%, transparent)}
-.zoo-tile-hero-l{display:flex;flex-direction:column;gap:2px}
-.zoo-tile-hero-num{font-family:"Hiragino Mincho ProN","Noto Serif JP",serif;font-size:24px;font-weight:800;color:var(--zoo-primary-deep)}
-.zoo-tile-hero-sub{font-size:12px;color:var(--zoo-brown-deep)}
-.zoo-tile-hero-r{display:flex;flex-direction:column;align-items:center;gap:4px}
-.zoo-tile-hero-emoji{font-size:36px;animation:zooHopIdle 2.8s ease-in-out infinite}
 @keyframes zooHopIdle{0%,72%,100%{transform:translateY(0)}80%{transform:translateY(-7px)}88%{transform:translateY(0) scaleY(.9) scaleX(1.08)}94%{transform:translateY(0)}}
 
 /* 「时刻」的小条 —— 蹦一下说一句就走,一次只播一个(见 hooks/useMoments)。
@@ -322,11 +305,6 @@
 
 /* 通栏:组队 */
 .zoo-tile-team{grid-column:1 / -1;background:linear-gradient(120deg,#FFF4E2,#FFE8C6);border-color:rgba(232,151,28,.4)}
-.zoo-tile-team-name{font-size:16px}
-.zoo-tile-team-avatars{display:flex;margin:5px 0 3px}
-.zoo-tile-team-avatars i{width:28px;height:28px;display:grid;place-items:center;font-style:normal;font-size:16px;background:#fff;border:2px solid var(--zoo-surface);border-radius:50%;margin-left:-7px;box-shadow:0 2px 5px rgba(160,120,60,.18)}
-.zoo-tile-team-avatars i:first-child{margin-left:0}
-.zoo-tile-team-status{font-size:12px;color:#8A5A08;font-weight:700}
 
 /* ===== 快速学习入口 =====
    外框沿用原来的主页宽度；顶部只把原「今日复习」这一行按 4:1 分成两块。
@@ -336,11 +314,6 @@
 .zoo-tile-quick-arrow{flex:none;color:var(--zoo-primary-deep);font-size:18px;font-weight:800;line-height:1}
 
 /* ===== 学习方式:大入口旁边的小入口 + 展开的模式表 ===== */
-.zoo-tile-modes-emoji{font-size:24px;line-height:1}
-.zoo-tile-modes-copy{display:flex;flex-direction:column;align-items:center;gap:1px;min-width:0}
-.zoo-tile-modes-copy small{color:var(--zoo-brown-deep);font-size:11px;font-weight:800;letter-spacing:.06em}
-.zoo-tile-modes-copy b{color:var(--zoo-ink);font-family:"Hiragino Mincho ProN","Noto Serif JP",serif;font-size:18px;font-weight:800;white-space:nowrap}
-.zoo-tile-modes-caret{color:#B4740A;font-size:12px;font-weight:800;line-height:1}
 .zoo-modes-sheet{grid-column:1 / -1;display:flex;flex-direction:column;gap:6px;border:1.5px solid rgba(232,151,28,.42);border-radius:20px;background:var(--zoo-surface);padding:6px;box-shadow:0 8px 22px rgba(160,120,60,.16)}
 .zoo-modes-item{display:flex;align-items:center;gap:10px;width:100%;border:1.5px solid transparent;border-radius:16px;background:transparent;padding:9px 10px;text-align:left}
 .zoo-modes-item:hover{background:var(--zoo-primary-soft)}
@@ -350,16 +323,9 @@
 .zoo-modes-item-copy b{color:var(--zoo-ink);font-size:14px;font-weight:800}
 .zoo-modes-item-copy small{color:var(--zoo-muted);font-size:11px;font-weight:700;line-height:1.45}
 .zoo-modes-item-count{flex:none;color:var(--zoo-primary-deep);font-size:16px;font-weight:800}
-.zoo-tile-mistakes-emoji{flex:none;font-size:24px;line-height:1}
-.zoo-tile-mistakes-copy{display:flex;min-width:0;flex:1;flex-direction:column;gap:2px;text-align:left}
-.zoo-tile-mistakes-copy b{color:var(--zoo-ink);font-family:"Hiragino Mincho ProN","Noto Serif JP",serif;font-size:18px;font-weight:800}
-.zoo-tile-mistakes-copy small{color:var(--zoo-brown-deep);font-size:11px;font-weight:700}
-.zoo-tile-mistakes-arrow{flex:none;color:#B4740A;font-size:18px;font-weight:800;line-height:1}
 
 /* ===== 备考计划卡 =====
    通栏、冷色,和旁边暖色的队伍/模式卡分开——它报的是倒计时和欠账,不是一个可逛的入口。 */
-.zoo-tile-jlpt-days{color:var(--zoo-ink);font-family:"Hiragino Mincho ProN","Noto Serif JP",serif;font-size:24px;font-weight:800;line-height:1.15}
-.zoo-tile-jlpt-gap{margin-top:2px;color:#1F6274;font-size:12px;font-weight:700}
 
 /* ===== 快速学习内容页 ===== */
 .quick-study-page-shell{max-width:960px;margin:0 auto}
@@ -460,8 +426,6 @@
 
 .zoo-tile-strip{grid-column:1 / -1;flex-direction:row;align-items:center;gap:12px}
 .zoo-tile-strip .zoo-tile-emoji{margin-bottom:0}
-.zoo-tile-strip-text{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
-.zoo-tile-strip-num{flex:none;font-size:18px;font-weight:800;color:var(--zoo-primary-deep)}
 
 /* ===== 进度概览(原工具箱的 ProgressOverviewPanel) ===== */
 .zoo-prog{padding:14px}
@@ -693,9 +657,7 @@
 [data-theme="dark"] .zoo-tile-hero{background:linear-gradient(120deg,#3B5132,#35452E);border-color:rgba(167,215,125,.42)}
 [data-theme="dark"] .zoo-modes-sheet{border-color:rgba(240,179,78,.45)}
 [data-theme="dark"] .zoo-tile-team{background:linear-gradient(120deg,#4A3E2A,#3E3426);border-color:rgba(240,179,78,.45)}
-[data-theme="dark"] .zoo-tile-team-avatars i{background:#3B4338;border-color:var(--zoo-surface)}
 [data-theme="dark"] .zoo-tile-jlpt{background:linear-gradient(120deg,#2A3E45,#243539);border-color:color-mix(in srgb, var(--ds-primary) 45%, transparent)}
-[data-theme="dark"] .zoo-tile-jlpt-gap{color:#8FCBD6}
 [data-theme="dark"] .zoo-maint{background:rgba(48,55,45,.72);border-color:rgba(230,193,155,.32)}
 
 /* ===== 完成时的主题纸屑 ===== */
@@ -725,8 +687,7 @@
    ====================================================================== */
 
 /* —— reduced:掐掉常驻循环 + 入场 —— */
-[data-motion="reduced"] .zoo-breathe,
-[data-motion="reduced"] .zoo-tile-hero-emoji{
+[data-motion="reduced"] .zoo-breathe{
   animation:none!important
 }
 [data-motion="reduced"] .zoo-page,
@@ -1298,8 +1259,6 @@
 
 [data-theme="dark"] .zoo-tray{border-color:rgba(167,215,125,.16)}
 [data-theme="dark"] .zoo-duo-cell{background:#3A4235;border-color:rgba(167,215,125,.2)}
-[data-theme="dark"] .zoo-goal-sheet{background:#3A4235;border-color:rgba(167,215,125,.2)}
-[data-theme="dark"] .zoo-goal-chips button{border-color:rgba(167,215,125,.24)}
 [data-theme="dark"] .zoo-now{box-shadow:0 8px 22px rgba(0,0,0,.35)}
 [data-theme="dark"] .zoo-duo-avatars i{background:#2C332A;border-color:#3A4235}
 
@@ -1323,8 +1282,6 @@
 /* Taro's HTML bridge does not provide a <summary> template, so Disclosure.weapp renders a View and an explicit marker. */
 .disclosure-summary{display:flex;align-items:center;gap:8px}
 .disclosure-summary-indicator{flex:none;margin-left:auto;color:var(--zoo-muted,#9A8A78);font-size:11px}
-.help-faq-summary{display:flex;align-items:center;gap:8px;padding:14px 16px;cursor:pointer}
-.help-faq-chevron{color:var(--ds-ink-3);font-size:17px;line-height:1}
 
 .kr-bar{display:flex;flex-direction:column;gap:8px}
 .kr-search{width:100%;border:1px solid var(--ds-line);border-radius:12px;

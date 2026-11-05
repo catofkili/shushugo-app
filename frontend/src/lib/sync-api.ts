@@ -1286,6 +1286,8 @@ export async function autoSyncCloudDatabase(trigger: CloudSyncTrigger = "startup
       try {
         const session = await getCloudSession();
         if (!session.token || !session.email) return { status: "skipped", automatic: true } as CloudSyncEventDetail;
+        // 小程序首次安装：库还在后台下，登录（首次设定第一页）就已经能发生。跳过这一次，库好了 WeappPage 会再发一次 startup。
+        try { getDatabase(); } catch { return { status: "skipped", automatic: true } as CloudSyncEventDetail; }
 
         // 前台同步不能抢在 2 秒自动保存之前导入云端,否则内存里的最后一个答案会被覆盖。
         await flushPendingSave();
@@ -1300,13 +1302,14 @@ export async function autoSyncCloudDatabase(trigger: CloudSyncTrigger = "startup
           owner = session.email;
         }
         const localHasData = hasLocalLearningData();
-        if ((owner && owner !== session.email) || (!owner && localHasData)) {
+        // 本机有数据但没绑过账号（先「先不登录」学了一阵、之后才登录）不在这里拦：云端是空账号就走下面的上传并绑定，
+        // 云端也有数据才落到下面「本机和云端都有学习记录」报冲突。原来这里无条件报冲突、登录后永远不上传
+        // （2026-11-05 线上 13 个微信账号只有 1 个有过快照）。
+        if (owner && owner !== session.email) {
           const detail: CloudSyncEventDetail = {
             status: "conflict",
             automatic: true,
-            message: owner && owner !== session.email
-              ? "检测到本机仍保留另一个账号的学习数据，请在设置中手动选择上传或拉取。"
-              : "检测到本机已有未绑定账号的学习数据，请先在设置中选择上传或拉取。"
+            message: "检测到本机仍保留另一个账号的学习数据，请在设置中手动选择上传或拉取。"
           };
           emitCloudSyncEvent(detail);
           return detail;
@@ -1334,7 +1337,9 @@ export async function autoSyncCloudDatabase(trigger: CloudSyncTrigger = "startup
           ? remoteGeneration !== state.lastSyncedGeneration
           : state.lastSyncedModified !== remoteModified;
 
-        if (hasSyncedVersion && !remoteChanged && !state.localDirty) {
+        // 本机库是空的而同步标记还在（库文件丢了 / 重建，标记存在另一处）：启动和登录那一次照拉，不当作「已是最新」。
+        const emptyLocalRestore = !localHasData && (trigger === "startup" || trigger === "login");
+        if (hasSyncedVersion && !remoteChanged && !state.localDirty && !emptyLocalRestore) {
           return { status: "idle", automatic: true };
         }
 

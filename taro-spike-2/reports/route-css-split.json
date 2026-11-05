@@ -1,6 +1,6 @@
 {
-  "appWxssBytesBefore": 288075,
-  "appWxssBytesAfter": 229959,
+  "appWxssBytesBefore": 282439,
+  "appWxssBytesAfter": 224630,
   "movedRuleBytesByRoute": {
     "account/personal-info/index.wxss": 5155,
     "content-pages/achievements/index.wxss": 5155,
@@ -9,7 +9,7 @@
     "pages/word/index.wxss": 3066,
     "study/confusion/index.wxss": 8574,
     "study/invite/index.wxss": 11944,
-    "study/jlpt-practice/index.wxss": 5361,
+    "study/jlpt-practice/index.wxss": 5054,
     "study/kanji-readings/index.wxss": 12170,
     "study/quick-study/index.wxss": 12123,
     "study/team/index.wxss": 11944,
@@ -28,7 +28,7 @@
     "study/confusion/index.wxss": 80,
     "study/kanji-readings/index.wxss": 114,
     "study/vocab-test/index.wxss": 35,
-    "study/jlpt-practice/index.wxss": 63,
+    "study/jlpt-practice/index.wxss": 60,
     "pages/word/index.wxss": 37
   },
   "routes": {

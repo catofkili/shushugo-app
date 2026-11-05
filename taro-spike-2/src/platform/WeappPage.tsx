@@ -24,7 +24,7 @@ import { recordDiagnosticRoute } from '../../../frontend/src/lib/diagnostics';
 import { finishStartupTiming, perfRecord, perfTime, perfTimeAsync } from '../../../frontend/src/lib/perf-marks';
 import { canUseFeature, type FeatureId } from '../../../frontend/src/lib/entitlements';
 import { getProgressOverview } from '../../../frontend/src/lib/api';
-import { getCloudSession, CLOUD_SYNC_EVENT, CLOUD_AUTH_EVENT, LEVEL_PLAN_TRIAL_EXPIRES_KEY, LEVEL_PLAN_TRIAL_NOTICE_KEY, type CloudSession, type CloudSyncEventDetail } from '../../../frontend/src/lib/sync-api';
+import { registerCloudAutoSyncLifecycle, requestCloudAutoSync, getCloudSession, CLOUD_SYNC_EVENT, CLOUD_AUTH_EVENT, LEVEL_PLAN_TRIAL_EXPIRES_KEY, LEVEL_PLAN_TRIAL_NOTICE_KEY, type CloudSession, type CloudSyncEventDetail } from '../../../frontend/src/lib/sync-api';
 import { defaultStudyMode, getStudyMode, saveStudyMode } from '../../../frontend/src/lib/studyMode';
 import { getResolvedTheme, getStudyPreferences, PREFERENCES_EVENT } from '../../../frontend/src/lib/studyPreferences';
 import { equippedItem, YUZU_EVENT } from '../../../frontend/src/lib/yuzu';
@@ -60,6 +60,9 @@ const loadShell = () => shellPromise ??= import(
 function installGlobalEvents() {
   if (globalEventsInstalled || typeof window === 'undefined') return;
   globalEventsInstalled = true;
+  // ⚠️ 小程序原来只有打开「账号」页才会注册云同步（account/login/index.tsx）：别处登录后 requestCloudAutoSync('login') 发出去没人听，
+  // 启动不拉、改动不推。2026-11-05 查线上，13 个微信账号只有 1 个传过快照——重装 / 换机后同一个微信永远是空账号，只能重新走先验。
+  registerCloudAutoSyncLifecycle();
   window.addEventListener(OPEN_GRAMMAR_FOUNDATION_EVENT, (event) => {
     const ruleId = (event as CustomEvent<{ ruleId?: string }>).detail?.ruleId;
     activeNavigate('grammar-foundation', { selectedFoundationRuleId: ruleId ?? null });
@@ -142,16 +145,23 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
     let cancelled = false;
     // 计时版里记每个页面从挂载到能用花多久（用户报「单词和语法加载几秒」「进组队页十秒」）；普通构建里 perfRecord 是空操作。
     const openedAt = Date.now();
+    // 对战直达先应战、邀请页不被打断：不弹首次设定，也不标记已检查，之后回首页仍走首次设定。
+    const setupExempt = page === 'invite' || (page === 'duel' && getAppState().duelId);
     // 开库、外壳、汉字 / 语法内容分包互不依赖，一起开始（汉字和语法内容只灌内容缓存，不碰数据库）。
     Promise.all([
-      ensureDatabase('word-study', { onDownload: ({ percent }) => { if (!cancelled) setDownloadPercent(percent); } }),
-      loadShell(),
+      ensureDatabase('word-study', { onDownload: ({ percent }) => {
+        if (cancelled) return;
+        setDownloadPercent(percent);
+        // 只有首次安装（本机没有存档）才会下出厂库：下载要好几秒，不让人盯着进度条，
+        // 先把首次设定（登录 → 选等级）弹出来，库在它后面静默下完；保存按钮等库好了再亮（LevelSetup 的 dbReady）。
+        if (!firstRunSetup && !levelSetupChecked && !setupExempt) { firstRunSetup = true; setLevelSetupOpen(true); }
+      } }),
+      loadShell().then((loaded) => { if (!cancelled) setShell(loaded); }),
       perfTimeAsync('启动 · 汉字和辨析内容就绪', () => readyForKanji()),
       grammarPages.has(page) ? perfTimeAsync(`页面 · ${page} 语法内容`, () => readyForGrammar()) : undefined
     ])
-      .then(async ([, shell]) => {
+      .then(async () => {
         if (cancelled) return;
-        setShell(shell);
         setOverview(page === 'home'
           ? perfTime('启动 · 今日主页数据计算', () => getProgressOverview())
           : perfTime(`页面 · ${page} 概览计算`, () => getProgressOverview()));
@@ -161,10 +171,12 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
         if (cancelled) return;
         setReady(true);
         perfRecord(`页面 · ${page} 就绪`, Date.now() - openedAt);
-        // 对战直达先应战，和网页一致；不标记已检查，之后回首页仍走首次设定。
-        if (!levelSetupChecked && page !== 'invite' && !(page === 'duel' && getAppState().duelId)) {
+        if (!levelSetupChecked && !setupExempt) {
           levelSetupChecked = true;
-          try {
+          // 放在首页数据算完之后：算数据会 persistSoon，同步开头的 flushPendingSave 把它冲掉后才记本机改动号，不然拉取会因「同步期间本机有新记录」放弃。
+          requestCloudAutoSync('startup');
+          // 首次安装在 onDownload 里已经弹出来了，这里不再判断（此时库刚下好，shouldShowLevelSetup 也必为 true）。
+          if (!firstRunSetup) try {
             firstRunSetup = shouldShowLevelSetup();
             setLevelSetupOpen(firstRunSetup);
           } catch { /* 旧库可能尚无计划设置 */ }
@@ -345,7 +357,8 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
     actions
   };
   if (error) return <View className="theme-light p-4"><Text>{error}</Text></View>;
-  if (!ready || !shell) return <StartupLoading downloadPercent={downloadPercent} />;
+  // 首次安装、库还在下：外壳照样渲染，首次设定盖在加载画面上（见上面 onDownload）。其它情况仍是整页加载画面。
+  if (!shell || (!ready && downloadPercent === undefined)) return <StartupLoading downloadPercent={downloadPercent} />;
   const { AppShell, markTrialNoticeRead } = shell;
 
   return (
@@ -361,6 +374,7 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
       paywallTarget={ui.paywallTarget}
       authOpen={ui.authOpen}
       levelSetupOpen={ui.levelSetupOpen}
+      dbReady={ready}
       trialEndedOpen={ui.trialEndedOpen}
       onAuthenticated={(session: CloudSession) => context.handleAuthenticated(session)}
       onClosePaywall={closePaywall}
@@ -382,7 +396,7 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
         onClick={() => notifyStudyInteraction(pagePath)}>
         {/* Native page scrolling is disabled by the full-screen shell. A View with
             overflow-y:auto does not become a mini-program scroll container. */}
-        <ScrollView
+        {ready ? <ScrollView
           id="weapp-main-scroll"
           scrollY
           showScrollbar={false}
@@ -395,7 +409,7 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
           <Suspense fallback={<View className="theme-light p-4"><Text>正在加载…</Text></View>}>
             <Route />
           </Suspense>
-        </ScrollView>
+        </ScrollView> : <StartupLoading downloadPercent={downloadPercent} />}
         {/* Taro 删除 portal 子节点时会整组更新宿主的 childNodes。独立宿主让关闭弹层只更新这里，
             避免连带重建旁边的主 ScrollView、丢掉列表的原滚动位置。 */}
         <View ref={portalHost} />

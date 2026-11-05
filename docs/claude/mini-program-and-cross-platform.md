@@ -467,6 +467,39 @@ JOIN 读的是 **grammar_state** —— **点了收藏永远显示不出来**，
 - 首页每次冷启动仍要装 word-study 那套内容（`question-meanings` 613 KB、`pitch-accent` 273 KB、`distinction-reviews` 255 KB……）和汉字那两份（约 730 KB），
   全是 JS 对象字面量，iOS 上解释执行。首页本身是否用得到这些没核实（懒代理在未加载时返回代理而不是报错，用错了是静默的），要动先真机计时再逐个核对。
 
+### 2026-11-05 增补：首次安装先弹首次设定，出厂库在后面静默下（上面「未做」第一条做了）
+
+作者原则（2026-11-05，见记忆 lazy-load-library-on-demand）：加载尽量静默，首次打开的词库下载挪到先验期间做，不让人盯着进度条。
+
+- `WeappPage.tsx`：`ensureDatabase` 的 `onDownload` 只有首次安装（本机没有存档）才会被调用，**第一次被调用就是「确定是首次安装」的信号**——
+  这时 `setLevelSetupOpen(true)` 并置 `levelSetupChecked = firstRunSetup = true`（对战直达 / 邀请页除外，判据 `setupExempt`）。
+  外壳（`loadShell()`）改成一加载完就 `setShell`，不再等开库；渲染闸门从「`!ready` 就整页加载画面」改成「`!shell`，或 `!ready` 且不是首次下载」，
+  首次下载时 AppShell 照常渲染，路由根节点里主 ScrollView 换成 `StartupLoading`，**portal 宿主 `<View ref={portalHost} />` 留在原位不动**（弹层挂的目标不变）。
+- `AppShell` / `LevelSetup` 新增可选 `dbReady`（默认 true，网页 / App 不传）：库没好之前不查库（`existing` 取 null、估算 `remainingWords` 为 0 且不出 `preview`），
+  选项照常可点；保存按钮灰着写「词库准备中…」，库好了才亮。已登录的首次设定那一页「正在找回学习进度」的 8 秒计时也等 `dbReady` 才开始。
+- `sync-api.ts` 的 `autoSyncCloudDatabase`：`getDatabase()` 还没库就返回 `skipped`、不发请求。首次设定第一页的微信登录发生在库下完之前，
+  登录触发的那次同步会被跳过，库好后 `WeappPage` 的 `requestCloudAutoSync('startup')` 再补一次（`startupSynced` 只发一次，已从「首次设定判断」那段里提出来）。
+- ⚠️ 没做的、要知道的：
+  - **「内容分包用到才装」没做**：`ensureDatabase` 仍 `Promise.all([readyForPage('word-study'), 开库])`，`readyForKanji()` 也还挡 `ready`。现在只是它们和首次设定**重叠**了，没有变成按需。
+    要做先逐个核实首页 / 角标读不读这些懒代理（未加载时返回代理而不是报错，用错了是静默的）。
+  - 库好的那一刻 `setOverview(getProgressOverview())` 仍同步算一遍首页数据（首装几百毫秒到几秒），正好落在用户还在填首次设定的时候，可能有一下顿。要消掉：首次设定开着时先不算，等设定完成走已有的刷新。
+  - 弹层 `createPortal` 在宿主登记之前是原地渲染，登记后换成真 portal：首次设定的第一次渲染和宿主同一帧出现，所以会在下一次重渲染（下载进度事件几乎马上就有）时换一次、子树重挂一次。
+    此时用户还没来得及点；真机上若看到首次设定闪一下就是它。
+  - **主包体积**：这一版加上云同步启动，第一次构建主包 1,900,325 B（上限 1,900,000，改前余量只有 113 B）。腾法同 10-14 那次：删全仓库零引用的样式——
+    脚本找「类名在 `frontend/src`、`taro-spike-2/src`、`index.html` 里一次都不出现、而且「前缀-」这个字符串也不出现（防拼接）」的 40 个类
+    （`zoo-tile-hero-*` / `zoo-tile-team-*` / `zoo-tile-modes-*` / `zoo-tile-mistakes-*` / `zoo-tile-jlpt-*` / `zoo-tile-strip-*`、`zoo-panel-*`、`zoo-goal-sheet|chips`、`daily-tail-*`、
+    `vocab-fb-*`、`vocab-prompt-panel`、`help-faq-*`、`jq-list-row`、`zoo-face-label`、`zoo-mood-*`、`stat-label`、`bg-stone-950`、`body.keyboard-open` 空规则），
+    postcss 摘掉含这些类的选择器 / 规则（`app.css`、`styles.css`、`design.css`），结果主包 1,894,700 B，**余量 5,300 B**。
+    还有 84 个「字面零引用但前缀出现过」的类没动（`zoo-confetti-*`、`rate-*`、`quick-study-rating-*`、`ds-say-*` 等，多半是拼出来的），下次要腾空间先核这批。
+    ⚠️ 这三份 CSS 当时被别的会话改着（`pointer:coarse` 的媒体查询那几行不是我的），提交时按 hunk 挑。
+  - **开发者工具实测（2026-11-05，Mac 模拟器，独立工作树构建；清库方法照上一节）**：automator 每 0.3 秒记一次首屏——2.7 s 时 WXML 里**同时**有「下载词库」（加载画面在底下）和
+    「先登录微信 / 微信登录 / 先不登录」（首次设定登录页盖在上面，水豚居中、两个按钮在底，截图正常）；3.4 s 控制台「Database imported」；点「先不登录」后进「先定个小目标」，
+    库已好，保存按钮在没选考试日期时是浅绿禁用（「选好考试日期后显示每日计划估算」），无异常、无报错。⚠️ **没看到「词库准备中…」那一态**：Mac 上下载 + 导入只有约 1 秒，
+    手点来不及；这一态靠代码保证（`dbReady` 为假时不查库、不出 `preview`、按钮禁用），要眼见得用真机或限速网络。登录 → 云端有旧快照 → 找回也没验（要真实微信登录，没法自动化）。
+    验完 `cli close` + `cli quit` 等进程退出，把原来的 `usr/masternihongo` 放回，`shasum` 三个文件一致。
+  - **真机没看过**。原先的验法：`cli quit` 等主进程退出后清库（见上一节的坑），首屏应是首次设定登录页，进度条不可见；
+    点「先不登录」选完等库好，按钮应从「词库准备中…」变成「保存并查看今天怎么学 →」。
+
 ## ⚠️ 弹层（`createPortal`）不能挂在主 ScrollView 的父节点上：一删弹层，列表就跳回顶部（2026-10-19 修）
 
 作者 10-19 真机：疑难辨析 / 一字多音打开某一组、再关掉，列表回到最上方。根因在 Taro：删掉弹层时 `removeChild` 之后对**父节点** `updateChildNodes()`，
