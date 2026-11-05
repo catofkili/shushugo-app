@@ -112,7 +112,8 @@ export const stickerUrl = (name: string, skinId = skin) => {
   const sheet = MASCOT_SKINS[skinId as keyof typeof MASCOT_SKINS];
   if (!sheet || !localSkinVersion(skinId)) return brandPath(name);
   if ((sheet.names as readonly string[]).includes(name)) return cachedSkinPath(skinId, name)!;
-  if (name.startsWith('mood-')) return cachedSkinPath(skinId, 'mood-default')!;
+  // scene-* / empty-* 同网页 CapybaraMascot.stickerUrl：皮肤没画就用皮肤的默认表情，不退回水豚（2026-11-05）
+  if (/^(mood|scene|empty)-/.test(name)) return cachedSkinPath(skinId, 'mood-default')!;
   return brandPath(name);
 };
 export const brandAssetUrl = (path: string) => brandPath(path.split('/').at(-1)!.replace(/\.png$/, ''));

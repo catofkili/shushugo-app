@@ -166,6 +166,13 @@ html[data-skin="theme-anime"] .dictionary-card {
   box-shadow: inset 0 0 0 4px rgba(255, 255, 255, .9), inset 0 0 0 5.5px rgba(255, 111, 174, .55), 0 6px 0 var(--an-navy) !important;
   color: var(--ds-ink) !important;
 }
+/* 语法列表的卡和单词卡同一种框（粗藏青边 + 硬投影），不加内圈粉线 —— 一屏好几张，再加就花了 */
+html[data-skin="theme-anime"] .grammar-anki-card {
+  background: var(--an-card) !important;
+  border: 2px solid var(--an-navy) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 4px 0 var(--an-navy) !important;
+}
 html[data-skin="theme-anime"] .word-answer .dictionary-card {
   border-width: 0 !important; box-shadow: none !important; background: var(--ds-inset) !important;
 }

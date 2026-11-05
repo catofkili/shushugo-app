@@ -58,12 +58,16 @@ if (window.matchMedia) {
 }
 
 const root = createRoot(document.getElementById('root')!);
+// 装了皮肤（如放学后主题）就不画睡觉的水豚。键名同 CapybaraMascot 的 SPLASH_STICKER_KEY（那边写了为什么不 import）
+const splashSticker = (() => { try { return localStorage.getItem("shushugo:splash-sticker"); } catch { return null; } })();
 
 root.render(
   <StrictMode>
     <div className="app-boot-loading grid min-h-screen place-items-center overflow-y-auto bg-[#555858] px-6 text-center text-[#fff]">
       <div>
-        <Sticker name="splash-sleep" size={130} className="mx-auto" />
+        {splashSticker
+          ? <img src={splashSticker} alt="" style={{ height: 130, width: "auto" }} className="mx-auto" />
+          : <Sticker name="splash-sleep" size={130} className="mx-auto" />}
         <Sticker name="logo-lockup" size={72} className="mx-auto mt-1" alt="收集日" />
         <p className="mt-3 text-sm font-semibold text-white/70">正在读取本地词库...</p>
         <p className="mt-1 text-xs text-white/45">小小的积累，也会成为巨大的改变。</p>

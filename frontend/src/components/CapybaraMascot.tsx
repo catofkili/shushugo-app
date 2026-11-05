@@ -13,6 +13,7 @@
  */
 import { useSyncExternalStore, type CSSProperties } from "react";
 import { MASCOT_SKIN_EVENT, MASCOT_SKINS } from "../lib/mascot-skins";
+import { ANIME_SHEET, ANIME_THEME_ID } from "../lib/anime-theme";
 export { MASCOT_SKIN_EVENT };
 
 export type MascotMood =
@@ -63,13 +64,27 @@ export type StickerName =
  * 表情缺的退回**这套皮肤的默认表情**，不能退回水豚：一屏里两种动物比少一个表情糟得多。
  */
 const SKIN_SHEETS: Record<string, { dir: string; names: ReadonlySet<string> }> = Object.fromEntries(
-  Object.entries(MASCOT_SKINS).map(([id, sheet]) => [id, { dir: sheet.dir, names: new Set<string>(sheet.names) }])
+  [...Object.entries(MASCOT_SKINS), [ANIME_THEME_ID, ANIME_SHEET] as const].map(([id, sheet]) => [id, { dir: sheet.dir, names: new Set<string>(sheet.names) }])
 );
 export const prepareMascotSkins = async (): Promise<void> => {};
 export const mascotSkinReady = (id: string): boolean => id in SKIN_SHEETS;
 let skin = "";
 /** yuzu.applyYuzuEquipment 调：装备哪个 mascot 商品（'' = 默认水豚） */
+/** 启动闪屏读这一格：读库之前还不知道装了什么，所以每次换皮肤都把「皮肤的默认表情」图址记进 localStorage，
+ *  index.html 的静态闪屏和 main.tsx 的读库闪屏拿它代替睡觉的水豚（放学后主题要求一只水豚都不出现，2026-11-05） */
+// ⚠️ 键名在 main.tsx 和 index.html 里各写了一份字面量：不从这里 import，是因为小程序的替身
+//    mascot.weapp.tsx 没有这个导出（verify-shim-exports 会拦），而小程序根本不跑 main.tsx，不值得给主包加字节
+const SPLASH_STICKER_KEY = "shushugo:splash-sticker";
 export const setMascotSkin = (itemId: string) => {
+  // 主题自带一套贴纸（放学后）、又没装吉祥物皮肤时，用主题那套。yuzu.applyYuzuEquipment 先写 <html data-skin> 再调这里，
+  // 所以这里读得到刚换上的主题。不在 yuzu.ts 里做：那份小程序也打包，主包没地方（见 lib/anime-theme.ts 开头）
+  const theme = typeof document === "undefined" ? "" : document.documentElement.getAttribute("data-skin") ?? "";
+  if (!itemId && theme in SKIN_SHEETS && !(theme in MASCOT_SKINS)) itemId = theme;
+  // 写在提前返回之前：别的设备卸了皮肤同步过来时 skin 已经是 ''，也要把旧记录清掉
+  try {
+    if (itemId) localStorage.setItem(SPLASH_STICKER_KEY, stickerUrl("mood-default", itemId));
+    else localStorage.removeItem(SPLASH_STICKER_KEY);
+  } catch { /* 隐私模式等拿不到 localStorage 就照旧画水豚 */ }
   if (skin === itemId) return;
   skin = itemId;
   window.dispatchEvent(new Event(MASCOT_SKIN_EVENT));
@@ -102,8 +117,9 @@ export const stickerUrl = (name: StickerName, skinId = skin) => {
   // 「藏水豚」变体（tool-*-capy 等）：皮肤有本体就用本体 —— 不然换了皮肤，工具格里会随机冒出原画水豚
   const base = name.endsWith("-capy") ? name.slice(0, -5) : "";
   if (base && sheet.names.has(base)) return brandAssetUrl(`${sheet.dir}/${base}.png`);
-  // scene-*（主页大卡按时段换的那几张）同理：皮肤没画就用皮肤的默认表情，不退回水豚原图（2026-11-05 补，以前鳄鱼皮肤这里会冒出水豚）
-  if (name.startsWith("mood-") || name.startsWith("scene-")) return brandAssetUrl(`${sheet.dir}/mood-default.png`);
+  // scene-*（主页大卡按时段换的那几张）、empty-*（空状态）同理：皮肤没画就用皮肤的默认表情，不退回水豚原图
+  // （2026-11-05 补，以前鳄鱼皮肤主页大卡会冒出水豚；放学后主题的查词汇量 / 辨析练习空状态同理）
+  if (/^(mood|scene|empty)-/.test(name)) return brandAssetUrl(`${sheet.dir}/mood-default.png`);
   return brandAssetUrl(`sheet/${name}.png`);
 };
 /** 问候条 / 导航栏那枚品牌图标：皮肤自带 App 图标就用皮肤的 */
