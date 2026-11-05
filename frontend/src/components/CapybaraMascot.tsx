@@ -99,6 +99,9 @@ export const stickerUrl = (name: StickerName, skinId = skin) => {
   const sheet = SKIN_SHEETS[skinId];
   if (!sheet) return brandAssetUrl(`sheet/${name}.png`);
   if (sheet.names.has(name)) return brandAssetUrl(`${sheet.dir}/${name}.png`);
+  // 「藏水豚」变体（tool-*-capy 等）：皮肤有本体就用本体 —— 不然换了皮肤，工具格里会随机冒出原画水豚
+  const base = name.endsWith("-capy") ? name.slice(0, -5) : "";
+  if (base && sheet.names.has(base)) return brandAssetUrl(`${sheet.dir}/${base}.png`);
   // scene-*（主页大卡按时段换的那几张）同理：皮肤没画就用皮肤的默认表情，不退回水豚原图（2026-11-05 补，以前鳄鱼皮肤这里会冒出水豚）
   if (name.startsWith("mood-") || name.startsWith("scene-")) return brandAssetUrl(`${sheet.dir}/mood-default.png`);
   return brandAssetUrl(`sheet/${name}.png`);

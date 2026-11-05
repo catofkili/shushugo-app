@@ -2,7 +2,11 @@
    风格主题：放学后（theme-anime）—— 二次元试做（2026-11-05，用户：「做一套足够二次元的前端，先试主页、tab 栏、背单词页」）
 
    语言：晴空背景图 + 白卡深藏青粗描边 + 硬投影（像手游 UI 的立牌）、樱粉 / 天蓝 / 柚子黄三色、圆体字、
-   大字白描边。图（水手服水豚、底栏 8 格、背景）是 ChatGPT 对话生图，在 public/brand/sheet-anime/。
+   大字白描边、漫画网点（screentone）。图（原创美少女、底栏 + 工具格物件、背景）是 ChatGPT 对话生图，在 public/brand/sheet-anime/。
+
+   ⚠️ 用户 2026-11-05 第二轮的两条硬要求：① 不要水豚（二次元 = 美少女，第一版画了水手服水豚被否）；
+      ② 画风必须不像 AI。所以这里不用渐变大色块、满屏星星闪光、发光阴影 —— 那是 AI 图 / AI 界面的味道；
+      装饰只用平涂色 + 网点 + 硬边投影。生图 brief 里写死「二阶硬阴影、手绘粗细线、≤8 色、不要光泽/发光/粒子」。
 
    ⚠️ 只进网页包（main.tsx 引入）：小程序主包只剩几百字节，skins.css 已经在 Taro 主包里，这份不能塞进去。
       小程序要上这套，先过分包 / 远程样式那一关（见 docs/claude/release-and-deployment.md 主包那节）。
@@ -77,7 +81,11 @@ html[data-skin="theme-anime"] .zoo-tray-today { background: transparent !importa
 html[data-skin="theme-anime"] :is(.zoo-tray-title, .zoo-duo-kick) {
   color: var(--an-pink-lip) !important; font-weight: 900;
 }
-html[data-skin="theme-anime"] .zoo-tray-title::before { content: "✦ "; color: var(--an-yuzu-lip); }
+/* 小标题前一小块粉色色签，代替星星 */
+html[data-skin="theme-anime"] .zoo-tray-title::before {
+  content: ""; display: inline-block; width: 4px; height: 12px; margin-right: 6px; vertical-align: -1px;
+  border-radius: 2px; background: var(--an-pink);
+}
 /* 问候语：白字藏青描边 + 粉色投影，像番剧标题卡 */
 html[data-skin="theme-anime"] .zoo-greet-hi {
   color: #fff !important;
@@ -89,12 +97,11 @@ html[data-skin="theme-anime"] .zoo-greet-sub {
   background: var(--an-card); color: var(--ds-ink-2) !important; font-weight: 700;
 }
 
-/* 今日大卡：粉 → 薰衣草 → 天蓝的渐变 + 星点，水手服水豚放大压在右边 */
+/* 今日大卡：平涂樱粉 + 右下角一片漫画网点（越往角上点越大），美少女压在右边、头出框 */
 html[data-skin="theme-anime"] .zoo-now {
   background:
-    radial-gradient(circle at 18% 22%, rgba(255, 255, 255, .9) 0 1.5px, transparent 2.5px) 0 0 / 46px 46px,
-    radial-gradient(circle at 70% 64%, rgba(255, 255, 255, .7) 0 1px, transparent 2px) 0 0 / 34px 34px,
-    linear-gradient(135deg, #FF8CC0 0%, #B79CFF 55%, #6CC6FF 100%) !important;
+    radial-gradient(circle, rgba(44, 52, 112, .16) 0 1.6px, transparent 2px) 0 0 / 8px 8px,
+    #FF8DBE !important;
   color: #fff !important;
   border: 2.5px solid var(--an-navy) !important;
   box-shadow: 0 6px 0 var(--an-navy), 0 22px 40px -18px rgba(44, 52, 112, .6) !important;
@@ -102,11 +109,12 @@ html[data-skin="theme-anime"] .zoo-now {
   min-height: 176px;
 }
 html[data-skin="theme-anime"] .zoo-now:active { transform: translateY(3px); box-shadow: 0 3px 0 var(--an-navy) !important; }
+/* 网点只铺右下那一半：用一块和底同色、往左上渐隐的遮罩盖住左上角，字落在干净的平涂上 */
 html[data-skin="theme-anime"] .zoo-now::after {
-  content: "★"; top: 10px; right: auto; left: 54%; width: auto; height: auto;
-  background: none; color: var(--an-yuzu); font-size: 22px; line-height: 1;
-  text-shadow: 0 0 10px rgba(255, 255, 255, .9);
+  inset: 0; right: 0; top: 0; width: auto; height: auto; border-radius: 0; z-index: 0;
+  background: linear-gradient(120deg, #FF8DBE 42%, rgba(255, 141, 190, 0) 78%);
 }
+html[data-skin="theme-anime"] .zoo-now > :not(.zoo-now-mascot) { position: relative; z-index: 1; }
 html[data-skin="theme-anime"] .zoo-now-kick {
   justify-self: start; padding: 2px 10px; border-radius: 999px;
   background: var(--an-navy); color: #fff; opacity: 1;
@@ -117,12 +125,15 @@ html[data-skin="theme-anime"] .zoo-now-num {
   text-shadow: 0 4px 0 var(--an-navy);
 }
 html[data-skin="theme-anime"] :is(.zoo-now-sub, .zoo-now-split) { opacity: 1; text-shadow: 0 1px 0 rgba(44, 52, 112, .55); font-weight: 800; }
+/* 立绘是腰部截断的半身像：贴着卡底边放，截断线藏在卡的边框里，不然像浮在半空的半截人。
+   进度条和「开始」键压在她身前（z-index 更高），像番剧 OP 里人物站在字幕后面 */
 html[data-skin="theme-anime"] .zoo-now-mascot {
-  height: 132px !important; margin: -14px -14px -6px 0;
-  filter: drop-shadow(0 4px 0 rgba(44, 52, 112, .35));
+  position: absolute !important; right: -6px; bottom: 0; z-index: 0 !important;
+  height: 196px !important; margin: 0; animation: none;
+  grid-row: auto; grid-column: auto; max-width: none; /* 绝对定位的 grid 子项会拿 grid 区域当包含块（右栏只有 18px 宽），要放掉 */
 }
 html[data-skin="theme-anime"] .zoo-now-bar { height: 10px; background: rgba(255, 255, 255, .45); border: 2px solid var(--an-navy); }
-html[data-skin="theme-anime"] .zoo-now-bar i { background: linear-gradient(90deg, var(--an-yuzu), #FFF08A); opacity: 1; }
+html[data-skin="theme-anime"] .zoo-now-bar i { background: var(--an-yuzu); opacity: 1; }
 html[data-skin="theme-anime"] .zoo-now-cta {
   background: var(--an-yuzu); color: var(--an-navy);
   border: 2px solid var(--an-navy); box-shadow: 0 3px 0 var(--an-navy); font-weight: 900;
@@ -141,12 +152,8 @@ html[data-theme="dark"][data-skin="theme-anime"] .app-mobile-tabbar { background
 html[data-skin="theme-anime"] .app-tab { color: var(--ds-ink-3); font-weight: 800; }
 html[data-skin="theme-anime"] .app-tab-icon { height: 34px !important; }
 html[data-skin="theme-anime"] .app-tab.is-active .app-tab-pill {
-  position: relative;
-  background: linear-gradient(180deg, #FFD3E7, #FFB1D4) !important;
+  background: #FFD3E7 !important;
   box-shadow: inset 0 0 0 2px var(--an-pink-lip);
-}
-html[data-skin="theme-anime"] .app-tab.is-active .app-tab-pill::after {
-  content: "✦"; position: absolute; top: -6px; right: -4px; color: var(--an-yuzu-lip); font-size: 13px;
 }
 html[data-skin="theme-anime"] .app-tab.is-active .app-tab-label { color: var(--an-pink-lip); }
 
@@ -176,15 +183,15 @@ html[data-theme][data-skin="theme-anime"] .zoo-rate-row > button.rate-btn {
   text-shadow: 0 1.5px 0 rgba(44, 52, 112, .55);
   box-shadow: 0 4px 0 var(--an-navy) !important;
 }
-html[data-theme][data-skin="theme-anime"] .zoo-rate-row > button.rate-btn.rate-forgot { background: linear-gradient(180deg, #FF8FBF, var(--an-pink)) !important; }
-html[data-theme][data-skin="theme-anime"] .zoo-rate-row > button.rate-btn.rate-fuzzy { background: linear-gradient(180deg, #FFE27A, var(--an-yuzu)) !important; color: #3A2A00 !important; text-shadow: none; }
-html[data-theme][data-skin="theme-anime"] .zoo-rate-row > button.rate-btn.rate-know { background: linear-gradient(180deg, #7CCBFF, var(--an-sky)) !important; }
-html[data-theme][data-skin="theme-anime"] .zoo-rate-row > button.rate-btn.rate-known_forever { background: linear-gradient(180deg, #7BE6C2, var(--an-mint)) !important; color: #14324A !important; text-shadow: none; }
+html[data-theme][data-skin="theme-anime"] .zoo-rate-row > button.rate-btn.rate-forgot { background: var(--an-pink) !important; }
+html[data-theme][data-skin="theme-anime"] .zoo-rate-row > button.rate-btn.rate-fuzzy { background: var(--an-yuzu) !important; color: #3A2A00 !important; text-shadow: none; }
+html[data-theme][data-skin="theme-anime"] .zoo-rate-row > button.rate-btn.rate-know { background: var(--an-sky) !important; }
+html[data-theme][data-skin="theme-anime"] .zoo-rate-row > button.rate-btn.rate-known_forever { background: var(--an-mint) !important; color: #14324A !important; text-shadow: none; }
 html[data-skin="theme-anime"] .zoo-rate-row > button span { color: inherit !important; opacity: .8; }
 html[data-skin="theme-anime"] .zoo-rate-row > button:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--an-navy) !important; }
 /* 「显示答案」等主键：粉色糖果键 */
 html[data-skin="theme-anime"] .bg-\[\#81D8CF\]:not(.app-mobile-tabbar *) {
-  background: linear-gradient(180deg, #FF8FBF, var(--an-pink)) !important;
+  background: var(--an-pink) !important;
   color: #fff !important;
   border: 2.5px solid var(--an-navy) !important;
   box-shadow: 0 4px 0 var(--an-navy) !important;
@@ -192,3 +199,25 @@ html[data-skin="theme-anime"] .bg-\[\#81D8CF\]:not(.app-mobile-tabbar *) {
   text-shadow: 0 1.5px 0 rgba(44, 52, 112, .5);
 }
 html[data-skin="theme-anime"] .bg-\[\#81D8CF\]:not(.app-mobile-tabbar *) * { color: inherit !important; }
+
+/* ---------- 这一套里不出现水豚 ---------- */
+/* 学习页顶上小路的走路水豚换成一颗粉色圆点；「正在取下一张」那只直接不画 */
+html[data-skin="theme-anime"] .mascot-walk { display: none !important; }
+html[data-skin="theme-anime"] .zoo-trail-squirrel:not(:has(.zoo-trail-marker-clip))::before {
+  content: ""; display: block; width: 12px; height: 12px; margin-top: 3px; border-radius: 50%;
+  background: var(--an-pink); border: 2px solid var(--an-navy);
+}
+
+/* 翻面前答案区是空的：女主站在空白里，下面一句「想一想…」像她说的台词。翻面后这块整个换成答案，她自然消失。
+   ⚠️ 不放在题面上方、不压题面 —— 那一屏最大的字必须是题面（WordStudy 同处注释） */
+html[data-skin="theme-anime"] .word-think { display: flex; flex-direction: column; align-items: center; }
+html[data-skin="theme-anime"] .word-think::before {
+  content: ""; display: block; width: 180px; height: 230px; margin-bottom: 4px;
+  background: url("/brand/sheet-anime/mood-default.png") center bottom / contain no-repeat;
+  border-bottom: 2px solid rgba(255, 111, 174, .5);
+}
+html[data-skin="theme-anime"] .word-think > p {
+  padding: 6px 14px; border-radius: 14px; border: 2px solid var(--an-navy);
+  background: #fff; color: var(--an-navy) !important; font-weight: 800; box-shadow: 0 3px 0 var(--an-navy);
+}
+html[data-theme="dark"][data-skin="theme-anime"] .word-think > p { background: #2A2F66; color: #F1F0FF !important; border-color: #6E74C8; box-shadow: 0 3px 0 #0B0E2C; }

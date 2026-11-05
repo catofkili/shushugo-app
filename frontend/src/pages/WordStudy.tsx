@@ -2228,8 +2228,9 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
                   <p className="mt-5 text-sm font-semibold text-white/52">点一下，显示汉字读音</p>
                 </div>
               ) : (
-                <div>
-                  {/* 翻面前这一屏最大的字必须是题面（在卡片上方），这里只留一句小提示；「答案已隐藏」大字是废话 */}
+                <div className="word-think">
+                  {/* 翻面前这一屏最大的字必须是题面（在卡片上方），这里只留一句小提示；「答案已隐藏」大字是废话。
+                      word-think 只是给风格主题挂图的钩子（放学后主题在这里站一张立绘），默认样式不用它 */}
                   {!listening.active && <p className="text-sm text-white/55">{isReversePhase ? "想一想中文意思" : "想一想怎么读、怎么写"}</p>}
                 </div>
               )}
