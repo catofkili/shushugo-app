@@ -1,5 +1,52 @@
 # 每日计划与学习模式
 
+## 2026-11-07 T1 Round 2：mixed 的 ready 必须覆盖辨析资格
+
+`mixedCardDataLoaded` 不能再直接引用 `kanjiCharDataLoaded`：后者只证明汉字单元索引和一字多音用法已经加载。
+classic 首页可能仅因打开过一字多音而处在「汉字已装、distinctionReviews 未装」的状态；此时升级或恢复强度
+会调用 `refreshMixedCardTasks`，旧判断误放行 `materializeConfusionCards → matchable`，严格代理随即报未 ready。
+现在 ready 同时检查两份汉字数据与辨析 store；`loadMixedCardData` 也必须真正加载这三份，不能只修判断而让 loader
+永远达不到它的后置条件。网页的辨析已经静态导入，新增 loader/status 是已就绪的薄实现；小程序 shim 按需调用真实内容 loader。
+
+仍然先清理当天两类任务，三份资格全部就绪才重排；未装齐留到合法 mixed 入口按当前额度建任务，不消费完整读音、题面，
+不改历史、FSRS 或配额。`home-mixed-ready.test.ts` 用工厂库和真实小程序辨析 shim 回归「只加载汉字后升级」以及
+「直接 loadMixedCardData 后重排」；前者要求不物化、旧今日投影清空、往日任务保留，后者要求辨析 store 非空并能排出卡。
+本轮全量与七模式对拍、计时见小程序专题同日 Round 2 复核；真实 Git 合并仍因元数据权限阻塞，不能将工作文件已保留 T2/T3 写成分支已合并。
+
+## 2026-11-07 T1 第三次续做：资格没装也要清旧的今日投影
+
+首页 classic 不加载 mixed 资格后，改考后强度或升级目标可能在三个资格模块均未就绪时发生。
+`refreshMixedCardTasks` 若一开始就 return，会把上次启动保存的旧任务留到切 mixed，额度变更没有落实。
+现行实现始终先 clearKanjiCharTasks/clearConfusionTasks；资格 ready 才用同一 mixedCardCounts 立即重排，
+否则到合法学习入口装齐资格后再建。只清当天投影，不触碰历史或记忆，不为 classic 额外物化内容。
+新增工厂库回归验证未 ready 的改额不会调用物化、当天投影清掉、往日任务和作答记录保留。
+
+合入 T2/T3 后，以 f1462c2c 的原全量 getter 在当前 public/nihongo.db 上重新校验七种模式：首装和重开快照
+均为 classic 18、mixed 33、mistakes 0、quick 18、reverse 0、kanji 30、picked 0，与按模式读取逐项一致；
+夹具的 baseline 已更新。计时脚本会再跑原 getter 核对夹具，不能通过修改夹具掩盖算法差异。
+完整加载边界、首卡字段断言与每阶段前后数字见小程序专题同日「第三次续做」节。
+
+## 2026-11-07 T1：每个模式各自惰性，未算完不报 0
+
+此条接替 10-31「未加载先报 0，再发进度事件」的临时策略。`WordStats.modeCounts`
+保留原字段/数字口径，但 mixed、mistakes、reverse、kanji、picked 各自缓存一次，
+读取 classic/quick 不再物化混合卡、计算语法或生成其它方向任务。枚举键不计算，
+展开整个对象/JSON 序列化仍会按原顺序取全量数，调用方须先准备完整内容。
+`SquirrelTrail` 只有 mixed 才取语法/汉字/辨析字段，混合分子分母和学习会话仍是原算法。
+
+首页只异步准备当前模式的数；菜单展开再逐模式准备/计算，未完成显示「计算中…」，
+失败显示「读取失败」，绝不把缺数映射成 0。切换统计快照后清掉旧快照数字；旧请求
+不能把结果写回新快照。模式准备完成前，不提前更新仍在渲染的学习页的 initialMode。
+导航序号会废弃被新导航/返回/tab 切换取代的旧预取结果，避免迟到跳页。
+
+`home-mode-counts.test.ts` 用 `public/nihongo.db` 新开 sql.js 库及重开初始化快照对照
+改前全量结果：classic=18、mixed=33、mistakes=0、quick=18、reverse=0、kanji=30、picked=0。
+基线 `__fixtures__/home-mode-counts-baseline.json` 来自 `e8a3569d` 的原 getter；临时计时脚本
+会重新执行改前 getter 并断言该夹具一致，而非只用手填数字互相对照。
+另用 spy 断言 classic/quick 的 mixedCardCounts 和 materializeConfusionCards 调用均为 0，
+重排不调用 kanjiCharCard/matchingCard；后者防止首次设定在任务生成时误消费完整题面。
+测量和内容消费清单见 `mini-program-and-cross-platform.md` 的 T1 节。
+
 ## 自选清单 = 第六个模式，但藏起来
 
 `word-api/picked.ts`。和错题本一样**只换选词通道**：不进 stage1_tasks、不参与排片、不占今日计划。

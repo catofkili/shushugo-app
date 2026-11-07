@@ -120,4 +120,35 @@ function readyForPage(page) {
   return Promise.all(names.map(load)).then(() => primeWebLoaders(PAGE_WEB_LOADERS[page]));
 }
 
-module.exports = { load, ready, readyForKanji, readyForPage, primeWebLoaders, loaded: (name) => Boolean(stores[name]) };
+function readyForHomeMode(mode) {
+  const names = mode === 'mixed' ? ['kanjiUnitRuntime', 'kanjiReadingUsage', 'distinctionReviews']
+    : mode === 'kanji' ? ['kanjiUnitRuntime'] : [];
+  return Promise.all(names.map(load)).then(() => primeWebLoaders(
+    mode === 'mixed' ? ['kanjiUnitIndex', 'kanjiReadingUsage'] : mode === 'kanji' ? ['kanjiUnitIndex'] : []
+  ));
+}
+
+function readyForRoute(page, mode = 'classic') {
+  if (page === 'home') return readyForHomeMode(mode);
+  if (page === 'word') return Promise.all([readyForPage('word-study'), readyForHomeMode(mode)]);
+  if (page === 'quick-study') return readyForPage('word-study');
+  if (page === 'vocab-test') return readyForPage('vocab-test');
+  if (['confusion', 'distinction-quiz'].includes(page)) return readyForPage('confusion-quiz');
+  if (page === 'kanji-readings') return readyForKanji();
+  if (['grammar', 'detail', 'grammar-foundation', 'favorites'].includes(page)) return readyForPage('grammar-quiz');
+  if (['jlpt-plan', 'settings'].includes(page)) return readyForHomeMode('mixed');
+  return Promise.resolve();
+}
+
+const ROUTED_PAGES = new Set(['home', 'word', 'quick-study', 'vocab-test', 'confusion', 'distinction-quiz', 'kanji-readings',
+  'grammar', 'detail', 'grammar-foundation', 'favorites', 'jlpt-plan', 'settings']);
+
+// 页面挂载闸门。readyForRoute 只认上面声明过的页面；其余页面（词库、错题本、拼写、集中拿下……）
+// 照 T1 之前的做法装齐 word-study + 汉字内容：代理未就绪会抛错，漏声明的页面宁可多等也不能崩。
+// 导航本身不走这里（不让点按等下载），等待只发生在目标页的 StartupLoading 里。
+function readyForPageMount(page, mode = 'classic') {
+  return ROUTED_PAGES.has(page) ? readyForRoute(page, mode)
+    : Promise.all([readyForPage('word-study'), readyForKanji()]).then(() => undefined);
+}
+
+module.exports = { load, ready, readyForKanji, readyForPage, readyForHomeMode, readyForRoute, readyForPageMount, primeWebLoaders, loaded: (name) => Boolean(stores[name]) };

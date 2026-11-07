@@ -9,8 +9,14 @@
  * 把空对象永久固定下来；但数据已加载后，缺失键必须返回 undefined，否则代理参与字符串
  * 转换时会因没有可调用的 valueOf / toString 抛错。
  * 真正的键在每次访问时才去 content-store 查。
+ * 2026-11-07：JSON 替身用普通 ESM 外壳暴露 default/字段 getter，让打包器枚举元数据，
+ * 不枚举内容代理；因此根对象和捕获的子引用都能在未 ready 时严格拒绝真实消费。
  */
 const stores = require('../shared/content-store');
+
+const assertReady = (name) => {
+  if (stores[name] == null) throw new Error(`内容 ${name} 未 ready：消费前必须 await readyForRoute / readyForHomeMode`);
+};
 
 const resolve = (name, path) => {
   let value = stores[name];
@@ -24,24 +30,31 @@ const proxy = (name, path, kind = 'object') => {
   get(_target, key, receiver) {
     if (key === '__esModule') return false;
     if (key === 'default' && path.length === 0) return proxy(name, path, kind);
+    // 只允许模块初始化保留一层引用；读值、枚举或读数组长度都算消费，未就绪立即报错。
+    if (stores[name] == null && path.length === 0 && kind !== 'array'
+      && ['readings', 'japanese_to_simplified', 'points', 'aliases', 'kanji'].includes(key)) return proxy(name, [key]);
+    assertReady(name);
     const value = resolve(name, [...path, key]);
-    // content-store 用 null 表示未加载：此时给代理保住早期引用；加载后缺失的键必须是 undefined，不能让代理参与字符串转换。
+    // 就绪后缺失键必须是 undefined，不能让代理参与字符串转换。
     if (value === undefined) {
       if (kind === 'array' && key in target) return Reflect.get(target, key, receiver);
-      return stores[name] == null ? proxy(name, [...path, key]) : undefined;
+      return undefined;
     }
     return value && typeof value === 'object' ? proxy(name, [...path, key], Array.isArray(value) ? 'array' : 'object') : value;
   },
   has(_target, key) {
+    assertReady(name);
     if (kind === 'array' && key === 'length') return true;
     const parent = resolve(name, path);
     return Boolean(parent) && typeof parent === 'object' && key in parent;
   },
   ownKeys() {
+    assertReady(name);
     const parent = resolve(name, path);
     return parent && typeof parent === 'object' ? Reflect.ownKeys(parent) : kind === 'array' ? ['length'] : [];
   },
   getOwnPropertyDescriptor(_target, key) {
+    assertReady(name);
     const parent = resolve(name, path);
     if (kind === 'array' && key === 'length') {
       return Object.getOwnPropertyDescriptor(parent && typeof parent === 'object' ? parent : target, 'length');

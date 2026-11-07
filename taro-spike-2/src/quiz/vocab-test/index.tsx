@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Text, View } from '@tarojs/components';
 import { VocabTestPage } from '../../../../frontend/src/pages/VocabTestPage';
 import { ensureDatabase } from '../../platform/database-runtime.weapp';
+import { readyForRoute } from '../../../../frontend/src/lib/content-ready';
 import PreviewTimingBoundary from '../../platform/preview-timing.weapp';
 
 export default function VocabTestRoute() {
@@ -12,12 +13,12 @@ export default function VocabTestRoute() {
 
   useEffect(() => {
     if (ready) return;
-    ensureDatabase('vocab-test', {
+    Promise.all([readyForRoute('vocab-test'), ensureDatabase({
       onStage: (name, elapsedMs) => setStartupTimings((previous) => ({ ...previous, [name]: elapsedMs })),
       onDownload: ({ compressed, percent, fallback }) => setDownloadStatus(
         `${fallback ? '压缩库回退原库 · ' : ''}${compressed ? '下载压缩出厂库' : '下载出厂库'}${percent === null ? '…' : ` ${percent}%`}`
       )
-    }).then(() => setReady(true)).catch((cause) => setError(String(cause?.message || cause?.errMsg || JSON.stringify(cause))));
+    })]).then(() => setReady(true)).catch((cause) => setError(String(cause?.message || cause?.errMsg || JSON.stringify(cause))));
   }, [ready]);
 
   if (error) return <View className="theme-light p-4"><Text>{error}</Text></View>;

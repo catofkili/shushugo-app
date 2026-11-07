@@ -1,5 +1,36 @@
 # 构建、发布与部署
 
+## 2026-11-07 T1 Round 2：两项退回复修后的 fresh 构建
+
+修复 mixed 资格就绪判断与自选取消后，重新从本 worktree 网页源码生成 shared/web.js 及辨析内容模块；
+原生 `npm test` 的 32 个脚本全通过，含 check-shared。网页 check、lint（0 errors / 52 warnings）、完整 prebuild/生产构建通过。
+全量 `VITEST_MAX_WORKERS=2 npm test` 已运行并退出 1：199 文件通过、5 跳过、1 失败；1,640 项通过、30 跳过、1 todo，
+唯一失败为 brief 指定的 fsrs-store 顽固词原有 5,000 ms 超时（本次 6,152 ms），未改超时、断言或跳过该例。
+
+Taro 执行原 `npm run build:weapp` 全链与 `npm test`，均退出 0；仍通过临时 offline-doctor.cjs 选择同一原生 binding 的
+内置 schema，合法/错误类型/缺失必填项正反例通过，不使用 --no-check，也不请求远端 schema。
+新主包 **1,897,472 / 1,900,000 B**，余 **2,528 B**，13 包全部通过，未许可核心/页面重复、过期许可均为 0。
+reports 来自本次完整构建，预算和允许清单未改；src 未留下品牌/Lucide 资产生成副作用。
+日志为 `tmp/perf/t1-round2-{check,lint,frontend-test,shared-build,wechat-test,taro-build,taro-test,web-build}.log`。
+实际分支仍在 e8a3569d：真实 git add 无法创建主目录共享 .git 下的 index.lock，未能提交或合并；
+本轮没有再创建临时 Git 历史，不把已有 bundle 当作合并完成。没有联网、发布、启动服务/GUI 或设备验收。
+
+## 2026-11-07 T1 合入 T2/T3 后的构建复核
+
+当前合并结果已重新生成 shared/web.js，并执行完整 Web prebuild/生产构建、原生小程序 32 脚本，
+以及 Taro 原 build:weapp 全链和 npm test，均退出 0。Taro 只用当前 worktree 忽略目录中的
+`tmp/perf/offline-doctor.cjs` 选择原生 validator 内置 schema；真实校验结果仍能拦错，正反例均已自测。
+未使用 --no-check，未联网取 schema；未经适配的默认远端 Doctor 不属于本次通过证据。
+
+fresh 主包 **1,896,994 B**，上限仍为 **1,900,000 B**，余 **3,006 B**；全部 13 包与重复模块闸门通过。
+reports 来自本次实际构建，src 下没有资产副作用。完整日志、Node 测量和消费边界见小程序专题 T1 第三次续做。
+当前 checkout 的 Web 出厂库 SHA-256 为 `b3e303b3adf95a1020a9171a3a03274aa0caa56b8e5d931a738ca452c731af6b`；
+忽略的 frontend/ios/App/App/public/nihongo.db 不存在，所以本次没有 Web/iOS cmp 的证据。
+没有执行 bake、上传云存储、部署或发布；下文 T3 的 Web/iOS 比对和云端未更新仍是其原会话的记录。
+原 Git 元数据受限，WIP/合并只保存在 tmp/perf/merge.git 和已验证的 bundle；原分支尚未写回，
+不能以源码已经合好或构建全绿声称原分支已提交/合并。后续修正和文档未 commit。
+用户本次禁止 GUI，因此没有运行画面/设备验收。
+
 ## 部署自检：`GET /api/health`（2026-09-09）
 
 **只返回布尔量**，不吐密钥、计数或用户信息。它回答三个在仓库里看不出来的问题：

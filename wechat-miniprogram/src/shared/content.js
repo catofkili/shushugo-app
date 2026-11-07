@@ -4,6 +4,7 @@
  *
  * ⚠️ 灌入之前 web.js 会退化（题面退回 words.meaning 的清洗、辨析注记为空），所以
  * 学习页 / 辨析页 / 语法页在 onLoad 里先 `await content.ready()`。
+ * 2026-11-07：上述退化行为已取消，未 ready 的真实消费会抛错；必须保留页前等待。
  * require.async 要基础库 2.24.3+（2022 年）；Node 回归里没有它，退回同步 require。
  */
 const stores = require('./content-store');

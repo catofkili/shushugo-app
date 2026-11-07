@@ -17,7 +17,8 @@ const lazyJson = shimModule.exports;
 stores.grammar = null;
 const points = lazyJson('grammar', 'array');
 assert.equal(Array.isArray(points), true);
-assert.equal(points.length, 0);
+assert.throws(() => points.length, /未 ready/);
+assert.throws(() => Object.keys(points), /未 ready/);
 
 stores.grammar = [{ id: 'n5-first' }, { id: 'n1-last' }];
 assert.equal(points.length, 2);

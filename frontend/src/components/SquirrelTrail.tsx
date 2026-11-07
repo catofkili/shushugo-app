@@ -58,9 +58,9 @@ export function SquirrelTrail({ mode = null }: Props) {
   // 混合模式：语法也要算进松子里。它和单词是**同一场**（首页角标、大卡脚注早就按
   // 「单词 + 语法」的合计在说话），小路只数单词的话，插播那几条语法答完顶上纹丝不动，
   // 而分母也比大卡上的数小一截 —— 两个数字当面打架。
-  const grammarPlanned = (stats?.grammarDone ?? 0) + (stats?.grammarRemaining ?? 0);
-  const otherDone = (stats?.kanjiCardDone ?? 0) + (stats?.confusionCardDone ?? 0);
-  const otherPlanned = otherDone + (stats?.kanjiCardRemaining ?? 0) + (stats?.confusionCardRemaining ?? 0);
+  const grammarPlanned = mode === "mixed" ? (stats?.grammarDone ?? 0) + (stats?.grammarRemaining ?? 0) : 0;
+  const otherDone = mode === "mixed" ? (stats?.kanjiCardDone ?? 0) + (stats?.confusionCardDone ?? 0) : 0;
+  const otherPlanned = mode === "mixed" ? otherDone + (stats?.kanjiCardRemaining ?? 0) + (stats?.confusionCardRemaining ?? 0) : 0;
   const trail = mode === "reverse"
     ? { total: stats?.stage2Total ?? 0, done: stats?.stage2Completed ?? 0, Icon: Repeat, label: "反向" }
     : mode === "kanji"

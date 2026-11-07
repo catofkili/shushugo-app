@@ -1,5 +1,389 @@
 # 网页与微信小程序协同
 
+## 2026-11-07 T1 Round 2：退回复修与本轮验收（真实 Git 合并仍阻塞）
+
+本节记录退回后的现状，旧测量和失败记录全部保留。两项代码问题已先用测试复现为 4 项失败，再修复：
+
+- `mixedCardDataLoaded` 同时检查汉字索引、用法和 **distinctionReviews**，不再把汉字就绪当成 mixed 就绪；
+  `loadMixedCardData` 也实际加载三份资格，网页静态数据/小程序按需 shim 保持相同后置条件。
+  classic 首页仅打开过一字多音后升级/恢复强度，仍会清今日投影，但不会越过辨析 ready 闸门。
+  复现与回归为 `frontend/src/lib/home-mixed-ready.test.ts`，具体原因见每日计划专题同日 Round 2 节。
+- 自选等待在开始时就参加网页/小程序同一个导航序号，ready 成功后先判取消才写队列和取首卡；
+  返回、新请求或新导航取代旧请求，旧成功不跳页、旧失败不提示。两端普通导航的 catch 也拒绝迟到提示。
+  `app/navigation-ready.test.ts` 执行真实 App / WeappPage 回调，未复制另一套导航；详见界面专题同日节。
+
+### 实际分支与 T2/T3 保留证据
+
+本轮按要求在真实 worktree 尝试 `git add -A && git commit -m "wip(perf): T1 首页懒装半成品" && git merge claude/perf-motion-web`，
+第一步即失败：`Unable to create '/Users/lsc/Documents/shushugo/.git/worktrees/perf-home-lazy/index.lock': Operation not permitted`。
+**实际 HEAD 仍为 e8a3569d，claude/perf-motion-web 的 f1462c2c 仍非其祖先；没有真实 WIP/合并提交。**
+当前环境只能写本 worktree，无法改共享 Git 元数据，也不能提权。本轮未另建临时 Git 历史、未执行 finish-merge.sh，
+已有 merge.git/bundle 仅为历史材料，不能当作要求已完成；真实提交/合并仍是未解决项。
+
+工作文件中保留上一轮已经结合的 T2/T3，不回退重做。用 `git diff-tree e8a3569d f1462c2c` 列出其改动后，
+逐文件将工作字节与 `git show f1462c2c:<路径>` 比较：排除文档和 reports 的 65 个文件全部存在，61 个逐字节相同，
+另外 4 个是 T1 适配的 App.tsx / AppContext.tsx / ZooHome.tsx / shared/web.js；证据为
+`tmp/perf/t1-round2-t2-t3-files.json`。动效、路由懒加载/idle 预取、预烧出厂库继续保留；reports 已 fresh 重建。
+这个内容检查不替代 Git 祖先关系验收。
+
+### 同机配对计时：当前代码与 f1462c2c 的原全量 getter
+
+在 worktree 根目录依次执行（不与 Vitest/构建并跑）：
+
+```sh
+node tmp/perf/build-harness.mjs --before
+node tmp/perf/build-harness.mjs
+node tmp/perf/trace-home.cjs
+node tmp/perf/onboarding.cjs
+node tmp/perf/bench.cjs
+```
+
+Node v24.16.0；两臂使用相同当前出厂库和内容生成物，before 从 **f1462c2c（已审 T2/T3，未做 T1）**
+读取原 stats、mixed 和 shims，其余业务图相同。不是两个完整 checkout，也没有把 T3 预烧收益算成 T1。
+采用真实 Taro 内容 loader/shims、原生生成内容及 vendored sql.js/WASM；只替换 DB 实例、持久化、网络和平台 API。
+这轮 harness 已将辨析 shim 的内容请求接到真实 Taro loader，不能用旧的空 loader 替身伪造 ready。
+首装从当前 public/nihongo.db 新开，冷开从原 getter 初始化并导出的 prepared.db **第一次重开**，不是成熟用户存档。
+当前库 SHA-256 仍为 `b3e303b3adf95a1020a9171a3a03274aa0caa56b8e5d931a738ca452c731af6b`。
+
+每个场景交替 before/after，各 11 个独立进程，丢前 2 个、余 9 个取中位数，计时时关闭消费 trace；
+原始 88 个样本在 node-bench-raw.json，汇总在 node-bench.json，同时记录实际 HEAD、种子摘要及源码/脚本指纹。
+各行独立取中位数，不应再将行中位数相加当作合计。下表 classic，单位 ms；数据路径合计包括首页前内容求值和结构/迁移，
+排除业务图求值、WASM、开库与首页后概览/预热。是离线函数链的 CPU 工作量，不是 React/Taro 的首帧墙钟。
+
+| 阶段 | 冷开前 | 冷开后 | 首装前 | 首装后 |
+| --- | ---: | ---: | ---: | ---: |
+| 业务模块求值 | 64.59 | 63.31 | 63.21 | 62.28 |
+| vendored WASM 初始化 | 7.24 | 7.63 | 7.04 | 7.03 |
+| 内存开库 | 3.42 | 3.35 | 3.37 | 3.35 |
+| 首页前内容 JS 求值 | 54.98 | 0.02 | 54.90 | 0.02 |
+| 用户表结构 | 23.03 | 23.46 | 28.45 | 29.14 |
+| 同步结构 | 106.75 | 106.70 | 164.08 | 165.66 |
+| 固定搭配迁移入口 | 0.10 | 0.10 | 148.78 | 143.25 |
+| 汉字索引解码 | 12.93 | 0.02 | 10.28 | 0.02 |
+| 首屏前概览（含初始化） | 48.93 | 0.00 | 93.85 | 0.00 |
+| 周报提示 | 0.32 | 0.39 | 0.27 | 0.29 |
+| getWordStats 立即部分 | 6.75 | 19.77 | 69.81 | 127.40 |
+| 角标（前全量／后 classic） | 152.83 | 0.02 | 393.64 | 0.02 |
+| 备考状态 | 21.10 | 21.93 | 18.98 | 19.48 |
+| 升级提示 | 4.78 | 4.71 | 4.13 | 5.15 |
+| 小时刻 | 0.24 | 0.26 | 0.23 | 0.27 |
+| 连胜 | 0.78 | 0.89 | 0.73 | 0.83 |
+| 首页数据路径 CPU 合计 | **433.60** | **179.73** | **990.58** | **492.66** |
+| 首屏后概览 | — | 35.17 | — | 34.01 |
+| 首屏后学习页内容准备 | 0.33 | 36.51 | 0.39 | 34.92 |
+| stage1 预热 | 69.65 | 77.17 | 57.04 | 58.93 |
+| 辨析关系预热 | 1.02 | 85.33 | 0.91 | 81.01 |
+| 干扰候选预热 | 72.45 | 75.46 | 69.60 | 74.17 |
+| 音频计划 | 0.35 | 0.33 | 0.33 | 0.37 |
+
+概览移后，初始化会转由 getWordStats 承担，不能把立即部分的上升误判为新增算法。
+classic 省掉的是首屏前的全模式计算与内容等待；概览、内容和辨析关系构建在后续仍有成本，没有消失。
+当前首页前内容求值字节 **2,205,486 → 0 B**；mixed 的三份资格为 **988,248 B**，仍必须加载。
+字节是模块求值范围，不是微信实际分包下载流量。mixed 冷开角标 **148.86→150.65 ms**（没有测出下降）、
+数据路径 **438.32→366.77 ms**；首装角标 **395.54→235.63 ms**、数据路径 **998.13→767.49 ms**。
+不得拿旧节不同宿主负载的绝对毫秒相减，也不将本次 Node 毫秒乘 17 冒充真机收益。
+
+### 计数、未 ready 与首装首卡
+
+bench 重新执行原全量 getter 并校验基线夹具；当前工厂库和重开快照的七模式均逐项相等：
+classic 18 / mixed 33 / mistakes 0 / quick 18 / reverse 0 / kanji 30 / picked 0。
+classic 首页 mixedCardCounts 与 materializeConfusionCards 的 spy/trace 均 **0 次**；八份未 ready 的真实内容访问继续抛错，
+活引用加载后可用。五个 T1 文件共 14 项定向回归通过，包含新增 mixed 部分就绪和两端自选取消检查。
+
+`onboarding.cjs` 在两个独立进程里，以空 localStorage、无真实作答的工厂库，调用真实首次设定预览/保存/强度/完成、
+首页读取、readyForRoute('word') 和 continueTodayPlanStudy；分别覆盖未等预热即点击及预热之后进入。
+两次设定保存都只加载三份资格，完整题面/读音/音高仍未装；入口 await 内容并 prime 后，首卡的
+kanji/kana/questionMeaning/meaning 非空，音高表 ready、lookupAccent 非 null、逐拍 pitchPattern 非空。
+本轮首卡分别为「待つ／等待」与「出る／（人）出去…」，重音均为 1；0 仍是合法重音，不作为空值。
+证据为 onboarding.json / home-content-reads.json，日志为 t1-round2-onboarding.log / t1-round2-content-trace.log。
+这是数据时序验证，不等于已在模拟器或真机走过 UI。
+
+### 本轮机器闸门与未解决项
+
+check、lint（0 error / 52 warnings）、Web 完整生产构建、原生小程序 32 脚本、Taro 完整 build:weapp 与 npm test 均通过。
+全量 frontend npm test **实际已跑，exit 1**：199 文件通过、5 跳过、1 失败；**1,640 项通过、30 跳过、1 todo**。
+唯一失败是 brief 允许的 fsrs-store 顽固词 5,000 ms 超时（本次 6,152 ms）；未改超时、断言或跳过该例。
+Taro 使用已自测的临时离线 Doctor 内置 schema 适配，不使用 --no-check；13 包和所有后处理闸门通过，
+fresh 主包 **1,897,472 / 1,900,000 B**，余 **2,528 B**，未许可重复及过期许可均为 0。详情见发布专题同日 Round 2 节。
+本轮日志统一为 tmp/perf/t1-round2-*.log，reports 与共享生成物由本轮实际命令重建，预算/允许清单未改。
+**真实 WIP/合并仍未完成**，原因与实际分支证据见本节上方；用户禁止服务、开发者工具和 GUI，故未做视觉/设备验收。
+没有联网、部署、发布、推送、刷新 5173 或写主目录源码，也没有为绕开权限重造一份“已合并”的临时历史。
+
+## 2026-11-07 T1 第三次续做：合并 T2/T3 后的最终复核
+
+本节补充并更新下文 T1 首次测量记录；旧数字、失败记录和解释全部保留。源码保留了 T2 的即时动效交互、
+非首页路由懒加载和首页 idle 路由预取，也保留了 T3 的出厂库预烧及旧库兼容。没有改学习配额、FSRS、
+挑卡或内容算法；Taro 仍直接编译同一份网页 TSX，原生共享包由网页 lib 重新生成。
+
+### 合并后的两个额外回归
+
+- **未加载 mixed 时也要撤销旧计划投影**：classic 冷开后用户可能改每日量、考后强度或升一级。
+  `refreshMixedCardTasks` 不能因资格内容尚未加载就连清理旧任务也跳过，否则稍后进入 mixed 时可能沿用
+  旧额度。现在始终清掉当天汉字/辨析任务，资格 ready 才立刻重排；未 ready 时由下次合法的 mixed 入口
+  按同一算法重建。只动今日投影，不删历史/记忆，不为 classic 加载内容；新增工厂库回归检查这些边界。
+- **导航异步化后，目标参数必须和页面一起提交**：原来 Web 语法气泡先调用导航、再写 ruleId；导航改为
+  await 内容后，迟到的默认重置会把指定条目清空。现在 routeParams 在 ready、并确认导航未取消后才写入，
+  基础语法只有没有显式 ruleId 的普通入口才清空选中项；与 Taro 已有判据一致。真实 App 回调的离线测试
+  覆盖指定条目、普通入口、返回取消和读取失败，防止早改当前页模式/参数。没有复制另一份导航实现。
+
+### 复现与测量边界
+
+从当前 worktree 根目录运行，均不联网、不启动服务或 GUI：
+
+```sh
+node tmp/perf/build-harness.mjs --before
+node tmp/perf/build-harness.mjs
+node tmp/perf/trace-home.cjs
+node tmp/perf/onboarding.cjs
+node tmp/perf/bench.cjs
+```
+
+这次 before 改用 **f1462c2c（已审 T2/T3，尚无 T1）** 的原 `word-api/stats.ts`、`mixed-cards.ts`
+和内容 shim；其余复用当前业务图。两侧都开当前 `frontend/public/nihongo.db`，SHA-256 为
+`b3e303b3adf95a1020a9171a3a03274aa0caa56b8e5d931a738ca452c731af6b`，因此没有把 T3 的预烧收益
+重复计入 T1。它是同源函数链重放，不是两个完整旧 checkout，也不执行 React/Taro 外壳。DB/持久化/网络/
+平台 API 用离线替身，内容用实际 Taro shims、实际生成的分包模块和小程序 vendored sql.js/WASM。
+
+冷开仍是该工厂库完成初始化和今日计划后导出的 prepared.db **第一次重开**，不是用户学习存档，也不是
+已补齐同步元数据的成熟冷开。Node **v24.16.0**；每场景交替前后顺序，各跑 11 个独立进程，丢弃前 2 个，
+余下 9 次取中位数，计时时关闭访问 trace。当前没有与构建或 Vitest 并跑。不要拿旧报告 4dcc89dc 或下文
+e8a3569d/旧宿主负载的绝对毫秒来相减。数据为 `tmp/perf/node-bench.json`，88 个完整计时样本在
+`node-bench-raw.json`；`home-content-reads.json` 单独记录消费。表的合计排除业务模块求值、WASM、开库、
+首屏后概览和预热；各行独立取中位数，所以行中位数之和不一定等于合计。
+
+| 阶段（classic，ms） | 冷开前 | 冷开后 | 首装前 | 首装后 |
+| --- | ---: | ---: | ---: | ---: |
+| 业务模块求值 | 25.73 | 25.66 | 25.48 | 25.43 |
+| vendored WASM 初始化 | 3.17 | 3.17 | 3.13 | 3.13 |
+| 内存开库 | 1.50 | 1.50 | 1.45 | 1.46 |
+| 首页前内容 JS 求值 | 22.46 | 0.01 | 22.10 | 0.01 |
+| 用户表结构 | 9.91 | 9.89 | 12.22 | 12.16 |
+| 同步结构 | 45.23 | 45.51 | 66.08 | 65.83 |
+| 固定搭配迁移入口 | 0.04 | 0.04 | 60.44 | 57.39 |
+| 汉字索引解码 | 5.22 | 0.01 | 4.59 | 0.01 |
+| 首屏前概览（含首次初始化） | 19.90 | 0.00 | 38.47 | 0.00 |
+| 周报提示 | 0.13 | 0.16 | 0.11 | 0.12 |
+| getWordStats 立即部分 | 2.68 | 8.51 | 28.06 | 51.72 |
+| 角标读取（前全量／后当前模式） | 63.42 | 0.01 | 160.16 | 0.01 |
+| 备考状态 | 8.68 | 8.84 | 8.04 | 8.20 |
+| 升级提示 | 2.01 | 2.14 | 1.79 | 1.91 |
+| 小时刻 | 0.11 | 0.12 | 0.09 | 0.10 |
+| 连胜 | 0.34 | 0.37 | 0.28 | 0.32 |
+| 首页数据路径 CPU 合计 | 180.59 | 75.46 | 404.76 | 198.81 |
+| 首屏后概览 | — | 13.99 | — | 13.39 |
+| 首屏后学习页内容准备（加载并 prime） | 0.15 | 14.92 | 0.16 | 14.36 |
+| stage1 预热 | 27.50 | 31.36 | 21.99 | 23.25 |
+| 辨析关系预热 | 0.40 | 35.92 | 0.41 | 33.47 |
+| 干扰候选预热 | 27.73 | 30.19 | 27.02 | 29.39 |
+| 音频计划 | 0.15 | 0.15 | 0.14 | 0.15 |
+
+classic 数据路径 CPU：**冷开 180.59 → 75.46 ms，首装 404.76 → 198.81 ms**；当前角标分别为
+**63.42 → 0.01 ms、160.16 → 0.01 ms**（未四舍五入原值见 JSON）。概览移后使初始化转由
+getWordStats 承担，不能把立即部分的上升单独认成新增工作；概览本身移到了可绘制之后，并没有消失。
+Web 启动那次紧挨着的重复刷新已删，不在这份小程序函数链的合计内。
+
+mixed 必须保留真实的三份资格数据：冷开角标 **63.77 → 61.15 ms**、数据路径 **180.09 → 150.93 ms**；
+首装角标 **162.13 → 97.30 ms**、数据路径 **406.52 → 309.16 ms**。classic 首页前八份内容模块求值
+**2,205,295 → 0 B**；mixed 求值三份 **988,057 B**。这是模块求值字节，不是微信分包下载字节。
+移出的辨析关系成本会在后续预热/学习时发生；没有将 Node 毫秒乘 17 声称真机收益，没有测微信网络、存档 I/O、
+渲染桥接或真实首帧/点击响应。内容消费清单、各页 ready 边界继续见下文原 T1 表。
+
+### 新增验收的首装链路
+
+`onboarding.cjs` 在两个独立 Node 进程中，从空 localStorage、无真实作答的出厂库走真实
+previewCurrentLevelPlan → saveLevelPlanSettings → applyStudyIntensity → completeLevelSetup → 首页数据
+→ readyForRoute('word') → continueTodayPlanStudy。分别覆盖 **未等 2.5 秒预热即点击** 和预热后的进入。
+保存前后验证 shouldShowLevelSetup true→false；保存仅装三份 mixed 资格，完整读音、题面和音高仍未装。
+学习入口必须先完成 ready/prime，随后首卡的 kanji/kana/questionMeaning/meaning 都须非空，
+pitchAccentLoaded 必须为 true，lookupAccent 非 null，逐拍 pitchPattern 非空；**平板重音 0 是有效结果**。
+本次早点击例为「空港／机场」、重音 0；完整证据在 `tmp/perf/onboarding.json`。它验证数据与内容时序，
+不等于模拟器或真机 UI 已走通。另有 trace 的 classic/mixed/kanji/首次设定五场景，classic 首页真实内容消费
+为 0（允许模块初始化保存活引用），mixedCardCounts/materializeConfusionCards 的首页调用均为 0。
+
+三类要求均有 Vitest：classic spy=0；当前工厂库和重开快照的七个模式与原全量 getter 基线逐项相等
+（18/33/0/18/0/30/0，bench 会重新执行原 getter 校验夹具）；八份未 ready 代理的真实读取/枚举/in 访问抛错。
+加上绘制时序、重排及异步导航，T1 共四文件 **9 项**。原生小程序的真实 shared graph smoke 同时通过。
+
+### 最终闸门与未执行项
+
+- `frontend npm run check`、`npm run lint` 通过（0 error / 52 warning）；全量
+  `VITEST_MAX_WORKERS=2 npm test` 已运行：**199 文件通过、5 跳过；1,636 项通过、30 跳过、1 todo**。
+  题目提到的 fsrs-store 顽固词闸超时本次没有复现，没有改超时、断言或跳过该例。
+  `npm run build`（含完整 prebuild/发布数据库校验）也通过。
+- `wechat-miniprogram npm test` 的 **32 个脚本全部通过**，含重新生成后的 check-shared/check-parity。
+- Taro 执行原 `npm run build:weapp` 全链，唯一环境适配是用临时 `tmp/perf/offline-doctor.cjs`
+  把 Doctor 切到同一原生 binding 的内置 schema，未使用 --no-check、未返回写死的成功；
+  `check-doctor.cjs` 验证合法配置通过、错误类型/缺失必填项被拒绝。本次实际配置验证通过，结果在
+  `t1-final-doctor-offline.json`；完整构建和 `npm test` 都退出 0。
+  fresh 主包 **1,896,994 / 1,900,000 B**，余 **3,006 B**；13 包均通过，未许可/过期核心及页面重复均为 0，
+  异步目标、资产、CSS/字体、正文恢复、API、referral 闸门全部通过，reports 由这次构建生成。
+- 最终日志为 `tmp/perf/t1-final-{check,lint,frontend-test,web-build,shared-build,wechat-test,taro-build,taro-test}.log`。
+  用户明确禁止服务、开发者工具和任何 GUI，故没有视觉、窄屏或真机验收；没有触碰/刷新 5173，没有联网、
+  上传、部署或发布。本 worktree 的忽略 iOS 出厂副本不存在，不能将合入 T3 的历史 Web/iOS 比对当成本次比对。
+
+### Git 元数据权限阻塞的交接
+
+原 worktree 的 `git add -A` 被文件系统拒绝：index.lock 位于主目录共享 .git/worktrees/perf-home-lazy，
+本会话只获准写当前 worktree，且不能提权。没有为此改权限或写主目录源码。临时元数据
+`tmp/perf/merge.git` 中保存了 WIP **1471435d**，并把 claude/perf-motion-web 合成 **09482216**；
+App 两边功能保留，shared/reports 在合并时重建。该历史另存为 `tmp/perf/t1-merged.bundle` 并已校验。
+**这不是原分支已成功前进的证明**：原分支仍停 e8a3569d，原索引未改，工作文件已是合并结果及后续修正。
+合并后的本次修正、测试和文档均未再 commit。
+
+具备 Git 元数据写权限的后续会话可先审阅 `tmp/perf/finish-merge.sh` 再执行它：它严格校验当前分支和旧 HEAD，
+仅从本地 bundle fetch，再 mixed reset 到已保存的合并提交；不 checkout/stash/覆盖工作文件，保留所有本次后续
+未提交改动，不新建提交，也不推送。当前受限会话没有执行此脚本，分支写回仍是未完成项。
+`tmp/perf/t1-change-files.txt` 提供相对原 HEAD 的完整文件清单，`t1-after-merge.patch` 保存合并后的未提交修正；
+这些差异与机器闸门供后续审查使用，不代替 CLAUDE.md 指定的新 Claude 会话全量文档对照。
+
+## 2026-11-07 T1：首页按消费加载内容（接替 10-19 / 11-05 的整包启动等待）
+
+这次基线是 `e8a3569d`，包含首次设定静默下载的 `c97e9cc5`；不是旧性能报告的
+`4dcc89dc`。`ensureDatabase` 只负责开库、结构和内容迁移，不再顺带等待 word-study。
+首页等库和外壳后即可渲染；角标独立等待当前模式。Taro 继续直接编译网页的
+`ZooHome` / `SquirrelTrail`，数据层继续由网页源码生成 `wechat-miniprogram/src/shared/web.js`。
+
+### 内容消费清单与等待边界
+
+下表说的是模块实际求值/内容消费，不代表微信无需下载包含该模块的整个分包。
+classic 首页首次渲染前不等待下列八份内容；lazy/core 外壳仍需加载。
+
+| 内容 | 首页角标 | 首次设定 | 2.5 秒预热及后续消费者 |
+| --- | --- | --- | --- |
+| questionMeanings | 不读 | 预览、先验、收尾均不读 | `warmStage1SelectionCache` / 干扰候选索引会读；必须在预热之前就绪，不能和预热并行 |
+| distinctionReviews | mixed 的 `matchable` 会读，classic 不读 | 保存先验物化辨析、生成任务时读；选日期/拖熟悉度不读 | 辨析题面、混合学习匹配卡读 |
+| kanjiUnitRuntime | mixed、汉字读音角标读 | 保存先验物化汉字时读 | 汉字单位/字卡用 |
+| kanjiReadingUsage | mixed 资格读；汉字单位角标不读 | 保存先验/重排资格时读 | 一字多音页、混合字卡用 |
+| kanjiVariants | 不读 | 不读 | 取第一张单词卡的汉字组件时读 |
+| kanjiReadings | 不读 | 不读 | 单词/汉字卡、语法振假名用 |
+| grammarKeyPoints | 不读 | 不读 | 语法题及混合语法插播翻面用 |
+| pitchAccent | 不读 | 不读 | 学习卡音高线用；预热先把学习页声明的内容装齐 |
+
+`readyForHomeMode` 的 mixed 集合只有 **unit runtime + usage + distinction reviews**，
+汉字读音只有 unit runtime，其余模式无内容等待。网页的区别只是静态内容本来就可用，
+两份动态汉字索引仍遵守同一个 ready 边界。
+
+`readyForRoute` 在两端导航提交之前等待，Taro 的 `WeappPage` 还为原生 tab/直达冷开
+单独等待，不能假定用户来过首页。word/quick-study 等 word-study 六份完整内容；
+word 根据模式追加角标资格；vocab-test 等题面/变体/读音；confusion 和 distinction-quiz
+等题面/辨析/变体/读音；kanji-readings 等两份汉字数据和读音；grammar/detail/
+grammar-foundation/favorites 等语法正文、抓手和读音；jlpt-plan/settings 先备好 mixed 资格。
+自选清单在导航前就会取第一张卡，所以 `startPickedStudy` 也必须先等 word 内容。
+2.5 秒预热先 await 当前学习页内容，再构建只读缓存/音频计划；组件卸载或切换模式后取消旧预热工作。
+小程序 tab 只隐藏时不会卸载，已开始的内容预取可继续完成并供学习页复用。
+
+首次设定的静态矩阵和 `remainingPlanWords` 不消费这些代理。保存先验在主包入口
+`level-plan.applyLevelStartingPoint` 先 await mixed 资格，再 import 先验块。
+**重排只能生成任务与进度，不能顺带取卡**：旧 `refreshMixedCardTasks` 调两个 session，
+会在设定收尾生成汉字卡、读取尚未加载的完整读音表；现改成同源 `mixedCardCounts`，
+保留原配额、级别、任务和先验限速判据，题面到学习页才生成。
+
+### 未 ready 必须可发现，不能静默算空
+
+八份代理均拒绝未 ready 的真实消费（发布构建也保留），错误说明缺的内容和 ready 入口。
+模块初始化可以捕获 `readings` / `japanese_to_simplified` / `points` 等一层活引用，
+其子键、枚举、`in`、数组长度都必须 ready。**不能直接把根对象枚举退化成空列表**：
+JSON shim 改用普通 ESM 元数据外壳，供 esbuild/webpack 枚举导出名，内容代理本身严格断言。
+esbuild 的 Node 默认导入可能再包一层 default，外壳的字段 getter 和 default 都要转到
+同一个代理；只提供 default 会把 `kanji-char-cards` 模块初始化捕获的 readings 固定成 undefined。
+`modes-smoke` 的真实混合卡流程曾抓到这点。
+
+动态 Web loader 失败后清空 rejected promise，允许重新预取；否则一次失败会让之后
+内容已装好的重试仍永远失败。mixed 物化也显式检查索引 ready，不返回零占位。
+新增 `home-content.test.ts` 覆盖八份未就绪访问、加载后的活引用和各入口内容声明。
+离线 `trace-home.cjs` 还从 classic 的八份内容全未就绪状态执行首次设定的真实预览、保存、
+强度设置与收尾，确认保存前等待后仅有三份资格数据；完整题面/读音仍未装，预热后才取首卡。
+
+内容 loader 要留在主包：`WeappPage` 显式引用 `taro-content.cjs`，先验块只读已就绪内容。
+若 webpack 把带 `require.async('./content/...')` 的 loader 复制到 lazy 块，相对路径会错位；
+必须看 fresh build 的 `verify-async-content`，不能只测 Node 的同步 require 回退。
+
+概览与首页统计首轮用 `afterPaint`（rAF 后再 setTimeout）让出绘制机会；Promise.resolve
+或只在 effect/rAF 里同步计算都不够。首次设定开着时暂不计算概览，面板显示「读取中…」。
+启动同步仍须在 `ensureProgressInitialized` 之后发起：占位初始化会 persistSoon，
+若晚于同步开始的 flush/revision 采样，就会把老用户首次找回误判为「本机又有新记录」。
+
+
+### T1 同机前后复测（2026-11-07，Node 毫秒）
+
+复现从仓库根目录执行：
+
+```sh
+node tmp/perf/build-harness.mjs --before
+node tmp/perf/build-harness.mjs
+node tmp/perf/trace-home.cjs
+node tmp/perf/bench.cjs
+```
+
+`before` 读取 `git show e8a3569d:<文件>` 的原统计、混合卡和 shim 实现；其余业务代码复用当前
+同源图。它重放改前「先装八份内容、先算概览、再读完整 modeCounts」和改后按当前模式的路径，
+不执行 React/Taro 外壳。实际小程序 vendored sql.js/WASM、出厂 `frontend/public/nihongo.db`；
+冷开为同一出厂库初始化并排计划后导出的 `tmp/perf/prepared.db` 首次重开，不是作者学习存档，
+也不是同步元数据已补齐的稳定重开。数据库模块、磁盘持久化、网络和平台 API 用离线替身；
+八份内容使用实际 Taro shim，读访问另开 trace，不把逐次访问钩子开销混入计时。
+每个场景前后交替顺序各跑 11 个独立 Node 进程，丢弃前 2 个进程样本，余 9 次取中位数；
+独立进程保证业务缓存清空，丢弃不代表跨进程 V8 JIT 预热。Node v24.16.0，不与旧报告
+`4dcc89dc` 或上轮宿主负载下的绝对毫秒直接相减。原始样本为 `node-bench-raw.json`，
+汇总为 `node-bench.json`。脚本还重新计算原 getter 的全部模式并断言提交的基线夹具一致。
+
+下表为 classic。数据路径 CPU 合计包括结构/迁移、原来的首屏前概览与首页统计，
+不包括模块加载、WASM、开库和后置概览/预热；它是工作量统计，**不是首帧或可操作墙钟**。
+各行独立取中位数，行中位数之和不必等于合计中位数。
+
+| 阶段 | 冷开前 | 冷开后 | 首装前 | 首装后 |
+| --- | ---: | ---: | ---: | ---: |
+| 内容 JS 求值 | 63.44 | 0.03 | 69.26 | 0.03 |
+| 用户表结构 | 25.27 | 26.36 | 69.59 | 74.82 |
+| 同步结构 | 125.41 | 128.71 | 193.71 | 191.58 |
+| 固定搭配迁移 | 0.11 | 0.11 | 182.37 | 180.30 |
+| 汉字索引解码 | 14.23 | 0.02 | 11.90 | 0.02 |
+| ready 前概览（含首次初始化） | 56.58 | 0.00 | 229.27 | 0.00 |
+| 周报提示 | 0.39 | 0.41 | 0.32 | 0.37 |
+| getWordStats 立即部分 | 8.14 | 23.58 | 83.02 | 273.15 |
+| 当前角标读取 | 174.40 | 0.02 | 510.92 | 0.03 |
+| 备考状态 | 25.54 | 26.96 | 26.42 | 27.02 |
+| 升级提示 | 6.13 | 6.66 | 5.65 | 5.65 |
+| 小时刻 | 0.34 | 0.36 | 0.33 | 0.35 |
+| 连胜 | 0.95 | 1.09 | 0.84 | 1.01 |
+| 上述数据路径 CPU 合计 | 505.65 | 214.86 | 1387.51 | 750.76 |
+| 首屏后概览 | — | 40.56 | — | 42.42 |
+| 2.5 秒后内容求值 | 0.04 | 45.17 | 0.04 | 46.69 |
+| stage1 预热 | 80.35 | 87.24 | 69.39 | 76.48 |
+| 辨析关系预热 | 1.20 | 99.10 | 1.25 | 111.23 |
+| 干扰候选预热 | 83.35 | 83.09 | 84.35 | 90.60 |
+| 音频计划 | 0.39 | 0.43 | 0.41 | 0.44 |
+
+概览后置使首装初始化可能转由 getWordStats 承担，因此不能把其立即部分的增加单独判为新增工作；
+应同时看概览与数据路径合计。小程序实际 afterPaint 中仍先完成进度占位，再发启动同步，避免
+本机占位写入抬 revision 打断老用户首次找回。网页取消的重复概览不在这份小程序路径合计中。
+
+| mixed（仍须算真实混合角标） | 冷开前 | 冷开后 | 首装前 | 首装后 |
+| --- | ---: | ---: | ---: | ---: |
+| 当前角标读取 | 181.06 | 173.87 | 551.77 | 342.04 |
+| 数据路径 CPU 合计 | 533.24 | 432.08 | 1615.38 | 1216.23 |
+
+classic 首页八份内容求值字节由 **2,205,295 B → 0 B**；mixed 只求值三份资格数据 **988,057 B**，
+汉字角标只需 unit runtime。这是模块求值字节，不是微信分包下载字节：mixed 若未缓存，仍会
+下载容纳这些模块的 content/features 分包。classic 的预热在首屏之后装 word-study 六份；
+预热构建辨析关系原本在 mixed 物化中付过成本，移出 mixed 后该成本会转到预热，不能称被消除。
+网络、文件 I/O、真机求值、首帧/输入响应和渲染桥接未测；不把本次 Node 时间乘 17 冒充真机收益。
+
+### T1 构建与运行边界
+
+原始 `npm run build:weapp` 仍在本机 Taro Doctor 的 Rust `system-configuration` NULL object panic
+处停止；从 package.json 取同一命令链，仅将 Taro 编译改为 `taro build --type weapp --no-check`
+后执行全部资产、CSS/字体、正文恢复、语法分包、async 路径、API、包体、重复模块和 referral 闸门。
+fresh 主包 **1,896,982 / 1,900,000 B**，余量 **3,018 B**；全部 13 包通过，未许可核心/页面重复
+均为 0，25 个 require.async 目标全部存在。reports 由真实构建生成，没有放宽预算或许可清单。
+`frontend && npm run check && npm run lint` 通过（0 error、52 warning）；新增的三文件六项
+Vitest 用例通过。全量 `VITEST_MAX_WORKERS=2 npm test` 实际执行 199 文件，193 文件通过、
+5 跳过、1 失败；1,613 项通过、30 跳过、1 todo，仅 `fsrs-store.test.ts:204` 的已知
+「顽固词闸永远生效」在全量负载下超过原有 5,000 ms。没有延长超时、跳过该例或改断言。
+`wechat-miniprogram && npm test` 的 32 个脚本全部通过，含 check-shared 新鲜度和 check-parity；
+`taro-spike-2 && npm test` 全部通过。离线消费 trace 的 classic/mixed/kanji/classicSetup 四场景均通过。
+本次禁止服务/GUI，因此没有网页/窄屏截图、微信开发者工具运行或真机验收；这些不能以构建代替。
+
+
 ## ⚠️ 改页面 = 网页和小程序一起改（2026-09-25）
 
 用户只对着网页提要求，小程序必须在**同一个对话、同一个提交**里跟上，不许再让用户开第二、第三个对话去改另一端、去监督两边是否一样。

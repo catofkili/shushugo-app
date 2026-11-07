@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Text, View } from '@tarojs/components';
 import { WordStudy } from '../../../../frontend/src/pages/WordStudy';
 import { ensureDatabase } from '../../platform/database-runtime.weapp';
+import { readyForRoute } from '../../../../frontend/src/lib/content-ready';
 import { prepareWordStudy } from '../../platform/prepare-word-study.weapp';
 import PreviewTimingBoundary from '../../platform/preview-timing.weapp';
 import { usePortalHost } from '../../platform/portal-host.weapp';
@@ -16,12 +17,12 @@ export default function WordStudyRoute() {
 
   useEffect(() => {
     if (ready) return;
-    ensureDatabase('word-study', {
+    Promise.all([readyForRoute('word', 'picked'), ensureDatabase({
       onStage: (name, elapsedMs) => setStartupTimings((previous) => ({ ...previous, [name]: elapsedMs })),
       onDownload: ({ compressed, percent, fallback }) => setDownloadStatus(
         `${fallback ? '压缩库回退原库 · ' : ''}${compressed ? '下载压缩出厂库' : '下载出厂库'}${percent === null ? '…' : ` ${percent}%`}`
       )
-    }).then(() => {
+    })]).then(() => {
       const started = Date.now();
       const prepared = prepareWordStudy();
       setStartupTimings((previous) => ({ ...previous, firstCard: Math.max(0, Math.round(Date.now() - started)) }));

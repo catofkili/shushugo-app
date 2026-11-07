@@ -56,7 +56,7 @@ export interface AppContextValue {
   cloudSession: CloudSession;
   entitlements: EntitlementState;
   studyStore: ReturnType<typeof useStudyStore>;
-  overview: ProgressOverview;
+  overview: ProgressOverview | null;
   actions: AppActions;
 }
 

@@ -1,0 +1,25 @@
+{
+  "baseline": "f1462c2c",
+  "seed": "public/nihongo.db",
+  "method": "bench-worker.cjs before: reviewed T2/T3 with the original full modeCounts getter, on factory and a reopened initialized snapshot",
+  "counts": {
+    "first": {
+      "classic": 18,
+      "mixed": 33,
+      "mistakes": 0,
+      "quick": 18,
+      "reverse": 0,
+      "kanji": 30,
+      "picked": 0
+    },
+    "cold": {
+      "classic": 18,
+      "mixed": 33,
+      "mistakes": 0,
+      "quick": 18,
+      "reverse": 0,
+      "kanji": 30,
+      "picked": 0
+    }
+  }
+}

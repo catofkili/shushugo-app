@@ -17,6 +17,7 @@ import {
   pickConfusionNext, recordConfusionReview, undoLastConfusionReview, clearConfusionTasks, type MatchingCard
 } from "./confusion-cards";
 import type { WordAnswer } from "../types/vocabulary";
+import { distinctionReviewsLoaded, loadDistinctionReviews } from "../data/confusion_distinction_reviews";
 
 const LEVEL_RANK: Record<string, number> = { N5: 0, N4: 1, N3: 2, N2: 3, N1: 4 };
 export const targetLevelRank = () => LEVEL_RANK[getStudyPreferences().jlptTarget] ?? 2;
@@ -24,13 +25,15 @@ export const targetLevelRank = () => LEVEL_RANK[getStudyPreferences().jlptTarget
 const kanjiReviewQuota = (cap: number, day: string) => planReviewLimit(cap, "kanji", day);
 const confusionReviewQuota = (cap: number, day: string) => planReviewLimit(cap, "confusion", day);
 
-export const loadMixedCardData = loadKanjiCharData;
-export const mixedCardDataLoaded = kanjiCharDataLoaded;
+// 辨析资格独立分包；只加载汉字不能放行 mixed 的物化和重排。
+export const loadMixedCardData = () => Promise.all([loadKanjiCharData(), loadDistinctionReviews()]).then(() => undefined);
+export const mixedCardDataLoaded = () => kanjiCharDataLoaded() && distinctionReviewsLoaded();
 
 let materializedFor: object | null = null;
 /** 每个库实例物化一次（同 oncePerDatabase 的道理：合并 / 恢复会换掉 db 实例） */
 const materializeOnce = (db: object) => {
   if (materializedFor === db) return;
+  if (!mixedCardDataLoaded()) throw new Error("混合卡内容未 ready：先 await readyForHomeMode / readyForRoute");
   materializeKanjiChars();
   materializeConfusionCards();
   materializedFor = db;
@@ -65,11 +68,11 @@ export const undoConfusionCardAnswer = () => undoLastConfusionReview();
 
 /** 改了每日量之后重排今天两种卡的清单（同 refreshTodayWordPlan 的道理：额度是排计划那一刻定的）。 */
 export const refreshMixedCardTasks = (db: object) => {
-  if (!mixedCardDataLoaded()) return;
   clearKanjiCharTasks();
   clearConfusionTasks();
-  getKanjiCardSession(db);
-  getConfusionCardSession(db);
+  // 重排不展示题面；首次设定此时只装了资格数据，不能顺带消费完整读音表。
+  // classic 冷开也可能改额度；先撤掉旧投影，资格未装时留到进 mixed 再按新额度排。
+  if (mixedCardDataLoaded()) mixedCardCounts(db);
 };
 
 /** 今天两种卡还剩几张（主页角标 / 小路的分母）。没建清单的日子先建再数，代价是几条 SQL。 */

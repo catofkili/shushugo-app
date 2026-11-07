@@ -1,0 +1,10 @@
+import type { Page, StudyMode } from "../../frontend/src/types/app";
+export function load(name: string): Promise<unknown>;
+export function ready(): Promise<void>;
+export function readyForKanji(): Promise<void>;
+export function readyForPage(page: string): Promise<void>;
+export function readyForHomeMode(mode: StudyMode): Promise<void>;
+export function readyForRoute(page: Page, mode?: StudyMode): Promise<void>;
+export function readyForPageMount(page: Page, mode?: StudyMode): Promise<void>;
+export function primeWebLoaders(names?: string[]): Promise<void>;
+export function loaded(name: string): boolean;

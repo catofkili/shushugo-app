@@ -101,6 +101,9 @@ export const loadKanjiUnitIndex = (): Promise<void> => {
   if (loaded) return Promise.resolve();
   loading ??= import("../data/kanji_reading_unit_runtime.json").then((module) => {
     loaded = decode((module.default ?? module) as unknown as RuntimePayload);
+  }).catch((error) => {
+    loading = null;
+    throw error;
   });
   return loading;
 };

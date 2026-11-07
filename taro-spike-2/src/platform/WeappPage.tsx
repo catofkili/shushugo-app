@@ -24,6 +24,9 @@ import { recordDiagnosticRoute } from '../../../frontend/src/lib/diagnostics';
 import { finishStartupTiming, perfRecord, perfTime, perfTimeAsync } from '../../../frontend/src/lib/perf-marks';
 import { canUseFeature, type FeatureId } from '../../../frontend/src/lib/entitlements';
 import { getProgressOverview } from '../../../frontend/src/lib/api';
+import { ensureProgressInitialized } from '../../../frontend/src/lib/word-api/bootstrap';
+import { afterPaint } from '../../../frontend/src/lib/after-paint';
+import { useProgressUpdates } from '../../../frontend/src/lib/use-progress-updates';
 import { registerCloudAutoSyncLifecycle, requestCloudAutoSync, getCloudSession, CLOUD_SYNC_EVENT, CLOUD_AUTH_EVENT, LEVEL_PLAN_TRIAL_EXPIRES_KEY, LEVEL_PLAN_TRIAL_NOTICE_KEY, type CloudSession, type CloudSyncEventDetail } from '../../../frontend/src/lib/sync-api';
 import { defaultStudyMode, getStudyMode, saveStudyMode } from '../../../frontend/src/lib/studyMode';
 import { getResolvedTheme, getStudyPreferences, PREFERENCES_EVENT } from '../../../frontend/src/lib/studyPreferences';
@@ -32,7 +35,9 @@ import { shouldShowLevelSetup } from '../../../frontend/src/lib/level-plan';
 import { OPEN_GRAMMAR_FOUNDATION_EVENT } from '../../../frontend/src/lib/grammar-foundation-navigation';
 import { consumePendingWeeklyReportWeekStart, WEEKLY_REPORT_NOTIFICATION_EVENT } from '../../../frontend/src/lib/notifications';
 import { ACHIEVEMENT_UNLOCKED_EVENT } from '../../../frontend/src/lib/userProfile';
-import { ready as readyForGrammar, readyForKanji } from '../../scripts/taro-content.cjs';
+// 内容入口和 loader 都留在主包，避免优化器复制进 lazy 块后让 require.async 的相对路径错位。
+import { readyForPageMount } from '../../scripts/taro-content.cjs';
+import { readyForRoute } from '../../../frontend/src/lib/content-ready';
 import { ensureDatabase } from './database-runtime.weapp';
 import { StartupLoading } from './StartupLoading';
 import { usePortalHost } from './portal-host.weapp';
@@ -50,6 +55,8 @@ let globalEventsInstalled = false;
 let levelSetupChecked = false;
 /** 这次弹的是新装的首次设定（不是从备考页主动打开的）。只有它会在云端进度找回后自动关掉。 */
 let firstRunSetup = false;
+let startupSynced = false;
+let navigationRevision = 0;
 let syncConflictNotice = '';
 // 外壳只含渲染组件；在原有数据载入期并行预加载，不能给每个弹层增加一次点击后的下载等待。
 let shellPromise: Promise<typeof import('../../../frontend/src/app/AppShell')> | null = null;
@@ -100,7 +107,6 @@ function installGlobalEvents() {
 installGlobalEvents();
 
 const isTab = (route: RouteItem) => route.tab;
-const grammarPages = new Set<Page>(['grammar', 'detail', 'grammar-foundation', 'favorites']);
 const protectedPages = new Set<Page>(['account', 'personal-info', 'team']);
 const proPages: Partial<Record<Page, FeatureId>> = { 'distinction-quiz': 'confusionGroups' };
 
@@ -137,9 +143,11 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
   const [skin, setSkin] = useState('');
   const [motionLevel, setMotionLevel] = useState(() => getStudyPreferences().motionLevel);
   const [pagePath] = useState(() => Taro.getCurrentInstance().router?.$taroPath ?? '');
-  const [overview, setOverview] = useState(() => ({ words: { total: 0, seen: 0, completed: 0, low: 0, unseen: 0 }, wordsByLevel: [], grammar: [] }));
+  const [overview, setOverview] = useState<ReturnType<typeof getProgressOverview> | null>(null);
+  const [overviewRevision, setOverviewRevision] = useState(0);
   const [cloudSession, setCloudSession] = useState<CloudSession>({ configured: false });
   const [feedbackComposerOpen, setFeedbackComposerOpen] = useState(false);
+  useProgressUpdates(() => { if (page === 'home') setOverviewRevision((value) => value + 1); });
 
   useEffect(() => {
     let cancelled = false;
@@ -147,9 +155,9 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
     const openedAt = Date.now();
     // 对战直达先应战、邀请页不被打断：不弹首次设定，也不标记已检查，之后回首页仍走首次设定。
     const setupExempt = page === 'invite' || (page === 'duel' && getAppState().duelId);
-    // 开库、外壳、汉字 / 语法内容分包互不依赖，一起开始（汉字和语法内容只灌内容缓存，不碰数据库）。
+    // 首页只等数据库和外壳；角标独立等待当前模式，学习页在挂载之前等自己的完整内容。
     Promise.all([
-      ensureDatabase('word-study', { onDownload: ({ percent }) => {
+      ensureDatabase({ onDownload: ({ percent }) => {
         if (cancelled) return;
         setDownloadPercent(percent);
         // 只有首次安装（本机没有存档）才会下出厂库：下载要好几秒，不让人盯着进度条，
@@ -157,14 +165,10 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
         if (!firstRunSetup && !levelSetupChecked && !setupExempt) { firstRunSetup = true; setLevelSetupOpen(true); }
       } }),
       loadShell().then((loaded) => { if (!cancelled) setShell(loaded); }),
-      perfTimeAsync('启动 · 汉字和辨析内容就绪', () => readyForKanji()),
-      grammarPages.has(page) ? perfTimeAsync(`页面 · ${page} 语法内容`, () => readyForGrammar()) : undefined
+      page === 'home' ? undefined : perfTimeAsync(`页面 · ${page} 内容就绪`, () => readyForPageMount(page, getAppState().launchStudyMode))
     ])
       .then(async () => {
         if (cancelled) return;
-        setOverview(page === 'home'
-          ? perfTime('启动 · 今日主页数据计算', () => getProgressOverview())
-          : perfTime(`页面 · ${page} 概览计算`, () => getProgressOverview()));
         setTheme(getResolvedTheme());
         setSkin(equippedItem('theme'));
         setCloudSession(await getCloudSession());
@@ -173,8 +177,6 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
         perfRecord(`页面 · ${page} 就绪`, Date.now() - openedAt);
         if (!levelSetupChecked && !setupExempt) {
           levelSetupChecked = true;
-          // 放在首页数据算完之后：算数据会 persistSoon，同步开头的 flushPendingSave 把它冲掉后才记本机改动号，不然拉取会因「同步期间本机有新记录」放弃。
-          requestCloudAutoSync('startup');
           // 首次安装在 onDownload 里已经弹出来了，这里不再判断（此时库刚下好，shouldShowLevelSetup 也必为 true）。
           if (!firstRunSetup) try {
             firstRunSetup = shouldShowLevelSetup();
@@ -189,7 +191,17 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
   }, [page]);
 
   useEffect(() => {
-    if (page === 'home' && ready) finishStartupTiming('主页数据就位');
+    if (!ready || page !== state.page) return;
+    return afterPaint(() => {
+      // 初始化会 persistSoon，必须先于启动同步；同步 flush 后才记 revision，避免首次找回被本机占位写入打断。
+      ensureProgressInitialized();
+      if (page === 'home' && !ui.levelSetupOpen) setOverview(perfTime('启动 · 今日主页数据计算', getProgressOverview));
+      if (!startupSynced) { startupSynced = true; requestCloudAutoSync('startup'); }
+    });
+  }, [ready, page, state.page, ui.levelSetupOpen, overviewRevision]);
+
+  useEffect(() => {
+    if (page === 'home' && ready) finishStartupTiming('主页可渲染');
   }, [page, ready]);
 
   useEffect(() => {
@@ -216,7 +228,8 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
     try { applyNativeBarTheme(getResolvedTheme()); } catch { /* 偏好还没读到时保持 app.config 的浅色 */ }
   });
 
-  const navigatePage = (target: Page, params?: AppNavigationParams, authenticated = false) => {
+  const navigatePage = async (target: Page, params?: AppNavigationParams, authenticated = false) => {
+    const revision = ++navigationRevision;
     if (protectedPages.has(target) && !cloudSession.token && !authenticated) {
       setAppState({ pendingAccountPage: target });
       openAuth();
@@ -228,9 +241,14 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
       return;
     }
 
+    try { await readyForRoute(target, params?.studyMode ?? getStudyMode()); }
+    catch { if (revision === navigationRevision) showNotice('内容读取失败，请重试。', 2600); return; }
+    if (revision !== navigationRevision) return;
+
     const current = getAppState();
     const { studyMode, ...routeParams } = params ?? {};
     const patch: Partial<AppState> = { ...routeParams };
+    if (studyMode) { patch.selectedStudyMode = studyMode; patch.launchStudyMode = studyMode; }
     if (target === 'word') {
       const mode = studyMode ?? getStudyMode() ?? defaultStudyMode;
       patch.selectedStudyMode = mode;
@@ -266,6 +284,7 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
   };
 
   const goBack = () => {
+    ++navigationRevision;
     const pages = Taro.getCurrentPages();
     if (pages.length > 1) {
       const current = getAppState();
@@ -277,9 +296,10 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
   };
 
   useDidShow(() => {
+    ++navigationRevision; // 原生 tab 切换也要作废上一页还没完成的预取导航。
     recordDiagnosticRoute(page);
     activeNavigate = (target, params) => navigatePage(target, params);
-    activeRefreshOverview = () => { try { setOverview(getProgressOverview()); } catch { /* database opening */ } };
+    activeRefreshOverview = () => setOverviewRevision((value) => value + 1);
     const pendingWeek = consumePendingWeeklyReportWeekStart();
     if (pendingWeek) navigatePage('weekly-report', { weeklyReportStart: pendingWeek, weeklyReportEntry: 'notification' });
     setAppState((current) => ({
@@ -316,6 +336,7 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
   const showModal = (message: string) => Taro.showModal({ title: '确认', content: message, confirmText: '确定', cancelText: '取消' }).then(({ confirm }) => confirm);
   const actions = createAppActions({
     navigate: (target, mode) => navigatePage(target, mode ? { studyMode: mode } : undefined),
+    beginNavigation: () => { const revision = ++navigationRevision; return () => revision === navigationRevision; },
     showNotice,
     setOverview,
     confirm: showModal,

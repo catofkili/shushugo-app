@@ -12,6 +12,10 @@
 
 export type DistinctionLevel = "interchangeable" | "major";
 
+// 网页静态导入；小程序 shim 按需加载并检查同一份内容 store。
+export const loadDistinctionReviews = () => Promise.resolve();
+export const distinctionReviewsLoaded = () => true;
+
 export interface DistinctionReview {
   groupKey: string;
   level: DistinctionLevel;

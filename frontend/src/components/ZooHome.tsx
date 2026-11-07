@@ -4,6 +4,8 @@ import { collectTeamRewards } from "../lib/team-activity";
 import { CLOUD_AUTH_EVENT, CLOUD_SYNC_EVENT } from "../lib/sync-api";
 import { REFERRAL_BANNER_KEY, REFERRAL_EVENT, referralBannerVisible } from "../lib/referral";
 import { perfTime } from "../lib/perf-marks";
+import { afterPaint } from "../lib/after-paint";
+import { readyForHomeMode, readyForRoute } from "../lib/content-ready";
 import { Capacitor } from "@capacitor/core";
 // 图标统一走 lucide（ISC 协议，线性、单色、跟随 currentColor）。
 import { Check, Merge, RefreshCw, SkipForward, SlidersHorizontal, Timer } from "lucide-react";
@@ -62,7 +64,7 @@ import "./ZooHome.css";
  */
 
 type Props = {
-  overview: ProgressOverview;
+  overview: ProgressOverview | null;
   onNavigate: (page: Page, params?: AppNavigationParams) => void;
   onPrefetchRoute?: (page: Page) => void;
   /** 打开词库/选词页，可以预设一个等级（进度概览的柱子就是这么下钻的） */
@@ -143,6 +145,7 @@ export function ZooHome({
   const [recoveryChoice, setRecoveryChoice] = useState<"light" | "usual" | null>(null);
   const [advance, setAdvance] = useState<LevelAdvancePrompt | null>(null);
   const [modeSheetOpen, setModeSheetOpen] = useState(false);
+  const [counts, setCounts] = useState<{ source: WordStats; values: Partial<Record<StudyMode, number | null>> }>();
   const [focusArmed, setFocusArmed] = useState(isStudyFocusArmed);
   const [focusIntroOpen, setFocusIntroOpen] = useState(false);
   // 每日量在设置页也能改，所以跟着 PREFERENCES_EVENT 走，别只在挂载时读一次
@@ -189,28 +192,54 @@ export function ZooHome({
       // 排之前问 plan_trend 会看到「今天 0 个」,报出一句假喜讯。
       perfTime("首页 · 小时刻", collectMoments);
     };
-    refresh();
+    const cancel = afterPaint(refresh);
     refreshRef.current = refresh;
     const timer = window.setInterval(refreshWeeklyNotice, 60_000);
     window.addEventListener(WEEKLY_REPORT_UPDATED_EVENT, refresh);
     return () => {
+      cancel();
       window.clearInterval(timer);
       window.removeEventListener(WEEKLY_REPORT_UPDATED_EVENT, refresh);
     };
   }, [collectMoments]);
 
   useEffect(() => {
+    if (!stats) return;
+    let cancelled = false;
+    const modes = modeSheetOpen ? [activeMode, ...VISIBLE_STUDY_MODES.map((mode) => mode.id).filter((mode) => mode !== activeMode)] : [activeMode];
+    const update = (mode: StudyMode, count: number | null) => {
+      if (!cancelled) setCounts((current) => ({ source: stats, values: { ...(current?.source === stats ? current.values : {}), [mode]: count } }));
+    };
+    // 先画等待态，每个模式单独就绪、单独计算；关闭菜单或更新快照后不再算旧请求。
+    void (async () => {
+      for (const mode of modes) {
+        try {
+          await readyForHomeMode(mode);
+          await new Promise<void>((resolve) => afterPaint(resolve));
+          if (cancelled) return;
+          update(mode, stats.modeCounts[mode]);
+        } catch {
+          update(mode, null);
+        }
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [stats, activeMode, modeSheetOpen]);
+
+  useEffect(() => {
+    let cancelled = false;
     // 主页先完成首屏和统计渲染，空闲几秒后只构建只读缓存，再开始后台音频队列。
     const timer = window.setTimeout(() => {
-      try {
+      void readyForRoute("word", activeMode).then(() => {
+        if (cancelled) return;
         warmStage1SelectionCache();
         warmConfusionGroups();
         warmConfusionCandidateIndexes();
         prefetchWordPlanAudio(todayWordAudioPlan());
-      } catch { /* 只预热缓存，失败不能影响学习 */ }
+      }).catch(() => undefined); // 干扰索引会消费 questionMeanings，不能和内容预取并跑。
     }, 2_500);
-    return () => window.clearTimeout(timer);
-  }, []);
+    return () => { cancelled = true; window.clearTimeout(timer); };
+  }, [activeMode]);
   // 进度事件走 useProgressUpdates：小程序里主页挂在后台时，每答一题不再同步重算一遍（见那个 hook 的注释）
   useProgressUpdates(() => refreshRef.current());
 
@@ -273,28 +302,30 @@ export function ZooHome({
   // 正常模式完成后,当前有效模式会在当天临时变成错题本。
   // 停在错题本却写着「今日复习 985 词」正是上次那个坑的一半成因。
   const activeInfo = studyModeInfo(activeMode);
-  const activeCount = stats?.modeCounts?.[activeMode] ?? 0;
+  const modeCounts = counts?.source === stats ? counts.values : {};
+  const activeCount = typeof modeCounts[activeMode] === "number" ? modeCounts[activeMode] : undefined;
+  const countFailed = modeCounts[activeMode] === null;
   const isPlanMode = activeMode === "classic" || activeMode === "quick" || activeMode === "mixed";
   // 学完一批回来是 688 → 670,以前直接跳过去,等于没发生。滚下去才看得见自己按下了它。
-  const heroCount = useCountUp(activeCount);
+  const heroCount = useCountUp(activeCount ?? 0);
   // 混合模式的合计里有语法条数，写「词」就是假的 —— 单位跟着口径走。
   const heroUnit = activeMode === "mixed" ? "项" : "词";
-  const heroNum = !stats
-    ? "…"
+  const heroNum = activeCount === undefined
+    ? <small>{countFailed ? "读取失败" : "计算中…"}</small>
     : activeCount > 0
       ? <>{heroCount}<small>{heroUnit}</small></>
       : isPlanMode ? "已完成" : "暂无题";
   // 今天走到哪：只有「按今日计划走」的模式才有这条（错题本 / 反向 / 汉字读音各有各的题池）
   const heroPct = isPlanMode && total > 0 ? Math.min(100, Math.round((done / total) * 100)) : null;
   const heroSticker = nowSticker(new Date().getHours(), total, done);
-  const heroSub = !stats
+  const heroSub = !stats || activeCount === undefined
     ? "正在读取"
     : activeMode === "mistakes"
       ? `今天攻掉 ${stats.mistakes.answeredToday} 个`
       : isPlanMode
         ? (activeCount > 0 ? (done > 0 ? "今天还剩" : "今天要学") : `今天学了 ${done} 个`)
         : activeInfo.subtitle;
-  const heroCta = activeCount > 0 ? (done > 0 ? "继续" : "开始") : isPlanMode ? "再来一批" : "去看看";
+  const heroCta = activeCount === undefined ? "准备中" : activeCount > 0 ? (done > 0 ? "继续" : "开始") : isPlanMode ? "再来一批" : "去看看";
 
   const weeklyEntryEnabled = Capacitor.getPlatform() !== "wechat" && goals.weeklyReportEnabled;
   const toolItems: { title: string; icon: StickerName; page?: Page; action: () => void }[] = [
@@ -411,9 +442,9 @@ export function ZooHome({
               不是第二个数字,所以两栏加起来必须等于大卡的合计(减负卡和压轴并进复习栏)。 */}
           {/* 混合模式的脚注换成「单词 · 语法」：那个大数是两件事的合计，
               而「今天还欠几条语法」在别处一个字都没有。两栏照样加起来等于大卡的数。 */}
-          {activeMode === "mixed" && stats ? (
+          {activeMode === "mixed" && stats && activeCount !== undefined ? (
             <span className="zoo-now-split">
-              单词 <b>{Math.max(stats.modeCounts.mixed - stats.grammarRemaining - stats.kanjiCardRemaining - stats.confusionCardRemaining, 0)}</b>
+              单词 <b>{Math.max(activeCount - stats.grammarRemaining - stats.kanjiCardRemaining - stats.confusionCardRemaining, 0)}</b>
               <i aria-hidden="true">·</i>
               语法 <b>{stats.grammarRemaining}</b>
               <i aria-hidden="true">·</i>
@@ -431,7 +462,7 @@ export function ZooHome({
           <Sticker name={heroSticker} size={96} className="zoo-now-mascot" />
           <span className="zoo-now-go">
             {heroPct !== null ? <span className="zoo-now-bar" aria-label={`今天完成 ${heroPct}%`}><i style={{ width: `${heroPct}%` }} /></span> : <span />}
-            <span className={`zoo-now-cta${activeCount > 0 ? " ds-nudge" : ""}`}>{heroCta} →</span>
+            <span className={`zoo-now-cta${activeCount !== undefined && activeCount > 0 ? " ds-nudge" : ""}`}>{heroCta} →</span>
           </span>
         </button>
         {/* 挂在大卡上沿外面：大卡本身 overflow:hidden（裁右上角的装饰圆），2026-10-16 前放在卡里面，上半截一直被裁掉 */}
@@ -472,7 +503,7 @@ export function ZooHome({
         {modeSheetOpen && (
           <div className="zoo-modes-sheet" role="menu">
             {VISIBLE_STUDY_MODES.map((mode) => {
-              const count = stats?.modeCounts?.[mode.id] ?? 0;
+              const count = modeCounts[mode.id];
               const active = mode.id === activeMode;
               return (
                 <button
@@ -488,7 +519,7 @@ export function ZooHome({
                   </span>
                   {/* 角标写「现在能练多少」:反向/汉字的队列是进去才建的,
                       不给数字的话这两项看着永远像空的 */}
-                  <span className="zoo-modes-item-count">{count > 0 ? count : "—"}</span>
+                  <span className="zoo-modes-item-count">{count === null ? "读取失败" : count === undefined ? "计算中…" : count > 0 ? count : "—"}</span>
                 </button>
               );
             })}
@@ -544,11 +575,11 @@ export function ZooHome({
           <>
             <span className="zoo-tray-title">进度概览</span>
             <small>
-              单词 {overview.words.seen} · 掌握 {overview.words.completed} · 薄弱 {overview.words.low}
+              {overview ? <>单词 {overview.words.seen} · 掌握 {overview.words.completed} · 薄弱 {overview.words.low}</> : "读取中…"}
             </small>
           </>
         }>
-          <ZooProgressPanel overview={overview} onOpenWordList={onOpenWordList} onOpenGrammar={onOpenGrammarLevel} />
+          {overview ? <ZooProgressPanel overview={overview} onOpenWordList={onOpenWordList} onOpenGrammar={onOpenGrammarLevel} /> : <p role="status">读取中…</p>}
         </Disclosure>
       </section>
 

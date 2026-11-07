@@ -7,6 +7,7 @@ import { JLPT_TARGETS, type JlptTarget } from "./jlpt/plan";
 import { isExamKind, type ExamKind } from "./jlpt/exam-dates";
 import { getStudyPreferences, PLAN_QUOTA_KEYS, saveStudyPreferences } from "./studyPreferences";
 import { enforceKanaGate } from "./kana-progress";
+import { readyForHomeMode } from "./content-ready";
 
 export type StartingLevel = "kana-none" | "kana" | JlptTarget | "beyond";
 export type Familiarity = Record<"words" | "grammar" | "kanji" | "confusion", number>;
@@ -101,6 +102,8 @@ export const shouldShowLevelSetup = (): boolean => {
 export async function applyLevelStartingPoint(settings: LevelPlanSettings, now = new Date()): Promise<void> {
   const applied = priorSignature(settings);
   if (getState(SETTINGS_KEYS.applied, "") === applied) return;
+  // 在主包入口等内容，异步先验块只读本地；否则 Taro 会把 loader 复制进 lazy/ 并破坏相对分包路径。
+  await readyForHomeMode("mixed");
   const { applyLevelStartingPoint: apply } = await import(
     /* webpackMode: "lazy", webpackChunkName: "lazy/level-starting-point" */ "./level-starting-point"
   );

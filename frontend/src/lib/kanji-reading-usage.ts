@@ -156,6 +156,9 @@ export const loadKanjiReadingUsage = (): Promise<void> => {
   if (loaded) return Promise.resolve();
   loading ??= import("../data/kanji_reading_usage.json").then((module) => {
     loaded = decodeUsagePayload((module.default ?? module) as unknown as Payload);
+  }).catch((error) => {
+    loading = null;
+    throw error;
   });
   return loading;
 };

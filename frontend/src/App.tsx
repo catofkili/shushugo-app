@@ -4,7 +4,8 @@ import { useStudyStore } from "./hooks/useStudyStore";
 import { useEntitlements } from "./hooks/useEntitlements";
 import { canUseFeature, getEntitlements, type FeatureId } from "./lib/entitlements";
 import { PROGRESS_UPDATED_EVENT, notifyProgressUpdated } from "./lib/progress-events";
-import { loadKanjiUnitIndex } from "./lib/kanji-unit-index";
+import { afterPaint } from "./lib/after-paint";
+import { readyForRoute } from "./lib/content-ready";
 import { defaultStudyMode, getStudyMode, saveStudyMode, STUDY_MODE_EVENT } from "./lib/studyMode";
 import { studyDayEnd } from "./lib/database/db-utils";
 import { CLOUD_AUTH_EVENT, CLOUD_SYNC_EVENT, getCloudSession, putCloudWeeklyReport, LEVEL_PLAN_TRIAL_EXPIRES_KEY, LEVEL_PLAN_TRIAL_NOTICE_KEY, type CloudSession, type CloudSyncEventDetail } from "./lib/sync-api";
@@ -24,7 +25,7 @@ import { shouldShowLevelSetup } from "./lib/level-plan";
 import { AppShell, markTrialNoticeRead } from "./app/AppShell";
 import { AUDIO_OFFLINE_NOTICE_EVENT } from "./lib/speech-packs";
 import { PUBLIC_WEB_WITHOUT_PACKS } from "./lib/audio-pack-platform";
-import type { AppContextValue } from "./app/AppContext";
+import type { AppContextValue, AppNavigationParams } from "./app/AppContext";
 import { createAppActions } from "./app/actions";
 import { getAppState, setAppState, useAppState } from "./app/app-store";
 import { PageLoading } from "./routes/shared";
@@ -53,7 +54,7 @@ export default function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [noticeState, setNoticeState] = useState<{ message: string; timeout: number } | null>(null);
   const notice = noticeState?.message ?? "";
-  const [overview, setOverview] = useState(() => getProgressOverview());
+  const [overview, setOverview] = useState<ReturnType<typeof getProgressOverview> | null>(null);
   const [paywallTarget, setPaywallTarget] = useState<FeatureId | "general">();
   const readingPreviewFeature = proReadingPages[page]
     ?? (page === "grammar" && state.grammarMode === "immersive" ? "immersiveGrammar" : undefined);
@@ -71,6 +72,7 @@ export default function App() {
   const uploadedWeeklyReportStartRef = useRef<string | null>(null);
   const weeklyNotificationKeyRef = useRef<string | null>(null);
   const syncConflictNoticeRef = useRef("");
+  const navigationRevisionRef = useRef(0);
 
   useEffect(() => { recordDiagnosticRoute(page); }, [page]);
 
@@ -192,32 +194,22 @@ export default function App() {
   // PROGRESS_UPDATED 上无条件重算，学习页里每答一张卡都要重算一份看不见的内容。
   // 离开首页时只记脏标记，回到首页再补算。
   const overviewVisible = page === "home";
-  const overviewDirtyRef = useRef(false);
-  // 字音单位索引是动态 import 的独立 chunk。加载后还要广播进度事件：ZooHome
-  // 有自己的 getWordStats 快照，只在挂载时读一次。
+  const overviewDirtyRef = useRef(true);
   useEffect(() => {
+    let cancel: () => void = () => undefined;
     const refresh = () => {
-      if (!overviewVisible) {
-        overviewDirtyRef.current = true;
-        return;
-      }
-      overviewDirtyRef.current = false;
-      setOverview(getProgressOverview());
+      overviewDirtyRef.current = true;
+      cancel();
+      if (!overviewVisible || levelSetupOpen) return;
+      cancel = afterPaint(() => {
+        overviewDirtyRef.current = false;
+        setOverview(getProgressOverview());
+      });
     };
     if (overviewVisible && overviewDirtyRef.current) refresh();
     window.addEventListener(PROGRESS_UPDATED_EVENT, refresh);
-    return () => window.removeEventListener(PROGRESS_UPDATED_EVENT, refresh);
-  }, [overviewVisible]);
-
-  useEffect(() => {
-    let alive = true;
-    void loadKanjiUnitIndex().then(() => {
-      if (!alive) return;
-      setOverview(getProgressOverview());
-      notifyProgressUpdated();
-    });
-    return () => { alive = false; };
-  }, []);
+    return () => { cancel(); window.removeEventListener(PROGRESS_UPDATED_EVENT, refresh); };
+  }, [overviewVisible, levelSetupOpen]);
 
   useEffect(() => {
     // 模式按凌晨 4 点自动恢复。正在背卡时不改 initialMode，离开学习页再读取。
@@ -296,7 +288,7 @@ export default function App() {
       if (detail.status === "downloaded" || detail.status === "merged") {
         syncConflictNoticeRef.current = "";
         uploadedWeeklyReportStartRef.current = null;
-        setOverview(getProgressOverview());
+        notifyProgressUpdated();
         try {
           generateLatestWeeklyReport("local", new Date(), true);
           requestFullSnapshot();
@@ -332,7 +324,8 @@ export default function App() {
     return () => window.removeEventListener(AUDIO_OFFLINE_NOTICE_EVENT, onAudioOffline);
   }, [showNotice]);
 
-  const navigateToPage = useCallback((newPage: Page, studyModeOverride?: StudyMode) => {
+  const navigateToPage = useCallback(async (newPage: Page, studyModeOverride?: StudyMode, routeParams: Omit<AppNavigationParams, "studyMode"> = {}) => {
+    const revision = ++navigationRevisionRef.current;
     void prefetchRoute(newPage);
     // 顽固词名单是一次性的；普通入口进入快速学习时回到今日默认列表。
     // ⚠️ 名单由完成页（word）/ 周报（weekly-report）先放好再跳过来，从这两页来的不能清 ——
@@ -352,8 +345,12 @@ export default function App() {
       setPaywallTarget(proFeature);
       return;
     }
+    try { await readyForRoute(newPage, studyModeOverride ?? getStudyMode()); }
+    catch { if (revision === navigationRevisionRef.current) showNotice("内容读取失败，请重试。", 2600); return; }
+    if (revision !== navigationRevisionRef.current) return;
     const current = getAppState();
-    let patch: Partial<typeof current> = {};
+    // 内容 ready 前不改当前页的模式，否则仍挂着的首页/学习页会提前读取新模式。
+    let patch: Partial<typeof current> = { ...routeParams, ...(studyModeOverride ? { selectedStudyMode: studyModeOverride, launchStudyMode: studyModeOverride } : {}) };
     if (newPage === "word") {
       const currentMode = studyModeOverride ?? getStudyMode() ?? defaultStudyMode;
       // 所有混合模式入口都从这里拦；被锁时也把持久模式退回经典，避免下次启动再撞付费窗。
@@ -370,25 +367,21 @@ export default function App() {
       patch = { ...patch, selectedStudyMode: currentMode, launchStudyMode: currentMode };
     }
     if (newPage === "home" || newPage === "profile") patch = { ...patch, selectedGrammarId: "wa" };
-    if (newPage === "grammar-foundation") patch = { ...patch, selectedFoundationRuleId: null };
+    if (newPage === "grammar-foundation" && !("selectedFoundationRuleId" in patch)) patch.selectedFoundationRuleId = null;
     if (newPage !== current.page) {
       setAppState({ ...patch, pageHistory: [...current.pageHistory, current.page], page: newPage });
     } else if (Object.keys(patch).length) {
       setAppState(patch);
     }
-  }, [cloudSession.token, entitlements]);
+  }, [cloudSession.token, entitlements, showNotice]);
 
-  const navigate = (target: Page, params?: Parameters<AppContextValue["navigate"]>[1]) => {
-    if (params) {
-      const { studyMode, ...routeParams } = params;
-      setAppState(routeParams);
-      navigateToPage(target, studyMode);
-    } else {
-      navigateToPage(target);
-    }
+  const navigate = (target: Page, params?: AppNavigationParams) => {
+    const { studyMode, ...routeParams } = params ?? {};
+    void navigateToPage(target, studyMode, routeParams);
   };
 
   const goBack = () => {
+    ++navigationRevisionRef.current;
     const current = getAppState();
     if (current.pageHistory.length) {
       setAppState({ pageHistory: current.pageHistory.slice(0, -1), page: current.pageHistory[current.pageHistory.length - 1] });
@@ -424,6 +417,7 @@ export default function App() {
 
   const actions = createAppActions({
     navigate: navigateToPage,
+    beginNavigation: () => { const revision = ++navigationRevisionRef.current; return () => revision === navigationRevisionRef.current; },
     showNotice,
     setOverview,
     confirm: confirmDialog,
@@ -459,8 +453,7 @@ export default function App() {
   useEffect(() => {
     const openFoundationRule = (event: Event) => {
       const ruleId = (event as CustomEvent<{ ruleId?: string }>).detail?.ruleId;
-      navigateToPage("grammar-foundation");
-      setAppState({ selectedFoundationRuleId: ruleId ?? null });
+      void navigateToPage("grammar-foundation", undefined, { selectedFoundationRuleId: ruleId ?? null });
     };
     window.addEventListener(OPEN_GRAMMAR_FOUNDATION_EVENT, openFoundationRule);
     return () => window.removeEventListener(OPEN_GRAMMAR_FOUNDATION_EVENT, openFoundationRule);

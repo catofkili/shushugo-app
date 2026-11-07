@@ -8,9 +8,11 @@ import type { LibraryLevel } from "../lib/word-library";
 import type { GrammarMode, Page, StudyMode } from "../types/app";
 import type { JLPTLevel } from "../types/grammar";
 import { setAppState } from "./app-store";
+import { readyForRoute } from "../lib/content-ready";
 
 interface ActionDependencies {
   navigate(page: Page, studyMode?: StudyMode): void;
+  beginNavigation(): () => boolean;
   showNotice(text: string, timeout?: number): void;
   setOverview(overview: ReturnType<typeof getProgressOverview>): void;
   confirm(message: string): boolean | Promise<boolean>;
@@ -39,8 +41,14 @@ export function createAppActions(deps: ActionDependencies) {
       setAppState({ wordListLevel: known.includes(level as LibraryLevel) ? (level as LibraryLevel) : "all" });
       deps.navigate("word-list");
     },
-    startPickedStudy(ids: number[]) {
+    async startPickedStudy(ids: number[]) {
       if (!ids.length) return;
+      // 和页面导航共用序号；返回或新的跳转必须在写自选队列之前作废旧请求。
+      const isCurrent = deps.beginNavigation();
+      // 自选会在导航之前取第一张卡，不能只靠目标页的挂载闸门。
+      try { await readyForRoute("word", "picked"); }
+      catch { if (isCurrent()) deps.showNotice("内容读取失败，请重试。", 2600); return; }
+      if (!isCurrent()) return;
       const { session } = startPickedWordStudy(ids);
       // 全部被标成熟知时一张都出不来；进入空完成页会伪装成学完了。
       if (!session.card) {
@@ -137,10 +145,9 @@ export function createAppActions(deps: ActionDependencies) {
     },
     startStudyMode(mode: StudyMode) {
       const safeMode = saveStudyMode(mode || defaultStudyMode);
-      setAppState({ selectedStudyMode: safeMode, launchStudyMode: safeMode });
       const ownPage = studyModeInfo(safeMode).page;
       if (ownPage) {
-        deps.navigate(ownPage);
+        deps.navigate(ownPage, safeMode);
         return;
       }
       deps.navigate("word", safeMode);
@@ -148,7 +155,6 @@ export function createAppActions(deps: ActionDependencies) {
     startCurrentStudyMode() {
       // 自动错题本不能走 saveStudyMode，否则会被误存成永久选择，第二天 4 点也恢复不回去。
       const currentMode = getStudyMode();
-      setAppState({ selectedStudyMode: currentMode, launchStudyMode: currentMode });
       const ownPage = studyModeInfo(currentMode).page;
       deps.navigate(ownPage ?? "word", currentMode);
     },

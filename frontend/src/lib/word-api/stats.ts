@@ -5,8 +5,7 @@ import { grammarPlanDone, grammarPlanRemaining, PLAN_GRAMMAR_LEVEL } from "../gr
 import { priorBaselineSql } from "../plan-level-order";
 import { priorGateSql } from "../prior-pacing";
 import { getDatabase } from "../database";
-import { notifyProgressUpdated } from "../progress-events";
-import { loadMixedCardData, mixedCardCounts, mixedCardDataLoaded } from "../mixed-cards";
+import { mixedCardCounts } from "../mixed-cards";
 import { firstValue, rowsFor, studyDayEnd, today } from "../study-core";
 import type { WordSessionOptions } from "../study-types";
 import {
@@ -230,30 +229,26 @@ export function getWordStats(
   // 今天已经过关的语法条数。混合模式的松鼠小路要拿它当分子 —— 小路画的是「这一场」，
   // 而混合模式的一场里语法和单词是同一场（角标、大卡都已经按合计算）。
   const grammarDone = lazy(() => grammarPlanDone(PLAN_GRAMMAR_LEVEL));
-  // 混合学习另外两种卡（汉字 / 辨析）今天的账。索引没加载完的那一次先按 0 算，
-  // 同时把加载踢出去 —— 下一次 PROGRESS_UPDATED 重算就有数了（首页和小路都挂着这个事件）。
-  const mixedCards = lazy(() => {
-    if (!mixedCardDataLoaded()) {
-      // 加载完必须喊一次进度更新：以前只是「踢出去」，主页要等下一次答题才重算，
-      // 于是冷启动后主页一直少算汉字 / 辨析（2026-10-31 实测 600，做完 12 张减负回来变 617）。
-      void loadMixedCardData().then(notifyProgressUpdated, () => undefined);
-      return { kanjiDone: 0, kanjiRemaining: 0, confusionDone: 0, confusionRemaining: 0 };
-    }
-    return mixedCardCounts(getDatabase());
-  });
-  const modeCounts = lazy(() => ({
+  // 调用方先 await readyForHomeMode / readyForRoute；未就绪不能拿 0 冒充结果。
+  const mixedCards = lazy(() => mixedCardCounts(getDatabase()));
+  const mixed = lazy(() => planRemaining + grammarRemaining() + mixedCards().kanjiRemaining + mixedCards().confusionRemaining);
+  const reverse = lazy(() => Math.max(stage2().total - stage2().completed, 0));
+  const kanjiRemaining = lazy(() => Math.max(kanji().total - kanji().completed, 0));
+  const picked = lazy(() => pickedProgress().remaining);
+  // 对象本身没有计算：classic 用户读一个属性，不能顺带物化混合卡和其它方向的任务。
+  const modeCounts = {
     classic: planRemaining,
     // 混合 = 同一份今日计划 + 插播的语法 / 汉字 / 辨析,所以角标是四者的合计(主页拆成几栏说明)。
-    mixed: planRemaining + grammarRemaining() + mixedCards().kanjiRemaining + mixedCards().confusionRemaining,
-    mistakes: mistakes().poolSize,
+    get mixed() { return mixed(); },
+    get mistakes() { return mistakes().poolSize; },
     // 快速复习翻的还是今日计划那批词,只是换了个一页 50 张的形态
     quick: planRemaining,
     // 三个方向都各有自己的当日计划,直接读各自的剩余量
-    reverse: Math.max(stage2().total - stage2().completed, 0),
-    kanji: Math.max(kanji().total - kanji().completed, 0),
+    get reverse() { return reverse(); },
+    get kanji() { return kanjiRemaining(); },
     // 自选清单不是个常驻词池，没勾过就是 0
-    picked: pickedProgress().remaining
-  }));
+    get picked() { return picked(); }
+  };
   const checkins = lazy(() => rowsFor("SELECT checked_on FROM checkins ORDER BY checked_on")
     .map((row) => String(row.checked_on ?? "")));
   const wordStudySecondsToday = lazy(() => firstValue<number>(
@@ -337,7 +332,7 @@ export function getWordStats(
     get oldToday() { return Math.max(0, reviewedToday() - newTodayCount()); },
     get newQuota() { return dailyNewQuota(); },
     get mistakes() { return mistakes(); },
-    get modeCounts() { return modeCounts(); },
+    modeCounts,
     get grammarRemaining() { return grammarRemaining(); },
     get grammarDone() { return grammarDone(); },
     get kanjiCardRemaining() { return mixedCards().kanjiRemaining; },

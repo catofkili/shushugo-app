@@ -17,6 +17,9 @@ export const loadPitchAccent = (): Promise<void> => {
   if (table) return Promise.resolve();
   loading ??= import("../data/pitch_accent.json").then((module) => {
     table = (module.default as { accents: Record<string, AccentEntry> }).accents;
+  }).catch((error) => {
+    loading = null;
+    throw error;
   });
   return loading;
 };

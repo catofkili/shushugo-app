@@ -1,5 +1,4 @@
 import config from '../../../wechat-miniprogram/src/config';
-import { readyForPage } from '../../scripts/taro-content.cjs';
 import { downloadFile, readCompressedFile, readFile, removeFile } from '../../../wechat-miniprogram/src/runtime/wx-promise';
 import { ensureJlptCollocationContent, ensureUserTables } from '../../../frontend/src/lib/study-core';
 import { getDatabase, importDatabase } from '../../../frontend/src/lib/database';
@@ -33,17 +32,7 @@ async function downloadSeed(url: string, compressed: boolean, observer?: Startup
   }
 }
 
-export async function ensureDatabase(
-  contentPage: 'word-study' | 'vocab-test' | 'confusion-quiz' | 'kanji-reading' | 'grammar-quiz' = 'word-study',
-  observer?: StartupObserver
-) {
-  // 内容分包和开库互不依赖（开库、建表只碰数据库），同时开始：首次安装时两边都要下载，串行要多等一整段。
-  const pageContentReady = (async () => {
-    const started = Date.now();
-    await perfTimeAsync('启动 · 页面内容分包就绪', () => readyForPage(contentPage));
-    observer?.onStage?.('page-content', elapsed(started));
-  })();
-
+export async function ensureDatabase(observer?: StartupObserver) {
   if (!opening) opening = (async () => {
     let started = Date.now();
     const restored = await perfTimeAsync('启动 · 本机存档检查与恢复', () => loadDatabase());
@@ -104,6 +93,5 @@ export async function ensureDatabase(
     opening = null;
     throw error;
   });
-  const [, database] = await Promise.all([pageContentReady, opening]);
-  return database;
+  return opening;
 }
