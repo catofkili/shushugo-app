@@ -270,3 +270,124 @@ lapses 1）正确落到 #839 上，用户当天误标的「熟知」被真实状
 注：两行都学过的 94 对**不加总 seen_count**（按 seen 多的一行整行取胜，沿用 ビル 那次的口径），
 所以合并后 seen_count 合计会掉 461，而 reviews 一条不少。这是有意的 —— stability/difficulty 不是能相加的量。
 
+## 2026-11-06 T3：出厂库的内容标记先验真，再免首装重放
+
+**问题与边界。** `e8a3569d` 的出厂库已有 JLPT seed / metadata / 级别覆盖、词典补充和振假名五个当前版本戳，
+却没有 `content_marker_repair`。首次 `ensureSeedData` 会按旧同步事故的修复规则清掉这些戳，重复运行已经烧好的迁移。
+这次只在制库阶段认证出厂内容；`study-core.ts` 的 `repairSyncedContentMarkers`、旧词合并、内容迁移入口没有改动。
+固定搭配 790 条和假名读音修复原本没有对应的出厂完成标记，仍走现行迁移，不能顺手给它们盖「已完成」。
+
+**打标判据。** `scripts/factory-db-runtime.mjs` 仅供 Node 制库/校验使用，以已安装的 esbuild 加载现行 TS，
+只替换数据库实例与落盘入口；同步、迁移和 FSRS 本体使用生产代码。五个版本常量和 repair 常量从构建时的源码导出，
+不为构建工具向生产模块增加导出，也不抄第二套迁移 SQL。`bake-seed-db.mjs` 在写 repair 之前必须同时满足：
+
+1. 泄漏守卫确认没有用户进度、流水、同步设备、墓碑或未许可状态；仍不允许拿真实存档制库。
+2. 五个版本戳等于现行常量，10,609 条 seed 中的每个词形＋读音都存在（含 10,599 个不同身份）。
+   不能只依赖运行时的「总量超过一万就不补词」捷径，否则删掉一词仍可能被错误认证。
+3. 在一次性内存副本清掉五个戳，调用现行词典、JLPT、级别、振假名迁移；
+   `words`、`grammar_points`、`dictionary_entries` 的**全部列、全部行**与原库完全相同。
+4. 三组 FSRS 列已存在，类型与生产定义相符，允许 NULL、没有默认记忆状态，用户表仍没有行。
+
+发布校验再次执行同样的内容重放与 FSRS 检查，并要求当前 repair 标记。
+错戳、错误词性/语法分词/词典释义、缺失种子词、缺 FSRS 列或非空默认状态均有反例测试，
+`npm test` 会先运行 `node --test scripts/factory-db-checks.mjs`。不能为了免重放而削掉这些校验。
+`legacy_biru_merge_version` 只预留**空字符串**：原 repair 无条件写过这个空哨兵，保留它使最终状态行也一致；
+发布校验拒绝非空值，不宣称老库的合并已经执行。
+
+**只预建结构。** 使用 `ensureUserTables` 建空表和同类列/索引，再用 `ensureFsrsColumns` 建
+`progress`、`kanji_reading_memory`、`grammar_progress` 的八列。没有运行同步初始化、生成设备号、
+预填学习占位或随机 shuffle_rank。制库期间产生的 `runtime_schema_user_ddl` / `runtime_schema_sync_ddl` 必须删掉：
+结构指纹含函数 `toString()`，Node 构建与 Web/Taro 编译后的函数文本不保证一致，不能把 Node 的指纹烧给设备当早退依据。
+运行时缺词补行、旧表加列、FSRS 历史回填、`withoutSyncStamp` 和 `persistContentSoon` 全部保留。
+
+**结果对照与可复现入口。** `tmp/perf/seed-before.db` 是修改前 `e8a3569d` 的出厂字节，
+SHA-256 `29520124897ff9e9a4784d8832ec24fe33ec6a4dd3445d1f89fc12139a19eb80`。
+在仓库根目录运行 `node tmp/perf/seed-bake-bench.mjs`：使用同一 sql.js/WASM，每次新建业务模块图、数据库和偏好，
+固定 JS 时钟/随机种子，禁用 fetch 与真实落盘，依次调用 `ensureSeedData`、`ensureProgressInitialized`、
+进度总览、内容 loader、首页 stats 的所有惰性字段、备考状态和升级提示。
+首装两边均为 **11,709 词、66 张表**；`before.dump` / `after.dump` 及首页 JSON 的 `cmp` 均为 exit 0。
+旧库另外插入已有进度、两条历史、语法进度、便签和错误内容，重开后修复内容/加列/回填 FSRS，记录保留，升级 dump 亦 exit 0。
+默认测试另从新库去掉 repair 与 FSRS 列重建旧结构，保证这条兼容路径继续可执行。
+
+规范化**不排除整张表**：所有表按名字、列名排序，行按 JSON 排序；`sqlite_master` 保留表/索引/触发器定义，
+只统一空白、简单标识符引号和 CREATE TABLE 顶层列/约束的物理排列，复合键内部顺序与字符串常量保留。
+排除清单同时写在 `seed-bake-results.json.exclusions`：
+
+- `words.shuffle_rank`；`stage1_tasks.word_id / order_index`（设计上由 SQLite RANDOM 选择，仍保留日期、任务类型、行数）。
+- `created_at / updated_at / deleted_at / sync_updated_at` 统一为时间占位，包括 NULL；
+  `sync_uid / sync_origin_device / origin_device / device_id`、`sync_device.id` 和文本中的 UUID 统一为身份占位。
+- 仅排除新增的 `app_state.content_marker_repair` 行。空的旧词修复哨兵是实际保留，未在对照里隐藏。
+- FSRS 状态、稳定性、难度、due、last_review、计数、所有内容和其余迁移状态都参与比较。
+  普通单词/语法空占位的同步时间戳还在规范化**之前**单独断言 NULL；真实快照合并回归另验云端进度能赢，不能靠抹时间掩盖盖章错误。
+
+**本机实测，不混用旧报告。** 两个模型都预热两组、保留七组，交替执行旧/新库；无逐 SQL 钩子，计时不含构建、开库、网络、React 或落盘。
+`node tmp/perf/seed-bake-node.mjs` 使用原审计的 Vitest Node 模块重置法，日志/原始样本为 `seed-bake-node.log` / `seed-bake-node-results.json`：
+
+| Node 中位数 ms | 改前 | 改后 |
+| --- | ---: | ---: |
+| ensureSeedData | 588.711 | 138.403 |
+| initProgress | 85.302 | 29.417 |
+| 两步逐轮合计再取中位数 | 674.995 | 166.006 |
+| 包含首页数据的逐轮合计 | 978.923 | 446.929 |
+
+两步净省 **508.989 ms（75.4%）**，本机这次没有达到任务要求的绝对 **800 ms**；脚本保留 `>=800` 断言并退出失败，未改阈值。
+原报告 `1,299.93→282.61 ms` 是另一轮实测，不能写成当前验收通过。预打包 CJS 快速模型另得
+ensureSeedData `492.265→99.400`、initProgress `57.438→20.339`、逐轮合计 `549.778→119.790 ms`，只作独立一致性/诊断，
+它把模块解析提前到计时之外，不能和 Vitest 模型混算或拿更好数字替换。
+
+**这次的夹具坑。** 出厂库预建后，「无条件 ALTER 方向/FSRS/档位列」「无条件 CREATE talk_reviews」和
+「直接断言某用户表不存在」都不再能模拟旧库。对应测试只更新准备数据：删除重复建列，或者先明确 DROP 目标表/列再重开模拟旧备份；
+保留原来的进度、合并、加列、失败回滚断言。Node 内建测试脚本命名为 `factory-db-checks.mjs`，
+不要命名成 `*.test.mjs`：否则 Vitest 默认会再次收集它，报 `No test suite found`。
+
+### 2026-11-07 续验：当前字节的新进程对照通过，历史口径不混算
+
+上面的 11-06 数字和未达标记录保留为历史。续做时重新执行 bake、汉字索引生成及全部 Web prebuild，
+当前出厂库为 **12,226,560 B**，SHA-256
+`b3e303b3adf95a1020a9171a3a03274aa0caa56b8e5d931a738ca452c731af6b`；iOS 副本逐字节相同。
+`tmp/perf/seed-bake-cold.mjs` 是本次新进程验收入口，在仓库根目录执行：
+
+```bash
+node tmp/perf/seed-bake-cold.mjs > tmp/perf/seed-bake-cold.log 2>&1
+```
+
+脚本先校验旧库摘要确为当前 HEAD `e8a3569d` 的原始出厂字节，再用已安装的 esbuild 编译两臂。
+使用 split ESM 保留真正的动态 import；每一臂、每一次都起全新 Node v24.16.0 进程，
+初始静态入口 import、WASM 初始化、读库和构造放在计时外，`ensureSeedData` 内的动态内容 import 仍在计时内。
+不设置 CPU/V8 减速参数、不装逐 SQL 钩子、不运行网络或真实落盘；JS 时钟和随机种子固定，SQLite RANDOM 不固定。
+先两组预热，再交替执行七组旧/新库，各阶段单独计时，合计从每轮实际起止时间计算后取中位数。
+这与上面的「同进程 Vitest 重置模块」及「预打包 CJS」是三种口径，不能把它们的各阶段数字拼接。
+
+| 新进程 Node 中位数 ms | 改前 | 改后 |
+| --- | ---: | ---: |
+| ensureSeedData | 1898.322 | 444.276 |
+| initProgress | 191.306 | 75.626 |
+| 两步逐轮合计 | 2076.026 | 519.903 |
+| 包含首页数据的逐轮合计 | 2843.644 | 1243.104 |
+
+本次两步净省 **1556.123 ms（75.0%）**，脚本原有 `>=800` 断言通过、exit 0；
+逐轮、方法、源库摘要和排除清单保存在 `seed-bake-cold-results.json`，cmp 输出在同名 `.log`。
+11-06 同一新进程脚本曾得 **1028.385→327.766 ms，省 700.619 ms**；历史 Vitest/CJS 口径也未达绝对门槛。
+因此绝对毫秒受宿主状态和加载口径影响，本次通过不能解释成任意负载、任意设备都保证省 800 ms。
+没有反复重跑本次新进程样本挑绿灯，也没有以构建负载或人为等待放大基线；这次测量在构建结束后串行执行。
+未测 Safari、WKWebView、真实磁盘/网络、React 渲染或小程序真机等待时间。
+
+**结果与老存档证据。** 两臂均执行真实 `ensureSeedData`、进度初始化及首页数据入口，
+最终均为 **11,709 词 / 66 张表**。首装全库规范化 dump SHA-256 两边同为
+`b9f5065599f2876bd10ba8bbb9cc377a05d041be1d269e8b81f787391dc9159b`；
+`cold-before.dump` / `cold-after.dump` 以及首页 JSON 的 `cmp` 均 exit 0。
+排除项完全沿用上节清单，没有为本次结果新增忽略列或整表排除。
+
+旧存档从**修改前真实出厂字节**加已有单词进度、两条流水、语法进度、便签以及故意写坏的词义/词性/sense_key，
+导出后分别交给 HEAD 与当前生产代码（仅变化的 `sync/tables.ts` 在旧臂从 Git 读取；脚本断言生产 diff 清单）。
+两边均修复内容、补 FSRS 列并回填历史，原进度/流水/语法记录/便签保留；普通/语法新占位的同步时间戳仍为空。
+升级 dump 两边同为 `ee3e1de7c88483494ccaaac9e607c160d3f614d1b588f29cd79d91b3da8c60c7`，
+`cold-upgrade-before.dump` / `cold-upgrade-after.dump` 及对应首页 JSON 的 `cmp` 均 exit 0。
+上节 CJS 脚本的两次旧存档运行只是同一实现的确定性检查；**HEAD/当前行为不变**由这里的新进程两臂对照证明。
+
+**全量测试。** 实际运行 `cd frontend && npm test`：Node 制库校验 4 项通过；
+Vitest **190 文件 / 1607 项通过**，另 5 文件、30 项跳过、1 项 todo；唯一失败是 brief 已说明的
+`fsrs-store.test.ts:204` 顽固词测试全量负载下 5 秒超时（该次 6939 ms）。未改这个测试、超时或学习算法。
+续验把错误版本戳的反例扩至全部五个已认证键，重新跑 `node --test scripts/factory-db-checks.mjs`，4 项仍全部通过。
+原生小程序夹具、32 个脚本和 Taro 构建的证据边界见小程序/发布专题同日 T3 节。
+

@@ -171,6 +171,7 @@ describe("开口练习内容（独立 fixture，正式内容另一个任务负�
     const content = structuredClone(fixture);
     content.formulas[1].fillers = [content.formulas[1].fillers[0]];
     setTalkContentForTest(content);
+    testDb.run("DROP TABLE talk_reviews");
     testDb.run("CREATE TABLE talk_reviews (id INTEGER PRIMARY KEY, card_key TEXT, reviewed_at INTEGER, filler TEXT)");
     testDb.run("INSERT INTO talk_reviews VALUES (1, 'f:F11', 1, 'お茶/塩')");
     expect(talkCard("f:F11", { random: () => 0 })?.filler).toBe("お茶/塩");

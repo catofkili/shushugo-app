@@ -13,22 +13,14 @@ vi.mock("./storage", () => ({
 
 import { getState } from "./database/db-utils";
 import { migrateLegacyBiruDuplicate } from "./legacy-word-migrations";
+import { ensureFsrsColumns } from "./fsrs-store";
 
 const one = (sql: string, params: Array<string | number> = []) => (
   testDb.exec(sql, params)[0]?.values[0]?.[0]
 );
 
 const addFsrsColumns = (table: string) => {
-  [
-    ["fsrs_stability", "REAL"],
-    ["fsrs_difficulty", "REAL"],
-    ["fsrs_due", "TEXT"],
-    ["fsrs_last_review", "TEXT"],
-    ["fsrs_state", "INTEGER"],
-    ["fsrs_steps", "INTEGER"],
-    ["fsrs_reps", "INTEGER"],
-    ["fsrs_lapses", "INTEGER"]
-  ].forEach(([column, type]) => testDb.run(`ALTER TABLE ${table} ADD COLUMN ${column} ${type}`));
+  ensureFsrsColumns({ table, idColumn: "word_id", eligible: "1=1" });
 };
 
 describe("旧版重复 ビル 迁移", () => {

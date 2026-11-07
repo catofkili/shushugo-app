@@ -116,14 +116,8 @@ describe("当天顽固词", () => {
 
   beforeEach(() => {
     testDb.run("DELETE FROM reviews");
-    // 出厂库的 reviews 还没有方向列（ensureUserTables 才补），手动补上
-    testDb.run("ALTER TABLE reviews ADD COLUMN direction TEXT NOT NULL DEFAULT 'forward'");
+    // 出厂库已预建方向列和空的 FSRS 列；旧存档加列另有升级回归。
     testDb.run("INSERT OR IGNORE INTO progress (word_id) VALUES (1), (2), (3), (4)");
-    [
-      ["fsrs_stability", "REAL"], ["fsrs_difficulty", "REAL"], ["fsrs_due", "TEXT"],
-      ["fsrs_last_review", "TEXT"], ["fsrs_state", "INTEGER"], ["fsrs_steps", "INTEGER"],
-      ["fsrs_reps", "INTEGER"], ["fsrs_lapses", "INTEGER"]
-    ].forEach(([column, type]) => testDb.run(`ALTER TABLE progress ADD COLUMN ${column} ${type}`));
   });
 
   // 两条判据是 AND：累计 > 8 且今天错够 3 次。

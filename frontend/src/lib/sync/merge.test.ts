@@ -143,18 +143,24 @@ describe("database snapshot merge", () => {
     expect(tables.has("grammar_points")).toBe(false);
     expect(rows(snapshot, "SELECT key FROM app_state WHERE key = 'sync_cursor'")).toHaveLength(0);
     expect(rows(snapshot, "SELECT key FROM app_state WHERE key LIKE 'runtime_schema_%_ddl'")).toHaveLength(0);
+    expect(rows(snapshot, "SELECT key FROM app_state WHERE key = 'content_marker_repair'")).toHaveLength(0);
     expect(snapshotBytes.byteLength).toBeLessThan(fullBytes.byteLength / 4);
     snapshot.close();
   });
 
   it("合并不能用对端的结构指纹让本机跳过迁移", async () => {
     setState("runtime_schema_sync_ddl", "local-fingerprint");
+    // An old/imported archive must still repair its own content even when the
+    // other device was installed from the newly certified factory database.
+    testDb.run("DELETE FROM app_state WHERE key='content_marker_repair'");
     const remote = new SQL.Database(await exportSyncSnapshot());
     remote.run("INSERT OR REPLACE INTO app_state (key, value) VALUES ('runtime_schema_sync_ddl', 'remote-fingerprint')");
+    remote.run("INSERT OR REPLACE INTO app_state (key, value) VALUES ('content_marker_repair', 'remote-factory-check')");
     await mergeDatabaseBytes(remote.export());
     expect(rows(testDb, "SELECT value FROM app_state WHERE key = 'runtime_schema_sync_ddl'")).toEqual([
       { value: "local-fingerprint" }
     ]);
+    expect(rows(testDb, "SELECT key FROM app_state WHERE key='content_marker_repair'")).toHaveLength(0);
     remote.close();
   });
 

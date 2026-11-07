@@ -128,6 +128,12 @@ describe("ensureSyncSchema", () => {
   });
 
   it("增量回放先初始化同步结构时，用户表迁移后会为新同步表补追踪列", () => {
+    // New factory DBs already have this table; reproduce an older snapshot.
+    testDb.run("DROP TABLE study_focus_windows");
+    const archive = testDb.export();
+    testDb.close();
+    testDb = new SQL.Database(archive);
+    ensureSyncSchema();
     expect(rows("SELECT name FROM sqlite_master WHERE type='table' AND name='study_focus_windows'")).toHaveLength(0);
 
     ensureUserTables();
@@ -139,6 +145,11 @@ describe("ensureSyncSchema", () => {
   });
 
   it("下次启动也会识别先前漏掉同步列的新用户表", () => {
+    testDb.run("DROP TABLE study_focus_windows");
+    const archive = testDb.export();
+    testDb.close();
+    testDb = new SQL.Database(archive);
+    ensureSyncSchema();
     expect(rows("SELECT name FROM sqlite_master WHERE type='table' AND name='study_focus_windows'")).toHaveLength(0);
 
     ensureLocalSchema();

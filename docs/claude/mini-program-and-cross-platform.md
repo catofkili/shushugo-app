@@ -1010,3 +1010,15 @@ route 内层的 `lazyPage` 保留原动态 import 冷路径，只有网页显式
 - 网页 check / lint / build 和 1,627 项全量测试通过；字节与测试口径分别见 release、interface 专题的 2026-11-07 最终记录。`git diff --check` 通过。
 
 这次只在指定 worktree 构建与测试，没有联网、启动服务或 GUI、刷新学习页、提交 / 推送 / 合并。静态 PNG 与母版已实际看图；页面布局、放大进门的连续画面、冷点击 Suspense 帧数、微信开发者工具运行与真机行为仍未验，不能用上述绿灯代替。
+
+## 2026-11-07 T3：预建出厂结构后的旧小程序夹具与共享包
+
+出厂库预建了 `achievements` 等空用户表，原生 `scripts/sync-snapshot-smoke.mjs` 的 0.1.x 回归曾在
+`CREATE TABLE achievements` 报 already exists，尚未走到升级断言。夹具现在先显式 DROP 再建旧版结构，
+继续验证旧墓碑换列、透传行放回真表、旧自创表删除及真实跨端往返；没有把 CREATE 改为忽略来混用新旧结构。
+快照的本机键清单还增加 `content_marker_repair` 断言：认证只属于下载到这份内容的设备，不能认证对端旧库。
+
+已从本 worktree 的网页数据层重新生成 `src/shared/web.js`，`check-shared` 与原生 `npm test` **32 个脚本全通过**。
+Taro fresh 构建主包 **1,894,761 B**，低于 **1,900,000 B**；没有调预算、改允许清单或留下资产生成的 src 副作用。
+普通构建的 Doctor panic 与 `--no-check` 全部后处理的证据边界、用户需要运行的云库上传命令见发布专题同日 T3 节。
+本任务仅改变制库/校验及本机同步标记过滤，没有页面改动；按作者明确禁令未开 GUI，不把构建当开发者工具或真机通过。
