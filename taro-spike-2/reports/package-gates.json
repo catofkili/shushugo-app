@@ -2,15 +2,15 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1897793,
+      "bytes": 1897629,
       "passes": true
     },
     "study": {
-      "bytes": 1393033,
+      "bytes": 1393126,
       "passes": true
     },
     "account": {
-      "bytes": 328793,
+      "bytes": 328886,
       "passes": true
     },
     "content-pages": {
@@ -42,7 +42,7 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 1128021,
+      "bytes": 1137349,
       "passes": true
     },
     "jlpt-bank": {
@@ -55,7 +55,7 @@
     }
   },
   "maxUnapprovedPageComponentBytes": 100000,
-  "duplicateSourceModuleCount": 94,
+  "duplicateSourceModuleCount": 96,
   "duplicatedModules": [
     {
       "source": "frontend/src/lib/vocab-test.ts",
@@ -841,6 +841,14 @@
       ]
     },
     {
+      "source": "/Users/lsc/Documents/shushugo-wt/perf-home-lazy/tmp/perf/taro-deps/node_modules/@babel/runtime/helpers/esm/objectWithoutProperties.js",
+      "bytes": 747,
+      "packages": [
+        "lazy",
+        "main"
+      ]
+    },
+    {
       "source": "frontend/src/components/JapaneseRubyText.weapp.tsx",
       "bytes": 602,
       "packages": [
@@ -875,6 +883,14 @@
         "content-pages",
         "lazy",
         "study"
+      ]
+    },
+    {
+      "source": "/Users/lsc/Documents/shushugo-wt/perf-home-lazy/tmp/perf/taro-deps/node_modules/@babel/runtime/helpers/esm/objectWithoutPropertiesLoose.js",
+      "bytes": 270,
+      "packages": [
+        "lazy",
+        "main"
       ]
     },
     {

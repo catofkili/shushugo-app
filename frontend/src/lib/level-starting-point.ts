@@ -1,6 +1,6 @@
 import { wordLearningScopeSql, wordStartedSql } from "./word-learning-scope";
 import { getDatabase } from "./database";
-import { firstValue, rowsFor, setState } from "./database/db-utils";
+import { firstValue, getState, rowsFor, setState, today } from "./database/db-utils";
 import { ensureGrammarProgressInitialized } from "./grammar-api";
 import { loadKanjiCharData, materializeKanjiChars } from "./kanji-char-cards";
 import { materializeConfusionCards } from "./confusion-cards";
@@ -8,7 +8,8 @@ import { notifyProgressUpdated } from "./progress-events";
 import { requestFullSnapshot, scheduleSave } from "./storage";
 import { ensureProgressInitialized } from "./word-api/bootstrap";
 import { JLPT_TARGETS, type JlptTarget } from "./jlpt/plan";
-import { stabilityFor, type Familiarity, type LevelPlanSettings } from "./level-plan";
+import { applyLevelStartingPoint as applyStartingPoint, effectiveStartingLevelFor, getLevelPlanSettings, localDate, normalizedFamiliarity, SETTINGS_KEYS, stabilityFor, type Familiarity, type LevelPlanInput, type LevelPlanSettings } from "./level-plan";
+import { getStudyPreferences, PLAN_QUOTA_KEYS, saveStudyPreferences } from "./studyPreferences";
 
 // 仅首次设定保存 / 备考页重估时执行；独立异步块共享主包数据库，不复制先验或排片状态。
 const hash = (value: string) => {
@@ -44,6 +45,11 @@ const resetFields = `seen_count = 0, right_count = 0, fuzzy_count = 0, forgot_co
   fsrs_reps = NULL, fsrs_lapses = NULL`;
 
 export async function applyLevelStartingPoint(settings: LevelPlanSettings, now: Date, applied: string): Promise<void> {
+  const diagnostics = await import(/* webpackMode: "lazy", webpackChunkName: "lazy/pool-anomaly" */ "./pool-anomaly").catch(() => null);
+  let previous: { level?: string; familiarity?: Partial<Familiarity> } = {};
+  try { previous = JSON.parse(getState("level_prior_applied", "{}")); } catch { /* 旧值损坏按换起点处理。 */ }
+  const changedKinds = ENTITIES.map(entity => entity.name).filter(kind =>
+    previous.level !== settings.startingLevel || previous.familiarity?.[kind] !== settings.familiarity[kind]);
   ensureProgressInitialized();
   ensureGrammarProgressInitialized();
   await loadKanjiCharData();
@@ -117,6 +123,7 @@ export async function applyLevelStartingPoint(settings: LevelPlanSettings, now: 
       }
     }
     setState("level_prior_applied", applied);
+    if (changedKinds.length) diagnostics?.markPoolManual(changedKinds, today(now));
     db.run("COMMIT");
   } catch (error) {
     db.run("ROLLBACK");
@@ -127,3 +134,47 @@ export async function applyLevelStartingPoint(settings: LevelPlanSettings, now: 
   notifyProgressUpdated();
 }
 
+/** 保存与重估共用同一先验入口；同步回填仍只由 level-plan.hydrateLevelPlanPreferences 处理。 */
+export async function saveLevelPlanSettings({ planEnabled = true, ...input }: LevelPlanInput): Promise<LevelPlanSettings> {
+  const previous = getLevelPlanSettings();
+  const examKind = input.examKind ?? previous?.examKind ?? "jlpt";
+  const familiarity = normalizedFamiliarity(input.familiarity);
+  const unchanged = previous?.startingLevel === input.startingLevel
+    && previous.target === input.target
+    && previous.examKind === examKind
+    && previous.examDate === input.examDate
+    && JSON.stringify(previous.familiarity) === JSON.stringify(familiarity);
+  const settings: LevelPlanSettings = {
+    ...input,
+    examKind,
+    familiarity,
+    startedOn: input.startedOn || (unchanged ? previous.startedOn : localDate())
+  };
+  const effectiveStartingLevel = effectiveStartingLevelFor(settings) ?? settings.startingLevel;
+  await applyStartingPoint({ ...settings, startingLevel: effectiveStartingLevel });
+  // 自动重估可能已经应用了新起点；之后手动改自报起点时，签名不变也要记录这次手调。
+  if (previous && previous.startingLevel !== settings.startingLevel) {
+    await import(/* webpackMode: "lazy", webpackChunkName: "lazy/pool-anomaly" */ "./pool-anomaly")
+      .then(({ markPoolManual }) => markPoolManual()).catch(() => {});
+  }
+  setState(SETTINGS_KEYS.startingLevel, settings.startingLevel);
+  setState(SETTINGS_KEYS.familiarity, JSON.stringify(settings.familiarity));
+  setState(SETTINGS_KEYS.target, settings.target);
+  setState(SETTINGS_KEYS.examKind, settings.examKind);
+  setState(SETTINGS_KEYS.examDate, settings.examDate);
+  setState(SETTINGS_KEYS.startedOn, settings.startedOn);
+  setState("jlpt_plan_enabled", planEnabled ? "1" : "0");
+  const currentPrefs = getStudyPreferences();
+  setState("level_plan_quotas", JSON.stringify(Object.fromEntries(PLAN_QUOTA_KEYS.map((key) => [key, currentPrefs[key]]))));
+  saveStudyPreferences({
+    ...currentPrefs,
+    jlptPlanEnabled: planEnabled,
+    jlptTarget: settings.target,
+    planExamKind: settings.examKind,
+    jlptExamDate: settings.examDate,
+    jlptPlanStartedOn: settings.startedOn
+  }, { keepPlanAnchor: true, fromLevelPlanSync: true });
+  requestFullSnapshot();
+  scheduleSave(0);
+  return settings;
+}

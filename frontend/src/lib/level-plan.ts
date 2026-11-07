@@ -1,7 +1,6 @@
 import { getDatabase } from "./database";
 import { firstValue, getState, rowsFor, setState } from "./database/db-utils";
 import { refreshMixedCardTasks } from "./mixed-cards";
-import { requestFullSnapshot, scheduleSave } from "./storage";
 import { refreshTodayWordPlan } from "./word-api";
 import { JLPT_TARGETS, type JlptTarget } from "./jlpt/plan";
 import { isExamKind, type ExamKind } from "./jlpt/exam-dates";
@@ -20,11 +19,12 @@ export interface LevelPlanSettings {
   examDate: string;
   startedOn: string;
 }
+export type LevelPlanInput = Omit<LevelPlanSettings, "startedOn" | "examKind"> & { startedOn?: string; examKind?: ExamKind; planEnabled?: boolean };
 
 const PRIOR_VERSION = "level-prior-v1";
 const priorSignature = (settings: LevelPlanSettings) => JSON.stringify({ version: PRIOR_VERSION, level: settings.startingLevel, familiarity: settings.familiarity });
 const STARTING_LEVELS = new Set<StartingLevel>(["kana-none", "kana", ...JLPT_TARGETS, "beyond"]);
-const SETTINGS_KEYS = {
+export const SETTINGS_KEYS = {
   startingLevel: "starting_level",
   familiarity: "type_familiarity",
   target: "jlpt_plan_target",
@@ -34,9 +34,9 @@ const SETTINGS_KEYS = {
   applied: "level_prior_applied"
 } as const;
 
-const localDate = (date = new Date()) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+export const localDate = (date = new Date()) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 const clamp = (value: unknown) => Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
-const normalizedFamiliarity = (value: Partial<Familiarity> = {}): Familiarity => ({
+export const normalizedFamiliarity = (value: Partial<Familiarity> = {}): Familiarity => ({
   words: clamp(value.words), grammar: clamp(value.grammar), kanji: clamp(value.kanji), confusion: clamp(value.confusion)
 });
 
@@ -111,42 +111,12 @@ export async function applyLevelStartingPoint(settings: LevelPlanSettings, now =
 }
 
 /** `planEnabled: false` = 首次设定里选了「暂不备考」：起点和熟悉度照写（先验照样要），备考计划关着，每日量由调用方按强度定。 */
-export async function saveLevelPlanSettings({ planEnabled = true, ...input }: Omit<LevelPlanSettings, "startedOn" | "examKind"> & { startedOn?: string; examKind?: ExamKind; planEnabled?: boolean }): Promise<LevelPlanSettings> {
-  const previous = getLevelPlanSettings();
-  const examKind = input.examKind ?? previous?.examKind ?? "jlpt";
-  const familiarity = normalizedFamiliarity(input.familiarity);
-  const unchanged = previous?.startingLevel === input.startingLevel
-    && previous.target === input.target
-    && previous.examKind === examKind
-    && previous.examDate === input.examDate
-    && JSON.stringify(previous.familiarity) === JSON.stringify(familiarity);
-  const settings: LevelPlanSettings = {
-    ...input,
-    examKind,
-    familiarity,
-    startedOn: input.startedOn || (unchanged ? previous.startedOn : localDate())
-  };
-  await applyLevelStartingPoint({ ...settings, startingLevel: effectiveStartingLevelFor(settings) ?? settings.startingLevel });
-  setState(SETTINGS_KEYS.startingLevel, settings.startingLevel);
-  setState(SETTINGS_KEYS.familiarity, JSON.stringify(settings.familiarity));
-  setState(SETTINGS_KEYS.target, settings.target);
-  setState(SETTINGS_KEYS.examKind, settings.examKind);
-  setState(SETTINGS_KEYS.examDate, settings.examDate);
-  setState(SETTINGS_KEYS.startedOn, settings.startedOn);
-  setState("jlpt_plan_enabled", planEnabled ? "1" : "0");
-  const currentPrefs = getStudyPreferences();
-  setState("level_plan_quotas", JSON.stringify(Object.fromEntries(PLAN_QUOTA_KEYS.map((key) => [key, currentPrefs[key]]))));
-  saveStudyPreferences({
-    ...currentPrefs,
-    jlptPlanEnabled: planEnabled,
-    jlptTarget: settings.target,
-    planExamKind: settings.examKind,
-    jlptExamDate: settings.examDate,
-    jlptPlanStartedOn: settings.startedOn
-  }, { keepPlanAnchor: true, fromLevelPlanSync: true });
-  requestFullSnapshot();
-  scheduleSave(0);
-  return settings;
+export async function saveLevelPlanSettings(input: LevelPlanInput): Promise<LevelPlanSettings> {
+  // 保存本来就是异步入口；规范化与写入一起留在先验分包，避免挤占几乎已满的主包。
+  const { saveLevelPlanSettings: save } = await import(
+    /* webpackMode: "lazy", webpackChunkName: "lazy/level-starting-point" */ "./level-starting-point"
+  );
+  return save(input);
 }
 
 /** 云同步合并后，以 SQLite 中随账号同步的计划为准，恢复本机 UI 偏好。 */
@@ -176,7 +146,7 @@ export const hydrateLevelPlanPreferences = (): void => {
 };
 
 /** 两周前先相信用户自报；之后只有足够真实首答证据才上下调一级。 */
-const effectiveStartingLevelFor = (settings: LevelPlanSettings, now = new Date()): JlptTarget | null => {
+export const effectiveStartingLevelFor = (settings: LevelPlanSettings, now = new Date()): JlptTarget | null => {
   if (!JLPT_TARGETS.includes(settings.startingLevel as JlptTarget)) return null;
   const base = settings.startingLevel as JlptTarget;
   const start = new Date(`${settings.startedOn}T12:00:00`);

@@ -1,4 +1,4 @@
-import { firstValue } from "./database/db-utils";
+import { firstValue, today } from "./database/db-utils";
 import { collocationWordSql, wordStartedSql } from "./word-learning-scope";
 import { JLPT_TARGETS, type JlptTarget } from "./jlpt/plan";
 import { currentFirstPlanLevelIndex } from "./plan-level-order";
@@ -84,6 +84,9 @@ export const answerLevelAdvance = (kind: LevelAdvanceKind, level: string, choice
   if (index < 0 || index >= JLPT_TARGETS.length - 1) return;
   const backfill = JLPT_TARGETS[index - 1];
   if (choice === "back" && (!backfill || levelUnseenContent(kind, backfill) === 0)) return;
+  const day = today(now);
+  void import(/* webpackMode: "lazy", webpackChunkName: "lazy/pool-anomaly" */ "./pool-anomaly")
+    .then(({ markPoolManual }) => markPoolManual([kind], day)).catch(() => {});
   const all = readLevelAdvance();
   const state = all[kind];
   writeLevelAdvance({ ...all, [kind]: choice === "pause"

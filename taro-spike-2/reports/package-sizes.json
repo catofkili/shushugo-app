@@ -2,17 +2,17 @@
   "limitBytes": 2097152,
   "packages": {
     "main": {
-      "bytes": 1897793,
+      "bytes": 1897629,
       "mib": 1.81,
       "passes": true
     },
     "study": {
-      "bytes": 1393033,
-      "mib": 1.328,
+      "bytes": 1393126,
+      "mib": 1.329,
       "passes": true
     },
     "account": {
-      "bytes": 328793,
+      "bytes": 328886,
       "mib": 0.314,
       "passes": true
     },
@@ -52,8 +52,8 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 1128021,
-      "mib": 1.076,
+      "bytes": 1137349,
+      "mib": 1.085,
       "passes": true
     },
     "jlpt-bank": {
@@ -67,17 +67,17 @@
       "passes": true
     }
   },
-  "totalBytes": 11269084,
+  "totalBytes": 11278434,
   "files": [
     {
       "path": "lazy/tabs.js",
       "package": "lazy",
-      "bytes": 904316
+      "bytes": 905206
     },
     {
       "path": "common.js",
       "package": "main",
-      "bytes": 798906
+      "bytes": 798636
     },
     {
       "path": "grammar-foundation/grammar.js",
@@ -605,14 +605,14 @@
       "bytes": 10762
     },
     {
+      "path": "lazy/sync-merge.js",
+      "package": "lazy",
+      "bytes": 10755
+    },
+    {
       "path": "account/pro/index.js",
       "package": "account",
       "bytes": 10669
-    },
-    {
-      "path": "lazy/sync-merge.js",
-      "package": "lazy",
-      "bytes": 10620
     },
     {
       "path": "account/sub-common/d2283b5c23d1a6040daaaa0b1a6dffda.js",
@@ -692,12 +692,12 @@
     {
       "path": "account/sub-common/e9fb7fd6e7e4c79624acc14cdb11b1a5.js",
       "package": "account",
-      "bytes": 8810
+      "bytes": 8903
     },
     {
       "path": "study/sub-common/e9fb7fd6e7e4c79624acc14cdb11b1a5.js",
       "package": "study",
-      "bytes": 8810
+      "bytes": 8903
     },
     {
       "path": "content-pages/sub-common/24a60f25663ea761428426444c359387.js",
@@ -738,6 +738,11 @@
       "path": "grammar-pages/sub-common/de4b79d477a335033fce5f205c6f2ece.js",
       "package": "grammar-pages",
       "bytes": 8436
+    },
+    {
+      "path": "lazy/level-starting-point.js",
+      "package": "lazy",
+      "bytes": 8383
     },
     {
       "path": "assets/brand/mood-cheer.png",
@@ -800,6 +805,11 @@
       "bytes": 6944
     },
     {
+      "path": "runtime.js",
+      "package": "main",
+      "bytes": 6900
+    },
+    {
       "path": "study/sub-vendors.wxss",
       "package": "study",
       "bytes": 6898
@@ -828,11 +838,6 @@
       "path": "study/invite/index.js",
       "package": "study",
       "bytes": 6834
-    },
-    {
-      "path": "runtime.js",
-      "package": "main",
-      "bytes": 6794
     },
     {
       "path": "study/talk/index.wxss",
@@ -1010,11 +1015,6 @@
       "bytes": 5591
     },
     {
-      "path": "lazy/level-starting-point.js",
-      "package": "lazy",
-      "bytes": 5589
-    },
-    {
       "path": "study/kana-audio/se.aac",
       "package": "study",
       "bytes": 5587
@@ -1028,6 +1028,11 @@
       "path": "study/kana-audio/ki.aac",
       "package": "study",
       "bytes": 5565
+    },
+    {
+      "path": "lazy/pool-anomaly.js",
+      "package": "lazy",
+      "bytes": 5509
     },
     {
       "path": "account/assets/brand/mood-shocked.png",

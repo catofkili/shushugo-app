@@ -43,6 +43,9 @@ const log = createCardLog({
   extraExclude: () => `${eligibleGroupSql()} AND ${NOT_MASTERED}`
 });
 
+/** 已掌握或不可出题的组不能因诊断另算一份而重新进池。 */
+export const confusionReviewEntity = (): FsrsEntity => ({ ...CONFUSION_FSRS, eligible: `${log.exclude} AND seen_count > 0` });
+
 export const ensureConfusionCardTables = (): void => {
   const db = getDatabase();
   db.run(`

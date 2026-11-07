@@ -200,6 +200,9 @@ const log = createCardLog({
   extraExclude: questionCharSql
 });
 
+/** 诊断沿用正式会话的资格条件，先验和复习额度另在下游截断。 */
+export const kanjiCharReviewEntity = (): FsrsEntity => ({ ...KANJI_CHAR_FSRS, eligible: `${log.exclude} AND seen_count > 0` });
+
 /**
  * 生成当天的清单：到期的（复习额度内，装不下随机抽）+ 没见过的（新学额度内，目标等级及以下，
  * 按计划级别顺推，同级里出现次数多的先 —— 覆盖收益最大）。同一天重复调用不重排。

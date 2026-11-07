@@ -399,6 +399,7 @@ export async function mergeDatabaseBytes(remoteBytes: Uint8Array): Promise<Uint8
       ? (await import("../kana-progress")).replayKanaReviews : undefined;
     const materializeCustomWords = tableExists(localDb, "custom_words")
       ? (await import(/* webpackMode: "lazy", webpackChunkName: "lazy/word-list-import" */ "../word-list-import")).materializeCustomWords : undefined;
+    const diagnostics = await import(/* webpackMode: "lazy", webpackChunkName: "lazy/pool-anomaly" */ "../pool-anomaly").catch(() => null);
     const localState = stateOf(localDb, "local", syncedTables);
     const remoteState = stateOf(remoteDb, "remote", syncedTables);
     const merged = new Map<string, Map<string, VersionedItem>>();
@@ -423,6 +424,7 @@ export async function mergeDatabaseBytes(remoteBytes: Uint8Array): Promise<Uint8
       for (const kind of ["words", "grammar", "kanji", "confusion"] as const) rebuildPriorPace(kind);
       rebuildStudyTimeAggregate();
       materializeCustomWords?.();
+      diagnostics?.markPoolMerged();
       localDb.run("COMMIT");
     } catch (error) {
       cache.free();

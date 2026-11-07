@@ -1,7 +1,7 @@
 {
   "expectedTargetCount": 12,
-  "callCount": 25,
-  "resolvedTargetCount": 25,
+  "callCount": 26,
+  "resolvedTargetCount": 26,
   "calls": [
     {
       "caller": "common.js",
@@ -127,6 +127,11 @@
       "caller": "runtime.js",
       "request": "./lazy/word-list-import.js",
       "target": "lazy/word-list-import.js"
+    },
+    {
+      "caller": "runtime.js",
+      "request": "./lazy/pool-anomaly.js",
+      "target": "lazy/pool-anomaly.js"
     }
   ]
 }
