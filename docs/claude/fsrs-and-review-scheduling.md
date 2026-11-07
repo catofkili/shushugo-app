@@ -1330,3 +1330,23 @@ rebase 到 `ecda896a`（档位改存 `words.collocation_tier`）后第一次 `bu
 `word-api.sequencer.test.ts` 80 张卡从 0.8 s 涨到 2.7 s，全量 `ci-local` 里两条 5 s 超时（小程序 sql.js 更慢）。
 现在 `reconcileStage1NewQuota` 返回「是否裁掉了搭配」，已有计划**只在裁掉搭配时**补位（旧版计划里搭配占着普通名额，裁完要补普通词）；新建计划时照常补。
 计数「今天已新学几个搭配」仍从当天 `reviews` 出发（走 `idx_reviews_day_direction`），别改成从 790 条搭配逐条 `EXISTS` 查流水。
+
+## 2026-11-06 T3：首装 FSRS 列移到制库，历史回填继续留在设备
+
+`bake-seed-db.mjs` 现在从生产 `ensureFsrsColumns` 预建 progress / kanji_reading_memory / grammar_progress 的八列，
+列类型、NULL 与默认值由发布校验检查；不预写任何 FSRS 状态、历史完成标记或随机抽词顺序。
+`word-api/bootstrap.ts` 和 `fsrs-store.ts` 本体未改：旧存档缺列仍 ALTER，有历史仍按同一算法回填；空占位仍走 `withoutSyncStamp`。
+新增 `scripts/factory-db-checks.mjs` 的旧结构回归验证已有进度/流水/便签保留、FSRS 确实回填、普通/语法新增空占位同步戳为 NULL。
+另在 `tmp/perf` 用修改前真实出厂字节加存档记录走完整升级，并与另一臂的全表规范化 dump 对拍。
+
+Node v24.16.0、原审计 Vitest 模块重置口径、两组预热＋七组中位数：initProgress **85.302→29.417 ms**。
+ensureSeedData＋initProgress 的逐轮合计 **674.995→166.006 ms**，净省 **508.989 ms**，绝对 800 ms 闸门仍未达；
+详情、另一份预打包 CJS 诊断口径和排除的随机/时间字段见存储专题同日 T3 节，不能将不同模型的中位数拼起来。
+没有改学习算法、FSRS due、顽固词闸、复习上限或新词配额；全量测试里既有顽固词 5 秒超时应单独记录，不能为这次制库改超时或断言。
+
+**2026-11-07 续验增补**：上面的同进程历史数字不改写。当前字节在全新 Node 进程/拆分 ESM 口径，
+两组预热、七组交替样本中位数为 initProgress **191.306→75.626 ms**，
+ensureSeedData＋initProgress **2076.026→519.903 ms**，净省 **1556.123 ms**，800 ms 断言通过。
+同一口径前日曾省 700.619 ms；绝对值受宿主状态影响，不外推为设备保证，完整口径、原始样本及 dump 摘要见存储专题续验节。
+从真实旧出厂库造存档，HEAD/当前两臂的历史回填和首页结果对拍均为 0 差异。
+全量测试本次只有 brief 指出的顽固词 5 秒超时，其他 1607 项通过（另 Node 制库回归 4 项通过），没有提高超时。

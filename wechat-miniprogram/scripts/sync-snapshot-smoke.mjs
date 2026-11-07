@@ -60,7 +60,7 @@ assert.equal(core.firstValue(snapshotDb, 'SELECT format FROM sync_snapshot_meta'
 assert.equal(Number(core.firstValue(snapshotDb, 'SELECT protocol_version FROM sync_snapshot_meta')), SYNC_PROTOCOL_VERSION);
 assert.equal(core.firstValue(snapshotDb, 'SELECT COUNT(*) FROM app_state WHERE key = ?', ['auth_access_token'], 0), 0,
   '登录态不能进快照');
-for (const key of ['jlpt_seed_version', 'local_snapshot_mark']) {
+for (const key of ['jlpt_seed_version', 'local_snapshot_mark', 'content_marker_repair']) {
   assert.equal(core.firstValue(snapshotDb, 'SELECT COUNT(*) FROM app_state WHERE key = ?', [key], 0), 0,
     `${key} 说的是本机状态，绝不能跨设备同步`);
 }
@@ -81,6 +81,8 @@ legacy.run('INSERT INTO sync_tombstones VALUES (?, ?, ?)', ['content_favorites',
 legacy.run('CREATE TABLE direction_tasks (study_day TEXT, direction TEXT, word_id INTEGER, order_index INTEGER)');
 legacy.run('CREATE TABLE mode_tasks (study_day TEXT, mode TEXT, word_id INTEGER, order_index INTEGER)');
 legacy.run('CREATE TABLE sync_passthrough (table_name TEXT PRIMARY KEY, create_sql TEXT, columns_json TEXT, rows_json TEXT, received_at TEXT)');
+// Current factory databases prebuild this table; model the 0.1.x schema explicitly.
+legacy.run('DROP TABLE achievements');
 legacy.run('CREATE TABLE achievements (id TEXT PRIMARY KEY, unlocked_on TEXT NOT NULL)');
 legacy.run("INSERT INTO sync_passthrough VALUES ('achievements', '', ?, ?, '2026-09-01')",
   [JSON.stringify(['id', 'unlocked_on']), JSON.stringify([['first-know', '2026-09-01']])]);

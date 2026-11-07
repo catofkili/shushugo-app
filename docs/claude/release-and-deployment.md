@@ -186,3 +186,52 @@ CF 上旧 Worker 留下的 secret（RESEND 等）和 D1/KV/R2 数据还在，确
 - 撤销某个密码：删那一行或把 `expires_at` 改成过去。
 - 一次提审只用一个；被驳回要重提就换下一个（没用过的不占时间）。
 - 旧的 `REVIEW_LOGIN_PASSWORD` / `REVIEW_LOGIN_UNTIL` 已从代码里删除，服务器 `worker.env` 里残留的两行无害，可以删。
+
+## 2026-11-07 T3：预烧出厂库的发布顺序与验收边界
+
+`bake-seed-db.mjs` 现在先调用真实迁移在内存副本上核对内容，再烧 `content_marker_repair`，
+同时预建空用户表及三组可空 FSRS 列；判据和旧库兼容回归见存储、FSRS、同步专题的 T3 节。
+不能直接用 sqlite3 给任意库补这个标记：版本字符串相等不代表内容真的迁过。
+
+出厂字节变化后，在 **同一个 worktree** 依次执行：
+
+```bash
+cd frontend
+node scripts/bake-seed-db.mjs
+npm run build:kanji-unit-index
+npm run check && npm run lint && node scripts/verify-release-db.mjs
+npm run build
+cd ../wechat-miniprogram
+node scripts/build-shared.mjs
+npm test
+cd ../taro-spike-2
+npm run build:weapp
+```
+
+`kanji_reading_unit_index.json` 的 dbSha256 也属于派生产物，不能只保留新的 db；prebuild 会拒绝旧摘要。
+iOS 出厂库是忽略文件：本 worktree 的 `frontend/ios/App/App/public/nihongo.db` 已由 bake 同步，
+发布校验新增逐字节检查（存在该文件时）；不要假定合并 Git 就会更新另一目录的忽略副本。
+11-07 Web/iOS 均为 **12,226,560 B**，SHA-256 均为
+`b3e303b3adf95a1020a9171a3a03274aa0caa56b8e5d931a738ca452c731af6b`，`cmp` exit 0。
+
+这次 `check`、`lint`（0 error / 51 个既有 warning）、发布校验、全部 prebuild 与 Web 生产构建通过。
+普通 `npm run build:weapp` 在 Doctor 复现 macOS `system-configuration` 的 NULL object panic，已中止，
+不能写成原命令通过。此前的资产和 shim 检查已通过，随后只给 Taro 编译加 `--no-check`，
+按 package.json 原顺序执行全部后处理、异步内容、API、包体与 referral 检查，退出 0。
+fresh 主包 **1,894,761 / 1,900,000 B**，余量 **5,239 B**；所有分包和未许可重复检查通过。
+保留由实际构建生成的 reports；未改预算、允许清单或页面。
+
+**云存储还没有更新。** 本任务禁止联网、上传和 GUI；用户需要在要发布的 checkout 自行执行：
+
+```bash
+cd wechat-miniprogram && bash scripts/upload-cloud-content.sh
+```
+
+默认分支会依次上传 `seed/nihongo.db`、Brotli 的 `seed/nihongo.db.br`，最后写 `seed/manifest.json`。
+只发布代码包不会更新云端出厂库，只有上传之后小程序新装才会下载到新字节；本机编译、Node 对拍不证明云端已更新。
+本次没有启动 dev server、打开学习页、开发者工具或真机，没有视觉/设备验收，也没有提交或推送。
+
+**库体积成本也要计入。** 相同本机 zlib 参数下，旧→新原库 **11,554,816→12,226,560 B**，
+gzip level 9 **2,210,372→2,370,361 B**；上传脚本的 Brotli q11/lgwin24 为
+**1,341,500→1,455,575 B**（增加 114,075 B）。两份 Brotli 均解压回原字节；
+结果在 `tmp/perf/factory-size-report.json`。这些是本地制品字节，不是实际网络等待时间或线上传输大小。

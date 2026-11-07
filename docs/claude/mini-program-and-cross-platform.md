@@ -984,3 +984,15 @@ Taro smoke、1,900,000 B 预算与重复模块闸门、cloudflare-sync check / t
 小程序只带 `taro-spike-2/scripts/build-lucide-icons.cjs` 里 `names` 列表那一小撮 lucide 图标，网页直接用整个 lucide，所以网页看着正常，小程序构建会报错、设置页拿到 `undefined` 组件。
 已换成列表里本来就有的 `BookOpenText`（`SettingsPage.tsx`），不动映射文件。
 **教训**：在 `frontend/src` 的共享页面里新用一个 lucide 图标之前，先在 `build-lucide-icons.cjs` 的 `names` 里 grep 它；不在就换一个在的，别为一个图标去扩映射。
+
+## 2026-11-07 T3：预建出厂结构后的旧小程序夹具与共享包
+
+出厂库预建了 `achievements` 等空用户表，原生 `scripts/sync-snapshot-smoke.mjs` 的 0.1.x 回归曾在
+`CREATE TABLE achievements` 报 already exists，尚未走到升级断言。夹具现在先显式 DROP 再建旧版结构，
+继续验证旧墓碑换列、透传行放回真表、旧自创表删除及真实跨端往返；没有把 CREATE 改为忽略来混用新旧结构。
+快照的本机键清单还增加 `content_marker_repair` 断言：认证只属于下载到这份内容的设备，不能认证对端旧库。
+
+已从本 worktree 的网页数据层重新生成 `src/shared/web.js`，`check-shared` 与原生 `npm test` **32 个脚本全通过**。
+Taro fresh 构建主包 **1,894,761 B**，低于 **1,900,000 B**；没有调预算、改允许清单或留下资产生成的 src 副作用。
+普通构建的 Doctor panic 与 `--no-check` 全部后处理的证据边界、用户需要运行的云库上传命令见发布专题同日 T3 节。
+本任务仅改变制库/校验及本机同步标记过滤，没有页面改动；按作者明确禁令未开 GUI，不把构建当开发者工具或真机通过。

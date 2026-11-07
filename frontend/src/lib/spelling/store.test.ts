@@ -102,7 +102,6 @@ beforeEach(() => {
   vi.setSystemTime(new Date("2026-10-02T12:00:00.000Z"));
   testDb = new SQL.Database(new Uint8Array(readFileSync(seedPath)));
   testDb.run(readFileSync(localSchemaPath, "utf8"));
-  testDb.run("ALTER TABLE words ADD COLUMN collocation_tier INTEGER");
   ensureSyncSchema();
   ensureFsrsColumns(WORD_FSRS);
 });

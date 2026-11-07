@@ -35,6 +35,8 @@ beforeEach(() => {
   vi.resetModules();
   fullSnapshot.mockClear();
   db = new SQL.Database(readFileSync(new URL("../../public/nihongo.db", import.meta.url)));
+  // Reproduce v3 archives; the current factory DB already has this column.
+  db.run("ALTER TABLE words DROP COLUMN collocation_tier");
   for (const entry of content.entries) db.run("INSERT INTO words (kanji,kana,meaning,pos,jlpt_level) VALUES (?,?,?,'固定搭配',?)", [entry.surface, entry.kana, entry.meaning, entry.level]);
   db.run("INSERT OR REPLACE INTO app_state (key,value) VALUES ('jlpt_collocation_content_version','2026-10-18-jlpt-collocations-zh-v3')");
 });

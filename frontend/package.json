@@ -19,7 +19,7 @@
     "preview": "vite preview",
     "check": "tsc --noEmit",
     "lint": "eslint src",
-    "test": "node scripts/build-manual-meaning-overrides.mjs --check && vitest run",
+    "test": "node scripts/build-manual-meaning-overrides.mjs --check && node --test scripts/factory-db-checks.mjs && vitest run",
     "test:watch": "vitest",
     "ios": "cap open ios",
     "sync": "cap sync",

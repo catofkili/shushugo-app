@@ -65,6 +65,7 @@ describe("开口练习卡片候选与顺序", () => {
   beforeAll(async () => { SQL = await initSqlJs(); });
   beforeEach(() => {
     testDb = new SQL.Database(seed);
+    testDb.run("DROP TABLE talk_reviews"); // This fixture only models filler history.
     testDb.run("CREATE TABLE talk_reviews (id INTEGER PRIMARY KEY AUTOINCREMENT, card_key TEXT, reviewed_at INTEGER, filler TEXT)");
     setTalkContentForTest(structuredClone(fixture));
   });

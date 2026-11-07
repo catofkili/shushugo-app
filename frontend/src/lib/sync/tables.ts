@@ -172,6 +172,8 @@ export const DEVICE_LOCAL_STATE_KEYS = new Set([
   // a recipient skip migrations that its own database has never run.
   "runtime_schema_user_ddl",
   "runtime_schema_sync_ddl",
+  // A factory content check cannot certify another device's imported/old archive.
+  "content_marker_repair",
   "auth_access_token",
   "auth_user_id",
   "entitlement_cache",

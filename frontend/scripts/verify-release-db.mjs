@@ -7,6 +7,8 @@ import path from "node:path";
 import vm from "node:vm";
 import initSqlJs from "sql.js";
 import { findPopulatedUserTables, unregisteredTables } from "./user-data-tables.mjs";
+import assert from "node:assert/strict";
+import { assertFactoryContent, assertFactoryFsrs, loadFactoryRuntime } from "./factory-db-runtime.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const publicDir = path.join(here, "../public");
@@ -45,6 +47,14 @@ const SQL = await initSqlJs();
 const bytes = readFileSync(dbPath);
 const db = new SQL.Database(new Uint8Array(bytes));
 const scalar = (query, params = []) => Number(db.exec(query, params)[0]?.values[0]?.[0] ?? 0);
+const runtime = await loadFactoryRuntime();
+runtime.setDatabase(db);
+assert.equal(db.exec("SELECT value FROM app_state WHERE key='content_marker_repair'")[0]?.values[0][0],
+  runtime.factoryRepairVersion, "出厂库缺少当前 content_marker_repair，首装会重放内容迁移");
+assert.equal(db.exec("SELECT value FROM app_state WHERE key='legacy_biru_merge_version'")[0]?.values[0][0],
+  "", "出厂库只保留空的旧词修复哨兵，不能预先跳过老存档合并");
+await assertFactoryContent(db, runtime);
+assertFactoryFsrs(db, runtime);
 
 const grammarSource = readFileSync(path.join(here, "../src/data/grammar.ts"), "utf8")
   .replace(/^import[^\n]+\n/, "")
@@ -212,6 +222,7 @@ if (seedShapedDbRows.length !== grammarSeed.rows.length) {
 // grammar text.
 const iosDbPath = path.join(here, "../ios/App/App/public/nihongo.db");
 if (existsSync(iosDbPath)) {
+  assert(readFileSync(iosDbPath).equals(bytes), "iOS nihongo.db 必须与 public/nihongo.db 逐字节一致；请重新同步出厂库");
   const iosDb = new SQL.Database(new Uint8Array(readFileSync(iosDbPath)));
   const iosRows = iosDb.exec(GRAMMAR_TEXT_SQL)[0]?.values ?? [];
   if (JSON.stringify(iosRows) !== JSON.stringify(grammarRows)) {

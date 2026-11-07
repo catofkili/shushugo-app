@@ -11,6 +11,7 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import initSqlJs from "sql.js";
 import { findPopulatedUserTables } from "./user-data-tables.mjs";
+import { assertFactoryContent, assertFactoryFsrs, loadFactoryRuntime } from "./factory-db-runtime.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const dbPath = path.join(here, "../public/nihongo.db");
@@ -119,6 +120,16 @@ const populatedUserTables = findPopulatedUserTables((sql) => firstValue(sql));
 if (populatedUserTables.length) {
   throw new Error(`拒绝更新出厂词库：其中含有用户数据（${populatedUserTables.map(([table, count]) => `${table}=${count}`).join(", ")}）`);
 }
+
+// Only empty factory databases reach this path. Reuse the runtime DDL, without
+// sync initialization, device IDs, progress placeholders, or random ranks.
+const runtime = await loadFactoryRuntime();
+runtime.setDatabase(db);
+runtime.ensureUserTables();
+for (const entity of [runtime.WORD_FSRS, runtime.KANJI_FSRS, runtime.GRAMMAR_FSRS]) {
+  runtime.ensureFsrsColumns(entity);
+}
+db.run("DELETE FROM app_state WHERE key IN ('runtime_schema_user_ddl','runtime_schema_sync_ddl')");
 
 const total = Number(firstValue("SELECT COUNT(*) FROM words"));
 const leveled = Number(firstValue(
@@ -360,12 +371,23 @@ db.run("INSERT OR REPLACE INTO app_state (key, value) VALUES ('jlpt_level_overri
 db.run("INSERT OR REPLACE INTO app_state (key, value) VALUES ('jlpt_seed_version', ?)", [JLPT_SEED_VERSION]);
 db.run("INSERT OR REPLACE INTO app_state (key, value) VALUES ('dictionary_supplement_version', ?)", [DICTIONARY_SUPPLEMENT_VERSION]);
 db.run("COMMIT");
+// Never give an imported/old database a blanket exemption. Check every claimed
+// content version against a forced replay before adding the factory repair mark.
+await assertFactoryContent(db, runtime);
+assertFactoryFsrs(db, runtime);
+db.run("INSERT OR REPLACE INTO app_state (key,value) VALUES ('content_marker_repair',?)", [runtime.factoryRepairVersion]);
+// The old repair wrote this empty sentinel even when ビル was already absent.
+// Keep the same state row, without claiming the old-archive merge has run.
+db.run("INSERT OR REPLACE INTO app_state (key,value) VALUES ('legacy_biru_merge_version','')");
+const remainingUserTables = findPopulatedUserTables(sql => firstValue(sql));
+if (remainingUserTables.length) throw new Error(`出厂预建意外产生用户数据: ${JSON.stringify(remainingUserTables)}`);
 db.run("VACUUM");
 
 writeFileSync(dbPath, Buffer.from(db.export()));
 console.log(`✅ 已烧入版本戳 seed=${JLPT_SEED_VERSION} metadata=${JLPT_WORD_METADATA_VERSION}`);
 console.log(`✅ 已烧入 ${jlptLevelOverrides.rows.length} 条历史词 JLPT 级别(${JLPT_LEVEL_OVERRIDE_VERSION})`);
 console.log(`✅ 已烧入独立补充词典 ${dictionarySupplement.entries.length} 条(${DICTIONARY_SUPPLEMENT_VERSION})`);
+console.log(`✅ 已校验内容并烧入 repair 标记、预建空用户表及三组 FSRS 列`);
 console.log(`✅ 已写回 ${dbPath}`);
 const iosDbPath = path.join(here, "../ios/App/App/public/nihongo.db");
 if (existsSync(iosDbPath)) {

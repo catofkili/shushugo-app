@@ -67,6 +67,8 @@ export const ALLOWED_STATE_KEYS = new Set([
   "jlpt_seed_version",
   "jlpt_example_version",
   "dictionary_supplement_version",
+  "content_marker_repair",
+  "legacy_biru_merge_version",
   "dataset_version"
 ]);
 
