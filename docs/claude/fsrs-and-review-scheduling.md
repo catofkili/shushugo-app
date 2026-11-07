@@ -1070,14 +1070,17 @@ FSRS 自然到期是平滑、可预测的；一夜之间多出几十条，基本
 汉字仍须能出题，辨析仍排除不可匹配和已掌握组；两者只有新卡按目标等级过滤，已学复习原本没有该限制，诊断也不额外加。
 空 due 的旧卡沿正式会话：单词 / 语法计到期，汉字 / 辨析不计。预测和 actual 使用同一过滤条件、只换截止时间。
 
-#### 设备本地键、手调与合并
+#### 设备本地键、手调与合并（初版实现记录；现行手调口径见下文）
 
-`app_state.pool_anomaly` 是一个有界 JSON 对象，只有 `words / grammar / kanji / confusion` 四个槽位：
+功能按 `words / grammar / kanji / confusion` 四类在 `app_state.pool_anomaly` 保存状态；日期放在各类状态值里，不按日期累加键。运行时会检查根值是 JSON 对象，但不会把未知字段过滤成严格 schema：
 
 ```json
 {
   "grammar": {
-    "forecast": { "forDay": "2026-11-04", "due": 127, "merged": false },
+    "forecast": {
+      "forDay": "2026-11-04", "due": 127, "merged": false,
+      "scope": "N3", "signature": "<JSON.stringify 后的六个已保存偏好值>"
+    },
     "checked": "2026-11-03",
     "reported": "2026-11-03",
     "manual": "2026-11-02"
@@ -1085,12 +1088,16 @@ FSRS 自然到期是平滑、可预测的；一夜之间多出几十条，基本
 }
 ```
 
+这是字段示意；`signature` 是 `getStudyPreferences()` 中四个共享字段加本类字段按固定顺序序列化的字符串。
+
 `forecast` 先供今日对账，再替换成明日的最后一次预测；同一 forDay 后写覆盖前写，合并标记从新预测重新计。
 `checked` / `reported` / `manual` 的日期存在值里，不按日期累加键。此键加入 `sync/tables.ts` 的
 `DEVICE_LOCAL_STATE_KEYS`，云快照导出、导入和墓碑处理均沿用现有设备本地键过滤；照常进入本机持久化。
 不能只挡导出：旧快照或整库格式仍可能带着对端的诊断键，导入也必须挡住。
 
-- `saveStudyPreferences` 比较规范化前后的已保存值：各类新学量 / 各类复习上限只标对应类；
+下列手调规则是 11-02 初版实现记录。11-03 返工删除了 `saveStudyPreferences` 的 `manual` 选项和偏好变更回调，现行判据改为下文的「偏好签名」；保留这些细节是为了说明返工前的行为，不要据此还原代码。
+
+- 初版 `saveStudyPreferences` 比较规范化前后的已保存值：各类新学量 / 各类复习上限只标对应类；
   备考开关、目标、考试类型或考期变化标四类；选学表达开关只标单词。主题、音量、动效、锚点补写、原样保存均不算。
   同日先改再改回也保留当天标记。`fromLevelPlanSync` 的同步回填不算手调；`enforceKanaGate` 的启动/合并后自动改量显式用 `manual: false`。
 - `saveLevelPlanSettings` 的写入段移到既有 `lazy/level-starting-point` 模块，保留同一个公开入口与原写入顺序，
@@ -1100,7 +1107,9 @@ FSRS 自然到期是平滑、可预测的；一夜之间多出几十条，基本
 - `mergeDatabaseBytes` 在同一合并事务提交前，给本机现存预测加 `merged: true`，不写 manual，**不抑制上报**。
   之后生成的新预测是合并后的新基线，merged 重置为 false。诊断模块加载或记录失败都不能阻断设置保存、合并或学习。
 
-#### 调用位置、性能与上报结构
+#### 初版调用位置、性能与上报结构
+
+下面列出的 `word-api`、`grammar-quiz`、`mixed-cards` 调用点是 11-02 初版实现；11-03 返工后只保留下方「现行观察入口」列出的两个调用点。SQL 统计、懒加载和上报结构仍是现行判据。
 
 网页与 Taro 都运行同一份 `frontend/src/lib`：`word-api.getWordSession`、
 `grammar-quiz.getGrammarQuizSession`、`mixed-cards.getKanjiCardSession / getConfusionCardSession`。
@@ -1119,17 +1128,17 @@ Taro 默认把没有 lazy 标记的 import() 按 eager 编译，会把检测代�
 先写 `checked`，符合触发时同时写 `reported` 并安排落盘，再异步发送；离线、未登录、HTTP 失败都静默结束。
 服务端仍是 `cloudflare-sync/src/index.ts`，自托管 `selfhost/server.mjs` 加载同一份构建的 Worker，未改服务端：
 
-- `index.ts:464-469` 仅接受四种 kind，且要求 message/platform/app_version/route 为字符串；使用
+- `index.ts:464-470` 仅接受四种顶层 kind，且要求 message/platform/app_version/route 为字符串；使用
   `kind="error"`、`route="pool-anomaly"`，版本与平台放既有 `app_version / platform`。
 - `message` 只装 JSON `{kind, day, actual, predicted, cap, pending, merged, manual:false}`。
   没有词、语法条目、例句、ID、用户输入、联系人或诊断快照；不调用 `collectDiagnostics`。
-- `index.ts:478-487` 截断 message 到 2000 字并写入原 `feedback_reports`；本载荷远低于上限。
+- `index.ts:478-489` 截断 message 到 2000 个 Unicode 字符并写入原 `feedback_reports`；本载荷远低于上限。
   网络请求沿用原函数的可选认证，匿名与离线都不能影响学习。
 
 #### 跑法与回归
 
 `pool-anomaly.test.ts` 默认被 Vitest 收集；以出厂库的内存副本、真实评分、设置、会话和导出/合并建立前史，
-只替换本机存储适配和 fetch，绝不改 due。覆盖 10-28 式放开范围的单次纯数字上报、自然到期 / 原有积压、
+只替换本机存储适配和 fetch。为造出同范围扩池前史，测试会在内存库里暂时把 N5/N4 先验 due 挪远、次日放回；生产诊断不修改 due。覆盖 10-28 式放开范围的单次纯数字上报、自然到期 / 原有积压、
 间隔三天、各类手调 / 原样保存 / 主题和其他类变动、一级学完三选一、起点重估、完成一级后的骤降、
 最后一次预测、凌晨四点边界、离线 / 未登录、四类合并扩池、用户不限仍取自动 cap，以及设备本地键双向过滤。
 `pool-change-guard.test.ts` 继续禁联网并验证原有上限和先验限速，不能因诊断上报让它抛错。
@@ -1182,7 +1191,7 @@ npm run build:weapp
 | 辨析追加 | `confusionDailyGoal`、`confusionReviewCap` |
 
 同一天第一次检查，若预测日期、`forecast.scope` 与当前会话相符，而签名不同，就把该类记为当天手调，跳过上报，
-同时照常写新签名的明日预测。旧版本预测缺签名也跳过一次，不拿未知偏好状态做对账。
+同时照常写新签名的明日预测。旧版本预测缺签名也跳过一次，不拿未知偏好状态做对账。新预测会保存 `scope`；为兼容缺少该字段的旧预测，代码用 `forecast.scope ?? scopeKey` 比较，因此旧预测会按当前会话范围处理一次。只有新写的预测能保证跨日严格按同一范围比较。
 主题、音量、动效、计划起算日期 `jlptPlanStartedOn`、其他类的独立额度不在本类签名内。
 签名只进设备本地诊断状态，不进入反馈载荷；`forecast.scope` 的同范围比较继续保留。
 
@@ -1220,6 +1229,10 @@ npm run build:weapp
 起点手调在 `lazy/level-starting-point.js`，一级学完手调在 `lazy/tabs.js`。
 没有增加预算或改允许清单；构建只改变四份报告：`package-gates.json`、`package-sizes.json`、
 `require-async-paths.json`、`webpack-stats.json`，Taro 的 `src/` 没有残留资产副作用。
+
+上表是 2026-11-03、基于当时 checkout 的历史构建记录，不是接入最新 `main` 后的报告结果。
+Taro 分包闸门只读提交进 Git 的报告；rebase 后必须按发布专题重新运行
+`cd taro-spike-2 && npm run build:weapp`，并以新报告验收。2026-11-07 rebase 后的实测结果见下文。
 
 **机器验收（2026-11-03）：** `npx tsc --noEmit -p .` 通过；作者指定的四个 Vitest 文件，
 加上因保存代码迁移和开场状态变动补跑的 `level-plan.test.ts`、`mixed-session.test.ts`，
@@ -1267,8 +1280,56 @@ npm run build:weapp
 
 收尾 `git add` 被文件权限阻止：Git 元数据位于主仓库的 `.git/worktrees/pool-anomaly`，
 创建 `index.lock` 返回 `Operation not permitted`，所以未提交、合回 main 或删除 worktree。
-验收基于本 worktree 的 HEAD `21bacd76` 加本次改动；当时 main 领先两个提交，且主目录
+验收基于当时本 worktree 的 HEAD `21bacd76` 加本次改动；当时 main 领先两个提交，且主目录
 `WordStudy.tsx` 有另一会话的未提交改动，均未写入或切换。本次产物不能充当已合入 main 后的验收。
+
+#### 线上接收状态、发布与迁移（2026-11-07）
+
+**请求走现有反馈接口，不新增遥测服务。** `frontend/src/lib/pool-anomaly.ts` 调用 `frontend/src/lib/sync-api.ts` 的 `postFeedbackReport`，目标是 `POST https://api.shushugo.com/api/feedback`。网页 Pages workflow 将 `VITE_SYNC_API_URL` 设为该 API 基址；Taro 通过小程序云函数转发同一路径。请求的顶层 JSON 字段为 `kind`、`message`、`app_version`、`platform`、`route`；顶层 `kind` 固定为 `error`，`route` 固定为 `pool-anomaly`。`message` 是 JSON 字符串，内容如下：
+
+```json
+{
+  "kind": "grammar",
+  "day": "2026-11-03",
+  "actual": 120,
+  "predicted": 40,
+  "cap": 60,
+  "pending": 12,
+  "merged": false,
+  "manual": false
+}
+```
+
+示例数字只表示字段类型，不是触发阈值。`message` 只含四类名称、学习日、聚合计数和布尔状态，不含单词、语法条目、例句、作答内容或用户输入；顶层另带版本、平台和路由元数据。`postFeedbackReport` 沿用可选 Bearer 认证：未登录时匿名发送；带登录令牌时，服务端把认证得到的 `user_id` 写入反馈行。该路由只把客户端 IP 的 SHA-256 摘要写入 `client_hash` 并用于限速，不把原始 IP 写进 `feedback_reports`。本功能不传 `contact` 或 `diagnostics`：`contact` 列写空字符串，`diagnostics_json` 写 SQL NULL。
+
+`cloudflare-sync/src/index.ts` 的 `route` 将该请求交给 `submitFeedbackReport`；字段检查接受既有四种顶层 kind，并要求 message、platform、版本和路由为字符串。message 最多截断为 2,000 个 Unicode 字符，写入现有 `feedback_reports` 表。`cloudflare-sync/selfhost/server.mjs` 加载 `cloudflare-sync/selfhost/dist/index.js` 中构建的同一份 Worker；阿里云发布与重启方式见 `cloudflare-sync/selfhost/README.md`。不要另部署 Cloudflare Worker。
+
+**服务端源码已实现接收路由；本次无需手动部署后端，也无需数据库迁移。** `feedback_reports` 是既有 migration `0017`；`app_state.pool_anomaly` 只是本机 `app_state` 键，不加表、不加列、不改云同步协议或密钥。2026-11-07 对生产只读执行 `GET /api/health`，返回 `ok=true`、`migrationsApplied=true`、`migrations.feedback_reports=true`、`productionReady=true`。健康接口不暴露运行代码 revision，也没有实际写入反馈行；因此确认了当前公开服务已具备生产就绪配置且反馈表存在，但不能单凭它确认正在运行的代码版本或反馈 POST 端到端成功。本次没有向生产发送 POST。
+
+发布本客户端改动时，合入并推送 `main` 会触发 `.github/workflows/deploy-pages.yml` 的网页 Pages 构建发布；需要更新小程序版本时，作者构建 Taro 包并在微信开发者工具上传。当前提交没有 Worker 源码或数据库 schema 改动，所以不需要服务器发布、远程迁移或新增密钥。可复制的状态核对和客户端构建命令：
+
+```sh
+curl -fsS https://api.shushugo.com/api/health
+(
+  cd frontend
+  npm run check && npm run lint && npm test && VITE_SYNC_API_URL=https://api.shushugo.com npm run build
+)
+(
+  cd taro-spike-2
+  npm run build:weapp
+)
+```
+
+本次不需要运行任何阿里云发布或迁移命令。不要运行 `cloudflare-sync` 的 `npm run deploy` 或 `npm run d1:migrate:remote`：前者明确退出并提示 Worker 已迁到阿里云，后者会操作 Cloudflare D1；本次没有待应用的 migration。若未来改了 Worker 源码，按 `cloudflare-sync/selfhost/README.md` 中经测试的阿里云打包、传输、迁移和重启步骤执行，不能把 Wrangler 部署命令当作生产部署。
+
+#### 2026-11-07 rebase 后产物重建
+
+- `npm --prefix wechat-miniprogram run build-shared` 退出 0；生成器重写共享产物后，只有 `src/shared/web.js` 与 HEAD 不同。
+- `cd taro-spike-2 && npm run build:weapp` 退出 0，标准构建命令完整执行，无需追加 `--no-check`。本次跟踪到的报告变化为 `package-gates.json`、`package-sizes.json`、`webpack-stats.json`；Taro `src/` 没有残留变更。
+- 新报告的 13 个包均通过分包预算；主包 **1,894,654 / 1,900,000 B**，余 **5,346 B**。`package-gates.json` 为 `passes: true`，未许可核心模块重复和页面组件重复均为 0。
+- `VITEST_MAX_WORKERS=2 scripts/ci-local.sh` 退出 0：前端 **1,635 项通过、30 项跳过、1 项 TODO**；原生小程序 32 个脚本、Taro 分包/运行时闸门和 cloudflare-sync 检查/测试全部通过。lint 为 0 error、51 条 warning。
+
+这组数字是 rebase 后当前 worktree 的构建结果，取代上面 2026-11-03 的历史报告用于当前验收。构建报告仍须与实现它们的提交一起提交；单独重跑 `taro-spike-2/npm test` 只读这些报告，不会替代构建。
 
 #### 11-02 原始设计（保留）
 

@@ -2,19 +2,19 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1894819,
+      "bytes": 1894654,
       "passes": true
     },
     "study": {
-      "bytes": 1391704,
+      "bytes": 1391800,
       "passes": true
     },
     "account": {
-      "bytes": 327719,
+      "bytes": 327810,
       "passes": true
     },
     "content-pages": {
-      "bytes": 1177160,
+      "bytes": 1177177,
       "passes": true
     },
     "features": {
@@ -34,7 +34,7 @@
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 312334,
+      "bytes": 312346,
       "passes": true
     },
     "core": {
@@ -42,7 +42,7 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 1125238,
+      "bytes": 1134574,
       "passes": true
     },
     "jlpt-bank": {
@@ -55,7 +55,7 @@
     }
   },
   "maxUnapprovedPageComponentBytes": 100000,
-  "duplicateSourceModuleCount": 93,
+  "duplicateSourceModuleCount": 95,
   "duplicatedModules": [
     {
       "source": "frontend/src/lib/vocab-test.ts",
@@ -831,6 +831,14 @@
       ]
     },
     {
+      "source": "taro-spike-2/node_modules/@babel/runtime/helpers/esm/objectWithoutProperties.js",
+      "bytes": 747,
+      "packages": [
+        "lazy",
+        "main"
+      ]
+    },
+    {
       "source": "frontend/src/components/JapaneseRubyText.weapp.tsx",
       "bytes": 602,
       "packages": [
@@ -865,6 +873,14 @@
         "content-pages",
         "lazy",
         "study"
+      ]
+    },
+    {
+      "source": "taro-spike-2/node_modules/@babel/runtime/helpers/esm/objectWithoutPropertiesLoose.js",
+      "bytes": 270,
+      "packages": [
+        "lazy",
+        "main"
       ]
     },
     {
