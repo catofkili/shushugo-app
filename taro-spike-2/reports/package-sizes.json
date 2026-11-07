@@ -2,7 +2,7 @@
   "limitBytes": 2097152,
   "packages": {
     "main": {
-      "bytes": 1897629,
+      "bytes": 1897688,
       "mib": 1.81,
       "passes": true
     },
@@ -67,7 +67,7 @@
       "passes": true
     }
   },
-  "totalBytes": 11278434,
+  "totalBytes": 11278493,
   "files": [
     {
       "path": "lazy/tabs.js",
@@ -77,7 +77,7 @@
     {
       "path": "common.js",
       "package": "main",
-      "bytes": 798636
+      "bytes": 798695
     },
     {
       "path": "grammar-foundation/grammar.js",

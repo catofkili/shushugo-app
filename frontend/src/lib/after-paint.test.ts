@@ -24,3 +24,15 @@ it("计算必须等 rAF 结束后再让出一个任务，卸载能取消", () =>
   cancel();
   expect(cancelFrame).toHaveBeenCalledWith(1);
 });
+
+it("后台时 rAF 不触发，50ms 定时器兜底，只算一次", () => {
+  vi.useFakeTimers();
+  vi.stubGlobal("requestAnimationFrame", () => 1);
+  vi.stubGlobal("cancelAnimationFrame", () => undefined);
+  const compute = vi.fn();
+  afterPaint(compute);
+  vi.advanceTimersByTime(49);
+  expect(compute).not.toHaveBeenCalled();
+  vi.runAllTimers();
+  expect(compute).toHaveBeenCalledTimes(1);
+});
