@@ -1026,3 +1026,26 @@ App 里没有接微信 OpenSDK（没有开放平台移动应用 AppID、Universa
   组队页的队徽（松鼠、猫头鹰等）不是水豚。
 - 无头截图的做法（不抢屏幕）：`frontend/node_modules/playwright` + `~/Library/Caches/ms-playwright/chromium_headless_shell-1228`（playwright 版本要 1243，缓存里只有 1228，用 `executablePath` 指过去就能跑）；
   新 profile 会先进首次设定，调 `level-plan.saveLevelPlanSettings(...)` 跳过；页面用 `app-store.setAppState({ page })` 切。
+
+## 2026-11-06 T2：动效不再附送固定等待，网页按入口预取
+
+沿用已有 `full / reduced / off`，没有新增档位或偏好键。以下毫秒是源码配置和 fake timers 验证的**固定等待**，不是浏览器或真机端到端计时；主线程阻塞仍可能拖迟定时器。
+
+- `ZoomOpen`：省电 / 关闭 / 微信路径由 **300 → 0 ms**，0 ms 定时器在同一 tick 挡连点；全开由 CSS **160 + 420 = 580 ms → 280 ms**，另有从点击开始的 **300 ms** 放行兜底。`pending` ref 在执行导航前清空，animationend 与定时器抢到谁都只能导航一次；卸载清定时器和回调，导航抛错仍释放锁。圆形遮罩仍从点击处放大，贴纸同步放大淡出。
+- `WordStudy`：甩卡的额外等待由 **240 → 0 ms（省电 / 关闭）或 150 ms（全开）**，全开 transform / opacity 同步缩短。待飞出定时器与 `submittingRef` 一起挡住重复手势和按钮 / 键盘抢评分，卸载取消未提交的飞出回调。提交继续走原 `submitAnswer`：先结算有效学习时间，再补上一题 pending 记账，再提交本题，原失败提示、finally 解锁、预算换卡后落盘的顺序未动；这些 0 / 150 ms 不代表 SQLite / 文件写盘已经完成。
+- 网页 `routes/index.ts` 除首页全部动态加载；`lazyPage` 保留 React.lazy 冷路径，预取成功后直接渲染已解析的组件，避免「import 缓存热了，React.lazy 首读仍 suspend」。**必须连 route 内层页面一起预取**；只 import `./profile` / `./grammar` 之类外壳，实际页面仍未加载。内层 route 导出 `preload`，语法仅预取当前 learn / quiz / immersive 之一，不把三个模式一齐装入。
+- 首页设定完成并画出一帧后，逐个 idle 片段预取 `word → grammar → quick-study → profile`；无 requestIdleCallback 的环境在双 rAF 后用 200 ms 分段定时兜底。离开首页取消后续任务；其他路由只在点击时预取。Zoom 的目标预取在接受点击时开始，普通导航也补一次，加载 promise 合并去重，预取失败清缓存允许重试。`useDeferredValue(page)` 在冷点击早于预取完成时保留上一页，待目标代码就绪后换页；没有另造加载面板或整包预下载。
+
+新增四个测试文件：`components/ZoomOpen.test.tsx` 执行真实 hook、模拟 hooks 宿主和 fake timers，覆盖 0 ms / 微信 / 300 ms / 一次导航 / 卸载 / 导航异常；`pages/WordStudy.motion.test.ts` 从现行 TSX AST 取出真实 resetDrag 执行，覆盖无飞出定时器、150 ms、重复结束事件、阈值 / 轴 / 提交锁；`routes/lazy-page.test.tsx` 和 `routes/index.test.tsx` 覆盖并发去重、失败后预取重试、实际内层页面预取、首次服务端渲染不 suspend、idle 排序与取消。它们不模拟浏览器绘制，也不能证明设备帧时长。
+
+本任务明确禁止 dev server、开发者工具和任何 GUI，故没有页面 / 窄屏 / 动画 / 真机视觉验收；不能把上述配置、测试或构建写成「实机 0 ms」或「实测不闪超过一帧」。PNG 字节与构建口径见 release 专题本日增补，Taro 边界见 mini-program 专题本日增补。
+
+### 2026-11-07 续验：静态图与运行画面的证据分开
+
+使用本地图片查看工具分别查看两张 boot PNG 及母版，核对主体、文字和透明边缘；随后重跑 `node frontend/scripts/build-boot-assets.mjs`，输出仍为 **27,421 + 15,075 = 42,496 B**。原图未改，页面显示尺寸仍为 120 / 80 CSS px，没有修改皮肤启动图覆盖逻辑。这次看图只证明静态资产可解码、主体和文字可辨；没有启动浏览器、服务或开发者工具，不能当成页面窄屏、放大进门动效、冷点击帧数或 WKWebView / 微信真机显示验收。
+
+### 2026-11-07 最终自动化回归
+
+`cd frontend && npm test -- --maxWorkers=2` 最终退出 **0**：195 个文件通过、5 个跳过；**1,627 项通过、30 项跳过、1 项 todo**，用时 178.26 s。四个新增测试文件的 19 项全部包含在这次全量结果内，涵盖 off / reduced 的 0 ms 导航与无飞出定时器提交、全开时限、防重入、卸载清理、路由实际页面预取与不 suspend 的首次渲染。日志在 `tmp/perf/t2-final-frontend-test.log`。
+
+续验早期的同命令曾出现 fsrs-store 既知超时及 sequencer 随机样本的混淆组断言失败（`t2-resume-frontend-test.log`）；最终没有修改算法、随机抽词逻辑、测试超时或断言，错开网页构建再跑全量即全部通过。自动化通过仍不等于已测冷点击绘制帧数；本任务禁用服务和 GUI，实际页面 / 窄屏 / 真机验收继续明确留空。

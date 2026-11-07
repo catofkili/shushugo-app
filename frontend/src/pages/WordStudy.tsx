@@ -6,7 +6,7 @@ import { perfRecord } from "../lib/perf-marks";
 import { AlertCircle, Check, ChevronRight, Eye, GitCompareArrows, Pencil, RotateCcw, Shuffle, Sparkles, Star, StickyNote, Timer, X } from "lucide-react";
 import { WordAnswer, WordCard, WordSessionResponse, WordStats } from "../types/vocabulary";
 import { addFavorite, addWordStudySeconds, advanceDailyRelief, advanceDailyTail, rewindDailyTail, continueKanjiStudy, continueStage2Study, continueTodayPlanStudy, getDailyReliefNext, getDailyTailNext, getWordSession, getWordStats, jumpToSimilarWord, markTodayWordCheckin, dailyReviewBatch, getDailyReviewCard, shouldInviteDailyReview, declineDailyReviewInvite, startDailyReviewRound, startEncore as startEncoreSession, submitKanjiUnitAnswer, submitWordAnswer, toggleFavorite, undoLastWordAnswer, questionMeaningRivals, updateWordNote, updateWordQuestionMeaning, addAnswerPreview, answerPreviewsFresh, startAnswerPreviews, submitWordAnswerWithPreview, takeAnswerPreview, type AnswerPreviews } from "../lib/api";
-import { getStudyPreferences, PREFERENCES_EVENT, STUDY_BUDDY_SHELVED, StudyPreferences } from "../lib/studyPreferences";
+import { getStudyPreferences, jsMotionAllowed, PREFERENCES_EVENT, STUDY_BUDDY_SHELVED, StudyPreferences } from "../lib/studyPreferences";
 import { checkAchievements } from "../lib/userProfile";
 import { claimDailyPlanYuzu, settleYuzu } from "../lib/yuzu";
 import { reportTeamActivity } from "../lib/team-activity";
@@ -84,8 +84,8 @@ const AXIS_LOCK_PX = 8;
 /** 跟手旋转的角度上限。卡片几乎占满整屏,角度必须比 Tinder 那种小卡片小得多,
  *  超过 4° 整页看着就像要翻掉。 */
 const SWIPE_MAX_ROTATE = 4;
-/** 飞出动画时长,结束后才提交答案 */
-const SWIPE_FLING_MS = 240;
+/** 只在全开档等待飞出，评分最多等 150ms。 */
+const SWIPE_FLING_MS = 150;
 /** 飞出距离:超过任何手机屏宽即可 */
 const FLING_DISTANCE = 900;
 /**
@@ -327,6 +327,10 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
   const swipeXRef = useRef(0);
   const [swipeX, setSwipeX] = useState(0);
   const [flingDir, setFlingDir] = useState<0 | 1 | -1>(0);
+  const flingTimerRef = useRef<number | null>(null);
+  useEffect(() => () => {
+    if (flingTimerRef.current !== null) window.clearTimeout(flingTimerRef.current);
+  }, []);
   /**
    * 评分的即时反馈印章。
    *
@@ -822,13 +826,13 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     // submittingRef is synchronous, so a second tap is blocked immediately —
     // before React can re-render the `disabled`/`submitting` state — which is
     // what the `submitting` state alone could miss on a fast double-tap.
-    if (!card || submittingRef.current || submitting || reliefActive || dailyReviewOverlay || focusBreakRef.current) {
+    if (!card || flingTimerRef.current !== null || submittingRef.current || submitting || reliefActive || dailyReviewOverlay || focusBreakRef.current) {
       if (source === "spelling") throw new Error("暂时无法作答");
       return;
     }
     // 刚翻面的那几十毫秒不收**手指**评分 —— 见 REVEAL_INPUT_LOCK_MS。
     // 键盘不受这道闸:那条路上「显示答案」和评分是不同的键,不存在同一个位置连击的问题,
-    // 拦一下只会吃掉快手用户的合法输入。甩卡也不受:它自己要先飞 240ms,早就过去了。
+    // 拦一下只会吃掉快手用户的合法输入。甩卡也不受：横向位移已经确认了评分意图。
     if (source === "pointer" && performance.now() - revealedAtRef.current < REVEAL_INPUT_LOCK_MS) return;
     // 锁要在异步计时之前拿住，避免两次点击同时穿过判据。
     submittingRef.current = true;
@@ -1176,7 +1180,8 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
   }, [card, dailyReviewBusy, dailyReviewOverlay, distinctionOpen, grammarCard, kanjiCard, matchCard, spellingActive, preparingSpelling, loading, revealed, submitting, submitAnswer, revealAnswer, unitKey, phase]);
 
   const undo = async () => {
-    if (dailyReviewRoundRef.current) return;
+    // 飞出期间旧卡还等着提交，不能先撤销换卡再让旧回调评分。
+    if (flingTimerRef.current !== null || submittingRef.current || dailyReviewRoundRef.current) return;
     flushPendingAnswer();
     clearDailyReview();
     // 混合模式：四种卡各有一份互不知道对方的撤销栈，按作答顺序的栈顶分派（lib/mixed-session）。
@@ -1441,7 +1446,7 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
   };
 
   // 甩卡只在「答案已显示」时生效:没看答案就甩等于瞎评分。
-  const swipeEnabled = Boolean(card) && !spellingActive && !preparingSpelling && revealed && !submitting && !reliefActive && !dailyReviewOverlay;
+  const swipeEnabled = Boolean(card) && !spellingActive && !preparingSpelling && revealed && !flingDir && !submitting && !reliefActive && !dailyReviewOverlay;
 
   const handleTouchStart = (event: TouchEvent<HTMLDivElement>) => {
     const touch = event.touches[0];
@@ -1497,15 +1502,20 @@ export const WordStudy = ({ initialMode = "classic", onDailyModeComplete, onStub
     swipeXRef.current = 0;
     swipeArmedRef.current = 0;
 
-    // 甩过阈值 → 卡片顺着惯性飞出去,飞完再提交(右=认识 / 左=忘记)
-    if (gesture?.axis === "x" && swipeEnabled && Math.abs(swiped) >= SWIPE_COMMIT_PX) {
+    // 右=认识 / 左=忘记；省电和关闭档直接走同一个提交入口，不等不可见的动画。
+    if (gesture?.axis === "x" && swipeEnabled && flingTimerRef.current === null && !submittingRef.current && Math.abs(swiped) >= SWIPE_COMMIT_PX) {
       const direction = swiped > 0 ? 1 : -1;
-      setFlingDir(direction);
-      window.setTimeout(() => {
+      const commit = () => {
+        flingTimerRef.current = null;
         setFlingDir(0);
         setSwipeX(0);
-        submitAnswer(direction > 0 ? "know" : "forgot", "swipe");
-      }, SWIPE_FLING_MS);
+        void submitAnswer(direction > 0 ? "know" : "forgot", "swipe");
+      };
+      if (!jsMotionAllowed()) commit();
+      else {
+        setFlingDir(direction);
+        flingTimerRef.current = window.setTimeout(commit, SWIPE_FLING_MS);
+      }
       return;
     }
     setSwipeX(0);

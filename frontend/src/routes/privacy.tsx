@@ -1,7 +1,9 @@
-import { lazy } from "react";
+import { lazyPage } from "./lazy-page";
 import { useApp } from "../app/AppContext";
-const PrivacySettings = lazy(() => import("../pages/PrivacySettings").then((module) => ({ default: module.PrivacySettings })));
+const PrivacySettings = lazyPage(() => import("../pages/PrivacySettings").then((module) => ({ default: module.PrivacySettings })));
 export function PrivacyRoute() {
   const { goBack, navigate } = useApp();
   return <PrivacySettings onBack={goBack} onOpenPolicy={() => navigate("privacy-policy")} onOpenAgreement={() => navigate("user-agreement")} />;
 }
+
+export const preload = PrivacySettings.preload;

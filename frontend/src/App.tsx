@@ -1,4 +1,4 @@
-import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useDeferredValue, useEffect, useRef, useState } from "react";
 import { AppNavigation } from "./components/AppNavigation";
 import { useStudyStore } from "./hooks/useStudyStore";
 import { useEntitlements } from "./hooks/useEntitlements";
@@ -28,7 +28,7 @@ import type { AppContextValue } from "./app/AppContext";
 import { createAppActions } from "./app/actions";
 import { getAppState, setAppState, useAppState } from "./app/app-store";
 import { PageLoading } from "./routes/shared";
-import { ROUTES } from "./routes";
+import { prefetchHomeRoutes, prefetchRoute, ROUTES } from "./routes";
 import { getProgressOverview } from "./lib/api";
 import { confirmDialog } from "./lib/platform-dialogs";
 import { recordDiagnosticRoute } from "./lib/diagnostics";
@@ -46,6 +46,8 @@ const ACHIEVEMENT_POP_OUT_MS = 260;
 export default function App() {
   const state = useAppState();
   const page = state.page;
+  // 冷点击早于 idle 预取完成时保留上一页，目标代码就绪后再换，避免闪整页 Suspense 兜底。
+  const routePage = useDeferredValue(page);
   const studyStore = useStudyStore();
   const entitlements = useEntitlements();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -71,6 +73,10 @@ export default function App() {
   const syncConflictNoticeRef = useRef("");
 
   useEffect(() => { recordDiagnosticRoute(page); }, [page]);
+
+  useEffect(() => {
+    if (page === "home" && !levelSetupOpen) return prefetchHomeRoutes();
+  }, [page, levelSetupOpen]);
 
   useEffect(() => {
     const foreground = () => {
@@ -327,6 +333,7 @@ export default function App() {
   }, [showNotice]);
 
   const navigateToPage = useCallback((newPage: Page, studyModeOverride?: StudyMode) => {
+    void prefetchRoute(newPage);
     // 顽固词名单是一次性的；普通入口进入快速学习时回到今日默认列表。
     // ⚠️ 名单由完成页（word）/ 周报（weekly-report）先放好再跳过来，从这两页来的不能清 ——
     // 2026-10-14 之前无条件清，完成页点「快速复习」打开的一直是已学完的今日快速学习。
@@ -427,6 +434,7 @@ export default function App() {
   const context: AppContextValue = {
     state,
     navigate,
+    prefetchRoute,
     goBack,
     showNotice,
     requirePro: (featureId) => setPaywallTarget(featureId),
@@ -474,7 +482,7 @@ export default function App() {
   }, [navigateToPage]);
 
   const handleSearchResult = (result: SearchResult) => actions.handleSearchResult(result);
-  const CurrentRoute = ROUTES[page] ?? ROUTES.home;
+  const CurrentRoute = ROUTES[routePage] ?? ROUTES.home;
 
   return (
     <AppShell

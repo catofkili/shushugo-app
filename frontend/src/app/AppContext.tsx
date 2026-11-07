@@ -41,6 +41,7 @@ export interface AppActions {
 export interface AppContextValue {
   state: AppState;
   navigate(page: Page, params?: AppNavigationParams): void;
+  prefetchRoute?(page: Page): void;
   goBack(): void;
   showNotice(text: string, timeout?: number): void;
   requirePro(featureId: FeatureId | "general"): void;

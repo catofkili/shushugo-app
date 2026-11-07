@@ -823,6 +823,20 @@
       "reason": "底栏图标：网页 AppNavigation 读 brand/sheet/nav-*.png，小程序原生 tabBar 读 assets/tabs/*.png（同一套原画缩成 81×81）。要排在 brand/sheet/ 那条前面，find 取第一条命中。"
     },
     {
+      "web": "frontend/public/brand/boot/splash-sleep.png",
+      "mini": [
+        "frontend/index.html"
+      ],
+      "reason": "2026-11-06 T2 明确只替换网页 HTML 启动壳的两张图；此项校验派生 PNG 与实际 HTML 引用一起改，不代表小程序使用这张图。Taro 启动画面与品牌 PNG 仍走自己的既有资源管线。"
+    },
+    {
+      "web": "frontend/public/brand/boot/logo-lockup.png",
+      "mini": [
+        "frontend/index.html"
+      ],
+      "reason": "2026-11-06 T2 明确只替换网页 HTML 启动壳的两张图；此项校验派生 PNG 与实际 HTML 引用一起改，不代表小程序使用这张图。Taro 启动画面与品牌 PNG 仍走自己的既有资源管线。"
+    },
+    {
       "web": "frontend/public/brand/sheet-anime/",
       "mini": [
         "frontend/public/brand/sheet-anime/"

@@ -2,19 +2,19 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1894819,
+      "bytes": 1894809,
       "passes": true
     },
     "study": {
-      "bytes": 1391704,
+      "bytes": 1393059,
       "passes": true
     },
     "account": {
-      "bytes": 327719,
+      "bytes": 328822,
       "passes": true
     },
     "content-pages": {
-      "bytes": 1177160,
+      "bytes": 1177973,
       "passes": true
     },
     "features": {
@@ -34,7 +34,7 @@
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 312334,
+      "bytes": 312330,
       "passes": true
     },
     "core": {
@@ -42,7 +42,7 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 1125238,
+      "bytes": 1126701,
       "passes": true
     },
     "jlpt-bank": {
@@ -55,7 +55,7 @@
     }
   },
   "maxUnapprovedPageComponentBytes": 100000,
-  "duplicateSourceModuleCount": 93,
+  "duplicateSourceModuleCount": 94,
   "duplicatedModules": [
     {
       "source": "frontend/src/lib/vocab-test.ts",
@@ -828,6 +828,16 @@
         "content-pages",
         "grammar-pages",
         "lazy"
+      ]
+    },
+    {
+      "source": "frontend/src/routes/lazy-page.ts",
+      "bytes": 821,
+      "packages": [
+        "account",
+        "content-pages",
+        "lazy",
+        "study"
       ]
     },
     {

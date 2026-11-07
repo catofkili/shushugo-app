@@ -1,8 +1,10 @@
-import { lazy } from "react";
+import { lazyPage } from "./lazy-page";
 import { useApp } from "../app/AppContext";
 import { ToolSubpage } from "./shared";
-const GrammarFoundationPage = lazy(() => import("../pages/GrammarFoundationPage").then((module) => ({ default: module.GrammarFoundationPage })));
+const GrammarFoundationPage = lazyPage(() => import("../pages/GrammarFoundationPage").then((module) => ({ default: module.GrammarFoundationPage })));
 export function GrammarFoundationRoute() {
   const { state, actions } = useApp();
   return <ToolSubpage title="基础语法"><GrammarFoundationPage onOpenGrammar={actions.openGrammar} focusRuleId={state.selectedFoundationRuleId} /></ToolSubpage>;
 }
+
+export const preload = GrammarFoundationPage.preload;

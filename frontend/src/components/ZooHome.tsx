@@ -64,6 +64,7 @@ import "./ZooHome.css";
 type Props = {
   overview: ProgressOverview;
   onNavigate: (page: Page, params?: AppNavigationParams) => void;
+  onPrefetchRoute?: (page: Page) => void;
   /** 打开词库/选词页，可以预设一个等级（进度概览的柱子就是这么下钻的） */
   onOpenWordList: (level?: string) => void;
   /** 语法柱下钻：打开语法库并预设等级 */
@@ -104,6 +105,7 @@ const nowSticker = (hour: number, total: number, done: number): StickerName =>
 export function ZooHome({
   overview,
   onNavigate,
+  onPrefetchRoute,
   onOpenWordList,
   onOpenGrammarLevel,
   onStartStudy,
@@ -295,22 +297,23 @@ export function ZooHome({
   const heroCta = activeCount > 0 ? (done > 0 ? "继续" : "开始") : isPlanMode ? "再来一批" : "去看看";
 
   const weeklyEntryEnabled = Capacitor.getPlatform() !== "wechat" && goals.weeklyReportEnabled;
-  const toolItems: { title: string; icon: StickerName; action: () => void }[] = [
+  const toolItems: { title: string; icon: StickerName; page?: Page; action: () => void }[] = [
     // 2026-10-14 v3 §1.1b：「学习模式」页和大卡上的「学习方式」下拉是同一份清单，页删了，这一格改成回到顶上展开下拉
     { title: "学习模式", icon: "tool-modes", action: () => { scrollPageToTop(); setModeSheetOpen(true); } },
-    { title: "基础语法", icon: "tool-grammar", action: () => onNavigate("grammar-foundation") },
-    { title: "选词", icon: "tool-wordlist", action: () => onOpenWordList() },
-    { title: "疑难辨析", icon: "tool-confusion", action: () => onNavigate("confusion") },
-    { title: "开口练习", icon: "tool-talk", action: () => onNavigate("talk") },
-    { title: "JLPT 刷题", icon: "tool-jlpt", action: () => onNavigate("jlpt-practice") },
-    { title: "一字多音", icon: "tool-kanji-readings", action: () => onNavigate("kanji-readings") },
-    { title: "收藏", icon: "tool-favorites", action: () => onNavigate("favorites") },
-    { title: "查词汇量", icon: "tool-vocab-test", action: () => onNavigate("vocab-test") },
-    { title: "柚子商店", icon: "tool-shop", action: () => onNavigate("yuzu-shop") }
+    { title: "基础语法", icon: "tool-grammar", page: "grammar-foundation", action: () => onNavigate("grammar-foundation") },
+    { title: "选词", icon: "tool-wordlist", page: "word-list", action: () => onOpenWordList() },
+    { title: "疑难辨析", icon: "tool-confusion", page: "confusion", action: () => onNavigate("confusion") },
+    { title: "开口练习", icon: "tool-talk", page: "talk", action: () => onNavigate("talk") },
+    { title: "JLPT 刷题", icon: "tool-jlpt", page: "jlpt-practice", action: () => onNavigate("jlpt-practice") },
+    { title: "一字多音", icon: "tool-kanji-readings", page: "kanji-readings", action: () => onNavigate("kanji-readings") },
+    { title: "收藏", icon: "tool-favorites", page: "favorites", action: () => onNavigate("favorites") },
+    { title: "查词汇量", icon: "tool-vocab-test", page: "vocab-test", action: () => onNavigate("vocab-test") },
+    { title: "柚子商店", icon: "tool-shop", page: "yuzu-shop", action: () => onNavigate("yuzu-shop") }
   ];
 
   const openTool = (event: ReactMouseEvent<HTMLButtonElement>, item: typeof toolItems[number]) => {
     if (!capyTools.has(item.icon)) {
+      if (item.page) onPrefetchRoute?.(item.page);
       item.action();
       return;
     }
@@ -318,12 +321,13 @@ export function ZooHome({
     window.setTimeout(() => setPokedTool((current) => current === item.icon ? null : current), 320);
     if (goals.zooSounds) playStreakChirp();
     triggerRevealHaptic();
-    open(event, item.action, `${item.icon}-capy` as StickerName);
+    open(event, item.action, `${item.icon}-capy` as StickerName, () => { if (item.page) onPrefetchRoute?.(item.page); });
   };
 
   const openTeam = (event: ReactMouseEvent<HTMLButtonElement>) => {
     const go = () => onNavigate("team");
     if (!capyTools.has("tool-team")) {
+      onPrefetchRoute?.("team");
       go();
       return;
     }
@@ -331,7 +335,7 @@ export function ZooHome({
     window.setTimeout(() => setPokedTool((current) => current === "tool-team" ? null : current), 320);
     if (goals.zooSounds) playStreakChirp();
     triggerRevealHaptic();
-    open(event, go, "tool-team-capy");
+    open(event, go, "tool-team-capy", () => onPrefetchRoute?.("team"));
   };
 
   return (
@@ -350,7 +354,7 @@ export function ZooHome({
           <button type="button" className={`zoo-greet-streak is-${flameStateOf(streakSnap?.todayStatus ?? "none")}`} title={`连续学习 ${streak} 天`} onClick={(event) => {
             setFlameJumping(true);
             window.setTimeout(() => setFlameJumping(false), 240);
-            open(event, () => onNavigate("streak"));
+            open(event, () => onNavigate("streak"), undefined, () => onPrefetchRoute?.("streak"));
           }}>
             <StreakFlame state={flameStateOf(streakSnap?.todayStatus ?? "none")} tier={streakSnap?.tier ?? 1} atRisk={streakSnap?.atRisk} size={34} className={flameJumping ? "zoo-flame-jump" : ""} /><b>{streakCount}</b><small>天</small>
           </button>

@@ -1,4 +1,6 @@
-import { lazy } from "react";
+import { lazyPage } from "./lazy-page";
 import { useApp } from "../app/AppContext";
-const NotificationSettings = lazy(() => import("../pages/NotificationSettings").then((module) => ({ default: module.NotificationSettings })));
+const NotificationSettings = lazyPage(() => import("../pages/NotificationSettings").then((module) => ({ default: module.NotificationSettings })));
 export function NotificationsRoute() { const { goBack } = useApp(); return <NotificationSettings onBack={goBack} />; }
+
+export const preload = NotificationSettings.preload;

@@ -186,3 +186,51 @@ CF 上旧 Worker 留下的 secret（RESEND 等）和 D1/KV/R2 数据还在，确
 - 撤销某个密码：删那一行或把 `expires_at` 改成过去。
 - 一次提审只用一个；被驳回要重提就换下一个（没用过的不占时间）。
 - 旧的 `REVIEW_LOGIN_PASSWORD` / `REVIEW_LOGIN_UNTIL` 已从代码里删除，服务器 `worker.env` 里残留的两行无害，可以删。
+
+## 2026-11-06 T2：网页首屏路由字节与 HTML 启动 PNG
+
+在 `claude/perf-motion-web`、HEAD **e8a3569d** 上改前 / 改后各跑现行 `cd frontend && npm run build`。背景审计基于 4dcc89dc，不能直接把它的数字当作本次基线。先把本 worktree 的 node_modules 软链换成逐项只读依赖链接，Vite / Vitest 缓存留在 worktree，未改主目录依赖或学习页。
+
+测量脚本与逐文件哈希保存在 `tmp/perf/measure-entry.mjs`、`t2-entry-before.json`、`t2-entry-after.json`、`t2-entry-comparison.json`。读取 **dist/index.html 直接引用的 module script、modulepreload JS 与 stylesheet CSS**，去重后逐文件用 Node `gzipSync` 默认 level 6 压缩再求和；不把运行时 import、idle 预取、WASM、出厂库混入这个「HTML 初始引用」口径。改前须在改源码之前构建并保存 JSON；改后执行 `node tmp/perf/measure-entry.mjs after`。它不是浏览器 HAR 或首屏耗时。
+
+| HTML 初始引用 | 改前 B | 改后 B | 减少 B |
+| --- | ---: | ---: | ---: |
+| JS 原始 | 2,680,584 | 2,143,802 | 536,782 |
+| JS gzip | 838,314 | 662,557 | **175,757** |
+| CSS 原始 | 339,167 | 322,511 | 16,656 |
+| CSS gzip | 63,282 | 60,040 | 3,242 |
+| 两张静态启动 PNG | 213,326 | 42,496 | 170,830 |
+
+JS gzip 降幅高于任务的 120,000 B 闸门。CSS 变化来自页面随路由移出初始依赖闭包，没有删除现有界面样式。
+
+`node frontend/scripts/build-boot-assets.mjs` 沿用现有 Taro 品牌管线的 **sips + pngquant**（256 色、quality 65-90、speed 1），不加 npm 依赖。新图在 `public/brand/boot/`，母版 `public/brand/sheet/` 保留；只替换 index.html 两个 img.src，不改 main.tsx、Sticker、换肤 URL、favicon 或小程序图源。
+
+- splash 显示高 120 CSS px，2× 目标 240 px，但母版只有 **375×233**，不为凑整数放大，量化后 **99,108 → 27,421 B**。
+- logo 显示高 80 CSS px，派生 **274×160**，**114,218 → 15,075 B**。
+- 两张仍是含透明度的调色板 PNG；背景报告约 27 KB 的合计是 WebP 实验样本，**不能当成 PNG 的验收数字**。不以 WKWebView / 微信本地 WebP 的显示风险换字节。离线看图与页面 / 窄屏 / 真机验收是不同证据。
+
+本次 Taro 标准 `npm run build:weapp` 在 Doctor 原生 `system-configuration` NULL object panic 后挂住，已中止；Doctor 的默认配置还会使用远端 schema，不适合离线任务。随后从 package.json 读取原 build:weapp 命令串，**只把 `taro build --type weapp` 换成 `taro build --type weapp --no-check`** 执行，其余资产、编译、CSS / 字体、内容恢复、async 路径、API、包体、重复模块和 referral 闸门全保留。日志为 `tmp/perf/t2-taro-build.log` 与 `t2-taro-no-check-build.log`；不能把这次写成原命令连 Doctor 也通过。
+
+### 2026-11-07 续验：离线 Doctor 要保留真实配置校验
+
+上面的 `--no-check` 是上一轮证据，不能冒充 Doctor 通过。现行 `@tarojs/plugin-doctor` 的 JS 包装器默认请求 GitHub schema；读取全局配置时又用了 `config.useRemoteConfigSchema ? config.useRemoteConfigSchema : true`，所以把全局配置写成 `false` 仍会选回远端。不要为这次离线任务修改用户全局配置或主目录依赖。
+
+本次将临时适配留在忽略目录 `tmp/perf/offline-doctor.cjs`：只在 Taro CLI 进程里，把 Doctor 的 `validateConfig` 接到**同一个原生 binding** 的 `validateConfig(configStr, '', false)`，选择其内置 schema；函数序列化仍沿原包装器的 `__function__` 口径，原始 `isValid/messages` 原样返回，CLI 照常按失败结果拦截。没有返回写死的成功，也没有使用 `--no-check`。正反例自检要求合法配置为 true、错误类型及缺失必填项为 false，结果在 `t2-resume-doctor-self-check.json`。
+
+复现入口（在本 worktree 的 `taro-spike-2` 中）：`NODE_OPTIONS='--require=/Users/lsc/Documents/shushugo-wt/perf-motion-web/tmp/perf/offline-doctor.cjs' npm run build:weapp`。此命令仍执行 package.json 的整条资产、配置验证、编译和后处理闸门；必须连同离线适配说明报告，不能写成未经适配的默认远端 Doctor 也通过。适配不写入版本依赖或发布产物，不改变包体预算、模块许可或用户数据。
+
+### 2026-11-07 最终网页重建测量
+
+在同一 HEAD `e8a3569d` 和当前补丁上执行 `cd frontend && npm run check && npm run lint && npm run build`，退出 **0**；lint 为 0 errors / 51 个既有 warnings。构建日志为 `tmp/perf/t2-resume-web-build.log`。随后按上面的 HTML 引用口径执行 `node tmp/perf/measure-entry.mjs after`，并从 before / after JSON 重新计算 comparison，以断言检查 JS gzip 至少减少 120,000 B：
+
+| HTML 初始引用 | 改前 B | 最终改后 B | 减少 B |
+| --- | ---: | ---: | ---: |
+| JS 原始 | 2,680,584 | 2,143,802 | 536,782 |
+| JS gzip | 838,314 | **662,565** | **175,749** |
+| CSS 原始 | 339,167 | 322,511 | 16,656 |
+| CSS gzip | 63,282 | **60,040** | **3,242** |
+| 两张启动 PNG | 213,326 | **42,496** | **170,830** |
+
+前表 662,557 B 是上一轮构建记录，保留为历史；当前 `t2-entry-after.json` / `t2-entry-comparison.json` 和逐文件 SHA-256 对应本表。不要从运行时 idle 预取再加回字节来替换 HTML 初始引用口径，也不要把这里的字节差称作首屏时间差。本次只查看本地 boot PNG 与母版；没有启动学习页、独立服务、浏览器或微信开发者工具，也没有提交、推送或合并。
+
+最终完整 Taro 构建（上面的离线 Doctor 适配）、Taro `npm test`、原生小程序 `npm test` 全部退出 **0**；主包 **1,894,809 B**、13 包均通过原 1,900,000 B 闸门，未许可重复与过期许可均为 0。构建未留下 `taro-spike-2/src` 资产副作用，变化的五份 reports 保留。网页全量 **1,627 项通过、30 项跳过、1 项 todo**；没有改算法 / 测试超时 / 断言。最终日志统一为 `tmp/perf/t2-final-{frontend-test,taro-build,taro-test,wechat-test}.log`；离线配置验证结果另为 `t2-resume-taro-doctor-offline.json`。这些是构建与机器回归证据，不是已部署、开发者工具运行或真机验收记录。

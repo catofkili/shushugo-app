@@ -984,3 +984,29 @@ Taro smoke、1,900,000 B 预算与重复模块闸门、cloudflare-sync check / t
 小程序只带 `taro-spike-2/scripts/build-lucide-icons.cjs` 里 `names` 列表那一小撮 lucide 图标，网页直接用整个 lucide，所以网页看着正常，小程序构建会报错、设置页拿到 `undefined` 组件。
 已换成列表里本来就有的 `BookOpenText`（`SettingsPage.tsx`），不动映射文件。
 **教训**：在 `frontend/src` 的共享页面里新用一个 lucide 图标之前，先在 `build-lucide-icons.cjs` 的 `names` 里 grep 它；不在就换一个在的，别为一个图标去扩映射。
+
+## 2026-11-06 T2：动效时序同源，网页路由索引不进 Taro
+
+本次 `ZoomOpen.tsx` 和 `WordStudy.tsx` 的 0 / 150 / 300 ms 固定等待修改在共享页面中，Taro 同时获得。沿用已有动效三档，微信 Zoom 无论档位都走 0 ms；不是给小程序另写一套评分或导航规则。
+
+已核实 `frontend/src/routes/index.ts` **仅网页 App 引用**；Taro 的 home / word 标签入口仍由自己的 `lazyRoute` 加载 `lazy/tabs`，其他入口仍直接引用单个 `frontend/src/routes/<page>`。本次 fresh webpack stats 中没有 `routes/index.ts` 或原生 `shared/web.js`；没有把网页 idle 队列带进小程序，也没改 Taro 分包配置 / 预算 / 许可清单。
+
+route 内层的 `lazyPage` 保留原动态 import 冷路径，只有网页显式预取才调用新增 preload；Taro 不调用这些网页预取入口，仍在它自己的内容就绪闸门之后渲染。该 helper 在 study / account / content-pages / lazy 各有一份，每份只持有当地页面 loader 的 promise / 组件，没有数据库实例、学习数据或跨包业务缓存；stats 新增的这条纯路由 helper 重复不会产生第二份数据层。`frontend/src/lib` 未改，无需重写 web.js；check-shared 仍必须实际跑。
+
+本 worktree fresh 构建（仅跳过崩溃的 Doctor，完整命令链见 release 专题本日增补）：主包 **1,894,809 / 1,900,000 B**，余 **5,191 B**；13 个包全部低于 1,900,000 B，未许可核心 / 页面组件重复均为 0。HEAD 已提交报告为主包 1,894,819 B，只是旧产物对照，不冒充本次 fresh 改前测量。五份实际变化的 reports（webpack-stats / package-sizes / package-gates / css-source-bytes / route-css-split）保留，async 路径报告内容未变；未留下品牌 / Lucide 生成副作用。
+
+网页两张 boot 派生 PNG 只用于 HTML 启动壳，任务明确不改小程序图源。parity-map 对这两个**精确路径**登记到实际消费方 `frontend/index.html`，说明这是作者本任务限定的网页启动资源配对，不代表小程序使用这些图片；没有扩大通配豁免或修改 approvedExemptions。其他可见改动仍由共享 TSX 同步。
+
+本任务禁止 dev server、微信开发者工具及 GUI，因此未做 DevTools / 页面窄屏 / 设备运行验收；本段包体和构建结果不替代上述验收。测试完整结果在本节后续补记。
+
+### 2026-11-07 最终双端机器验收
+
+使用 release 专题记录的临时离线 Doctor 适配运行 **原 `npm run build:weapp` 完整命令链**，退出 **0**；本次不使用 `--no-check`。原生 Doctor 使用内置 schema 返回 `isValid: true`，结果保存在 `tmp/perf/t2-resume-taro-doctor-offline.json`，完整构建日志在 `tmp/perf/t2-final-taro-build.log`。先前的 `--no-check` 记录仅保留为历史，不代表本次校验方式。
+
+- 最终 fresh 主包 **1,894,809 / 1,900,000 B**，余 **5,191 B**；13 个包全部低于 1,900,000 B。未许可核心重复 / 页面组件重复 / 过期许可均为 0；`webModuleCount=0`、`passes=true`。预算、允许清单、分包配置均未改。
+- 最终 webpack stats 再次确认没有网页 `routes/index.ts` 和原生 `shared/web.js`，共享路由 helper 的实例仍只持有页面 loader。五份变化的 reports 由完整构建真实生成；`taro-spike-2/src` 没有品牌 / Lucide 生成副作用，async 路径报告内容未变。
+- `cd taro-spike-2 && npm test` 退出 **0**，包含分包提取回归、页面 / API / CSS smoke 和实际包体闸门；日志在 `tmp/perf/t2-final-taro-test.log`。
+- `cd wechat-miniprogram && npm test` 退出 **0**，**32 个脚本全部通过**，含 check-shared（web.js 580 KiB，内容新鲜）与 check-parity；日志在 `tmp/perf/t2-final-wechat-test.log`。构建链重新生成共享文件后字节未变，`frontend/src/lib` / 原生生产源码均无 diff。
+- 网页 check / lint / build 和 1,627 项全量测试通过；字节与测试口径分别见 release、interface 专题的 2026-11-07 最终记录。`git diff --check` 通过。
+
+这次只在指定 worktree 构建与测试，没有联网、启动服务或 GUI、刷新学习页、提交 / 推送 / 合并。静态 PNG 与母版已实际看图；页面布局、放大进门的连续画面、冷点击 Suspense 帧数、微信开发者工具运行与真机行为仍未验，不能用上述绿灯代替。
