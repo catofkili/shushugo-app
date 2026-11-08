@@ -1,6 +1,7 @@
 import type { PlanKind } from "../plan-level-order";
 import type { StartingLevel } from "../level-plan";
 import type { JlptTarget } from "../jlpt/plan";
+import type { BudgetInput } from "../plan/budget-allocator";
 
 export const KINDS: PlanKind[] = ["words", "grammar", "kanji", "confusion"];
 export const byKind = <T>(make: (kind: PlanKind) => T): Record<PlanKind, T> =>
@@ -44,6 +45,7 @@ export interface Persona {
   id: string; name: string; start: StartingLevel; target: JlptTarget; days: number;
   minutes: number; absence: number; coefficient: Record<PlanKind, number>;
   first: Record<PlanKind, number>; prior: number; examDays: number;
+  locked?: BudgetInput["locked"];
 }
 const person = (id: string, name: string, start: StartingLevel, target: JlptTarget,
   days: number, minutes: number, absence: number, coefficient: number, first: number, examDays: number): Persona =>
@@ -53,6 +55,7 @@ export const PERSONAS: Persona[] = [
   { ...person("zero", "零基础，从五十音开始", "kana-none", "N4", 90, 25, 0.15, 0.95, 0.35, 180),
     first: { words: 0.35, grammar: 0.40, kanji: 0.30, confusion: 0.30 } },
   person("cram", "考前60天冲刺", "N4", "N3", 60, 75, 0.05, 1, 0.45, 60),
+  { ...person("cram-lock", "冲刺，钉住单词新学40", "N4", "N3", 60, 75, 0.05, 1, 0.45, 60), locked: { words: { fresh: 40 } } },
   person("office", "上班族", "N5", "N3", 90, 15, 0.10, 0.95, 0.40, 240),
   person("break", "断两周再回来", "N5", "N3", 90, 30, 0.10, 0.95, 0.40, 180),
   person("fast", "正确率高、想快进", "N4", "N2", 90, 40, 0.05, 1.1, 0.60, 180),
@@ -66,11 +69,13 @@ export const baseMinutes = (p: Persona, day: number, at: number) =>
 export interface CardDay {
   planned: number; plannedFresh: number; releasedPrior: number;
   answers: number; fresh: number; prior: number; review: number; relearn: number;
+  reviewCorrect: number; // 跨日复习的当天首答答对数；不把重学成功算作保持。
   backlog: number; pendingPrior: number; scheduledRemaining: number;
 }
 export interface Quota {
   savedFresh: number; effectiveFresh: number; savedReview: number; effectiveReview: number;
   reasons: string[];
+  lockedFresh?: number; lockedReview?: number;
 }
 export interface Daily {
   seed: number; day: number; date: string; baseMinutes: number; availableMinutes: number;
@@ -79,6 +84,13 @@ export interface Daily {
   quotas: Record<PlanKind, Quota>; feasible: boolean | null;
   kana: { planned: number; taught: number; wordTaught: number; answers: number; mastered: number };
   relief: number; tail: number;
+  completed?: boolean;
+  n4GrammarPriorReleased?: number;
+  budget?: {
+    B: number; M0: number; scale: number; overloaded: boolean; peakMinutes: number;
+    fresh: Record<PlanKind, number>; appliedFresh: Record<PlanKind, number>;
+    need: Record<PlanKind, number>; contentLeft: Record<PlanKind, number>; paused: Record<PlanKind, boolean>;
+  };
 }
 export interface Transition { seed: number; day: number; kind: PlanKind; type: "prompt" | "content"; from: string; to: string; choice?: string }
 export interface Coverage { seen: number; total: number; percent: number; stateSeen: number; statePercent: number }
@@ -104,6 +116,8 @@ export const metricsFor = (runs: Run[]) => {
       ratio: ratio(Math.max(...after.map(minutes)), median(before.map(minutes))),
       noFreshDays: after.filter(d => d.quotas[event.kind].effectiveFresh > 0 && d.cards[event.kind].fresh === 0).length,
       availableButNoFreshDays: after.filter(d => d.quotas[event.kind].effectiveFresh > 0 && d.cards[event.kind].plannedFresh > 0 && d.cards[event.kind].fresh === 0).length,
+      continuingNoFreshDays: event.choice === "pause" ? null : after.filter(d =>
+        (d.budget ? d.budget.need[event.kind] > 0 : d.quotas[event.kind].effectiveFresh > 0) && d.cards[event.kind].fresh === 0).length,
       truncated: before.length < 7 || after.length < 15 };
   }));
   const recoveries = runs.flatMap(run => run.days.flatMap((d, i) => {
@@ -123,7 +137,9 @@ export const metricsFor = (runs: Run[]) => {
   const perSeedM2 = byKind(k => runs.map(run => {
     const events = transitions.filter(e => e.seed === run.seed && e.kind === k);
     return { ratio: events.some(e => e.ratio !== null) ? Math.max(...events.flatMap(e => e.ratio === null ? [] : [e.ratio])) : null,
-      noFreshDays: events.length ? Math.max(...events.map(e => e.noFreshDays)) : null };
+      noFreshDays: events.length ? Math.max(...events.map(e => e.noFreshDays)) : null,
+      continuingNoFreshDays: events.some(e => e.continuingNoFreshDays !== null)
+        ? Math.max(...events.flatMap(e => e.continuingNoFreshDays === null ? [] : [e.continuingNoFreshDays])) : null };
   }));
   const reasons = [...new Set(runs.flatMap(run => run.days.flatMap(d => KINDS.flatMap(k => d.quotas[k].reasons))))].sort();
   return {
@@ -132,7 +148,8 @@ export const metricsFor = (runs: Run[]) => {
       peakToMedian: stats(runs.map(run => ratio(Math.max(...run.days.map(d => d.shouldMinutes)), median(run.days.map(d => d.shouldMinutes))))),
       peakMinutes: stats(runs.map(run => Math.max(...run.days.map(d => d.shouldMinutes))))
     },
-    M2: { byKind: byKind(k => ({ ratio: stats(perSeedM2[k].map(e => e.ratio)), noFreshDays: stats(perSeedM2[k].map(e => e.noFreshDays)) })), events: transitions },
+    M2: { byKind: byKind(k => ({ ratio: stats(perSeedM2[k].map(e => e.ratio)), noFreshDays: stats(perSeedM2[k].map(e => e.noFreshDays)),
+      continuingNoFreshDays: stats(perSeedM2[k].map(e => e.continuingNoFreshDays)) })), events: transitions },
     M3: { recoveryDays: stats(runs.map(run => {
       const episodes = recoveries.filter(e => e.seed === run.seed);
       return episodes.some(e => e.days !== null) ? Math.max(...episodes.flatMap(e => e.days === null ? [] : [e.days])) : null;
@@ -147,6 +164,11 @@ export const metricsFor = (runs: Run[]) => {
       hint: runs.some(run => run.days.some(d => d.feasible !== null)) ? "previewCurrentLevelPlan.feasible（只测字段，未验证界面是否展示）" : "无提示",
       evaluation: runs.map(run => ({ seed: run.seed, ...run.coverage })) },
     M5: { days: stats(runs.map(run => run.days.filter(d => KINDS.some(k => d.quotas[k].reasons.length)).length)),
+      lockedChangedDays: stats(runs.map(run => run.days.filter(d => KINDS.some(k => {
+        const q = d.quotas[k];
+        return q.lockedFresh !== undefined && (q.savedFresh !== q.lockedFresh || q.effectiveFresh !== q.lockedFresh)
+          || q.lockedReview !== undefined && (q.savedReview !== q.lockedReview || q.effectiveReview !== q.lockedReview);
+      })).length)),
       byReason: Object.fromEntries(reasons.map(reason => [reason, stats(runs.map(run => run.days.filter(d => KINDS.some(k => d.quotas[k].reasons.includes(reason))).length))])) },
     M6: { burdenAbsences: stats(runs.map(run => run.days.filter(d => d.absence === "burden").length)) },
     selfGap: runs[0]?.selfGap ? {

@@ -962,6 +962,115 @@ SHUSHUGO_PERSONA_SIM=1 PERSONA_SIM_IDS=self PERSONA_SIM_SEEDS=10 PERSONA_SIM_RAN
   以后新排法要对比，**用同一份新冻结库把现行排法和新排法各跑一遍**，别拿新排法的结果直接比 11-02 那份报告 —— 库已经往前走了，self 的起点不同。
   长跑的冻结库和输出别只放在要删的 worktree 里：要么跑完先把 summary.json 拷到主目录 `frontend/.local/`，要么删 worktree 前先挪走。
 
+#### 2026-11-03 增补：每日时间预算排法实验
+
+纯函数在 `plan/budget-allocator.ts`，只有 `persona-sim` 引用，不接App、不改小程序共享包。
+完整形状、逐日周曲线展开及不可行边界见 [`DAILY_BUDGET_PLAN.md` §5](../DAILY_BUDGET_PLAN.md)。
+新增两个运行开关：`PERSONA_SIM_POLICY=current|budget`（默认current，保留原混合轮换）和
+`PERSONA_SIM_OUTPUT`（绝对路径，显式指定后就是最终目录；未指定保留原默认及smoke子目录）。
+budget每天出卡前用应用可见的流水、计划、FSRS和先验推断B，不读取模拟人的基准分钟、缺席率或正确率系数；
+混合按完成比例最落后先出。写回仅用 `saveStudyPreferences`：未锁新学可写，未锁复习cap仅过载时可写，
+其它字段逐日断言原样；不能走 `saveDailyPlan`，其0/0段关闭cap的生产bug由另任务处理。
+
+新增第9个人设 `cram-lock`：与cram同参数、同随机流，但单词新学40一直钉住，两种排法都保存40。
+M5额外统计钉住值在存值或生效层不一致的天数，不把旧M5的考后覆盖层计数冒充锁定检查。
+smoke仍只跑cram/break各2种子10天并完整复跑第1种子，不扩成全套。
+
+下面示例在frontend目录执行；冻结库使用同一份只读绝对路径，输出放工作区的忽略目录，不写审计文档：
+
+```bash
+# 两种排法分别运行smoke（shell中的SIM_ROOT仅是本任务的输出目录）。
+SIM_ROOT="$PWD/.local/persona-sim/smoke"
+SHUSHUGO_LIVE_DB=/Users/lsc/Documents/shushugo/frontend/.local/persona-sim-frozen-2026-11-03.db PERSONA_SIM_SMOKE=1 PERSONA_SIM_POLICY=current PERSONA_SIM_OUTPUT="$SIM_ROOT/current" npm_config_offline=true ./node_modules/.bin/vitest run src/lib/persona-sim/persona-load-simulation.test.ts --configLoader runner --no-cache --maxWorkers 1
+SHUSHUGO_LIVE_DB=/Users/lsc/Documents/shushugo/frontend/.local/persona-sim-frozen-2026-11-03.db PERSONA_SIM_SMOKE=1 PERSONA_SIM_POLICY=budget PERSONA_SIM_OUTPUT="$SIM_ROOT/budget" npm_config_offline=true ./node_modules/.bin/vitest run src/lib/persona-sim/persona-load-simulation.test.ts --configLoader runner --no-cache --maxWorkers 1
+PERSONA_SIM_COMPARE="$SIM_ROOT/current,$SIM_ROOT/budget" PERSONA_SIM_COMPARE_OUT="$SIM_ROOT/budget-vs-current.md" npm_config_offline=true ./node_modules/.bin/vitest run src/lib/persona-sim/persona-load-simulation.test.ts --configLoader runner --no-cache --maxWorkers 1
+```
+
+完整跑法由作者执行：用 `SHUSHUGO_PERSONA_SIM=1` 替换smoke开关，两个排法各指定独立完整输出目录；
+原有IDS、SEEDS、RANGE、PARALLEL、CHILD_TIMEOUT_MS不变。对比只需COMPARE，不需要冻结库或模拟开关；
+默认报告路径 `docs/audits/2026-11-03-budget-vs-current.md`，用COMPARE_OUT可改。报告只输出聚合数。
+共同代码指纹/HEAD、冻结库SHA、参数、种子或逐日数据不同会在写文件前失败；policy另加入分片指纹，
+不可跨排法混缓存。验收表照设计稿逐条列线，少于20种子或无事件标❌待验证，不能把10天smoke当成阶段交接验收。
+
+同日修 `calibration.ts` 的两处口径：模糊算想起来；R用学习日差而非24小时取整。重放的模糊仍按Hard，
+旧记录Easy模式推断不受「模糊统计为正确」影响。summary同时保存旧/新四类系数，smoke打印前后值。
+生产 `recallFromRow` 保持原样，也未修改FSRS参数或人设参数。旧基线数因此不能直接与新口径的budget对比，
+必须在本次共同代码、同一冻结库上重跑current和budget。
+
+第二轮审查补充：分配器现在对最终平滑额度重新求可行解，有限内容下逐类取更小值也可能让未来峰值变高，
+不能视作安全回退。M2须至少20个有效交接种子，相关事件全部观察到交接前7天及交接当天起15天；
+截尾或有效样本不足均标❌「未验收」，保留原始聚合与逐事件标记，不把末日交接的1天观察当作通过。
+反例、平滑下降下限的放开条件及回归判据见设计稿§5.5。
+
+#### 2026-11-05 增补：预算排法审查、完整对比与证据边界
+
+这是11-03实验的接续，范围仍是`persona-sim`、纯函数`plan/budget-allocator`及文档。
+作者本任务明确只在`claude/budget-sim`提交、不合main，覆盖仓库平时提交后合主线的流程。
+接进真实App排法是下一步，作者尚未拍板；本次不改`daily-plan.ts`、`mixed-session.ts`、生产选词、偏好结构、
+小程序共享包或页面。因此不存在页面刷新、小程序UI同步或视觉验收的交付声明。
+
+**设计判据**：预算只从应用可见的作答量×固定秒数推断，不能把人设真实可用时间传给分配器。
+近14个有学日取中位数，近7个有学日完成至少4天才增加10%；钉住值、先验限速、内容/暂停及预算硬约束优先。
+28天逐日峰值求共同系数，最大1.5；平滑约束必须参与可行性求解，有限内容下少分卡也可能把学完日推迟到峰值日。
+无可行解诚实标overloaded，不删掉未来到期量。M2既要看交接比和零新学，也要有足够事件及完整7+15天窗口；
+没发生交接、截尾或样本不足均不能判通过。`cram-lock`对照每天保存/生效的40张锁定值。
+
+**本次发现与修正**：
+
+1. 分片虽落盘，原入口重启仍重算已完成种子。完整模式改为每种子原子写盘、启动前验证并跳过，
+   校验包含代码/HEAD、排法、冻结库/出厂库、种子与完整天数；light合成前史另隔离起推日期。
+2. 原current完整运行会覆写历史11-02报告，改为写本次输出目录的`current-report.md`。
+   不能用已经丢失冻结库的旧报告作配对对照；本次两种排法共用11-03冻结库，哈希完整记录在设计稿§5.6。
+3. 统计仍把三类自动复习cap解释成固定60或不限，已改为读取正式`planReviewLimit`。
+   修的是观测字段，不把这次修正描述成App行为改变，也不把自动档翻译成持久偏好被覆盖。
+4. 报告原先没有新学总数、保持率和常态每日分钟/积压行。现补齐；保持率只数跨日复习当天首答，
+   每天与真实流水的分子/分母对账，排除新卡、先验和同日重学，含正式评分的压轴。
+   它仍有被选中卡的选择偏差，不能声称是全库记忆或考试通过率。
+5. 对比还校验两种排法的标定、初始状态、逐日日期与可用时间流，不只比总种子数。
+   任何缩减在报告开头明示；验收线逐条如实标数值失败或未验收，不能把没事件写成零。
+6. Round 2复查发现一条报告测试可能空循环通过：有效交接种子不足的断言只遍历筛出的表行。
+   现先断言两行都存在，再检查失败和「未验收」；保持率的「最差取最低」也明确写入报告口径。
+
+**运行与踩坑**：完整入口`frontend/src/lib/persona-sim/run-comparison.sh`，nohup用法见设计稿§5.6。
+9个人设各20种子，self/cram/cram-lock各60天，其余各90天；两种排法共28,800个人设日，
+默认2路、按人设/排法拆日志、每个完整种子一个JSON，失败后重新运行同一入口续跑。
+输出及冻结副本均在本worktree的`frontend/.local/`，不能删worktree时顺手删掉长跑证据。
+初次`npm test`因顶层node_modules软链让Vite写主目录缓存而遇EPERM；仅在worktree建立逐包只读软链目录隔离缓存。
+上轮fsrs-store的5秒超时未通过放宽断言、减少300次抽样或提高全局超时规避；最终全量闸门在模拟停止后运行，
+避免CPU争用。lint已有51条警告不属于本任务，退出0不等于没有警告。
+
+Round 2在没有模拟进程争用时原样执行`npm run check && npm run lint && npm test`退出0：
+194个文件、1632项通过，31项跳过、1项todo；没有动fsrs-store测试、300次抽样或5秒超时。
+这是当次通过的证据，不能声称已证明随机测试在任意外部负载下都不会超时。
+本工具环境还会清理已结束命令遗留的后台进程，单独nohup返回PID并不代表进程继续活着；
+改用bash启动nohup后台任务后在同一执行session中wait监督进程，持续以逐日日志和分片落盘确认进度。
+常规终端可直接nohup，受监督的工具终端须保留session；不能反复启动多个相同批次来碰碰运气。
+
+完整模拟结论、验收线与最终闸门待运行结束后在本节续记；本条是执行记录，不能单独当作长跑已完成。
+
+**第二次中断后的接续审查（2026-11-05）**：旧监督进程和两个self试跑均已退出；self没有完整分片，
+不能将启动日志算成完成。current/zero的20个和budget/zero的18个完整种子逐份核对代码、HEAD、排法、
+冻结库和出厂库指纹后复用，只重跑没有原子JSON的种子。未重新取live.db，也未减少人设、种子或天数。
+逐文件判据、共同指纹和恢复方法见设计稿§5.7；进度保存在原输出目录，长跑时不改模拟规则或提交HEAD。
+
+这次补验发现两个测试/报告边界：标定测试原来全带显式scheduler_mode，不能证明缺模式旧流水的fuzzy仍按Hard重放；
+现补缺模式分支、模式实参及输入数据库逐字节不变的断言。报告的部分验收行原来只看20种子，
+即使只模拟1天也能打通过；现M1/M6/M4、锁定及self先验须跑满对应60/90天，新增7行均存在且均未验收的回归。
+另外补了第28天先验峰值、锁定新学导致未来不可行、仅观测完成日才能增预算、冷启动回退不递归缩小。
+分配器的有限内容/平滑组合另经240组固定随机输入与独立整数穷举对拍，不改变人设或验收线。
+报告运行时间区分累计子进程墙钟与跨批次首尾跨度；后者含中断、等待，不能当作连续计算耗时。
+
+**2026-11-06 继续执行（仍归入本次11-05实验）**：重新核对102份完整分片后从缺失种子续跑，
+不重新取真实库，不缩人设或天数；详细分布、指纹和监督方法见设计稿§5.9。
+原先接线测试始终返回全零的先验预测，不能证明调用方去掉的是今天、且保留第28天。
+新增回归给今天999张、第28天100张单词、B=20分钟：今日不进入未来，末日恰好用满预算，
+最终应零新学、峰值20且不过载；这能同时抓住重复计算今天和漏算末日两种切片错误。
+
+报告另修一处展示误导：office/break/struggle的覆盖按设计只报告、不设达标线，
+完整样本也只能显示“—（不设验收线）”，不能在“过没过”列打✅；样本没跑满时仍标未验收。
+回归先断言四行都存在，再逐行检查中性标记及没有通过标记。以上只改独立测试与报告生成，
+没有改长跑中的模拟规则或源码指纹。相关增补测试20项通过、退出0，最终全量仍待长跑结束后执行。
+
 ### 语法复习上限：默认 60，管的是一天的总量（2026-10-29，作者定）
 
 `grammar-quiz.ts` 的 `GRAMMAR_DEFAULT_REVIEW_CAP = 60`、`grammarReviewLimit`、`planIds`。

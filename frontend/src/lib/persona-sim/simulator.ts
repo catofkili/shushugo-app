@@ -8,20 +8,20 @@ import { familiarityDefaults, getLevelPlanSettings, hydrateLevelPlanPreferences,
 import { answerLevelAdvance, levelAdvancePrompt } from "../level-advance";
 import { JLPT_TARGETS } from "../jlpt/plan";
 import { applyExamPreset, applyStudyIntensity, previewCurrentLevelPlan, SECONDS_PER_CARD } from "../daily-plan";
-import { getGrammarQuizSession, GRAMMAR_DEFAULT_REVIEW_CAP, PLAN_GRAMMAR_LEVEL, submitGrammarQuizAnswer } from "../grammar-quiz";
-import { loadMixedCardData, mixedCardCounts } from "../mixed-cards";
+import { getGrammarQuizSession, grammarPlanDone, PLAN_GRAMMAR_LEVEL, submitGrammarQuizAnswer } from "../grammar-quiz";
+import { getConfusionCardSession, getKanjiCardSession, loadMixedCardData, mixedCardCounts } from "../mixed-cards";
 import { answerMixedOther, pickMixedNext, recordMixedWordAnswer, resetMixedSession, type MixedOtherItem } from "../mixed-session";
-import { materializeKanjiChars, recordKanjiCharReview, KANJI_CHAR_FSRS } from "../kanji-char-cards";
-import { materializeConfusionCards, recordConfusionReview, CONFUSION_FSRS } from "../confusion-cards";
+import { kanjiCharProgress, materializeKanjiChars, recordKanjiCharReview, KANJI_CHAR_FSRS } from "../kanji-char-cards";
+import { confusionCardProgress, materializeConfusionCards, recordConfusionReview, CONFUSION_FSRS } from "../confusion-cards";
 import { ensureGrammarProgressInitialized } from "../grammar-api";
 import { ensureProgressInitialized } from "../word-api/bootstrap";
 import { pickStage1Next, stage1ProgressCounts } from "../word-api/stage1";
 import { advanceDailyRelief, advanceDailyTail, continueTodayPlanStudy, ensureDailyRelief, ensureDailyTail,
   getDailyReliefNext, getDailyTailNext, refreshTodayWordPlan, submitWordAnswer } from "../word-api";
 import { defaultStudyPreferences, getEffectiveStudyPreferences, getStudyPreferences, kanaGatePending, levelUnseenContent,
-  PLAN_REVIEW_DISABLED, readLevelAdvance } from "../studyPreferences";
+  readLevelAdvance } from "../studyPreferences";
 import { pendingPriorSql, PRIOR_ENTITIES, priorValidatedToday, readPriorPace } from "../prior-pacing";
-import { dailyReviewCap } from "../review-budget";
+import { dailyReviewCap, planReviewLimit } from "../review-budget";
 import { ensureFsrsColumns, GRAMMAR_FSRS, readFsrsState, WORD_FSRS } from "../fsrs-store";
 import { retrievability } from "../fsrs-scheduler";
 import { nextKanaStep } from "../kana-quiz";
@@ -32,30 +32,28 @@ import type { WordCard } from "../../types/vocabulary";
 import type { PlanKind } from "../plan-level-order";
 import type { Calibration } from "./calibration";
 import { indexSimulation, reuseStatements } from "./harness";
+import { applyBudgetMorning, budgetOrder, freshKeys, reviewKeys, type Policy } from "./budget-policy";
 import { baseMinutes, burdenProbability, byKind, dateAt, DAY_MS, KINDS, logNormal, mulberry32, reviewProbability,
   round, seedFor, type CardDay, type Coverage, type Daily, type Persona, type Quota, type Run } from "./model";
 
-const freshKeys = { words: "dailyGoal", grammar: "grammarDailyGoal", kanji: "kanjiDailyGoal", confusion: "confusionDailyGoal" } as const;
-const reviewKeys = { words: "reviewCap", grammar: "grammarReviewCap", kanji: "kanjiReviewCap", confusion: "confusionReviewCap" } as const;
 const entities = { words: WORD_FSRS, grammar: GRAMMAR_FSRS, kanji: KANJI_CHAR_FSRS, confusion: CONFUSION_FSRS };
 const tasks = { words: "stage1_tasks", kanji: "kanji_char_tasks", confusion: "confusion_tasks" };
 const emptyCard = (): CardDay => ({ planned: 0, plannedFresh: 0, releasedPrior: 0, answers: 0, fresh: 0, prior: 0,
-  review: 0, relearn: 0, backlog: 0, pendingPrior: 0, scheduledRemaining: 0 });
+  review: 0, relearn: 0, reviewCorrect: 0, backlog: 0, pendingPrior: 0, scheduledRemaining: 0 });
 
 const quotas = (): Record<PlanKind, Quota> => {
   const saved = getStudyPreferences(), effective = getEffectiveStudyPreferences();
   return byKind(k => {
     const savedFresh = saved[freshKeys[k]], effectiveFresh = k === "words" && kanaGatePending() ? 0 : effective[freshKeys[k]];
     const savedReview = saved[reviewKeys[k]], cap = effective[reviewKeys[k]];
-    const effectiveReview = k === "words" ? dailyReviewCap(cap) : k === "grammar" && cap === 0
-      ? Math.min(GRAMMAR_DEFAULT_REVIEW_CAP, dailyReviewCap(effective.reviewCap)) : cap === 0 ? 1_000_000_000 : cap === PLAN_REVIEW_DISABLED ? 0 : cap;
+    const effectiveReview = k === "words" ? dailyReviewCap(cap) : planReviewLimit(cap, k);
     const reasons: string[] = [];
     if (effectiveFresh !== savedFresh || cap !== savedReview) {
       if (k === "words" && kanaGatePending() && savedFresh !== effectiveFresh) reasons.push("五十音门槛");
       if (readLevelAdvance()[k === "grammar" ? "grammar" : "words"].pausedAt > 0 && ["words", "grammar"].includes(k) && effectiveFresh !== savedFresh) reasons.push(`${k}：95%暂停封顶`);
       if (!reasons.length) reasons.push("考后恢复覆盖层");
     }
-    if (k === "grammar" && cap === 0) reasons.push("语法默认上限min(60,单词上限)");
+    if (k !== "words" && cap === 0) reasons.push(`${k}：随学习量的自动复习上限`);
     if (k === "words" && savedReview > 0 && effectiveReview !== savedReview && cap === savedReview) reasons.push("单词复习硬上限");
     // 0=自动、-1=不限等哨兵的翻译不是擅自改数，另存 effectiveReview 供对账。
     return { savedFresh, effectiveFresh, savedReview, effectiveReview, reasons };
@@ -115,6 +113,7 @@ export interface Environment {
   SQL: Awaited<ReturnType<typeof initSqlJs>>; calibration: Calibration; factory: Uint8Array; livePath: string;
   preferences: Map<string, string>; setDatabase: (db: Database) => void;
   lightFixture?: { bytes: Uint8Array; preferences: [string, string][] };
+  policy?: Policy;
 }
 let lightTemplate: Uint8Array | undefined;
 let lightPreferences: [string, string][] = [];
@@ -131,7 +130,8 @@ export async function simulate(p: Persona, seed: number, days: number, env: Envi
   }
   env.preferences.clear();
   vi.setSystemTime(start);
-  const appSeed = seedFor(p.id, seed, "app");
+  const seedId = p.id === "cram-lock" ? "cram" : p.id;
+  const appSeed = seedFor(seedId, seed, "app");
   let generator = mulberry32(appSeed), draws = 0;
   const random = () => { draws++; return generator(); };
   const rewind = (count: number) => {
@@ -182,6 +182,14 @@ export async function simulate(p: Persona, seed: number, days: number, env: Envi
       return simulate(p, seed, days, env);
     }
     if (p.id === "light") expect(getStudyPreferences().reviewCap, "前史临时cap不得带进light人设").toBe(defaultStudyPreferences.reviewCap);
+    if (p.locked) {
+      const prefs = getStudyPreferences();
+      for (const k of KINDS) {
+        if (p.locked[k]?.fresh !== undefined) prefs[freshKeys[k]] = p.locked[k]!.fresh!;
+        if (p.locked[k]?.review !== undefined) prefs[reviewKeys[k]] = p.locked[k]!.review!;
+      }
+      saveStudyPrefs(prefs);
+    }
     // 与旧harness相同：裁掉仅供题面展示的大JSON，避免每次评分跨WASM搬运。
     // 取卡资格/优先级不读这些列；以相同随机流及同一事务状态实测对拍。
     const admission = () => {
@@ -222,10 +230,11 @@ export async function simulate(p: Persona, seed: number, days: number, env: Envi
       selfGap: p.id === "self" ? { initiallyLearnedN4: learnedN4.size, neverScheduled: 0, neverShown: 0,
         backfill: readLevelAdvance().grammar.backfill === "N4" ? "库里已选回补N4，保留现状" : levelUnseenContent("grammar", "N4") > 0 ? "等待N3提示" : "不适用：N4无未学内容" } : null
     };
-    const attendance = mulberry32(seedFor(p.id, seed, "attendance")), time = mulberry32(seedFor(p.id, seed, "time")), answerRandom = mulberry32(seedFor(p.id, seed, "answers"));
+    const attendance = mulberry32(seedFor(seedId, seed, "attendance")), time = mulberry32(seedFor(seedId, seed, "time")), answerRandom = mulberry32(seedFor(seedId, seed, "answers"));
     let probability = p.absence;
     const lastFreshLevel = byKind(() => "");
     const pausedOnce = new Set<"words" | "grammar">();
+    let budgetBaseline: ReturnType<typeof getStudyPreferences> | undefined;
     const handlePrompts = (day: number) => {
       for (let tries = 0; tries < 10; tries++) {
         const prompt = levelAdvancePrompt();
@@ -249,6 +258,15 @@ export async function simulate(p: Persona, seed: number, days: number, env: Envi
         result.events.push({ day, type: "plan", value: "暂不备考 + STUDY_INTENSITY.light" });
       }
       handlePrompts(day);
+      let budget: Daily["budget"];
+      if (env.policy === "budget") {
+        budgetBaseline ??= getStudyPreferences();
+        setState("phase", "stage1"); setState("phase_date", date);
+        ensureDailyRelief(); ensureDailyTail();
+        budget = applyBudgetMorning({ locked: p.locked ?? {}, days: result.days, baseline: budgetBaseline });
+        // 减负/压轴准备会先物化旧word计划；仅改偏好不会重抽普通复习，必须走正式重排入口。
+        refreshTodayWordPlan();
+      }
       const u = attendance(), fixedHoliday = p.id === "break" && day >= 21 && day <= 34;
       const absence: Daily["absence"] = base === 0 ? "weekend" : fixedHoliday ? "holiday" : u < p.absence ? "base" : u < probability ? "burden" : "none";
       const sampled = p.id === "self" ? cal.activeMinutes[Math.floor(time() * cal.activeMinutes.length)] : base;
@@ -257,6 +275,11 @@ export async function simulate(p: Persona, seed: number, days: number, env: Envi
         absenceProbability: round(probability), active: absence === "none", absence, shouldMinutes: 0, actualMinutes: 0,
         cards: byKind(emptyCard), quotas: quotas(), feasible: null,
         kana: { planned: 0, taught: 0, wordTaught: 0, answers: 0, mastered: 0 }, relief: 0, tail: 0 };
+      if (budget) d.budget = budget;
+      if (p.locked) for (const k of KINDS) Object.assign(d.quotas[k], {
+        ...(p.locked[k]?.fresh === undefined ? {} : { lockedFresh: p.locked[k]!.fresh }),
+        ...(p.locked[k]?.review === undefined ? {} : { lockedReview: p.locked[k]!.review })
+      });
       result.days.push(d);
       db.run("ANALYZE");
       grammarObserved = new Set();
@@ -271,6 +294,10 @@ export async function simulate(p: Persona, seed: number, days: number, env: Envi
         d.cards[k].plannedFresh = [...plannedIds[k]].filter(key => !history[k].has(key) && !baselines[k].has(key)).length;
         d.cards[k].releasedPrior = [...plannedIds[k]].filter(key => !history[k].has(key) && baselines[k].has(key)).length;
       }
+      if (p.id === "self") d.n4GrammarPriorReleased = [...plannedIds.grammar]
+        .filter(key => !history.grammar.has(key) && baselines.grammar.has(key) && levelOf("grammar", key) === "N4").length;
+      if (env.policy === "budget") expect([...plannedIds.words].filter(key => history.words.has(key)).length,
+        "预算写回后的真实普通复习清单必须受新cap约束").toBeLessThanOrEqual(d.quotas.words.effectiveReview);
       const relief = JSON.parse(getState("daily_relief_v2", "{}")) as { wordIds?: number[] };
       const tail = JSON.parse(getState("daily_tail_v2", "{}")) as { wordIds?: number[] };
       d.shouldMinutes = KINDS.reduce((sum, k) => sum + d.cards[k].planned * SECONDS_PER_CARD[k], 0) / 60
@@ -311,7 +338,9 @@ export async function simulate(p: Persona, seed: number, days: number, env: Envi
         } else c.relearn++;
         c.answers++;
         if (kind === "grammar") n4Shown.add(key);
-        return answerRandom() < prob ? "know" : "forgot";
+        const answer = answerRandom() < prob ? "know" : "forgot";
+        if (!repeat && lane === "review" && answer === "know") c.reviewCorrect++;
+        return answer;
       };
       if (p.id === "zero" && !kanaComplete()) {
         const states = getKanaStates();
@@ -390,7 +419,27 @@ export async function simulate(p: Persona, seed: number, days: number, env: Envi
           }
         };
         if (!word && spent < available) finishTail();
-        let next: "word" | MixedOtherItem | null = spent < available ? pickMixedNext({ word: Boolean(word) }) : null;
+        const pickBudgetNext = (): "word" | MixedOtherItem | null => {
+          const done = { words: stage1ProgressCounts().completed, grammar: grammarPlanDone(PLAN_GRAMMAR_LEVEL),
+            kanji: kanjiCharProgress().done, confusion: confusionCardProgress().done };
+          const order = budgetOrder(byKind(k => d.cards[k].planned), done);
+          for (const kind of order) {
+            if (kind === "words") { if (word) return "word"; }
+            else if (kind === "grammar") {
+              const card = getGrammarQuizSession(PLAN_GRAMMAR_LEVEL).card;
+              if (card) return { kind, card };
+            } else if (kind === "kanji") {
+              const card = getKanjiCardSession(db).card;
+              if (card) return { kind, card };
+            } else {
+              const card = getConfusionCardSession(db).card;
+              if (card) return { kind, card };
+            }
+          }
+          return null;
+        };
+        let next: "word" | MixedOtherItem | null = spent < available
+          ? env.policy === "budget" ? pickBudgetNext() : pickMixedNext({ word: Boolean(word) }) : null;
         while (next) {
           const kind = next === "word" ? "words" : next.kind;
           if (!spend(SECONDS_PER_CARD[kind])) break;
@@ -401,17 +450,22 @@ export async function simulate(p: Persona, seed: number, days: number, env: Envi
             word = submitWordAnswer(Number(key), answer).card;
             recordMixedWordAnswer();
             // 与WordStudy.afterWordAnswered相同：即使最后一张单词答完也先轮一次别的卡。
-            next = pickMixedNext({ word: true, afterWord: true });
-            if (next === "word" && !word) {
-              finishTail();
-              next = pickMixedNext({ word: false });
+            if (env.policy === "budget") {
+              if (!word) finishTail();
+              next = pickBudgetNext();
+            } else {
+              next = pickMixedNext({ word: true, afterWord: true });
+              if (next === "word" && !word) {
+                finishTail();
+                next = pickMixedNext({ word: false });
+              }
             }
           } else {
             const key = next.kind === "grammar" ? String(next.card.id) : next.kind === "kanji" ? next.card.char : next.card.groupKey;
             answerMixedOther(next, score(next.kind, key));
             if (!word) word = pickStage1Next();
             if (!word) finishTail();
-            next = pickMixedNext({ word: Boolean(word) });
+            next = env.policy === "budget" ? pickBudgetNext() : pickMixedNext({ word: Boolean(word) });
           }
         }
       }
@@ -425,6 +479,12 @@ export async function simulate(p: Persona, seed: number, days: number, env: Envi
         c.backlog = Number(row.backlog ?? 0); c.pendingPrior = Number(row.pending ?? 0);
         const actual = rowsFor(`SELECT COUNT(*) AS answers, COUNT(DISTINCT ${e.idColumn}) AS total FROM ${e.reviews} WHERE reviewed_on=?`, [date])[0];
         expect(actual, `${p.id}/${seed}/D${day}/${k}流水对账`).toEqual({ answers: c.answers, total: seenToday[k].size });
+        const retention = rowsFor(`SELECT COUNT(*) AS count, COALESCE(SUM(answer='know'),0) AS correct FROM (
+          SELECT r.answer, ROW_NUMBER() OVER (PARTITION BY r.${e.idColumn} ORDER BY r.id) AS first
+          FROM ${e.reviews} r WHERE r.reviewed_on=? AND EXISTS (
+            SELECT 1 FROM ${e.reviews} old WHERE old.${e.idColumn}=r.${e.idColumn} AND old.reviewed_on<?)
+          ) WHERE first=1`, [date, date])[0];
+        expect(retention, `${p.id}/${seed}/D${day}/${k}保持率首答对账`).toEqual({ count: c.review, correct: c.reviewCorrect });
         expect(priorValidatedToday(k)).toBe(c.prior);
         for (const key of seenToday[k]) history[k].add(key);
         if (k === "grammar") c.scheduledRemaining = getGrammarQuizSession(PLAN_GRAMMAR_LEVEL).remaining;
@@ -432,6 +492,8 @@ export async function simulate(p: Persona, seed: number, days: number, env: Envi
           WHERE t.reviewed_on=? AND m.known_forever=0 AND (m.fsrs_due IS NULL OR m.fsrs_due<=? OR m.fsrs_state IN (0,1,3))`, [date, end], 0);
       }
       for (const key of grammarObserved) if (learnedN4.has(key)) n4Scheduled.add(key);
+      if (env.policy === "budget") d.completed = d.active && spent > 0 && KINDS.every(k => d.cards[k].scheduledRemaining === 0)
+        && d.relief >= (relief.wordIds?.length ?? 0) && d.tail >= (tail.wordIds?.length ?? 0) && (!d.kana.planned || kanaComplete());
       if (spent > available) throw new Error("超出时间预算");
       statements.verifyCounts(date);
       if (day % 10 === 0) process.stdout.write(`${p.id} seed=${seed} D${day}/${days}\n`);

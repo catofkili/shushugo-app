@@ -1,0 +1,128 @@
+import { beforeEach, expect, it, vi } from "vitest";
+import { byKind } from "./model";
+import { applyBudgetMorning, budgetOrder } from "./budget-policy";
+import type { StudyPreferences } from "../studyPreferences";
+
+const fixture = vi.hoisted(() => ({
+  prefs: {} as StudyPreferences, mandatory: 0, history: [] as { d: string; minutes: number }[],
+  prior: [] as number[], kanaPending: false, paused: false, intakeDays: 50,
+  save: vi.fn((next: StudyPreferences) => { fixture.prefs = { ...next }; return fixture.prefs; })
+}));
+vi.mock("../daily-plan", () => ({
+  SECONDS_PER_CARD: { words: 12, grammar: 25, kanji: 10, confusion: 40 },
+  remainingPlanWords: () => 100,
+  dailyPlanView: () => ({ wordExtras: 0, priorExtras: {}, segments: ["words", "grammar", "kanji", "confusion"].map(kind =>
+    ({ kind, review: fixture.mandatory, pool: { unseen: 100 }, suggest: { fresh: 2 } })) })
+}));
+vi.mock("../database/db-utils", () => ({
+  today: () => "2026-11-03", studyDayEnd: () => new Date("2026-11-03T20:00:00Z"),
+  rowsFor: () => fixture.history,
+  firstValue: (sql: string) => sql.includes("grammar_progress p JOIN grammar_points") ? 100 : 0
+}));
+vi.mock("../grammar-quiz", () => ({ PLAN_GRAMMAR_LEVEL: "plan", scopeLevels: () => ["N5", "N4", "N3"], grammarReviewEntity: () => ({ eligible: "1" }) }));
+vi.mock("../jlpt/status", () => ({ getJlptPlanStatus: () => ({ plan: { intakeDaysLeft: fixture.intakeDays } }) }));
+vi.mock("../fsrs-store", () => ({ WORD_FSRS: { eligible: "1" } }));
+vi.mock("../prior-pacing", () => ({
+  pendingPriorSql: () => "0", forecastPriorReleases: (k: string, ends: Date[]) => k === "words" && fixture.prior.length ? fixture.prior : ends.map(() => 0),
+  PRIOR_ENTITIES: { words: { table: "progress", idColumn: "word_id", reviews: "reviews" },
+    grammar: { table: "grammar_progress", idColumn: "grammar_id", reviews: "grammar_reviews" },
+    kanji: { table: "kanji_char_memory", idColumn: "char", reviews: "kanji_char_reviews" },
+    confusion: { table: "confusion_progress", idColumn: "group_key", reviews: "confusion_reviews" } }
+}));
+vi.mock("../studyPreferences", () => ({
+  getStudyPreferences: () => ({ ...fixture.prefs }), getEffectiveStudyPreferences: () => ({ ...fixture.prefs }),
+  kanaGatePending: () => fixture.kanaPending, levelAdvanceNewCap: (kind: string) => kind === "words" && fixture.paused ? 12 : null,
+  levelAdvanceTarget: () => "N3",
+  PLAN_REVIEW_DISABLED: -1, saveStudyPreferences: (next: StudyPreferences) => fixture.save(next)
+}));
+
+beforeEach(() => {
+  fixture.mandatory = 0; fixture.prior = []; fixture.save.mockClear();
+  fixture.kanaPending = false; fixture.paused = false; fixture.intakeDays = 50;
+  fixture.history = [{ d: "2026-11-02", minutes: 100 }];
+  fixture.prefs = { dailyGoal: 40, grammarDailyGoal: 5, kanjiDailyGoal: 5, confusionDailyGoal: 2,
+    reviewCap: 0, grammarReviewCap: 0, kanjiReviewCap: 0, confusionReviewCap: 0,
+    jlptPlanEnabled: true, includeOptionalExpressions: false, theme: "dark" } as StudyPreferences;
+});
+
+it("0/0段也不关闭复习cap，非过载仅写未钉住新学，其余偏好逐字段不变", () => {
+  const before = { ...fixture.prefs };
+  const out = applyBudgetMorning({ locked: { words: { fresh: 40 } }, baseline: before, days: [] });
+  expect(out.overloaded).toBe(false);
+  expect(fixture.save).toHaveBeenCalledOnce();
+  expect(fixture.prefs).toEqual({ ...before, grammarDailyGoal: 3, kanjiDailyGoal: 3, confusionDailyGoal: 3 });
+  expect(out.appliedFresh).toEqual({ ...byKind(() => 3), words: 40 });
+});
+
+it("过载才写普通复习cap，钉住的复习/新学与非额度字段保持原值", () => {
+  fixture.mandatory = 100;
+  fixture.prefs.grammarReviewCap = 20;
+  const before = { ...fixture.prefs };
+  const out = applyBudgetMorning({ locked: { words: { fresh: 40 }, grammar: { review: 20 } }, baseline: before, days: [] });
+  expect(out.overloaded).toBe(true);
+  expect(fixture.prefs.dailyGoal).toBe(40);
+  expect(fixture.prefs.grammarReviewCap).toBe(20);
+  expect(fixture.prefs.reviewCap).toBeGreaterThan(0);
+  expect(fixture.prefs.theme).toBe("dark");
+  expect(fixture.prefs.grammarDailyGoal).toBe(0);
+});
+
+it("按完成比例而非已做张数选类，平手固定单词→语法→汉字→辨析", () => {
+  expect(budgetOrder(byKind(() => 10), byKind(() => 0))).toEqual(["words", "grammar", "kanji", "confusion"]);
+  expect(budgetOrder({ words: 100, grammar: 10, kanji: 20, confusion: 4 },
+    { words: 30, grammar: 2, kanji: 10, confusion: 0 })).toEqual(["confusion", "grammar", "words", "kanji"]);
+});
+
+it("只有观测到的完成日能触发预算增长，不能把已有答题历史当成完成清单", () => {
+  fixture.history = Array.from({ length: 7 }, (_, i) => ({ d: `2026-10-${31 - i}`, minutes: 20 }));
+  const baseline = { ...fixture.prefs };
+  expect(applyBudgetMorning({ locked: {}, baseline, days: [] }).B).toBe(20);
+  const days = fixture.history.slice(0, 4).map(row => ({ date: row.d, completed: true }));
+  expect(applyBudgetMorning({ locked: {}, baseline, days }).B).toBe(22);
+  expect(applyBudgetMorning({ locked: {}, baseline, days: days.slice(0, 3) }).B).toBe(20);
+});
+
+it("冷启动预算使用原计划强度，不能因自己的新额度写回而递归变小", () => {
+  fixture.history = [];
+  const baseline = { ...fixture.prefs };
+  const firstBudget = applyBudgetMorning({ locked: {}, baseline, days: [] }).B;
+  expect(firstBudget).toBeCloseTo(12.25);
+  expect(fixture.prefs.dailyGoal).toBeLessThan(baseline.dailyGoal);
+  expect(applyBudgetMorning({ locked: {}, baseline, days: [] }).B).toBe(firstBudget);
+});
+
+it("先验预测去掉今天、保留第28天，不能把同一批先验重复算到明天", () => {
+  fixture.history = [{ d: "2026-11-02", minutes: 20 }];
+  // 今日999张不进入未来；第28天100张单词恰好用满20分钟，必须挡住额外新学。
+  fixture.prior = [999, ...Array(27).fill(0), 100];
+  const out = applyBudgetMorning({ locked: {}, baseline: { ...fixture.prefs }, days: [] });
+  expect(out.M0).toBe(0);
+  expect(out.peakMinutes).toBe(20);
+  expect(out.overloaded).toBe(false);
+  expect(out.fresh).toEqual(byKind(() => 0));
+});
+
+it.each(["五十音门槛", "用户先不加"])("%s阻止自动新词，不能因范围仍有未学内容就重新打开", reason => {
+  fixture.kanaPending = reason === "五十音门槛";
+  fixture.paused = reason === "用户先不加";
+  const out = applyBudgetMorning({ locked: {}, baseline: { ...fixture.prefs }, days: [] });
+  expect(out.contentLeft.words).toBe(100);
+  expect(out.need.words).toBe(0);
+  expect(out.fresh.words).toBe(0);
+  expect(fixture.prefs.dailyGoal).toBe(0);
+  expect(out.need.grammar).toBe(2);
+  expect(out.fresh.grammar).toBeGreaterThan(0);
+});
+
+it("备考进新窗口结束后四类不再自动添新，无考期则沿用原强度", () => {
+  fixture.intakeDays = 0;
+  const baseline = { ...fixture.prefs };
+  const exam = applyBudgetMorning({ locked: {}, baseline, days: [] });
+  expect(exam.contentLeft).toEqual(byKind(() => 100));
+  expect(exam.need).toEqual(byKind(() => 0));
+  expect(exam.fresh).toEqual(byKind(() => 0));
+  fixture.prefs.jlptPlanEnabled = false;
+  const casual = applyBudgetMorning({ locked: {}, baseline, days: [] });
+  expect(casual.need).toEqual({ words: 40, grammar: 5, kanji: 5, confusion: 2 });
+  expect(casual.fresh.words).toBeGreaterThan(0);
+});

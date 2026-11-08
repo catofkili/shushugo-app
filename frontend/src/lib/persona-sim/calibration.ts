@@ -3,6 +3,7 @@ import type { WordAnswer } from "../../types/vocabulary";
 import { recordReview, retrievability, type FsrsState, type StepMode } from "../fsrs-scheduler";
 import { SECONDS_PER_CARD } from "../daily-plan";
 import { PRIOR_ENTITIES } from "../prior-pacing";
+import { studyDate } from "../database/db-utils";
 import { byKind, dateAt, DAY_MS, KINDS, median, percentile, round } from "./model";
 
 const rows = (db: Database, sql: string): Record<string, unknown>[] => {
@@ -16,6 +17,12 @@ const sample = (): Sample => ({ count: 0, correct: 0, sumR: 0 });
 const add = (s: Sample, correct: boolean, r = 0) => { s.count++; s.correct += Number(correct); s.sumR += r; };
 const rate = (s: Sample) => s.count ? s.correct / s.count : null;
 
+export const recallByStudyDay = (state: FsrsState, at: number): number => {
+  const gap = Math.max(0, (Date.parse(studyDate(new Date(at))) - Date.parse(studyDate(new Date(state.lastReview)))) / DAY_MS);
+  // retrievability内部按24h取整；平移查询时刻，让它恰好使用学习日差，不改生产recallFromRow。
+  return retrievability(state, new Date(Date.parse(state.lastReview) + gap * DAY_MS));
+};
+
 /** 仅返回聚合数；不读取词面，不输出汉字/辨析键或语法原文。 */
 export const calibrate = (db: Database) => {
   const last = String(rows(db, `SELECT MAX(d) AS d FROM (
@@ -28,6 +35,7 @@ export const calibrate = (db: Database) => {
   const begin = dateAt(beginAt), end = dateAt(endAt);
   const minutes = new Map(Array.from({ length: 60 }, (_, i) => [dateAt(beginAt + i * DAY_MS), 0]));
   const first = byKind(sample), review = byKind(sample), prior = byKind(sample);
+  const previousReview = byKind(sample);
   const missingR = byKind(() => 0), inferredModes = byKind(() => 0), replayed = byKind(() => 0);
   const bins = byKind(() => Object.fromEntries(["<1", "1-3", "3-7", "7-14", "14-30", ">=30"].map(b => [b, sample()])));
   const excludedDirections = rows(db, "SELECT COUNT(*) AS n FROM reviews WHERE direction <> 'forward'")[0].n;
@@ -55,11 +63,13 @@ export const calibrate = (db: Database) => {
       };
       const firstToday = day !== previousDay;
       if (firstToday) wrong = 0;
-      const correct = answer === "know" || answer === "known_forever";
+      const previousCorrect = answer === "know" || answer === "known_forever";
+      const correct = previousCorrect || answer === "fuzzy";
       if (day >= begin && day <= end && firstToday) {
         if (!seen) add(isPrior ? prior[kind] : first[kind], correct);
         else {
-          const r = state ? retrievability(state, new Date(at)) : NaN;
+          const r = state ? recallByStudyDay(state, at) : NaN;
+          if (state) add(previousReview[kind], previousCorrect, retrievability(state, new Date(at)));
           if (Number.isFinite(r)) add(review[kind], correct, r);
           else missingR[kind]++;
           const gap = (at - lastAt) / DAY_MS;
@@ -70,7 +80,7 @@ export const calibrate = (db: Database) => {
       if (answer === "forgot" || answer === "fuzzy") wrong++;
       const storedMode = String(event.scheduler_mode ?? "legacy");
       const mode: StepMode = ["normal", "stubborn", "known"].includes(storedMode) ? storedMode as StepMode
-        : firstToday && correct ? "known" : wrong >= 3 ? "stubborn" : "normal";
+        : firstToday && previousCorrect ? "known" : wrong >= 3 ? "stubborn" : "normal";
       if (!["normal", "stubborn", "known"].includes(storedMode)) inferredModes[kind]++;
       // 语法的熟知入口不写 FSRS；另三类将熟知当 know 后退出调度。
       if (!(kind === "grammar" && answer === "known_forever")) state = recordReview(state, answer === "known_forever" ? "know" : answer, new Date(at), { mode });
@@ -88,7 +98,8 @@ export const calibrate = (db: Database) => {
     start, lastSnapshotDay: last, window: { begin, end, days: 60, active: activeMinutes.length, absent: 60 - activeMinutes.length },
     absence: (60 - activeMinutes.length) / 60, baseMinutes: median(activeMinutes), activeMinutes: activeMinutes.map(round),
     minuteDistribution: { median: round(median(activeMinutes)), p10: round(percentile(activeMinutes, 0.1)), p90: round(percentile(activeMinutes, 0.9)), min: round(Math.min(...activeMinutes)), max: round(Math.max(...activeMinutes)) },
-    coefficients, firstAccuracy, priorAccuracy: rate(pooledPrior) ?? 0.8,
+    coefficients, previousCoefficients: byKind(k => previousReview[k].sumR > 0 ? previousReview[k].correct / previousReview[k].sumR : 0.95),
+    firstAccuracy, priorAccuracy: rate(pooledPrior) ?? 0.8,
     first: byKind(k => summarize(first[k])), review: byKind(k => summarize(review[k])), prior: byKind(k => summarize(prior[k])),
     bins: byKind(k => Object.fromEntries(Object.entries(bins[k]).map(([b, s]) => [b, summarize(s)]))),
     method: KINDS.some(k => missingR[k] > 0) ? "interval-buckets" : "replay-R",
