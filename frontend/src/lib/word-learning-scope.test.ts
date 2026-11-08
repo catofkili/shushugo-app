@@ -69,7 +69,7 @@ describe("固定搭配分档的共享学习口径", () => {
     storage.clear();
     toggle(false);
     vi.useFakeTimers({ toFake: ["Date"] });
-    vi.setSystemTime(new Date("2026-11-02T10:00:00+08:00"));
+    vi.setSystemTime(new Date(2026, 10, 2, 10, 0, 0)); // 本地时间 10:00：不依赖运行机的时区（写成 +08:00 时 UTC 的 CI 上是 02:00，落在凌晨 4 点前一天）
   });
   afterEach(async () => { await vi.dynamicImportSettled(); vi.useRealTimers(); db.close(); });
 
