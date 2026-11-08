@@ -224,7 +224,8 @@ describe("fsrs-store", () => {
       for (let id = 210; id < 230; id += 1) {
         testDb.run("UPDATE progress SET seen_count = 0, fsrs_stability = NULL, fsrs_due = NULL, fsrs_lapses = 0 WHERE word_id = ?", [id]);
       }
-    });
+      // 本机单跑约 2 秒，GitHub 的 2 核机器上与别的测试文件抢 CPU 会超过默认 5 秒（2026-11-03、11-06 两次 CI 都因此红）。
+    }, 30_000);
 
     it("积压计数始终使用 FSRS 到期数", async () => {
       const { reviewBacklogCount } = await import("./review-budget");
