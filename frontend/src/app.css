@@ -1469,7 +1469,7 @@
 }
 .wl-sheet-content{display:flex;flex-direction:column;gap:9px}
 /* 手机横屏的导航已经挪到左边，底栏可以贴回屏幕底部并给左轨让位。 */
-@media (orientation:landscape) and (max-height:600px) and (max-width:1023px){
+@media (orientation:landscape) and (max-height:600px) and (max-width:1023px) and (pointer:coarse){
   .yz-stage{left:calc(50% + 36px);bottom:8px;width:min(calc(100vw - 96px),720px)}
 }
 
@@ -1526,7 +1526,7 @@
 .app-tab-label{font-size:11px;font-weight:700;line-height:1;white-space:nowrap}
 .app-tab.is-active .app-tab-label{color:var(--zoo-primary-deep)}
 .app-tab-icon.is-active{transform:none;filter:none}
-@media (orientation:landscape) and (max-height:600px) and (max-width:1023px){.app-tab{height:52px}}
+@media (orientation:landscape) and (max-height:600px) and (max-width:1023px) and (pointer:coarse){.app-tab{height:52px}}
 
 /* —— 主页：今日大卡外面那层「盘子」拿掉 —— 大卡本身就是全页最重的块，
    再套一层框就是框中框；备考 / 组队两格靠间距跟它成组。 */

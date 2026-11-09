@@ -1860,7 +1860,7 @@ select {
    - 主内容区让出顶栏高度 + 左轨宽度
    桌面/平板横屏（≥1024px）继续使用 lg 侧边栏，不受影响。
    ============================================================ */
-@media (orientation: landscape) and (max-height: 600px) and (max-width: 1023px) {
+@media (orientation: landscape) and (max-height: 600px) and (max-width: 1023px) and (pointer:coarse) {
   /* 顶栏：压扁高度 */
   .app-landscape-topbar {
     padding-top: calc(env(safe-area-inset-top) + 0.3rem) !important;
