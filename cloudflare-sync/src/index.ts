@@ -186,8 +186,9 @@ const MAX_CODE_ATTEMPTS = 5;
 // KV 单值上限 25MB;base64 后 20M 约对应 15MB 数据库,词库全量也远小于此。
 const SYNC_MAX_BASE64_LENGTH = 20_000_000;
 const SYNC_MAX_REQUEST_BODY_LENGTH = SYNC_MAX_BASE64_LENGTH + 100_000;
-// 每个用户只保留最近 N 份云备份,旧的连 KV 对象一起清掉。
+// 最近几代之外按天留底，避免坏快照连续上传后迅速挤掉所有可恢复历史。
 const SYNC_KEEP_GENERATIONS = 3;
+const SYNC_KEEP_DAYS = 14;
 const encoder = new TextEncoder();
 
 const json = (body: unknown, status = 200) => (
@@ -3592,14 +3593,30 @@ const pushSync = async (request: Request, env: Env) => {
     }, 409);
   }
 
-  // 只保留最近几代备份；升级期间旧 KV 与新 R2 对象按各自后端清理。
+  // 保留最近 3 代 + 北京时间今天及前 13 天每天最新一份（重合只算一份）。
+  // 升级期间旧 KV 与新 R2 对象仍按各自后端清理。
   const stale = await env.DB.prepare(`
+    WITH ranked AS (
+      SELECT id, object_key, storage_backend,
+             date(created_at, '+8 hours') AS snapshot_day,
+             ROW_NUMBER() OVER (
+               ORDER BY generation DESC, created_at DESC, id DESC
+             ) AS generation_rank,
+             ROW_NUMBER() OVER (
+               PARTITION BY date(created_at, '+8 hours')
+               ORDER BY created_at DESC, generation DESC, id DESC
+             ) AS day_rank
+      FROM sync_objects
+      WHERE user_id = ?
+    )
     SELECT id, object_key, storage_backend
-    FROM sync_objects
-    WHERE user_id = ?
-    ORDER BY generation DESC, created_at DESC
-    LIMIT -1 OFFSET ?
-  `).bind(userId, SYNC_KEEP_GENERATIONS).all<{
+    FROM ranked
+    WHERE generation_rank > ?
+      AND NOT (
+        day_rank = 1
+        AND snapshot_day BETWEEN date(?, '+8 hours', ?) AND date(?, '+8 hours')
+      )
+  `).bind(userId, SYNC_KEEP_GENERATIONS, now, `-${SYNC_KEEP_DAYS - 1} days`, now).all<{
     id: string;
     object_key: string;
     storage_backend: "kv" | "r2";
