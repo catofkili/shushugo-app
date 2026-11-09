@@ -314,3 +314,19 @@ cd wechat-miniprogram && bash scripts/upload-cloud-content.sh
 gzip level 9 **2,210,372→2,370,361 B**；上传脚本的 Brotli q11/lgwin24 为
 **1,341,500→1,455,575 B**（增加 114,075 B）。两份 Brotli 均解压回原字节；
 结果在 `tmp/perf/factory-size-report.json`。这些是本地制品字节，不是实际网络等待时间或线上传输大小。
+
+## ⚠️ 上传被拒「invalid file: lazy/tabs.js, 1:N … Invalid or unexpected token」：对象键里的「・」（2026-11-09）
+
+0.2.6 上传时踩到。dist 里一切正常（引号在、`node --check` 过、ci-local 全绿），只有开发者工具上传 / 预览那一步报错。
+原因：开发者工具上传时会再处理一遍代码、去掉对象键的引号；它按新版 Unicode（15.1 起 U+30FB「・」、U+FF65「･」算标识符字符）
+把 `"書きます・食べます・します・来ます":…` 写成裸标识符，而微信自己的 JS 引擎不认。改 project.config.json 的 `es6` / `minified` **没用**（试过）。
+
+- 判据：含「・／･」、其余全是标识符字符的字符串，**不许出现在对象字面量的键位置**。要用就写成键值对数组，或放进 `JSON.parse('…')` 字符串。
+  webpack 打进来的 `.json` 本来就是 `JSON.parse` 字符串，不受影响；`build-shared.mjs` 的 `jsonModule` 会自动处理；手写的 TS 对象要自己注意。
+- 守护：`frontend/src/lib/weapp-unquoted-keys.test.ts` 扫 `frontend/src` 和 `wechat-miniprogram/src`。`kanji_variants` 以前踩过同一个坑（生僻字）。
+- 定位方法：报错里贴出的是开发者工具处理**之后**的代码，列号对不上 dist。去 `~/Library/Application Support/微信开发者工具/<hash>/WeappLog/logs/` 最新日志里找 `Object.defineProperty(exports` 开头那一行，按列号切出来看。
+- 上传前先 `cli preview --project … --qr-format base64 --qr-output <文件>` 跑一遍：它走同一套检查，但不动任何版本。
+- 重建 dist 时开发者工具开着这个项目，之后会一直报「未找到 app.json」（缓存失效；`cli close` 不够、`cli quit` 会关掉作者自己的项目不能用）。
+  做法：把 `project.config.json` + `dist/` 复制到一个新目录（如 `~/Documents/shushugo-wt/release-0xx-upload`），从那里预览和上传。
+- 提审页的「免费加急包」每年只有 1 次；加急队列拥挤时它会写「预计 12 小时」，比常规审核的「预计 2 小时」还慢 —— 先看提示再决定用不用。
+

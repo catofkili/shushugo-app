@@ -59,6 +59,8 @@
 - ### ⚠️ 微信：没有 OpenSDK，所谓「一键」是这两条 → `docs/claude/interface-and-design-system.md`
 - ## ⚠️ 词义普查为什么没起作用，以及下一次必须遵守的四条（2026-11-03；释义覆盖表只能由脚本生成、输入用线上释义、先盲写再比对） → `docs/claude/audio-pronunciation-and-content.md`
 - ## ⚠️ 新内容按计划级别顺推，先验之后必须对齐（2026-10-28；单词 / 语法 / 汉字 / 辨析四处 + 「新学」不含先验卡） → `docs/claude/fsrs-and-review-scheduling.md`
+- ## ⚠️ 改同步 / 落盘 / 启动流程：`sync-recovery.e2e.test.ts` 必须过；发版前做一次事故预演 + 真机「删除重装 → 登录 → 进度回来」；每天看 `scripts/prod-health.sh`（2026-11-09 cherish 丢数据） → `docs/claude/sync-and-cloud-data.md`、`docs/claude/prod-health.md`
+- ## ⚠️ 小程序里含「・」的字符串不许当对象键：上传时微信会去掉引号 → invalid file，被拒（2026-11-09，守护测试 `weapp-unquoted-keys.test.ts`） → `docs/claude/release-and-deployment.md`
 
 ## 专题索引
 
