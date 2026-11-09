@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
-# nohup bash src/lib/persona-sim/run-comparison.sh >> .local/persona-sim/compare-2026-11-05/driver.log 2>&1 < /dev/null &
+# 从 frontend/ 执行；先 mkdir -p .local/persona-sim/compare-2026-11-09-r2，再后台运行：
+# nohup bash src/lib/persona-sim/run-comparison.sh >> .local/persona-sim/compare-2026-11-09-r2/driver.log 2>&1 < /dev/null &
+# PERSONA_SIM_COMPARE_ROOT 覆盖分片根目录；PERSONA_SIM_COMPARE_OUT 独立覆盖报告路径。
+# 默认报告写忽略目录，不能覆盖 11-05 的历史审计；本轮只定版，不在此任务启动全量。
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/../../.."
-sim_root="${PERSONA_SIM_COMPARE_ROOT:-$PWD/.local/persona-sim/compare-2026-11-05}"
+sim_root="${PERSONA_SIM_COMPARE_ROOT:-$PWD/.local/persona-sim/compare-2026-11-09-r2}"
 sim_frozen="${SHUSHUGO_LIVE_DB:-$PWD/.local/persona-sim-frozen-2026-11-03.db}"
 [[ "$sim_root" = /* && "$sim_frozen" = /* ]]
 mkdir -p "$sim_root"
@@ -30,6 +33,6 @@ for sim_id in zero cram cram-lock office break fast struggle light self; do
 done
 unset SHUSHUGO_PERSONA_SIM
 export PERSONA_SIM_COMPARE="$sim_root/current,$sim_root/budget"
-export PERSONA_SIM_COMPARE_OUT="$PWD/../docs/audits/2026-11-05-budget-sim-compare.md"
+export PERSONA_SIM_COMPARE_OUT="${PERSONA_SIM_COMPARE_OUT:-$PWD/.local/persona-sim/compare-2026-11-09-r2/generated.md}"
 ./node_modules/.bin/vitest run src/lib/persona-sim/persona-load-simulation.test.ts --configLoader runner --no-cache --maxWorkers 1
 echo "COMPLETE exit=0"

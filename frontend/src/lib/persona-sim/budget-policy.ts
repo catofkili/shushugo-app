@@ -10,6 +10,7 @@ import { getEffectiveStudyPreferences, getStudyPreferences, kanaGatePending, lev
   levelAdvanceTarget, PLAN_REVIEW_DISABLED, saveStudyPreferences, type StudyPreferences } from "../studyPreferences";
 import { byKind, DAY_MS, KINDS, type Daily } from "./model";
 
+const TODAY_BUDGET_SHARE = 0.6; // 晨间单次清单留四成给当天重学，未来预测仍使用完整B。
 export type Policy = "current" | "budget";
 export const freshKeys = { words: "dailyGoal", grammar: "grammarDailyGoal", kanji: "kanjiDailyGoal", confusion: "confusionDailyGoal" } as const;
 export const reviewKeys = { words: "reviewCap", grammar: "grammarReviewCap", kanji: "kanjiReviewCap", confusion: "confusionReviewCap" } as const;
@@ -21,7 +22,10 @@ export const budgetOrder = (planned: Record<typeof KINDS[number], number>, done:
 /** 参数只有应用能观察到的计划、锁定状态和过往完成情况，不能接收 Persona 或 Calibration。 */
 export const applyBudgetMorning = (input: { locked: Locks; days: Pick<Daily, "date" | "completed" | "budget">[]; baseline: StudyPreferences }): NonNullable<Daily["budget"]> => {
   const saved = getStudyPreferences(), effective = getEffectiveStudyPreferences();
-  const view = dailyPlanView(), segments = byKind(k => view.segments.find(s => s.kind === k)!);
+  const reviewPrefs = { ...effective };
+  for (const k of KINDS) if (input.locked[k]?.review === undefined) reviewPrefs[reviewKeys[k]] = input.baseline[reviewKeys[k]];
+  // 先按准备恢复的 cap 估 M0；先用昨日低 cap 求解、再恢复自动档，会把低估后的清单突然放大。
+  const view = dailyPlanView(reviewPrefs), segments = byKind(k => view.segments.find(s => s.kind === k)!);
   const end = studyDayEnd();
   const ends = Array.from({ length: 29 }, (_, i) => new Date(end.getTime() + i * DAY_MS));
   const eligible = byKind(k => k === "words" ? WORD_FSRS.eligible : k === "grammar" ? grammarReviewEntity(PLAN_GRAMMAR_LEVEL).eligible : "known_forever=0 AND seen_count>0");
@@ -59,13 +63,12 @@ export const applyBudgetMorning = (input: { locked: Locks; days: Pick<Daily, "da
       return firstValue<number>(`SELECT COUNT(*) FROM ${e.table} WHERE ${eligible[k]}
         AND fsrs_due>? AND fsrs_due<=? AND NOT ${pendingPriorSql(k, `${e.table}.${e.idColumn}`)}`,
       [ends[i].toISOString(), nextEnd.toISOString()], 0);
-    })), priorForecast: byKind(k => prior[k].slice(1)), need, contentLeft, locked: input.locked, previousFresh: previous };
-  const fallbackMinutes = process.env.PERSONA_SIM_R2_COLD === "need"
-    ? allocateDay({ ...day, budgetMinutes: 1e9, maxScale: 1, previousFresh: undefined }).peakMinutes
-    : KINDS.reduce((s, k) => s + input.baseline[freshKeys[k]] * SECONDS_PER_CARD[k] / 60, 0);
+    })), priorForecast: byKind(k => prior[k].slice(1)), need, contentLeft, locked: input.locked, previousFresh: previous,
+    maxFresh: { words: 50, grammar: 30, kanji: 50, confusion: 20 } };
+  const fallbackMinutes = allocateDay({ ...day, budgetMinutes: 1e9, maxScale: 1, previousFresh: undefined }).peakMinutes;
   const B = inferBudgetMinutes({ history, fallbackMinutes,
-    previous: yesterday && { B: yesterday.B, binding: yesterday.scale < DEFAULT_MAX_SCALE } });
-  const allocation = allocateDay({ ...day, budgetMinutes: B });
+    previous: yesterday && { B: yesterday.B, binding: !!input.days[input.days.length - 1]?.completed && yesterday.scale < DEFAULT_MAX_SCALE } });
+  const allocation = allocateDay({ ...day, budgetMinutes: B, todayBudgetMinutes: B * TODAY_BUDGET_SHARE });
   const patch: Partial<StudyPreferences> = {};
   for (const k of KINDS) {
     if (input.locked[k]?.fresh === undefined) patch[freshKeys[k]] = allocation.fresh[k];
@@ -73,7 +76,7 @@ export const applyBudgetMorning = (input: { locked: Locks; days: Pick<Daily, "da
     const limit = allocation.reviewLimit[k];
     // 单词的0是自动/-1是不限，现有生产入口最低只能给1；另三类用专用关闭哨兵。
     // 第二轮：不过载的日子把 cap 还原成起步时的值（通常是自动档）。第一轮只在过载日写、之后不恢复，
-    // 上班族第 4 天写下的单词 cap 9 一直用到第 90 天，到期积压涨到 219 张，清单反而越排越短。
+    // 上班族种子1第 11 天写下的单词 cap 9 一直用到第 90 天，到期积压涨到 219 张，清单反而越排越短。
     patch[reviewKeys[k]] = limit === null ? input.baseline[reviewKeys[k]]
       : k === "words" ? Math.max(1, limit) : limit || PLAN_REVIEW_DISABLED;
   }

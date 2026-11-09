@@ -6,17 +6,25 @@ import type { StudyPreferences } from "../studyPreferences";
 const fixture = vi.hoisted(() => ({
   prefs: {} as StudyPreferences, mandatory: 0, history: [] as { d: string; minutes: number }[],
   prior: [] as number[], kanaPending: false, paused: false, intakeDays: 50,
+  capAware: false, kanaMinutes: 0, historySql: "",
   save: vi.fn((next: StudyPreferences) => { fixture.prefs = { ...next }; return fixture.prefs; })
 }));
 vi.mock("../daily-plan", () => ({
   SECONDS_PER_CARD: { words: 12, grammar: 25, kanji: 10, confusion: 40 },
   remainingPlanWords: () => 100,
-  dailyPlanView: () => ({ wordExtras: 0, priorExtras: {}, segments: ["words", "grammar", "kanji", "confusion"].map(kind =>
-    ({ kind, review: fixture.mandatory, pool: { unseen: 100 }, suggest: { fresh: 2 } })) })
+  dailyPlanView: (prefs: StudyPreferences) => ({ wordExtras: 0, priorExtras: {}, segments: ["words", "grammar", "kanji", "confusion"].map((kind, i) => {
+    const cap = prefs[["reviewCap", "grammarReviewCap", "kanjiReviewCap", "confusionReviewCap"][i] as keyof StudyPreferences];
+    return { kind, review: fixture.capAware && Number(cap) > 0 ? Math.min(fixture.mandatory, Number(cap)) : fixture.mandatory,
+      pool: { unseen: 100 }, suggest: { fresh: 2 } };
+  }) })
 }));
 vi.mock("../database/db-utils", () => ({
   today: () => "2026-11-03", studyDayEnd: () => new Date("2026-11-03T20:00:00Z"),
-  rowsFor: () => fixture.history,
+  rowsFor: (sql: string) => {
+    fixture.historySql = sql;
+    return [...fixture.history, ...(fixture.kanaMinutes && sql.includes("FROM kana_reviews")
+      ? [{ d: "2026-11-02", minutes: fixture.kanaMinutes }] : [])];
+  },
   firstValue: (sql: string) => sql.includes("grammar_progress p JOIN grammar_points") ? 100 : 0
 }));
 vi.mock("../grammar-quiz", () => ({ PLAN_GRAMMAR_LEVEL: "plan", scopeLevels: () => ["N5", "N4", "N3"], grammarReviewEntity: () => ({ eligible: "1" }) }));
@@ -38,6 +46,7 @@ vi.mock("../studyPreferences", () => ({
 
 beforeEach(() => {
   fixture.mandatory = 0; fixture.prior = []; fixture.save.mockClear();
+  fixture.capAware = false; fixture.kanaMinutes = 0; fixture.historySql = "";
   fixture.kanaPending = false; fixture.paused = false; fixture.intakeDays = 50;
   fixture.history = [{ d: "2026-11-02", minutes: 100 }];
   fixture.prefs = { dailyGoal: 40, grammarDailyGoal: 5, kanjiDailyGoal: 5, confusionDailyGoal: 2,
@@ -78,17 +87,27 @@ it("只有观测到的完成日能触发预算增长，不能把已有答题历�
   const baseline = { ...fixture.prefs };
   expect(applyBudgetMorning({ locked: {}, baseline, days: [] }).B).toBe(20);
   const days = fixture.history.slice(0, 4).map(row => ({ date: row.d, completed: true }));
-  expect(applyBudgetMorning({ locked: {}, baseline, days }).B).toBe(22);
+  expect(applyBudgetMorning({ locked: {}, baseline, days }).B).toBe(24);
   expect(applyBudgetMorning({ locked: {}, baseline, days: days.slice(0, 3) }).B).toBe(20);
 });
 
-it("冷启动预算使用原计划强度，不能因自己的新额度写回而递归变小", () => {
+it("冷启动预算使用计划量的28天峰值，不能因自己的新额度写回而递归变小", () => {
   fixture.history = [];
   const baseline = { ...fixture.prefs };
   const firstBudget = applyBudgetMorning({ locked: {}, baseline, days: [] }).B;
-  expect(firstBudget).toBeCloseTo(12.25);
+  expect(firstBudget).toBeCloseTo(23.40714285714285);
   expect(fixture.prefs.dailyGoal).toBeLessThan(baseline.dailyGoal);
   expect(applyBudgetMorning({ locked: {}, baseline, days: [] }).B).toBe(firstBudget);
+});
+
+it("缺席日不能重复消费上次完成证据让B继续增长", () => {
+  fixture.history = Array.from({ length: 7 }, (_, i) => ({ d: `2026-10-${31 - i}`, minutes: 20 }));
+  const baseline = { ...fixture.prefs };
+  const previous = { ...applyBudgetMorning({ locked: {}, baseline, days: [] }), B: 40, scale: 0.5 };
+  const days = fixture.history.slice().reverse().map(row => ({ date: row.d, completed: true, budget: previous }));
+  expect(applyBudgetMorning({ locked: {}, baseline, days }).B).toBeGreaterThan(40);
+  expect(applyBudgetMorning({ locked: {}, baseline,
+    days: [...days, { date: "2026-11-02", completed: false, budget: previous }] }).B).toBe(40);
 });
 
 it("先验预测去掉今天、保留第28天，不能把同一批先验重复算到明天", () => {
@@ -125,4 +144,41 @@ it("备考进新窗口结束后四类不再自动添新，无考期则沿用原�
   const casual = applyBudgetMorning({ locked: {}, baseline, days: [] });
   expect(casual.need).toEqual({ words: 40, grammar: 5, kanji: 5, confusion: 2 });
   expect(casual.fresh.words).toBeGreaterThan(0);
+});
+
+it("非过载日恢复基线cap，用户钉住的复习上限仍保持原值", () => {
+  const baseline = { ...fixture.prefs };
+  Object.assign(fixture.prefs, { reviewCap: 9, grammarReviewCap: 20, kanjiReviewCap: 6, confusionReviewCap: 1 });
+  const out = applyBudgetMorning({ locked: { grammar: { review: 20 } }, baseline, days: [] });
+  expect(out.overloaded).toBe(false);
+  expect([fixture.prefs.reviewCap, fixture.prefs.grammarReviewCap, fixture.prefs.kanjiReviewCap, fixture.prefs.confusionReviewCap])
+    .toEqual([0, 20, 0, 0]);
+});
+
+it("先按将恢复的cap计算M0，不能按昨日低cap求解后突然放大真实清单", () => {
+  const baseline = { ...fixture.prefs };
+  fixture.capAware = true; fixture.mandatory = 100;
+  fixture.history = [{ d: "2026-11-02", minutes: 20 }];
+  Object.assign(fixture.prefs, { reviewCap: 1, grammarReviewCap: 1, kanjiReviewCap: 1, confusionReviewCap: 1 });
+  const out = applyBudgetMorning({ locked: {}, baseline, days: [] });
+  expect(out.M0).toBeCloseTo(145);
+  expect(out.overloaded).toBe(true);
+  expect(out.fresh).toEqual(byKind(() => 0));
+  expect([fixture.prefs.reviewCap, fixture.prefs.grammarReviewCap, fixture.prefs.kanjiReviewCap, fixture.prefs.confusionReviewCap])
+    .toEqual([8, 8, 8, 8]); // B=20，今日0.6B=12分钟，普通复习不再乘1.2。
+});
+
+it("仅做五十音的日子也进入预算历史，不再退回冷启动", () => {
+  fixture.history = []; fixture.kanaMinutes = 24;
+  const out = applyBudgetMorning({ locked: {}, baseline: { ...fixture.prefs }, days: [] });
+  expect(fixture.historySql).toContain("FROM kana_reviews WHERE reviewed_on < ?");
+  expect(out.B).toBe(24);
+});
+
+it("过载分到零张时单词cap仍最低为1，其它类使用关闭哨兵", () => {
+  fixture.mandatory = 100;
+  fixture.history = [{ d: "2026-11-02", minutes: 0.01 }];
+  applyBudgetMorning({ locked: {}, baseline: { ...fixture.prefs }, days: [] });
+  expect(fixture.prefs.reviewCap).toBe(1);
+  expect([fixture.prefs.grammarReviewCap, fixture.prefs.kanjiReviewCap, fixture.prefs.confusionReviewCap]).toEqual([-1, -1, -1]);
 });
