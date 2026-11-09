@@ -3,7 +3,7 @@ import type { PlanKind } from "../plan-level-order";
 const HORIZON_DAYS = 28; // 看完整个新学复习最密的前四周。
 const BUDGET_GROWTH = 1.1; // 经常做完时试探增加一成，避免低额度自我锁死。
 const OVERLOAD_SLACK = 1.2; // 断档回来给复习留两成缓冲，欠账仍留在到期池。
-const MAX_SCALE = 1.5; // 时间充裕也不超过备考需要量的一倍半。
+export const DEFAULT_MAX_SCALE = 1.5; // 时间充裕也不超过备考需要量的一倍半。
 const SMOOTH = 0.3; // 每日常规变化限制在昨日的三成。
 const MIN_CHANGE = 2; // 小额度也至少允许移动两张，零额度能重新启动。
 const FALLBACK_MINUTES = 20; // 无历史也无计划时先给温和的二十分钟。
@@ -25,6 +25,7 @@ export interface BudgetInput {
   previousFresh?: Record<PlanKind, number>;
   horizonDays?: number;
   uncappedToday?: Record<PlanKind, number>; // 先验、减负、压轴不占普通复习 cap。
+  maxScale?: number; // 只给冷启动估「按计划量要几分钟」用（传 1）；排片照默认 MAX_SCALE。
 }
 export interface BudgetOutput {
   fresh: Record<PlanKind, number>;
@@ -39,19 +40,27 @@ export const inferBudgetMinutes = (input: {
   history: BudgetHistoryDay[]; // 从旧到新，仅观测到的完成情况才标 completed。
   budgetMinutes?: number;
   fallbackMinutes?: number;
+  previous?: { B: number; binding: boolean }; // 昨天推断的 B，以及当时 B 是否卡住了新学（scale < DEFAULT_MAX_SCALE）。
 }): number => {
   if (input.budgetMinutes !== undefined) return input.budgetMinutes;
   const active = input.history.filter(d => d.minutes > 0).slice(-14);
   if (!active.length) return input.fallbackMinutes && input.fallbackMinutes > 0 ? input.fallbackMinutes : FALLBACK_MINUTES;
   const sorted = active.map(d => d.minutes).sort((a, b) => a - b);
   const median = (sorted[(sorted.length - 1) >> 1] + sorted[sorted.length >> 1]) / 2;
-  return median * (active.slice(-7).filter(d => d.completed).length >= 4 ? BUDGET_GROWTH : 1);
+  const recent = active.slice(-7);
+  if (recent.filter(d => d.completed).length < 4 || !recent[recent.length - 1].completed) return median;
+  // 第二轮（2026-11-09）：做完的日子从昨天的 B 往上试探，不从「实做中位数」往上。
+  // 实做 ≤ 清单 < B（28 天峰值约束让当天清单只有 B 的六七成），从实做 ×1.1 起算是棘轮：
+  // 第一轮冲刺可用 75 分钟、天天做完，B 仍卡在 14 分钟。没做完的日子才是「时间不够」的直接观测，那时回落到实做中位数。
+  const previous = Math.max(median, input.previous?.B ?? median);
+  return input.previous && !input.previous.binding ? previous : previous * BUDGET_GROWTH;
 };
 
 export const allocateDay = (input: BudgetInput): BudgetOutput => {
   const { seconds, mandatoryToday, locked, contentLeft, need, previousFresh } = input;
   const budget = Math.max(0, input.budgetMinutes);
   const horizon = Math.max(1, Math.floor(input.horizonDays ?? HORIZON_DAYS));
+  const MAX_SCALE = input.maxScale ?? DEFAULT_MAX_SCALE;
   const mandatory = KINDS.reduce((sum, k) => sum + mandatoryToday[k] * seconds[k] / 60, 0);
   const reviewLimit = byKind(k => locked[k]?.review ?? null);
   const freshAt = (scale: number, smooth: boolean) => byKind(k => {

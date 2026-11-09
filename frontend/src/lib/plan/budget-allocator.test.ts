@@ -185,10 +185,19 @@ describe("行为推断预算", () => {
     const history = [999, ...Array(13).fill(20), 500, 0].map(minutes => ({ minutes, completed: false }));
     expect(inferBudgetMinutes({ history })).toBe(20);
   });
-  it("最近 7 个有学日做完至少 4 天才试探加一成", () => {
-    const history = Array.from({ length: 7 }, (_, i) => ({ minutes: 20, completed: i < 4 }));
+  it("最近 7 个有学日做完至少 4 天、且最近一天做完，才试探加一成", () => {
+    const history = Array.from({ length: 7 }, (_, i) => ({ minutes: 20, completed: i >= 3 }));
     expect(inferBudgetMinutes({ history })).toBe(22);
     expect(inferBudgetMinutes({ history: [...history, { minutes: 20, completed: false }] })).toBe(20);
+  });
+  it("第二轮：做完时从昨天的 B 往上试探，不从实做中位数；B 没卡住新学就不涨", () => {
+    // 实做 12 分钟 < 昨天 B 14：第一轮会得 13.2 并一路往下；现在 14×1.1。
+    const history = Array.from({ length: 7 }, () => ({ minutes: 12, completed: true }));
+    expect(inferBudgetMinutes({ history, previous: { B: 14, binding: true } })).toBeCloseTo(15.4);
+    expect(inferBudgetMinutes({ history, previous: { B: 14, binding: false } })).toBe(14);
+    // 多数天没做完：回落到实做中位数，昨天的 B 不再托底。
+    const short = history.map((d, i) => ({ ...d, completed: i < 3 }));
+    expect(inferBudgetMinutes({ history: short, previous: { B: 40, binding: true } })).toBe(12);
   });
   it("无历史使用计划/强度折算，均无则回退 20；显式预算优先", () => {
     expect(inferBudgetMinutes({ history: [] })).toBe(20);
