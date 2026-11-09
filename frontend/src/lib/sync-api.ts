@@ -240,6 +240,9 @@ let syncLock: Promise<void> = Promise.resolve();
 let lastCloudUploadAt = 0;
 let lastAutoSyncCheckAt = 0;
 let autoSyncBlockedUntil = 0;
+// 本次启动有没有把云端并进过本机。云游标存在 Preferences，库文件却可能是从 prev 恢复的旧一代 / 被清过：
+// 游标说「云端没变」不能证明本机库完整。所以每次启动后的第一次上传前先并一次云端，之后才信游标（省下每次上传多一次下载）。
+let cloudMergedThisLaunch = false;
 
 type CloudSyncLifecycleWindow = Window & {
   __shushugoCloudSyncCleanup?: () => void;
@@ -453,7 +456,13 @@ const withSyncLock = async <T>(operation: () => Promise<T>): Promise<T> => {
   }
 };
 
+let cloudSyncIssue = "";
+export const getCloudSyncIssue = () => cloudSyncIssue;
+
 const emitCloudSyncEvent = (detail: CloudSyncEventDetail): void => {
+  // 常驻横幅只挂「要用户动手」的两种：登录过期、冲突。断网 / 服务端临时失败会自己重试，挂红条只是噪音。
+  if (detail.status === "conflict" || detail.status === "signed-out") cloudSyncIssue = detail.message || "云备份未完成。";
+  else if (["uploaded", "downloaded", "merged"].includes(detail.status)) cloudSyncIssue = "";
   if (typeof window !== "undefined") {
     window.dispatchEvent(new CustomEvent<CloudSyncEventDetail>(CLOUD_SYNC_EVENT, { detail }));
   }
@@ -1066,6 +1075,10 @@ const hasLocalLearningData = (): boolean => {
   const checks: Array<[string, string]> = [
     ["reviews", "1"],
     ["grammar_reviews", "1"],
+    ["kanji_unit_reviews", "1"],
+    ["kanji_char_reviews", "1"],
+    ["confusion_reviews", "1"],
+    ["kana_reviews", "1"],
     ["word_notes", "1"],
     ["content_favorites", "1"],
     ["checkins", "1"],
@@ -1155,7 +1168,7 @@ const pushCloudDatabase = async (
     clearTimeout(autoSyncTimer);
     autoSyncTimer = null;
   }
-  if (automatic) emitCloudSyncEvent({ status: "uploaded", automatic: true });
+  if (automatic || cloudSyncIssue) emitCloudSyncEvent({ status: "uploaded", automatic });
   return { status: "uploaded", automatic };
 };
 
@@ -1176,6 +1189,7 @@ const pullCloudDatabase = async (
     const { mergeDatabaseBytes } = await import(/* webpackMode: "lazy", webpackChunkName: "lazy/sync-merge" */ "./sync/merge");
     return mergeDatabaseBytes(data.bytes);
   });
+  cloudMergedThisLaunch = true;
   await ensureStructureAfterMerge();
   ensureSyncSchema();
   (await import("./level-plan")).hydrateLevelPlanPreferences();
@@ -1189,7 +1203,7 @@ const pullCloudDatabase = async (
   await setLocalSyncOwner(session.email);
   notifyProgressUpdated();
   const message = `已恢复云端备份：${new Date(data.lastModified).toLocaleString()}`;
-  if (automatic) emitCloudSyncEvent({ status: "downloaded", automatic: true, message });
+  if (automatic || cloudSyncIssue) emitCloudSyncEvent({ status: "downloaded", automatic, message });
   return { status: "downloaded", automatic, message };
 };
 
@@ -1204,6 +1218,10 @@ export async function pushCloudBackup(): Promise<string> {
       method: "GET",
       headers: { authorization: `Bearer ${session.token}` }
     });
+    // ⚠️ 手动上传也先并云端（2026-11-09 cherish 丢数据排查）：重装后「先不登录」学了几题再登录，自动同步报冲突，
+    // 拉取又被 assertLocalSyncOwnership 拦住，用户唯一能点的就是「上传」——原来这一下用几题的新库整份盖掉云端旧进度。
+    // 合并是按行并集，不会丢本机任何一行。
+    if (remote.available && remote.last_modified) await mergeCloudDatabase(session, false);
     await pushCloudDatabase(
       session,
       typeof remote.generation === "number" ? remote.generation : state.lastSyncedGeneration,
@@ -1240,6 +1258,7 @@ const mergeCloudDatabase = async (
     const { mergeDatabaseBytes } = await import(/* webpackMode: "lazy", webpackChunkName: "lazy/sync-merge" */ "./sync/merge");
     return mergeDatabaseBytes(data.bytes);
   });
+  cloudMergedThisLaunch = true;
   await ensureStructureAfterMerge();
   ensureSyncSchema();
   (await import("./level-plan")).hydrateLevelPlanPreferences();
@@ -1328,7 +1347,7 @@ export async function autoSyncCloudDatabase(trigger: CloudSyncTrigger = "startup
         const remoteModified = remote.last_modified;
         if (!remote.available || !remoteModified) {
           // 空云端也有 generation=0；带上它可避免两台设备首次上传时互相覆盖。
-          return pushCloudDatabase(session, remote.generation, remoteModified ?? undefined, true);
+          return await pushCloudDatabase(session, remote.generation, remoteModified ?? undefined, true);
         }
 
         const remoteGeneration = remote.generation;
@@ -1337,18 +1356,23 @@ export async function autoSyncCloudDatabase(trigger: CloudSyncTrigger = "startup
           ? remoteGeneration !== state.lastSyncedGeneration
           : state.lastSyncedModified !== remoteModified;
 
-        // 本机库是空的而同步标记还在（库文件丢了 / 重建，标记存在另一处）：启动和登录那一次照拉，不当作「已是最新」。
-        const emptyLocalRestore = !localHasData && (trigger === "startup" || trigger === "login");
-        if (hasSyncedVersion && !remoteChanged && !state.localDirty && !emptyLocalRestore) {
+        // 本机没有学习记录：绝不上传（库文件丢了 / 重建过，Preferences 的 dirty 标记却可能还在 —— 原来这时会拿空库盖掉云端）。
+        // 云端这一版已经并过、又不是启动 / 登录，就不再反复下载。
+        if (!localHasData) {
+          if (hasSyncedVersion && !remoteChanged && trigger !== "startup" && trigger !== "login") return { status: "idle", automatic: true };
+          return await pullCloudDatabase(session, true, remoteGeneration, localRevisionAtSyncStart);
+        }
+        if (hasSyncedVersion && !remoteChanged && !state.localDirty) {
           return { status: "idle", automatic: true };
         }
 
         if (!hasSyncedVersion) {
-          if (!localHasData) return pullCloudDatabase(session, true, remoteGeneration, localRevisionAtSyncStart);
           // 同一账号已绑定但旧同步状态丢失时,按行合并而不是整库覆盖。
-          if (owner === session.email) {
+          // 小程序的本地文件按微信号隔离，没绑定的本机库只可能是这个微信号自己的（重装后「先不登录」先学了几题）：
+          // 直接合并。报冲突的话用户只能点「上传」，见 pushCloudBackup 的注释。
+          if (owner === session.email || Capacitor.getPlatform() === "wechat") {
             await mergeCloudDatabase(session, true, localRevisionAtSyncStart);
-            return pushCloudDatabase(session, remoteGeneration, remoteModified, true);
+            return await pushCloudDatabase(session, remoteGeneration, remoteModified, true);
           }
           const detail: CloudSyncEventDetail = {
             status: "conflict",
@@ -1361,7 +1385,7 @@ export async function autoSyncCloudDatabase(trigger: CloudSyncTrigger = "startup
 
         if (state.localDirty && remoteChanged) {
           await mergeCloudDatabase(session, true, localRevisionAtSyncStart);
-          return pushCloudDatabase(session, remoteGeneration, remoteModified, true);
+          return await pushCloudDatabase(session, remoteGeneration, remoteModified, true);
         }
         if (state.localDirty) {
           const uploadTooSoon = lastCloudUploadAt > 0
@@ -1369,9 +1393,11 @@ export async function autoSyncCloudDatabase(trigger: CloudSyncTrigger = "startup
             && trigger !== "startup"
             && trigger !== "login";
           if (uploadTooSoon) return { status: "idle", automatic: true };
-          return pushCloudDatabase(session, remoteGeneration, remoteModified, true);
+          // 见 cloudMergedThisLaunch 的注释。
+          if (!cloudMergedThisLaunch) await mergeCloudDatabase(session, true, localRevisionAtSyncStart);
+          return await pushCloudDatabase(session, remoteGeneration, remoteModified, true);
         }
-        return pullCloudDatabase(session, true, remoteGeneration, localRevisionAtSyncStart);
+        return await pullCloudDatabase(session, true, remoteGeneration, localRevisionAtSyncStart);
       } catch (error) {
         if (error instanceof CloudRequestError && error.status === 429) {
           const retryAfterSeconds = Number(error.data.retryAfterSeconds);
@@ -1388,7 +1414,9 @@ export async function autoSyncCloudDatabase(trigger: CloudSyncTrigger = "startup
         if (!(error instanceof CloudRequestError && error.status === 409)) {
           console.warn(`[cloud-sync] 自动同步失败(${trigger}):`, error);
         }
-        return { status: "error", automatic: true, message: error instanceof Error ? error.message : "自动同步失败。" };
+        const detail: CloudSyncEventDetail = { status: "error", automatic: true, message: error instanceof Error ? error.message : "自动同步失败。" };
+        emitCloudSyncEvent(detail);
+        return detail;
       } finally {
         autoSyncInFlight = null;
       }

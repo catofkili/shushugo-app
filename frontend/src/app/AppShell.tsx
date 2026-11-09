@@ -6,7 +6,7 @@ import { LevelSetup } from "../components/LevelSetup";
 import { Paywall } from "../components/Paywall";
 import { StudyFocusDock } from "../components/StudyFocusDock";
 import { getPersistenceFailure, PERSISTENCE_ERROR_EVENT, PERSISTENCE_OK_EVENT, saveDatabase } from "../lib/storage";
-import { LEVEL_PLAN_TRIAL_EXPIRES_KEY, LEVEL_PLAN_TRIAL_NOTICE_KEY, type CloudSession } from "../lib/sync-api";
+import { CLOUD_SYNC_EVENT, getCloudSyncIssue, LEVEL_PLAN_TRIAL_EXPIRES_KEY, LEVEL_PLAN_TRIAL_NOTICE_KEY, type CloudSession } from "../lib/sync-api";
 import { useApp, AppContextProvider, type AppContextValue } from "./AppContext";
 import { ReportPrompt } from "../components/ReportPrompt";
 import { FeedbackComposer } from "../components/FeedbackComposer";
@@ -175,21 +175,27 @@ function TrialEndedDialog({ onDismiss, onViewPro }: { onDismiss(): void; onViewP
  * 指示器只是噪音。要说的只有「没存下去」和「又好了」。
  */
 function PersistenceBanner() {
+  const { navigate } = useApp();
   const [failed, setFailed] = useState(getPersistenceFailure);
+  const [cloudIssue, setCloudIssue] = useState(getCloudSyncIssue);
   const [retrying, setRetrying] = useState(false);
 
   useEffect(() => {
     const onError = () => setFailed(getPersistenceFailure());
+    const onSync = () => setCloudIssue(getCloudSyncIssue());
+    window.addEventListener(CLOUD_SYNC_EVENT, onSync);
+    onSync();
     window.addEventListener(PERSISTENCE_ERROR_EVENT, onError);
     window.addEventListener(PERSISTENCE_OK_EVENT, onError);
     onError();
     return () => {
+      window.removeEventListener(CLOUD_SYNC_EVENT, onSync);
       window.removeEventListener(PERSISTENCE_ERROR_EVENT, onError);
       window.removeEventListener(PERSISTENCE_OK_EVENT, onError);
     };
   }, []);
 
-  if (!failed) return null;
+  if (!failed && !cloudIssue) return null;
   const retry = () => {
     setRetrying(true);
     void saveDatabase()
@@ -203,9 +209,12 @@ function PersistenceBanner() {
       className="fixed bottom-[calc(env(safe-area-inset-bottom)+5rem)] left-1/2 z-[60] flex w-[min(92vw,30rem)] -translate-x-1/2 items-center gap-3 rounded-2xl bg-[#B3402F] px-4 py-3 text-sm font-semibold text-white shadow-lg lg:bottom-5"
     >
       <CapybaraMascot mood="surprised" size={34} className="shrink-0" />
-      <span className="flex-1 leading-5">{failed === "recovery"
+      <span className="flex-1 leading-5">{!failed
+        ? `云备份未完成：${cloudIssue} 请保留本机数据，暂勿删除小程序或清理应用数据。`
+        : failed === "recovery"
         ? "部分学习记录未能恢复，当前显示较早的存档。请保留本机数据并联系支持；重新保存不能找回缺失的记录。"
         : "学习记录没能保存到本机，请检查存储空间。这期间答的题可能丢失。"}</span>
+      {!failed && <button onClick={() => navigate("account")} className="focus-ring shrink-0 rounded-2xl bg-white/15 px-3 py-1.5 text-xs font-bold">处理</button>}
       {failed === "save" && (
         <button onClick={retry} disabled={retrying} className="focus-ring shrink-0 rounded-2xl bg-white/15 px-3 py-1.5 text-xs font-bold disabled:opacity-60">
           {retrying ? "重试中" : "重试"}
