@@ -2,7 +2,7 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1899887,
+      "bytes": 1899889,
       "passes": true
     },
     "study": {
@@ -18,11 +18,11 @@
       "passes": true
     },
     "features": {
-      "bytes": 587290,
+      "bytes": 591062,
       "passes": true
     },
     "content": {
-      "bytes": 1619464,
+      "bytes": 1640666,
       "passes": true
     },
     "grammar-foundation": {
@@ -42,7 +42,7 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 1139399,
+      "bytes": 1139532,
       "passes": true
     },
     "jlpt-bank": {

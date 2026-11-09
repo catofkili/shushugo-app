@@ -2,7 +2,7 @@
   "limitBytes": 2097152,
   "packages": {
     "main": {
-      "bytes": 1899887,
+      "bytes": 1899889,
       "mib": 1.812,
       "passes": true
     },
@@ -22,13 +22,13 @@
       "passes": true
     },
     "features": {
-      "bytes": 587290,
-      "mib": 0.56,
+      "bytes": 591062,
+      "mib": 0.564,
       "passes": true
     },
     "content": {
-      "bytes": 1619464,
-      "mib": 1.544,
+      "bytes": 1640666,
+      "mib": 1.565,
       "passes": true
     },
     "grammar-foundation": {
@@ -52,7 +52,7 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 1139399,
+      "bytes": 1139532,
       "mib": 1.087,
       "passes": true
     },
@@ -67,12 +67,12 @@
       "passes": true
     }
   },
-  "totalBytes": 11282817,
+  "totalBytes": 11307926,
   "files": [
     {
       "path": "lazy/tabs.js",
       "package": "lazy",
-      "bytes": 907240
+      "bytes": 907373
     },
     {
       "path": "common.js",
@@ -110,6 +110,11 @@
       "bytes": 333306
     },
     {
+      "path": "content/pitch-accent.js",
+      "package": "content",
+      "bytes": 293914
+    },
+    {
       "path": "jlpt-bank/jlpt-n2.js",
       "package": "jlpt-bank",
       "bytes": 280456
@@ -118,11 +123,6 @@
       "path": "core/sql-wasm.wasm.br",
       "package": "core",
       "bytes": 278641
-    },
-    {
-      "path": "content/pitch-accent.js",
-      "package": "content",
-      "bytes": 272712
     },
     {
       "path": "jlpt-bank/jlpt-n3.js",
@@ -200,14 +200,14 @@
       "bytes": 65814
     },
     {
+      "path": "features/content/grammar-key-points.js",
+      "package": "features",
+      "bytes": 56860
+    },
+    {
       "path": "study/talk/art/talk-hero.png",
       "package": "study",
       "bytes": 56535
-    },
-    {
-      "path": "features/content/grammar-key-points.js",
-      "package": "features",
-      "bytes": 53088
     },
     {
       "path": "content-pages/assets/brand/card-daily.png",
@@ -2577,7 +2577,7 @@
     {
       "path": "project.config.json",
       "package": "main",
-      "bytes": 457
+      "bytes": 459
     },
     {
       "path": "content-pages/assets/lucide/hourglass-ink.svg",

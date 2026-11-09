@@ -103,7 +103,12 @@ outputs.set('src/shared/web.js', HEADER + polyfill + '\n' + main.outputFiles[0].
 outputs.set('src/shared/content-store.js', HEADER + fs.readFileSync(shim('content-store.js'), 'utf8'));
 
 // ---- 分包内容 ----
-const jsonModule = (file) => HEADER + 'module.exports = ' + JSON.stringify(JSON.parse(fs.readFileSync(path.join(data, file), 'utf8'))) + ';\n';
+// ⚠️ 键里有「・」（U+30FB / U+FF65）就整份放进字符串：微信开发者工具上传时会去掉对象键的引号，按新版 Unicode 它算标识符字符，
+// 微信的 JS 引擎不认 → invalid file，上传被拒（2026-11-09，grammar_key_points 的 N5 表格标题）。其余照旧写对象字面量，省字节。
+const jsonModule = (file) => {
+  const json = JSON.stringify(JSON.parse(fs.readFileSync(path.join(data, file), 'utf8')));
+  return HEADER + 'module.exports = ' + (/"[^"]*[\u30fb\uff65][^"]*":/.test(json) ? 'JSON.parse(' + JSON.stringify(json) + ')' : json) + ';\n';
+};
 outputs.set('src/features/content/jlpt-collocations.js', jsonModule('jlpt_collocation_content.json'));
 outputs.set('src/content/question-meanings.js', jsonModule('question_meaning_overrides.json'));
 outputs.set('src/content/kanji-unit-runtime.js', jsonModule('kanji_reading_unit_runtime.json'));
