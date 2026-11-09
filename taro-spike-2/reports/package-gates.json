@@ -2,7 +2,7 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1898619,
+      "bytes": 1899887,
       "passes": true
     },
     "study": {
@@ -1864,7 +1864,7 @@
     },
     {
       "source": "frontend/src/lib/storage.ts",
-      "bytes": 90430
+      "bytes": 90953
     },
     {
       "source": "frontend/src/lib/study-core.ts",
@@ -1872,7 +1872,7 @@
     },
     {
       "source": "taro-spike-2/src/platform/WeappPage.tsx",
-      "bytes": 75043
+      "bytes": 77168
     }
   ],
   "passes": true

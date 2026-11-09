@@ -393,3 +393,18 @@ Vitest **190 文件 / 1607 项通过**，另 5 文件、30 项跳过、1 项 tod
 续验把错误版本戳的反例扩至全部五个已认证键，重新跑 `node --test scripts/factory-db-checks.mjs`，4 项仍全部通过。
 原生小程序夹具、32 个脚本和 Taro 构建的证据边界见小程序/发布专题同日 T3 节。
 
+
+## ⚠️ 小程序启动失败页必须给「重试」，不许让用户只能删小程序（2026-11-09）
+
+**起因**：2026-11-09 微信小程序用户学习数据全丢。事故预演发现：小程序启动时 `ensureDatabase` 一旦失败（存档读不出抛 `LocalArchiveUnreadableError`、首装出厂库下载失败、升级后分包 / 迁移加载失败），
+`WeappPage.tsx` 以前只渲染一行原始报错文字，没有任何按钮。用户唯一能做的是删小程序重装，而那会清空本机全部学习记录。网页版在 `main.tsx` 有恢复界面，小程序没有。
+
+**现在**：失败页标题「没能打开学习记录」，说明记录还在、不要删小程序，按钮「重试」「复制错误信息」。
+重试 = 清 error、`retry` 计数 +1 让启动 `useEffect` 整套重跑（`ensureDatabase` 出错时已把 `opening` 置空，可重入；`loadShell` 失败也会清缓存）。不放吉祥物图（WeappPage 在主包，余量只有几 KB）。**以后任何启动期失败路径都不许退回「只有一行字」。**
+
+**`loadFileDatabase` 的两条判据（别改混）**：
+1. main 或 prev 任何一个存在、全都打不开 → 仍抛 `LocalArchiveUnreadableError`，文件原样留着，不自动重建。这条不许放宽。
+2. 目录里**只有** tmp（没有 main 也没有 prev）且打不开 → 把 tmp **改名**为 `nihongo.db.broken-<时间戳>`（不删），按「没有存档」返回 false，走出厂库。
+   为什么成立：`saveFileDatabase` 的顺序是 写 tmp → main 改名 prev → tmp 改名 main。有过存档的用户，写 tmp 全程 main 在，main→prev 改名后 prev 在，所以「只有 tmp」不可能是用户存档，
+   只可能是首次装机那次整库写盘（还没有 main）在写 tmp 时被杀掉留下的半截文件。若仍抛错，这种用户永远卡在失败页。
+   测试：`storage-durability.test.ts`「首装只剩一份打不开的 tmp」。

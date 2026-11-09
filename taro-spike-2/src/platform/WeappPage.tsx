@@ -138,6 +138,7 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
   const [ready, setReady] = useState(false);
   const [shell, setShell] = useState<typeof import('../../../frontend/src/app/AppShell') | null>(null);
   const [error, setError] = useState('');
+  const [retry, setRetry] = useState(0);
   const [downloadPercent, setDownloadPercent] = useState<number | null | undefined>(undefined);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [skin, setSkin] = useState('');
@@ -188,7 +189,7 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
         if (!cancelled) setError(String(cause?.message || cause?.errMsg || JSON.stringify(cause)));
       });
     return () => { cancelled = true; };
-  }, [page]);
+  }, [page, retry]);
 
   useEffect(() => {
     if (!ready || page !== state.page) return;
@@ -377,7 +378,22 @@ export function WeappPage({ page, Route }: { page: Page; Route: ComponentType })
     overview,
     actions
   };
-  if (error) return <View className="theme-light p-4"><Text>{error}</Text></View>;
+  if (error) {
+    // 不放吉祥物图：本文件在主包。启动失败时用户唯一的出路曾是删小程序（会清空本机学习记录），所以必须有重试。
+    const btn = 'rounded-xl px-4 py-2 text-center font-bold';
+    const btnStyle = { backgroundColor: 'var(--ds-primary, #7EBE4F)', color: '#fff' };
+    return (
+      <View className="theme-light p-4" style={{ minHeight: '100vh' }}>
+        <Text className="block text-lg font-bold" style={{ color: 'var(--ds-ink, #3A2E22)' }}>没能打开学习记录</Text>
+        <Text className="block mt-2 text-sm" style={{ color: 'var(--ds-ink-2, #5E5448)', lineHeight: '22px' }}>记录还在这台手机上，没有丢。先点重试；请不要删除小程序，删除会清掉本机的学习记录。</Text>
+        <View className="mt-4 flex gap-3">
+          <View className={btn} style={btnStyle} onClick={() => { setError(''); setReady(false); setRetry((n) => n + 1); }}>重试</View>
+          <View className={btn} style={btnStyle} onClick={() => { void Taro.setClipboardData({ data: `${error}\n${new Date().toISOString()}\n${page}` }); }}>复制错误信息</View>
+        </View>
+        <Text className="block mt-4 text-xs" style={{ color: 'var(--ds-ink-3, #8A7F70)', wordBreak: 'break-all' }}>{error}</Text>
+      </View>
+    );
+  }
   // 首次安装、库还在下：外壳照样渲染，首次设定盖在加载画面上（见上面 onDownload）。其它情况仍是整页加载画面。
   if (!shell || (!ready && downloadPercent === undefined)) return <StartupLoading downloadPercent={downloadPercent} />;
   const { AppShell, markTrialNoticeRead } = shell;

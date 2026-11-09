@@ -529,7 +529,24 @@ const loadFileDatabase = async (): Promise<boolean> => {
     }
   }
   // 三代都在、三代都打不开 ≠ 首次安装。文件原样留在磁盘上,不许自动重建。
-  if (sawArchive) throw new LocalArchiveUnreadableError(null, lastError);
+  if (sawArchive) {
+    // ⚠️ 唯一的例外：目录里**只有** tmp（没有 main 也没有 prev）且它打不开。
+    // saveFileDatabase 的顺序是 先写 tmp → main 改名 prev → tmp 改名 main：只要用户有过一份存档，
+    // 写 tmp 的全程 main 都在，main→prev 改名之后 prev 在，所以「只有 tmp」不可能是有存档的用户，
+    // 只可能是首次装机那次整库写盘（此时还没有 main）在写 tmp 时被杀掉，留下半截文件。
+    // 这种情况抛错会把用户卡死在启动失败页（出厂库永远下不了）。改名而不是删，留个后手。
+    // main 或 prev 只要有一个存在，就仍按上面的规矩抛，不许放宽。
+    if (!names.has(DB_FILE_MAIN.split('/').pop()!) && !names.has(DB_FILE_PREV.split('/').pop()!)) {
+      await Filesystem.rename({
+        from: DB_FILE_TMP,
+        to: `${DB_FILE_TMP.replace(/\.tmp$/, '')}.broken-${Date.now()}`,
+        directory: DB_DIRECTORY,
+        toDirectory: DB_DIRECTORY
+      });
+      return false;
+    }
+    throw new LocalArchiveUnreadableError(null, lastError);
+  }
   return false;
 };
 
