@@ -239,6 +239,28 @@ describe("微信文件存储", () => {
     expect(exportDatabase).not.toHaveBeenCalled();
   });
 
+  it("首装只剩一份打不开的 tmp：改名留着、按没有存档走出厂库；有 main 时仍抛错且文件原样", async () => {
+    platform.value = 'wechat';
+    importDatabase.mockRejectedValue(new Error('corrupt'));
+    setFile('/wx-user/masternihongo/nihongo.db.tmp', 'half');
+    const first = await import('./storage');
+    expect(await first.loadDatabase()).toBe(false);
+    const names = [...files.keys()];
+    expect(names.some((n) => n.endsWith('nihongo.db.tmp'))).toBe(false);
+    const broken = names.find((n) => /nihongo\.db\.broken-\d+$/.test(n));
+    expect(broken).toBeTruthy();
+    expect(Buffer.from(files.get(broken!)!).toString()).toBe('half');
+
+    files.clear();
+    vi.resetModules();
+    setFile('/wx-user/masternihongo/nihongo.db', 'bad-main');
+    setFile('/wx-user/masternihongo/nihongo.db.tmp', 'bad-tmp');
+    const second = await import('./storage');
+    await expect(second.loadDatabase()).rejects.toBeInstanceOf(second.LocalArchiveUnreadableError);
+    expect([...files.keys()].sort()).toEqual(['/wx-user/masternihongo/nihongo.db', '/wx-user/masternihongo/nihongo.db.tmp']);
+    importDatabase.mockReset();
+  });
+
   it("串行保存时保留最后一次数据库", async () => {
     platform.value = 'wechat';
     const { saveDatabase } = await import("./storage");
