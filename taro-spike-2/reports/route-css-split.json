@@ -1,11 +1,11 @@
 {
-  "appWxssBytesBefore": 282439,
-  "appWxssBytesAfter": 224620,
+  "appWxssBytesBefore": 282481,
+  "appWxssBytesAfter": 224641,
   "movedRuleBytesByRoute": {
     "account/personal-info/index.wxss": 5155,
     "content-pages/achievements/index.wxss": 5155,
     "content-pages/weekly-report/index.wxss": 161,
-    "content-pages/yuzu-shop/index.wxss": 16363,
+    "content-pages/yuzu-shop/index.wxss": 16384,
     "pages/word/index.wxss": 3066,
     "study/confusion/index.wxss": 8574,
     "study/invite/index.wxss": 11944,
