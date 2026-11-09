@@ -600,6 +600,7 @@ B：`onPointer*` 在小程序里不触发，圆环、滑杆、长按多选、批
 **首发赠送会员**（已部署 Worker）：不是永久免费，是「上线第一个月内领取、领到的人用一个月」——领取截止由 Worker 变量
 `LAUNCH_GIFT_CLAIM_UNTIL` 决定（空 = 关闭），所以最晚上线两个月后没有人还持有赠送会员。7 天计划试用在小程序隐藏、接口返回 410。
 **提审当天**要把 `LAUNCH_GIFT_CLAIM_UNTIL` 设为「上线日 + 1 个月」并重新部署 Worker（用户操作）。
+（2026-11-05 作者要求再顺延一个月，现为 `2026-12-08T00:00:00+08:00`；阿里云上要改服务器那份 `wrangler.jsonc` 并重启服务，见 `docs/claude/daily-plans-and-study-modes.md` 同日条目。）
 
 **上传前检查（2026-09-26，`taro/main` 的 `319f6b4`）**：`cd taro-spike-2 && npm run build:weapp && npm run check:release`，
 没过不许上传。它只看要上传的产物（`dist/` + `project.config.json`），对应原生版的 `check-source.mjs`：sourcemap 关、`urlCheck` 开、

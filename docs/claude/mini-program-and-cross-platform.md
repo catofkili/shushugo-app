@@ -424,6 +424,12 @@ Vitest 用例通过。全量 `VITEST_MAX_WORKERS=2 npm test` 实际执行 199 �
 
 如果决定本版暂不卖 Pro，必须先隐藏购买入口再提审，不能留下已知必失败按钮。
 
+**2026-09-25 增补：首版定为「只送不卖」**（`0fa41f4`，合并 `codex/w23-launch-mode`）。
+Taro 微信版的 `taro-spike-2/src/platform/release-config.weapp.cjs` 里 `release.purchase: false`：
+只呈现首月赠送（未登录先走微信登录，登录后自动领取），购买方案、恢复购买、兑换码入口都隐藏；
+`purchaseProduct` 在调支付前就拒绝。所以上面 1–6 步不是首版提审的前置条件，**是将来打开 `purchase` 之前的前置条件**——
+改成 `true` 前必须全部闭环。首月赠送不受这个开关保护（领取截止见 Worker `17dc24a`）。细节见 `docs/MINIPROGRAM_TARO_SUBMIT_AUDIT.md`。
+
 ### 2026-09-24 增补：四档微信道具与词汇量页面同步
 
 上面的“只售永久版”是 2026-09-21 的旧状态。本轮代码接入月卡、季卡、年卡、永久版四个普通虚拟道具，

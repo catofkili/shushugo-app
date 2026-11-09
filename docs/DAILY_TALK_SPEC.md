@@ -340,6 +340,7 @@ const answerForHints = (hintsUsed: number, gaveUp: boolean): WordAnswer =>
    录音会话保留是否影响随后 VOICEVOX 的 `<audio>` 播放音量 / 路由，仍要真机核实。插件 JS API 没有设置 / 停用 AVAudioSession 的方法，
    `<audio>` / Web Audio 也不能直接恢复原生会话，当前 JS 侧不能可靠补救；不修改 node_modules，也不加依赖。
    真机验收须覆盖：首次双权限弹窗、分别拒绝权限、日语部分文字、无声结束、停止 / 换卡 / 离页清理，以及识别结束后 VOICEVOX 扬声器音量与路由。
+   **2026-10-09 验机补记**：临时副本已重新同步 Pods；Xcode 27 的 Any iOS Device 通用目标 Build Succeeded。为了只验证编译，临时副本中把生成的 Pods 目标从 13.0 调到与 Podfile 一致的 16.4，并关闭 App 签名；没有改项目源码，也没有得到可安装包。Xcode 运行目标列表未出现镜像中的 iPhone，因此没有触发权限弹窗或录音，以上原生流程仍待真机验证。
 8. （2026-10-02 加）**小程序录音**：小程序后台「用户隐私保护指引」补「录音」用途；云函数 `talk-asr` 部署 + 腾讯云子账号密钥只放云函数环境变量；
    上线前把 480×360 的预览图换成云存储的原图（同第 3 条），删 `talk-scenes-weapp.cjs`。
    ⚠️ `talk-asr` 现在**没有按用户限次**：只要有 OPENID 就能反复调，腾讯云按次计费。上线前加每个 OPENID 每天的上限

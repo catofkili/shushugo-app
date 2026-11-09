@@ -277,7 +277,7 @@ try {
   const runtime = await createRuntime({ dataDir: path.join(staging, "route-runtime"), envFile: path.join(staging, "missing.env"), bundlePath });
   try {
     assert.equal(runtime.env.LAUNCH_GIFT_CLAIM_UNTIL, vars.LAUNCH_GIFT_CLAIM_UNTIL);
-    assert.equal(runtime.env.LAUNCH_GIFT_CLAIM_UNTIL, "2026-11-08T00:00:00+08:00");
+    assert.equal(runtime.env.LAUNCH_GIFT_CLAIM_UNTIL, "2026-12-08T00:00:00+08:00");
     for (const [key, value] of Object.entries(vars)) assert.equal(runtime.env[key], value);
     assert.equal(runtime.env.REQUIRE_AUTH_HARDENING, "1");
     const overrideFile = path.join(staging, "override.env");
