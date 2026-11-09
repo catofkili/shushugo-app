@@ -118,7 +118,7 @@
           </view>
         </block>
         <text wx:else class="kanji-char">{{interleave.card.char}}</text>
-        <button wx:if="{{!interleaveRevealed && interleave.card.choice && !interleave.card.question}}" class="reveal {{kanjiChoiceComplete ? '' : 'disabled'}}" disabled="{{!kanjiChoiceComplete}}" bindtap="revealInterleave">看答案</button>
+        <button wx:if="{{!interleaveRevealed && interleave.card.choice && !interleave.card.question}}" class="reveal" bindtap="revealInterleave">看答案</button>
         <view wx:elif="{{!interleaveRevealed && interleave.card.question}}" class="kanji-match-actions">
           <button wx:if="{{kanjiMatchCount}}" class="kanji-clear" bindtap="clearKanjiConnections">清空</button>
           <button class="reveal" bindtap="revealInterleave">{{kanjiMatchComplete ? '核对连线' : '显示答案'}}</button>

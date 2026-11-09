@@ -67,7 +67,6 @@ const kanjiChoiceView = (choice, choices, revealed) => {
             : choices[index] === option ? 'picked' : ''
       }))
     })),
-    kanjiChoiceComplete: items.length > 0 && items.every((_, index) => choices[index] !== undefined)
   };
 };
 
@@ -136,7 +135,6 @@ Page({
     kanjiPairs: {},
     kanjiChoices: {},
     kanjiChoiceRows: [],
-    kanjiChoiceComplete: false,
     selectedKanjiWord: null,
     kanjiWordRows: [],
     kanjiReadingRows: [],

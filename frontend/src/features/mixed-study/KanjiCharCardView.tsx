@@ -34,7 +34,6 @@ export const KanjiCharCardView = ({ card, revealed, onReveal, onAnswer }: Props)
   const [choices, setChoices] = useState<Record<number, string>>({});
   const [activeChoice, setActiveChoice] = useState(0);
   const choiceItems = card.choice?.items;
-  const allChosen = Boolean(choiceItems?.length && choiceItems.every((_, index) => choices[index] !== undefined));
   const selectChoice = useCallback((itemIndex: number, option: string) => {
     if (revealed || !choiceItems || !choiceItems[itemIndex]?.options.includes(option)) return;
     const next = { ...choices, [itemIndex]: option };
@@ -58,7 +57,7 @@ export const KanjiCharCardView = ({ card, revealed, onReveal, onAnswer }: Props)
         if (target?.closest("input, textarea, select, [contenteditable='true']")) return;
         const option = /^[1-4]$/u.test(event.key) ? choiceItems[activeChoice]?.options[Number(event.key) - 1] : undefined;
         if (option) { event.preventDefault(); selectChoice(activeChoice, option); }
-        else if ((event.key === "Enter" || event.key === " ") && allChosen) { event.preventDefault(); onReveal(); }
+        else if ((event.key === "Enter" || event.key === " ")) { event.preventDefault(); onReveal(); }
         return;
       }
       if (target?.closest("button, input, textarea, select, [contenteditable='true']")) return;
@@ -71,7 +70,7 @@ export const KanjiCharCardView = ({ card, revealed, onReveal, onAnswer }: Props)
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [activeChoice, allChosen, choiceItems, onAnswer, onReveal, revealed, selectChoice]);
+  }, [activeChoice, choiceItems, onAnswer, onReveal, revealed, selectChoice]);
 
   const selectReading = (readingIndex: number) => {
     if (revealed || selectedWord === null) return;
@@ -203,7 +202,7 @@ export const KanjiCharCardView = ({ card, revealed, onReveal, onAnswer }: Props)
         {!revealed ? (
           <div className="flex h-16 gap-2">
             {Object.keys(pairs).length > 0 && <button type="button" onClick={() => { setPairs({}); setSelectedWord(null); }} className="focus-ring zoo-pop inline-flex h-16 shrink-0 items-center justify-center gap-2 rounded-2xl border border-[var(--ds-line-2)] px-4 text-sm font-bold text-[var(--ds-ink-2)]"><RotateCcw size={16} />清空</button>}
-            <button onClick={onReveal} disabled={Boolean(card.choice) && !allChosen} style={{ background: "var(--quiz-accent)" }} className="focus-ring zoo-pop zoo-gloss inline-flex h-16 min-w-0 flex-1 items-center justify-center gap-2 rounded-2xl px-4 text-base font-bold !text-[#2f3333] disabled:cursor-not-allowed disabled:opacity-40">
+            <button onClick={onReveal} style={{ background: "var(--quiz-accent)" }} className="focus-ring zoo-pop zoo-gloss inline-flex h-16 min-w-0 flex-1 items-center justify-center gap-2 rounded-2xl px-4 text-base font-bold !text-[#2f3333] disabled:cursor-not-allowed disabled:opacity-40">
               <Eye size={18} /><span>{card.choice ? "看答案" : allConnected ? "核对连线" : "显示答案"}</span><span className="kbd-hint hidden text-xs font-semibold opacity-65 sm:inline">{card.choice ? "（Enter / 空格）" : "（按任意键）"}</span>
             </button>
           </div>
