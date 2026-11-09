@@ -32,6 +32,11 @@ vi.mock("./database", () => ({
 }));
 vi.mock("./storage", () => ({ scheduleSave: () => undefined, requestFullSnapshot: () => undefined, persistSoon: () => undefined }));
 vi.mock("./progress-events", () => ({ PROGRESS_UPDATED_EVENT: "test", notifyProgressUpdated: () => undefined }));
+// pickMixedNext 会 fire-and-forget 地懒加载 pool-anomaly，它再异步 import 一串重模块和 ./storage；
+// 慢机器上这条链跑得比测试文件久，环境拆掉之后才去加载真 storage（@capacitor/filesystem），
+// vitest 报 22 条 EnvironmentTeardownError，全部测试通过也退出码 1（2026-11-09 Pages 部署红了一次，同一提交的 ci.yml 是绿的）。
+// 本文件不测到期池对账（见 pool-anomaly.test.ts），把它换成空桩，不留跨出测试的异步尾巴。
+vi.mock("./pool-anomaly", () => ({ observePool: () => undefined }));
 
 const fake = { kanji: [] as string[], confusion: [] as string[], answered: [] as string[], undone: [] as string[] };
 vi.mock("./mixed-cards", () => ({
