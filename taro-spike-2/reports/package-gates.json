@@ -2,19 +2,19 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1897831,
+      "bytes": 1898619,
       "passes": true
     },
     "study": {
-      "bytes": 1393101,
+      "bytes": 1393151,
       "passes": true
     },
     "account": {
-      "bytes": 328890,
+      "bytes": 328894,
       "passes": true
     },
     "content-pages": {
-      "bytes": 1178087,
+      "bytes": 1178106,
       "passes": true
     },
     "features": {
@@ -42,7 +42,7 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 1137287,
+      "bytes": 1139399,
       "passes": true
     },
     "jlpt-bank": {
@@ -1848,7 +1848,7 @@
     },
     {
       "source": "frontend/src/lib/sync-api.ts",
-      "bytes": 121650
+      "bytes": 124656
     },
     {
       "source": "frontend/src/design.css",

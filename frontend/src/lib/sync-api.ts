@@ -1063,7 +1063,7 @@ export async function claimLaunchGift(): Promise<EntitlementState | undefined> {
   return applyCloudEntitlements(data);
 }
 
-const hasLocalLearningData = (): boolean => {
+export const hasLocalLearningData = (): boolean => {
   const db = getDatabase();
   const tableStatement = db.prepare("SELECT name FROM sqlite_master WHERE type = 'table'");
   const tables = new Set<string>();

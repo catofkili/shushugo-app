@@ -44,6 +44,7 @@ import { MomentPop } from "./MomentPop";
 import { WeeklyReportEntrance } from "./WeeklyReportEntrance";
 import { ZooProgressPanel } from "./ZooProgressPanel";
 import { StudyFocusIntro } from "./StudyFocusIntro";
+import { CloudBackupReminder } from "./CloudBackupReminder";
 import { useZoomOpen } from "./ZoomOpen";
 import { pickCapyTools } from "./capy-tool-selection";
 import { isStudyFocusArmed, setStudyFocusArmed } from "../lib/study-focus";
@@ -391,6 +392,7 @@ export function ZooHome({
           </button>
         )}
       </div>
+      <CloudBackupReminder />
       {referralBanner && <div className="zoo-referral-banner">
         <button onClick={() => onNavigate("invite", { referralCode: "", referralFocus: true })}>有邀请码？ <span aria-hidden="true">→</span></button>
         <button aria-label="不再显示邀请码提示" onClick={() => {

@@ -19,6 +19,13 @@
   ],
   "pairs": [
     {
+      "web": "frontend/src/components/CloudBackupReminder.tsx",
+      "mini": [
+        "frontend/src/components/CloudBackupReminder.tsx"
+      ],
+      "reason": "网页 / App 与 Taro 主页直接编译同一份未登录备份提醒；随 ZooHome 进入 lazy/tabs，登录沿各平台现有 requireAccount 入口。"
+    },
+    {
       "web": "frontend/src/components/LoadCurve.tsx",
       "mini": [
         "frontend/src/components/LoadCurve.tsx"
