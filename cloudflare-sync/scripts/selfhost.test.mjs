@@ -324,6 +324,28 @@ try {
     assert.equal((await pushed.json()).generation, 1);
     const pulled = await callSync("pull", { headers: { accept: "application/octet-stream" } });
     assert.deepEqual([...new Uint8Array(await pulled.arrayBuffer())], [...payload]);
+
+    // Run retention through the deployed adapter path: SQLite metadata plus real local R2/KV storage.
+    for (const [key, backend, age] of [["expired-r2", "r2", 20], ["expired-kv", "kv", 21], ["daily-r2", "r2", 1], ["daily-kv", "kv", 2]]) {
+      const createdAt = new Date(Date.parse(now) - age * 86_400_000).toISOString();
+      runtime.db.prepare("INSERT INTO sync_objects(id,user_id,object_key,last_modified,created_at,byte_length,generation,storage_backend) VALUES(?,?,?,?,?,?,?,?)")
+        .run(key, "adapter-user", key, createdAt, createdAt, 1, 0, backend);
+      if (backend === "r2") await runtime.env.SYNC_BUCKET.put(key, "x");
+      else await runtime.env.SYNC_DATA.put(key, "eA==");
+    }
+    const retainedPush = await callSync("push", { method: "POST", body: new Uint8Array([5]), headers: {
+      "content-type": "application/octet-stream", "x-sync-format": "master-nihongo-user-sqlite-v1",
+      "x-sync-compression": "none", "x-sync-base-generation": "1", "x-sync-operation-id": "adapter-retention-operation"
+    } });
+    assert.equal(retainedPush.status, 200, await retainedPush.clone().text());
+    assert.equal((await retainedPush.json()).generation, 2);
+    assert.equal(await runtime.env.SYNC_BUCKET.head("expired-r2"), null);
+    assert.equal(await runtime.env.SYNC_DATA.get("expired-kv"), null);
+    assert.notEqual(await runtime.env.SYNC_BUCKET.head("daily-r2"), null);
+    assert.equal(await runtime.env.SYNC_DATA.get("daily-kv"), "eA==");
+    assert.deepEqual(runtime.db.prepare("SELECT object_key FROM sync_objects WHERE generation = 0 ORDER BY object_key").all().map(row => row.object_key), ["daily-kv", "daily-r2"]);
+    const retainedPull = await callSync("pull", { headers: { accept: "application/octet-stream" } });
+    assert.deepEqual([...new Uint8Array(await retainedPull.arrayBuffer())], [5], "retention keeps the current head readable");
     const denied = await runtime.worker.fetch(new Request("http://127.0.0.1:8787/api/sync/status", {
       headers: { authorization: "Bearer another-user-token" }
     }), runtime.env, {});

@@ -209,3 +209,97 @@ gzip 后 1.73 MB。看着离 20 MB 还很远，实际已经用掉 **69.9%** —�
 合并也不落入本机。现有「占位行不参与 LWW」三条仍检验空 progress / grammar / 汉字 / 辨析占位不盖现在的戳，
 重启后真实云记录也能赢。本次仅预建空表和 NULL FSRS 列，没有预填带同步时间戳的学习记录。
 完整制库、旧存档回归与全表规范化方法见存储专题「2026-11-06 T3」。
+
+## 云快照按天保留 + 备份体检（2026-11-09）
+
+### 为什么只有 3 代不够
+
+2026-11-09 用户报告学习数据全丢。服务器的一次上传会让整份新快照成为当前版本，
+原来的清理只留最近 `SYNC_KEEP_GENERATIONS = 3` 代。客户端自动上传最快每 5 分钟一次：
+空库或残缺库连续上传 3 次，约 15 分钟就能挤掉全部好的历史（从第一份坏快照起算仅 10 分钟）。
+客户端再会合并，也无法从已经删除的服务器对象中恢复记录。
+
+### 现行保留判据
+
+`cloudflare-sync/src/index.ts` 的 `pushSync` 仅改变成功上传后的过期行选择，上传、拉取、
+幂等操作和乐观锁不变；阿里云自托管和 Cloudflare Worker 使用同一份业务代码及 SQL。
+
+- 每个用户按 `generation DESC, created_at DESC, id DESC` 保留最新 3 份，不受日期限制。
+- 另外保留北京时间（UTC+8）**今天及前 13 个自然日**中每天最新的一份。
+  SQL 用 `date(created_at, '+8 hours')` 分日，每日按 `created_at DESC, generation DESC, id DESC` 取第一份；
+  日期上下界都包含。例如北京时间 2026-11-09 上传时，窗口为 2026-10-27 至 2026-11-09。
+- 两组取并集，重合不重复保存；无上传的日子不凭空补快照。按不重合估算上限为每用户 17 份。
+  同一天连续上传 10 次只剩最新 3 份；连续 20 天每天一份时，只剩最近 14 天，最新 3 份已经包含其中。
+- 只在该用户成功上传后清理该用户。窗口外的快照仍可能因为属于最新 3 代而留下；
+  没有后续上传的账号不会因时间流逝被后台清空。
+- 其余行沿用 `deleteSyncObject`，按 `storage_backend` 删除 KV/R2 对象，再执行原来的
+  `DELETE FROM sync_objects WHERE id = ?`。**无需数据库迁移。**
+
+回归位于 `cloudflare-sync/scripts/sync-route.test.mjs`：真实路由和 SQLite SQL 覆盖密集上传、
+20 天每日上传、每日快照与最新 3 代并存、稀疏上传、北京时间午夜和窗口首尾、账号隔离、KV/R2 对象与元数据一致。
+`selfhost.test.mjs` 还通过真实自托管适配器检查旧对象清理、每日对象保留和当前快照仍能拉取。
+
+按天留底不会识别快照好坏，也不能恢复部署前已删除的历史；当天的好快照仍可能被当天后续坏快照挤掉。
+这提供跨日恢复窗口，不替代 `/var/lib/shushugo/r2/` 的异机备份。只有 SQLite 备份而缺少对象文件，不能恢复 R2 快照正文。
+
+### 容量估算与硬约束
+
+`sync_objects.byte_length` 写入的是**实际上传字节数**，gzip 上传时即压缩后体积。
+本次未连接生产服务器，当前 `byte_length` 和账号数未经实查；下面使用本专题历史 gzip 实测
+**1.17–1.73 MB/份**作为量级，MB/GB 按十进制计算，不能当作当前线上测量。
+
+保守预算为 **单份实际字节数 × 17 × 用户数 N**。按历史量级即每用户 **19.89–29.41 MB**；
+100 用户约 **1.989–2.941 GB**，1,000 用户约 **19.89–29.41 GB**。
+这是对象正文预算，还需计入元数据、SQLite、SQLite 每日备份 14 份、系统和部署暂存空间。
+`selfhost/README.md` 记录服务器磁盘为 40 GB；不能把它全部分配给快照，更不能凭历史均值承诺容量足够。
+
+部署前作者应沿用下面的只读方式取得当前量级，并检查服务器 `df -h /var/lib/shushugo`：
+
+```bash
+ssh -i ~/.ssh/shushugo_server admin@8.148.68.155 \
+  "sudo sqlite3 -readonly -header -column /var/lib/shushugo/worker.sqlite \"SELECT COUNT(*) AS snapshots, ROUND(AVG(byte_length)/1000000.0,3) AS avg_mb, MAX(byte_length) AS max_bytes, (SELECT COUNT(*) FROM users) AS accounts, ROUND(AVG(byte_length)*17*(SELECT COUNT(*) FROM users)/1000000000.0,3) AS projected_gb FROM sync_objects;\""
+```
+
+`projected_gb` 用当前平均快照大小乘所有账号数，便于把从未上传的账号也计入预算；
+空表会返回 NULL，表示没有估算样本。还须关注 `max_bytes` 和用户之间的体积差异，不能只看均值。
+
+本专题上文的 **48 MB** 是客户端压缩前的限制，仍须在撞上之前解决云端增量协议。
+当前 Worker 的 `SYNC_MAX_BASE64_LENGTH = 20_000_000` 仍约束单份上传的实际字节数，
+保留份数不会提高这个上限；按该服务器上限估算，17 份正文最多约 **340 MB/用户**，100 用户就可能占 34 GB。
+本次不提高任何单份容量上限、不变更格式或客户端解压内存约束，保留策略不代表解决了快照持续增长的问题。
+
+### 只读体检与执行频率
+
+在有服务器 SSH 私钥的本机、仓库根目录执行：
+
+```bash
+bash scripts/sync-health.sh
+```
+
+脚本固定使用 `~/.ssh/shushugo_server`、`admin@8.148.68.155`，通过
+`sudo sqlite3 -readonly -header -column /var/lib/shushugo/worker.sqlite` 查询正在运行的库，
+不复制数据库文件，也不触发上传、拉取、修复或删除。两项查询放在同一个只读事务中：
+
+1. 总账号数、`email LIKE 'wechat-%'` 的微信账号数、`sync_objects` 中有快照的去重账号数。
+2. `users.last_login` 距服务器当前时间不超过 14 天，且没有快照或最新快照比最后登录早 **超过 3 天**的账号，
+   列出 `id`、`display_name`、`last_login`、`latest_snapshot_at`。恰好差 3 天不列入；
+   无快照时最新时间为 NULL。以实际 `sync_objects.created_at` 为准，避免把失败上传留下的空 `sync_heads` 行当作已有备份。
+
+所有时间比较先过 SQLite `julianday`，兼容 ISO 字符串的 `T`、`Z`、时区偏移和小数秒，
+不把 `users.last_login` 与 SQLite 的空格时间字符串直接作字典序比较。
+`last_login` 按数据库原值显示，`latest_snapshot_at` 统一输出 UTC ISO（`Z`）。
+异常列表无行只表示没有命中这两个条件，不证明对象文件存在或快照内容完整。
+
+**每次发版前和每周跑一次**，保留输出并跟进异常账号；这是一条人工运维要求，本次没有安装定时任务或自动发送报告。
+本地语法检查：`bash -n scripts/sync-health.sh`；生产 SSH 执行由作者完成。
+
+### 作者部署步骤
+
+1. 发版前运行体检、容量查询并核对磁盘余量；本 worktree 的依赖软链保持原样，不要为此删除或重装 `node_modules`。
+2. 在待发布的 checkout 执行 `cd cloudflare-sync && npm run check && npm test && npm run selfhost:build`。
+   最后一项使用 Wrangler **dry-run** 生成自托管 bundle，没有发布 Cloudflare Worker。
+3. 按 `cloudflare-sync/selfhost/README.md` 的既有打包/上传步骤发布新的 `selfhost/dist`、适配层、现有迁移目录及 `wrangler.jsonc`，
+   在阿里云重启 `shushugo-worker`，检查 `/api/health` 和服务日志。本次不新增迁移，不需要手工改库。
+   不要执行根配置的 `wrangler deploy` 或 `npm run deploy`：线上 Cloudflare 部分只是转发层，此次无需更新转发层。
+4. 用授权测试账号做一次正常上传，再只读核对该账号的 generation、每日保留对象和当前拉取，复跑体检。
+   新规则从后续成功上传开始积累每日历史，不会立刻补齐过去 14 天。
