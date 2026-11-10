@@ -4,6 +4,7 @@ const core = require('../../core/study-core');
 const { dailyPlan, studyMode, wordApi, mixedCards, preferences } = core.web;
 const KINDS = dailyPlan.PLAN_KINDS;
 const COLORS = { words: '#6FA83E', grammar: '#F3B14D', kanji: '#B9A7F2', confusion: '#F2A7C8' };
+const FRESH_MAX = { words: preferences.INTENSITY_MAX, grammar: preferences.GRAMMAR_INTENSITY_MAX, kanji: 50, confusion: 20 };
 const ACTIVE = { classic: ['words'], quick: ['words'], mixed: KINDS, mistakes: [], reverse: [], kanji: [] };
 // 和网页 DailyPlanPanel 同一句：说清是哪一项低于建议。
 const lowLabel = (value, suggest) => {
@@ -56,7 +57,7 @@ Page({
   render() {
     const rows = this.shownView.segments.map((segment) => {
       const value = this.plan[segment.kind];
-      return { ...segment, ...value, count: value.fresh + value.review, color: COLORS[segment.kind],
+      return { ...segment, ...value, freshMax: FRESH_MAX[segment.kind], count: value.fresh + value.review, color: COLORS[segment.kind],
         active: this.data.active.includes(segment.kind), low: lowLabel(value, segment.suggest) };
     });
     const total = rows.reduce((sum, row) => sum + (row.active ? row.count : 0), 0);
@@ -196,9 +197,8 @@ Page({
     if (this.data.busy) return;
     const kind = this.data.focus;
     if (!kind) return;
-    const total = this.plan[kind].fresh + this.plan[kind].review;
-    const fresh = Math.min(total, clean(event.detail.value));
-    this.plan[kind] = { fresh, review: total - fresh };
+    const fresh = Math.min(FRESH_MAX[kind], clean(event.detail.value));
+    this.plan[kind] = { ...this.plan[kind], fresh };
     this.render();
     this.commit(false);
   },
