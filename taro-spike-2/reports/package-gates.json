@@ -2,55 +2,55 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1899889,
+      "bytes": 1899723,
       "passes": true
     },
     "study": {
-      "bytes": 1393151,
+      "bytes": 1393156,
       "passes": true
     },
     "account": {
-      "bytes": 328894,
+      "bytes": 328968,
       "passes": true
     },
     "content-pages": {
-      "bytes": 1178106,
+      "bytes": 1178050,
       "passes": true
     },
     "features": {
-      "bytes": 591062,
+      "bytes": 591063,
       "passes": true
     },
     "content": {
-      "bytes": 1640666,
+      "bytes": 1640667,
       "passes": true
     },
     "grammar-foundation": {
-      "bytes": 663543,
+      "bytes": 663544,
       "passes": true
     },
     "grammar-advanced": {
-      "bytes": 531415,
+      "bytes": 531416,
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 312452,
+      "bytes": 312415,
       "passes": true
     },
     "core": {
-      "bytes": 279123,
+      "bytes": 279122,
       "passes": true
     },
     "lazy": {
-      "bytes": 1139532,
+      "bytes": 1139392,
       "passes": true
     },
     "jlpt-bank": {
-      "bytes": 764680,
+      "bytes": 764685,
       "passes": true
     },
     "jlpt-bank-2": {
-      "bytes": 585413,
+      "bytes": 585414,
       "passes": true
     }
   },
@@ -193,7 +193,7 @@
     },
     {
       "source": "frontend/src/components/DailyPlanPanel.tsx",
-      "bytes": 16533,
+      "bytes": 16901,
       "packages": [
         "account",
         "study"
@@ -1428,7 +1428,7 @@
     },
     {
       "source": "frontend/src/components/DailyPlanPanel.tsx",
-      "bytes": 16533,
+      "bytes": 16901,
       "packages": [
         "account",
         "study"
@@ -1825,7 +1825,7 @@
     "frontend/src/components/DailyPlanSlider.weapp.tsx": "The lazy setup panel and account/study plan pages render native Sliders; values and commit callbacks are owned by each mounted parent, not this stateless adapter.",
     "frontend/src/components/JapaneseRubyText.weapp.tsx": "Ruby text is used by lazy tabs and independently loaded content/grammar routes."
   },
-  "duplicatedPageComponentBytes": 363820,
+  "duplicatedPageComponentBytes": 364188,
   "unapprovedPageComponents": [],
   "stalePageComponentAllowlist": [],
   "unapprovedPageComponentBytes": 0,

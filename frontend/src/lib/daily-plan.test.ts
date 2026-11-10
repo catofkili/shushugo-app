@@ -108,6 +108,21 @@ describe("每日学习量：视图 / 写回 / 备考一键", () => {
     expect(PLAN_KINDS.map((kind) => arranged[kind].review)).toEqual(dailyPlanView().segments.map((segment) => segment.pool.due));
   });
 
+  it.each([0, -1, 600])("只把新学降为 0，保留原复习 cap=%s，不把先验或压轴重复计入", reviewCap => {
+    const before = getStudyPreferences();
+    store.set("mn-study-preferences", JSON.stringify({ ...before, dailyGoal: 25, reviewCap }));
+    const shown = dailyPlanView();
+    shown.wordExtras = 4;
+    shown.priorExtras = { words: 8 };
+    shown.segments[0].fresh = 25;
+    shown.segments[0].review = 612;
+    const plan = Object.fromEntries(shown.segments.map(segment => [segment.kind, { fresh: segment.fresh, review: segment.review }])) as Parameters<typeof saveDailyPlan>[0];
+    saveDailyPlan({ ...plan, words: { fresh: 0, review: 612 } }, false, shown);
+    expect(getStudyPreferences().dailyGoal).toBe(0);
+    expect(getStudyPreferences().reviewCap).toBe(reviewCap);
+    store.set("mn-study-preferences", JSON.stringify(before));
+  });
+
   it("「现在 N几」从数据算：出厂库一个词没学 → 从零；辨析组按最难成员分级", () => {
     expect(learnedLevel()).toBeNull();
     const byLevel = [0, 1, 2, 3, 4].map((rank) => examPreset(["N5", "N4", "N3", "N2", "N1"][rank] as any).remaining.confusion);

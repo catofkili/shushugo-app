@@ -5,7 +5,7 @@ import {
   arrangedPlan, dailyPlanView, hasPendingPlanTotal, saveDailyPlan, PLAN_KINDS, PLAN_LABELS, SECONDS_PER_CARD,
   type DailyPlanView, type PlanKind
 } from "../lib/daily-plan";
-import { PREFERENCES_EVENT } from "../lib/studyPreferences";
+import { GRAMMAR_INTENSITY_MAX, INTENSITY_MAX, PREFERENCES_EVENT } from "../lib/studyPreferences";
 import { refreshTodayWordPlan } from "../lib/api";
 import { notifyProgressUpdated } from "../lib/progress-events";
 import { useProgressUpdates } from "../lib/use-progress-updates";
@@ -24,6 +24,7 @@ interface Props {
 }
 
 type Plan = Record<PlanKind, RingValue>;
+const FRESH_MAX: Record<PlanKind, number> = { words: INTENSITY_MAX, grammar: GRAMMAR_INTENSITY_MAX, kanji: 50, confusion: 20 };
 
 /**
  * 每个学习模式会出圆环上的哪几段。用户问「总量 406 为什么大卡只有三百多」——因为经典模式只出单词那段；
@@ -82,6 +83,8 @@ export const DailyPlanPanel = ({ compact = false }: Props) => {
   /** 拖动中：只改本地状态，不写盘。第一帧记下起点，松手时压进撤回栈。 */
   const preview = (next: Plan) => {
     if (!dragStartRef.current) dragStartRef.current = plan;
+    // 小程序 onChange 会在同一事件里紧接着 commit，不能等 React 下一帧才更新 ref。
+    planRef.current = next;
     setPlan(next);
   };
   const commitDrag = () => {
@@ -194,14 +197,15 @@ export const DailyPlanPanel = ({ compact = false }: Props) => {
       {focus && focused && (
         <div className="zoo-plan-zoom" style={{ borderColor: RING_COLORS[focus] }}>
           <p className="zoo-plan-zoom-title">
-            {PLAN_LABELS[focus]} · {focusedCount} 项 —— 左边新学，右边复习
+            {PLAN_LABELS[focus]} · {focusedCount} 项 · 调整新学，复习量不变
           </p>
           <DailyPlanSlider
             value={plan[focus].fresh}
-            max={focusedCount}
+            max={FRESH_MAX[focus]}
+            label={`${PLAN_LABELS[focus]}新学数量`}
             color={RING_COLORS[focus]}
             onChange={(fresh) => {
-              preview({ ...plan, [focus]: { fresh, review: focusedCount - fresh } });
+              preview({ ...plan, [focus]: { ...plan[focus], fresh } });
             }}
             onCommit={commitDrag}
           />

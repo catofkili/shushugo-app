@@ -12,8 +12,8 @@
       <text class="row-detail">新 {{item.fresh}} · 复 {{item.review}}{{item.low}}</text>
     </view>
     <view wx:if="{{focus}}" class="split">
-      <text>{{focusRow.label}} · 左边新学，右边复习</text>
-      <slider min="0" max="{{focusRow.count}}" value="{{focusRow.fresh}}" activeColor="#6FA83E" bindchange="changeSplit" />
+      <text>{{focusRow.label}} · 调整新学，复习量不变</text>
+      <slider min="0" max="{{focusRow.freshMax}}" value="{{focusRow.fresh}}" activeColor="#6FA83E" bindchange="changeSplit" />
       <text class="detail">建议新学至少 {{focusRow.suggest.fresh}}，复习至少 {{focusRow.suggest.review}}。</text>
       <button wx:if="{{focusRow.low}}" class="suggest" disabled="{{busy}}" bindtap="topUp">补到建议值 →</button>
     </view>
