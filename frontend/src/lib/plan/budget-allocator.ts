@@ -3,6 +3,10 @@ import type { PlanKind } from "../plan-level-order";
 const HORIZON_DAYS = 28; // 看完整个新学复习最密的前四周。
 const BUDGET_GROWTH = 1.2; // 完成证据足够且预算确实限制安排时，从昨日B试探。
 const OVERLOAD_SLACK = 1; // 今日已预留重学时间，不再额外放大；欠账仍留在到期池。
+// 预算宽松度 ρ：分配器看到的预算 = 推断出的 B × ρ。第二轮扫描（1/1.25/1.5/2.0，docs/audits/2026-11-09-budget-sim-r2-tuning-log.md）：
+// ρ=1.25 起 self 峰值就超过现行（105.7%），ρ≥1.5 又出现负担多缺天；cram 单词新学保留只从 50.5% 升到 63.4%/73.7%/77.2%，
+// 买不回来——瓶颈不在宽松度。所以取 1。别在不重跑扫描的前提下改它。
+export const BUDGET_HEADROOM = 1;
 export const DEFAULT_MAX_SCALE = 1.5; // 时间充裕也不超过备考需要量的一倍半。
 const SMOOTH = 0.3; // 每日常规变化限制在昨日的三成。
 const MIN_CHANGE = 10; // 过载归零后须尽快恢复；两张起步会吃掉短备考窗口，额度仍须通过峰值检查。

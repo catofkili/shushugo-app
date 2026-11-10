@@ -1,14 +1,19 @@
 import { beforeEach, expect, it, vi } from "vitest";
 import { byKind } from "./model";
 import { applyBudgetMorning, budgetOrder } from "./budget-policy";
+import * as allocator from "../plan/budget-allocator";
 import type { StudyPreferences } from "../studyPreferences";
 
 const fixture = vi.hoisted(() => ({
   prefs: {} as StudyPreferences, mandatory: 0, history: [] as { d: string; minutes: number }[],
   prior: [] as number[], kanaPending: false, paused: false, intakeDays: 50,
-  capAware: false, kanaMinutes: 0, historySql: "",
+  capAware: false, kanaMinutes: 0, historySql: "", headroom: undefined as number | undefined,
   save: vi.fn((next: StudyPreferences) => { fixture.prefs = { ...next }; return fixture.prefs; })
 }));
+vi.mock("../plan/budget-allocator", async importOriginal => {
+  const actual = await importOriginal<typeof import("../plan/budget-allocator")>();
+  return { ...actual, get BUDGET_HEADROOM() { return fixture.headroom ?? actual.BUDGET_HEADROOM; } };
+});
 vi.mock("../daily-plan", () => ({
   SECONDS_PER_CARD: { words: 12, grammar: 25, kanji: 10, confusion: 40 },
   remainingPlanWords: () => 100,
@@ -45,6 +50,7 @@ vi.mock("../studyPreferences", () => ({
 }));
 
 beforeEach(() => {
+  vi.restoreAllMocks(); fixture.headroom = undefined;
   fixture.mandatory = 0; fixture.prior = []; fixture.save.mockClear();
   fixture.capAware = false; fixture.kanaMinutes = 0; fixture.historySql = "";
   fixture.kanaPending = false; fixture.paused = false; fixture.intakeDays = 50;
@@ -100,6 +106,52 @@ it("冷启动预算使用计划量的28天峰值，不能因自己的新额度�
   expect(applyBudgetMorning({ locked: {}, baseline, days: [] }).B).toBe(firstBudget);
 });
 
+it("ρ只在推断完成后乘给分配器；冷启动和保存的B保持原值，今日仍占放大预算的0.6", () => {
+  fixture.history = [];
+  const solve = vi.spyOn(allocator, "allocateDay");
+  const baseline = { ...fixture.prefs };
+  const out = applyBudgetMorning({ locked: {}, baseline, days: [] });
+  expect(out.B).toBeCloseTo(23.40714285714285);
+  expect(solve.mock.calls[0][0]).toMatchObject({ budgetMinutes: 1e9, maxScale: 1, previousFresh: undefined });
+  expect(solve.mock.calls[0][0].todayBudgetMinutes).toBeUndefined();
+  expect(solve.mock.calls[1][0]).toMatchObject({ budgetMinutes: out.B * allocator.BUDGET_HEADROOM,
+    todayBudgetMinutes: out.B * allocator.BUDGET_HEADROOM * 0.6 });
+  fixture.history = [{ d: "2026-11-02", minutes: 20 }];
+  const next = applyBudgetMorning({ locked: {}, baseline,
+    days: [{ date: "2026-11-02", completed: true, budget: { ...out, B: 40, scale: 0.5 } }] });
+  expect(next.B).toBe(40); // 只有一个完成日，不增长；不能把40×ρ写回再叠乘。
+  expect(solve.mock.calls[3][0].budgetMinutes).toBe(40 * allocator.BUDGET_HEADROOM);
+});
+
+it("ρ=1时沿用d的两个预算入参；未来峰值恰好等于B的边界不添新也不过载", () => {
+  fixture.headroom = 1;
+  fixture.history = [{ d: "2026-11-02", minutes: 20 }];
+  fixture.prior = [999, ...Array(27).fill(0), 100];
+  const solve = vi.spyOn(allocator, "allocateDay");
+  const out = applyBudgetMorning({ locked: {}, baseline: { ...fixture.prefs }, days: [] });
+  expect(solve.mock.calls[1][0]).toMatchObject({ budgetMinutes: 20, todayBudgetMinutes: 12 });
+  expect(out).toMatchObject({ B: 20, M0: 0, overloaded: false,
+    peakMinutes: 20, fresh: byKind(() => 0), appliedFresh: byKind(() => 0), need: byKind(() => 2),
+    contentLeft: byKind(() => 100), paused: byKind(() => false) });
+});
+
+it("同一应用输入下ρ单调放宽两个限额；不能放大need、冷启动、锁定40或进新窗口", () => {
+  fixture.history = [{ d: "2026-11-02", minutes: 20 }];
+  const solve = vi.spyOn(allocator, "allocateDay");
+  const baseline = { ...fixture.prefs };
+  for (const rho of [1, 1.25, 1.5, 2]) {
+    fixture.headroom = rho; fixture.prefs = { ...baseline };
+    const out = applyBudgetMorning({ locked: { words: { fresh: 40 } }, baseline, days: [] });
+    expect(out.B).toBe(20);
+    expect(out.need).toEqual(byKind(() => 2));
+    expect(out.appliedFresh.words).toBe(40);
+    expect(solve.mock.calls[solve.mock.calls.length - 1][0]).toMatchObject({
+      budgetMinutes: 20 * rho, todayBudgetMinutes: 12 * rho });
+  }
+  fixture.intakeDays = 0;
+  expect(applyBudgetMorning({ locked: {}, baseline, days: [] }).fresh).toEqual(byKind(() => 0));
+});
+
 it("缺席日不能重复消费上次完成证据让B继续增长", () => {
   fixture.history = Array.from({ length: 7 }, (_, i) => ({ d: `2026-10-${31 - i}`, minutes: 20 }));
   const baseline = { ...fixture.prefs };
@@ -111,7 +163,7 @@ it("缺席日不能重复消费上次完成证据让B继续增长", () => {
 });
 
 it("先验预测去掉今天、保留第28天，不能把同一批先验重复算到明天", () => {
-  fixture.history = [{ d: "2026-11-02", minutes: 20 }];
+  fixture.history = [{ d: "2026-11-02", minutes: 20 / allocator.BUDGET_HEADROOM }];
   // 今日999张不进入未来；第28天100张单词恰好用满20分钟，必须挡住额外新学。
   fixture.prior = [999, ...Array(27).fill(0), 100];
   const out = applyBudgetMorning({ locked: {}, baseline: { ...fixture.prefs }, days: [] });
@@ -158,14 +210,14 @@ it("非过载日恢复基线cap，用户钉住的复习上限仍保持原值", (
 it("先按将恢复的cap计算M0，不能按昨日低cap求解后突然放大真实清单", () => {
   const baseline = { ...fixture.prefs };
   fixture.capAware = true; fixture.mandatory = 100;
-  fixture.history = [{ d: "2026-11-02", minutes: 20 }];
+  fixture.history = [{ d: "2026-11-02", minutes: 20 / allocator.BUDGET_HEADROOM }];
   Object.assign(fixture.prefs, { reviewCap: 1, grammarReviewCap: 1, kanjiReviewCap: 1, confusionReviewCap: 1 });
   const out = applyBudgetMorning({ locked: {}, baseline, days: [] });
   expect(out.M0).toBeCloseTo(145);
   expect(out.overloaded).toBe(true);
   expect(out.fresh).toEqual(byKind(() => 0));
   expect([fixture.prefs.reviewCap, fixture.prefs.grammarReviewCap, fixture.prefs.kanjiReviewCap, fixture.prefs.confusionReviewCap])
-    .toEqual([8, 8, 8, 8]); // B=20，今日0.6B=12分钟，普通复习不再乘1.2。
+    .toEqual([8, 8, 8, 8]); // 放大后预算20，今日限额12分钟，普通复习不再乘1.2。
 });
 
 it("仅做五十音的日子也进入预算历史，不再退回冷启动", () => {

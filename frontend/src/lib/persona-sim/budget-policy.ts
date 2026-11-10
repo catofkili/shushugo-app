@@ -5,7 +5,7 @@ import { grammarReviewEntity, PLAN_GRAMMAR_LEVEL, scopeLevels } from "../grammar
 import { getJlptPlanStatus } from "../jlpt/status";
 import { WORD_FSRS } from "../fsrs-store";
 import { forecastPriorReleases, pendingPriorSql, PRIOR_ENTITIES } from "../prior-pacing";
-import { allocateDay, DEFAULT_MAX_SCALE, inferBudgetMinutes, type BudgetInput } from "../plan/budget-allocator";
+import { allocateDay, BUDGET_HEADROOM, DEFAULT_MAX_SCALE, inferBudgetMinutes, type BudgetInput } from "../plan/budget-allocator";
 import { getEffectiveStudyPreferences, getStudyPreferences, kanaGatePending, levelAdvanceNewCap,
   levelAdvanceTarget, PLAN_REVIEW_DISABLED, saveStudyPreferences, type StudyPreferences } from "../studyPreferences";
 import { byKind, DAY_MS, KINDS, type Daily } from "./model";
@@ -68,7 +68,8 @@ export const applyBudgetMorning = (input: { locked: Locks; days: Pick<Daily, "da
   const fallbackMinutes = allocateDay({ ...day, budgetMinutes: 1e9, maxScale: 1, previousFresh: undefined }).peakMinutes;
   const B = inferBudgetMinutes({ history, fallbackMinutes,
     previous: yesterday && { B: yesterday.B, binding: !!input.days[input.days.length - 1]?.completed && yesterday.scale < DEFAULT_MAX_SCALE } });
-  const allocation = allocateDay({ ...day, budgetMinutes: B, todayBudgetMinutes: B * TODAY_BUDGET_SHARE });
+  const budgetMinutes = B * BUDGET_HEADROOM;
+  const allocation = allocateDay({ ...day, budgetMinutes, todayBudgetMinutes: budgetMinutes * TODAY_BUDGET_SHARE });
   const patch: Partial<StudyPreferences> = {};
   for (const k of KINDS) {
     if (input.locked[k]?.fresh === undefined) patch[freshKeys[k]] = allocation.fresh[k];
