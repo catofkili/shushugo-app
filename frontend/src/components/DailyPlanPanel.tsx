@@ -5,7 +5,7 @@ import {
   arrangedPlan, dailyPlanView, hasPendingPlanTotal, saveDailyPlan, PLAN_KINDS, PLAN_LABELS, SECONDS_PER_CARD,
   type DailyPlanView, type PlanKind
 } from "../lib/daily-plan";
-import { GRAMMAR_INTENSITY_MAX, INTENSITY_MAX, PREFERENCES_EVENT } from "../lib/studyPreferences";
+import { GRAMMAR_INTENSITY_MAX, INTENSITY_MAX, MAX_DAILY_REVIEW, PREFERENCES_EVENT } from "../lib/studyPreferences";
 import { refreshTodayWordPlan } from "../lib/api";
 import { notifyProgressUpdated } from "../lib/progress-events";
 import { useProgressUpdates } from "../lib/use-progress-updates";
@@ -44,7 +44,7 @@ export const DailyPlanPanel = ({ compact = false }: Props) => {
   const [totalDraft, setTotalDraft] = useState<string | null>(null);
   const planRef = useRef<Plan | null>(null);
   planRef.current = plan;
-  const [focus, setFocus] = useState<PlanKind | null>(null);
+  const [focus, setFocus] = useState<PlanKind | null>("words");
   const [showForm, setShowForm] = useState(false);
   // 撤回栈：会话内每次改动前的快照。退出页面就没了 —— 它是「手滑了退一步」，不是历史记录。
   const [history, setHistory] = useState<Plan[]>([]);
@@ -136,6 +136,9 @@ export const DailyPlanPanel = ({ compact = false }: Props) => {
 
   const focused = focus ? view.segments.find((segment) => segment.kind === focus)! : null;
   const focusedCount = focus ? plan[focus].fresh + plan[focus].review : 0;
+  const reviewExtras = focus ? (view.priorExtras?.[focus] ?? 0) + (focus === "words" ? view.wordExtras : 0) : 0;
+  // 先验/压轴不由普通复习 cap 控制；单词 cap 至少为 1，不能给出保存后会反弹的滑杆值。
+  const reviewMin = reviewExtras + (focus === "words" && focused!.pool.due > reviewExtras ? 1 : 0);
 
   return (
     <div className={`zoo-plan ${compact ? "zoo-plan-compact" : ""}`}>
@@ -197,7 +200,10 @@ export const DailyPlanPanel = ({ compact = false }: Props) => {
       {focus && focused && (
         <div className="zoo-plan-zoom" style={{ borderColor: RING_COLORS[focus] }}>
           <p className="zoo-plan-zoom-title">
-            {PLAN_LABELS[focus]} · {focusedCount} 项 · 调整新学，复习量不变
+            {PLAN_LABELS[focus]} · {focusedCount} 项
+          </p>
+          <p className="zoo-plan-zoom-meta">
+            新学 <b>{plan[focus].fresh}</b>（建议 ≥ {focused.suggest.fresh}，剩 {focused.pool.unseen} 没学）
           </p>
           <DailyPlanSlider
             value={plan[focus].fresh}
@@ -210,10 +216,18 @@ export const DailyPlanPanel = ({ compact = false }: Props) => {
             onCommit={commitDrag}
           />
           <p className="zoo-plan-zoom-meta">
-            新学 <b>{plan[focus].fresh}</b>（建议 ≥ {focused.suggest.fresh}，剩 {focused.pool.unseen} 没学）
-            <i aria-hidden="true">·</i>
             复习 <b>{plan[focus].review}</b>（建议 ≥ {focused.suggest.review}，今天到期 {focused.pool.due}）
           </p>
+          <DailyPlanSlider
+            value={plan[focus].review}
+            min={reviewMin}
+            max={Math.max(reviewMin + 1, plan[focus].review, Math.min(focused.pool.due, MAX_DAILY_REVIEW + reviewExtras))}
+            disabled={focused.pool.due <= reviewMin}
+            label={`${PLAN_LABELS[focus]}复习数量`}
+            color={RING_COLORS[focus]}
+            onChange={(review) => preview({ ...plan, [focus]: { ...plan[focus], review } })}
+            onCommit={commitDrag}
+          />
           {(plan[focus].review < focused.suggest.review || plan[focus].fresh < focused.suggest.fresh) && (
             <button
               className="zoo-plan-suggest"
