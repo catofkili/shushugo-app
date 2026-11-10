@@ -2,19 +2,19 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1899723,
+      "bytes": 1899722,
       "passes": true
     },
     "study": {
-      "bytes": 1393156,
+      "bytes": 1393690,
       "passes": true
     },
     "account": {
-      "bytes": 328968,
+      "bytes": 329471,
       "passes": true
     },
     "content-pages": {
-      "bytes": 1178050,
+      "bytes": 1178066,
       "passes": true
     },
     "features": {
@@ -34,7 +34,7 @@
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 312415,
+      "bytes": 312419,
       "passes": true
     },
     "core": {
@@ -42,7 +42,7 @@
       "passes": true
     },
     "lazy": {
-      "bytes": 1139392,
+      "bytes": 1139435,
       "passes": true
     },
     "jlpt-bank": {
@@ -193,7 +193,7 @@
     },
     {
       "source": "frontend/src/components/DailyPlanPanel.tsx",
-      "bytes": 16901,
+      "bytes": 18076,
       "packages": [
         "account",
         "study"
@@ -804,8 +804,8 @@
       ]
     },
     {
-      "source": "frontend/src/lib/yield-to-paint.ts",
-      "bytes": 957,
+      "source": "frontend/src/components/DailyPlanSlider.weapp.tsx",
+      "bytes": 1036,
       "packages": [
         "account",
         "lazy",
@@ -813,8 +813,8 @@
       ]
     },
     {
-      "source": "frontend/src/components/DailyPlanSlider.weapp.tsx",
-      "bytes": 912,
+      "source": "frontend/src/lib/yield-to-paint.ts",
+      "bytes": 957,
       "packages": [
         "account",
         "lazy",
@@ -1428,7 +1428,7 @@
     },
     {
       "source": "frontend/src/components/DailyPlanPanel.tsx",
-      "bytes": 16901,
+      "bytes": 18076,
       "packages": [
         "account",
         "study"
@@ -1763,7 +1763,7 @@
     },
     {
       "source": "frontend/src/components/DailyPlanSlider.weapp.tsx",
-      "bytes": 912,
+      "bytes": 1036,
       "packages": [
         "account",
         "lazy",
@@ -1825,7 +1825,7 @@
     "frontend/src/components/DailyPlanSlider.weapp.tsx": "The lazy setup panel and account/study plan pages render native Sliders; values and commit callbacks are owned by each mounted parent, not this stateless adapter.",
     "frontend/src/components/JapaneseRubyText.weapp.tsx": "Ruby text is used by lazy tabs and independently loaded content/grammar routes."
   },
-  "duplicatedPageComponentBytes": 364188,
+  "duplicatedPageComponentBytes": 365487,
   "unapprovedPageComponents": [],
   "stalePageComponentAllowlist": [],
   "unapprovedPageComponentBytes": 0,

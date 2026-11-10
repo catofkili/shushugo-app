@@ -22,7 +22,7 @@ const copyPlan = (view) => Object.fromEntries(view.segments.map((part) => [part.
 Page({
   data: {
     ready: false, busy: false, error: '', mode: 'classic', active: [],
-    rows: [], total: 0, minutes: 0, daysLeft: 0, focus: '', focusRow: null, canUndo: false,
+    rows: [], total: 0, minutes: 0, daysLeft: 0, focus: 'words', focusRow: null, canUndo: false,
     target: 'N3', presetMinutes: 0, note: ''
   },
 
@@ -57,7 +57,10 @@ Page({
   render() {
     const rows = this.shownView.segments.map((segment) => {
       const value = this.plan[segment.kind];
+      const extras = (this.shownView.priorExtras?.[segment.kind] || 0) + (segment.kind === 'words' ? this.shownView.wordExtras : 0);
+      const reviewMin = extras + (segment.kind === 'words' && segment.pool.due > extras ? 1 : 0);
       return { ...segment, ...value, freshMax: FRESH_MAX[segment.kind], count: value.fresh + value.review, color: COLORS[segment.kind],
+        reviewMin, reviewMax: Math.max(reviewMin + 1, value.review, Math.min(segment.pool.due, preferences.MAX_DAILY_REVIEW + extras)),
         active: this.data.active.includes(segment.kind), low: lowLabel(value, segment.suggest) };
     });
     const total = rows.reduce((sum, row) => sum + (row.active ? row.count : 0), 0);
@@ -193,12 +196,16 @@ Page({
     this.drawRing();
   },
 
-  changeSplit(event) {
+  changeAmount(event) {
     if (this.data.busy) return;
     const kind = this.data.focus;
     if (!kind) return;
-    const fresh = Math.min(FRESH_MAX[kind], clean(event.detail.value));
-    this.plan[kind] = { ...this.plan[kind], fresh };
+    const field = event.currentTarget.dataset.field;
+    if (!['fresh', 'review'].includes(field)) return;
+    const row = this.data.focusRow;
+    const value = Math.max(field === 'review' ? row.reviewMin : 0,
+      Math.min(field === 'review' ? row.reviewMax : FRESH_MAX[kind], clean(event.detail.value)));
+    this.plan[kind] = { ...this.plan[kind], [field]: value };
     this.render();
     this.commit(false);
   },

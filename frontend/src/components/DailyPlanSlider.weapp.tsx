@@ -5,6 +5,7 @@ export const DailyPlanSlider = ({
   min = 0,
   max,
   step = 1,
+  disabled = false,
   color = "#7EBE4F",
   onChange,
   onCommit
@@ -13,6 +14,7 @@ export const DailyPlanSlider = ({
   min?: number;
   max: number;
   step?: number;
+  disabled?: boolean;
   color?: string;
   onChange: (value: number) => void;
   onCommit?: () => void;
@@ -22,6 +24,7 @@ export const DailyPlanSlider = ({
   max={max}
   value={value}
   step={step}
+  disabled={disabled}
   activeColor={color}
   backgroundColor="rgba(0,0,0,.15)"
   onChanging={(event) => onChange(event.detail.value)}

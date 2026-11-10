@@ -49,6 +49,21 @@ assert.equal(page.data.total, previousTotal + 2);
 page.undo();
 while (page.data.busy) await new Promise((resolve) => setImmediate(resolve));
 assert.equal(page.data.total, previousTotal);
+
+// 两条滑杆执行真实页面写回：新学降到 0 不改复习，复习再减量也不恢复新学。
+db.run("UPDATE progress SET seen_count=3,fsrs_lapses=0,fsrs_due='2026-01-01T00:00:00.000Z' WHERE word_id IN (SELECT id FROM words ORDER BY id LIMIT 60)");
+core.web.preferences.saveStudyPreferences({ ...core.web.preferences.getStudyPreferences(), dailyGoal: 25, reviewCap: 40 });
+page.load();
+assert.equal(page.data.focus, 'words');
+page.changeAmount({ currentTarget: { dataset: { field: 'fresh' } }, detail: { value: 0 } });
+while (page.data.busy) await new Promise((resolve) => setImmediate(resolve));
+assert.equal(core.web.preferences.getStudyPreferences().dailyGoal, 0);
+assert.equal(core.web.preferences.getStudyPreferences().reviewCap, 40);
+page.changeAmount({ currentTarget: { dataset: { field: 'review' } }, detail: { value: 10 } });
+while (page.data.busy) await new Promise((resolve) => setImmediate(resolve));
+assert.equal(core.web.preferences.getStudyPreferences().dailyGoal, 0);
+assert.equal(core.web.preferences.getStudyPreferences().reviewCap, 10);
+
 assert.ok(Number.isFinite(page.data.presetMinutes));
 await page.applyPreset();
 assert.equal(page.data.error, '');

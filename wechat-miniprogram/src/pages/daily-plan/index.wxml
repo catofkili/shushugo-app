@@ -12,9 +12,11 @@
       <text class="row-detail">新 {{item.fresh}} · 复 {{item.review}}{{item.low}}</text>
     </view>
     <view wx:if="{{focus}}" class="split">
-      <text>{{focusRow.label}} · 调整新学，复习量不变</text>
-      <slider min="0" max="{{focusRow.freshMax}}" value="{{focusRow.fresh}}" activeColor="#6FA83E" bindchange="changeSplit" />
-      <text class="detail">建议新学至少 {{focusRow.suggest.fresh}}，复习至少 {{focusRow.suggest.review}}。</text>
+      <text>{{focusRow.label}} · {{focusRow.count}} 项</text>
+      <text class="detail">新学 {{focusRow.fresh}}（建议 ≥ {{focusRow.suggest.fresh}}，剩 {{focusRow.pool.unseen}} 没学）</text>
+      <slider min="0" max="{{focusRow.freshMax}}" value="{{focusRow.fresh}}" activeColor="#6FA83E" data-field="fresh" bindchange="changeAmount" />
+      <text class="detail">复习 {{focusRow.review}}（建议 ≥ {{focusRow.suggest.review}}，今天到期 {{focusRow.pool.due}}）</text>
+      <slider min="{{focusRow.reviewMin}}" max="{{focusRow.reviewMax}}" value="{{focusRow.review}}" disabled="{{busy || focusRow.pool.due <= focusRow.reviewMin}}" activeColor="#6FA83E" data-field="review" bindchange="changeAmount" />
       <button wx:if="{{focusRow.low}}" class="suggest" disabled="{{busy}}" bindtap="topUp">补到建议值 →</button>
     </view>
     <view class="actions"><button class="arrange" disabled="{{busy}}" bindtap="arrange">一键安排今天</button><button class="undo" disabled="{{busy || !canUndo}}" bindtap="undo">撤回</button></view>

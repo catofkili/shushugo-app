@@ -3,6 +3,7 @@ export const DailyPlanSlider = ({
   min = 0,
   max,
   step = 1,
+  disabled = false,
   color,
   onChange,
   onCommit,
@@ -12,6 +13,7 @@ export const DailyPlanSlider = ({
   min?: number;
   max: number;
   step?: number;
+  disabled?: boolean;
   color?: string;
   onChange: (value: number) => void;
   onCommit?: () => void;
@@ -22,6 +24,7 @@ export const DailyPlanSlider = ({
   min={min}
   max={max}
   step={step}
+  disabled={disabled}
   value={value}
   onChange={(event) => onChange(Number(event.target.value))}
   onPointerUp={() => onCommit?.()}
