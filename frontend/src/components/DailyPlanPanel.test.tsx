@@ -30,7 +30,7 @@ vi.mock("../lib/daily-plan", () => ({
       pool: { unseen: 100, due: h.due }, suggest: { fresh: 25, review: h.due }
     }))
   }),
-  saveDailyPlan: h.save, arrangedPlan: vi.fn(), hasPendingPlanTotal: () => false
+  saveDailyPlan: h.save, arrangedPlan: vi.fn(), stampPlanCaps: (plan: unknown) => plan, hasPendingPlanTotal: () => false
 }));
 vi.mock("../lib/api", () => ({ refreshTodayWordPlan: h.replan }));
 vi.mock("../lib/mixed-cards", () => ({ refreshMixedCardTasks: vi.fn() }));

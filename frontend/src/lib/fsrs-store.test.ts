@@ -25,6 +25,8 @@ import {
   ensureKanjiReadingFsrs,
   ensureGrammarFsrs,
   KANJI_FSRS,
+  WORD_FSRS,
+  cappedDueCount,
   migrateRecentDailyEasyReviews
 } from "./fsrs-store";
 
@@ -201,28 +203,41 @@ describe("fsrs-store", () => {
       expect(ids.indexOf(203)).toBeLessThan(ids.indexOf(200));
     });
 
-    it("顽固词闸永远生效:上限装不下时在「非顽固全部 + 随机 10 个顽固」里纯随机抽", () => {
-      // 210..229 全部到期,其中 210..224 是顽固词(lapses 9,15 个 > 闸 10);上限 12
-      for (let id = 210; id < 230; id += 1) {
-        testDb.run(
-          "UPDATE progress SET seen_count = 1, known_forever = 0, fsrs_stability = 5, fsrs_difficulty = 5," +
-          " fsrs_lapses = ?, fsrs_last_review = '2026-07-01T04:00:00Z', fsrs_due = ? WHERE word_id = ?",
-          [id < 225 ? 9 : 0, `2026-07-${String(1 + (id % 20)).padStart(2, "0")}T04:00:00Z`, id]
-        );
-      }
-      // 「今天该复习的」= 非顽固 5(+ 本用例之外那几个受控词)+ 顽固最多 10
-      expect(fsrsDueCount(now) - plannedDueCount(now)).toBe(5);
-      const seen = new Set<number>();
-      for (let run = 0; run < 300; run += 1) {
-        const ids = fsrsDueWordIds(12, now);
-        expect(ids).toHaveLength(12);
-        ids.forEach((id) => seen.add(id));
-        expect(ids.filter((id) => id >= 210 && id < 225).length).toBeLessThanOrEqual(10);
-      }
-      // 每个到期词都抽得到(顽固那 10 个也是随机换的,不是固定同一批)
-      for (let id = 210; id < 230; id += 1) expect(seen.has(id)).toBe(true);
-      for (let id = 210; id < 230; id += 1) {
-        testDb.run("UPDATE progress SET seen_count = 0, fsrs_stability = NULL, fsrs_due = NULL, fsrs_lapses = 0 WHERE word_id = ?", [id]);
+    it.each([
+      { normal: 20, leech: 20, limit: 12, expected: 12, pickedLeech: 0 },
+      { normal: 12, leech: 20, limit: 12, expected: 12, pickedLeech: 0 },
+      { normal: 5, leech: 30, limit: 20, expected: 20, pickedLeech: 15 },
+      { normal: 3, leech: 2, limit: 12, expected: 5, pickedLeech: 2 }
+    ])("普通词先占名额，顽固词随机补余位：$normal + $leech / $limit", ({ normal, leech, limit, expected, pickedLeech }) => {
+      const entity = { ...WORD_FSRS, eligible: `${WORD_FSRS.eligible} AND word_id >= 210 AND word_id < ${210 + normal + leech}` };
+      testDb.run("SAVEPOINT leech_policy");
+      try {
+        for (let id = 210; id < 210 + normal + leech; id += 1) {
+          testDb.run(
+            "UPDATE progress SET seen_count = 1, known_forever = 0, fsrs_stability = 5, fsrs_difficulty = 5," +
+            " fsrs_lapses = ?, fsrs_last_review = '2026-07-01T04:00:00Z', fsrs_due = ? WHERE word_id = ?",
+            [id < 210 + normal ? 0 : 8, `2026-07-${String(1 + (id % 20)).padStart(2, "0")}T04:00:00Z`, id]
+          );
+        }
+        expect(fsrsDueCount(now, entity)).toBe(normal + leech);
+        expect(plannedDueCount(now, entity)).toBe(normal + leech);
+        expect(fsrsDueWordIds(1_000_000_000, now, entity)).toHaveLength(normal + leech);
+        const seen = new Set<number>();
+        for (let run = 0; run < 300; run += 1) {
+          const ids = fsrsDueWordIds(limit, now, entity);
+          expect(ids).toHaveLength(expected);
+          expect(plannedDueCount(now, entity, limit)).toBe(ids.length);
+          expect(cappedDueCount(limit, now, entity)).toBe(ids.length);
+          expect(new Set(ids).size).toBe(ids.length);
+          expect(ids.filter(id => id >= 210 + normal)).toHaveLength(pickedLeech);
+          if (normal <= limit) for (let id = 210; id < 210 + normal; id += 1) expect(ids).toContain(id);
+          ids.forEach((id) => seen.add(id));
+        }
+        // 普通词随机抽时每张都能轮到；有余位时顽固词也随机轮换，不固定同一批。
+        for (let id = 210; id < 210 + normal + (pickedLeech ? leech : 0); id += 1) expect(seen.has(id)).toBe(true);
+      } finally {
+        testDb.run("ROLLBACK TO leech_policy");
+        testDb.run("RELEASE leech_policy");
       }
       // 本机单跑约 2 秒，GitHub 的 2 核机器上与别的测试文件抢 CPU 会超过默认 5 秒（2026-11-03、11-06 两次 CI 都因此红）。
     }, 30_000);

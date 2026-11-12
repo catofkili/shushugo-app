@@ -223,6 +223,7 @@ Page({
 
   arrange() {
     if (this.data.busy) return;
+    // 四段复习回自动档；保留 shared 返回的 keep 意图，让同数值的一键安排也能重置 cap。
     this.plan = dailyPlan.arrangedPlan(this.shownView);
     this.render();
     this.commit(false);
@@ -300,10 +301,14 @@ Page({
   async commit(standing, recordHistory = true) {
     if (this.data.busy) return;
     if (JSON.stringify(this.plan) === JSON.stringify(this.lastSavedPlan)) return;
-    const before = this.lastSavedPlan;
     this.setData({ busy: true });
     try {
-      core.withDb(getDatabase(), () => dailyPlan.saveDailyPlan(this.plan, standing, this.shownView));
+      // 撤回快照在落盘之前带上当时的 cap（shared 的 stampPlanCaps），撤回才还原得了上限。
+      const before = core.withDb(getDatabase(), () => {
+        const snapshot = recordHistory && this.lastSavedPlan ? dailyPlan.stampPlanCaps(this.lastSavedPlan) : this.lastSavedPlan;
+        dailyPlan.saveDailyPlan(this.plan, standing, this.shownView);
+        return snapshot;
+      });
       await this.replan();
       if (recordHistory) this.history.push(before);
       this.load();

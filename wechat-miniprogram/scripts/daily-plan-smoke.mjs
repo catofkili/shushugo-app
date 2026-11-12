@@ -64,6 +64,22 @@ while (page.data.busy) await new Promise((resolve) => setImmediate(resolve));
 assert.equal(core.web.preferences.getStudyPreferences().dailyGoal, 0);
 assert.equal(core.web.preferences.getStudyPreferences().reviewCap, 10);
 
+// 原生页面也要传递安排的自动档意图，四类 cap 都归零；随后填数字仍为手动上限。
+page.arrange();
+while (page.data.busy) await new Promise((resolve) => setImmediate(resolve));
+const automatic = core.web.preferences.getStudyPreferences();
+assert.deepEqual([automatic.reviewCap, automatic.grammarReviewCap, automatic.kanjiReviewCap, automatic.confusionReviewCap], [0, 0, 0, 0]);
+// 撤回一键安排：上一步手动定的 10 要原样回来（撤回快照带着当时的 cap）。
+page.undo();
+while (page.data.busy) await new Promise((resolve) => setImmediate(resolve));
+assert.equal(core.web.preferences.getStudyPreferences().reviewCap, 10);
+page.arrange();
+while (page.data.busy) await new Promise((resolve) => setImmediate(resolve));
+assert.equal(core.web.preferences.getStudyPreferences().reviewCap, 0);
+page.editNumber({ currentTarget: { dataset: { kind: 'words', field: 'review' } }, detail: { value: 400 } });
+while (page.data.busy) await new Promise((resolve) => setImmediate(resolve));
+assert.equal(core.web.preferences.getStudyPreferences().reviewCap, 400);
+
 assert.ok(Number.isFinite(page.data.presetMinutes));
 await page.applyPreset();
 assert.equal(page.data.error, '');

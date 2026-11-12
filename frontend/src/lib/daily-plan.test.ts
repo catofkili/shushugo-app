@@ -20,10 +20,13 @@ vi.mock("./database", () => ({
   importDatabase: async () => undefined
 }));
 
-import { applyExamPreset, arrangedPlan, dailyPlanView, examPreset, hasPendingPlanTotal, learnedLevel, previewCurrentLevelPlan, saveDailyPlan, segmentLength, PLAN_KINDS } from "./daily-plan";
+import { applyExamPreset, arrangedPlan, dailyPlanView, examPreset, hasPendingPlanTotal, learnedLevel, previewCurrentLevelPlan, saveDailyPlan, segmentLength, stampPlanCaps, PLAN_KINDS } from "./daily-plan";
 import { getStudyPreferences } from "./studyPreferences";
 import { loadKanjiCharData, materializeKanjiChars } from "./kanji-char-cards";
 import { materializeConfusionCards } from "./confusion-cards";
+import { autoPlanReviewCap, dailyReviewCap } from "./review-budget";
+import { fsrsDueWordIds } from "./fsrs-store";
+import { studyDayEnd, today } from "./database/db-utils";
 
 describe("每日学习量：视图 / 写回 / 备考一键", () => {
   it("只在每日总量数字和当前值不同时显示保存入口", () => {
@@ -98,14 +101,38 @@ describe("每日学习量：视图 / 写回 / 备考一键", () => {
     expect(getStudyPreferences().reviewCap).toBe(348);
   });
 
-  it("一键安排：复习 = 到期全部，新学 = 平时额度（表单定的算，拖圆环不算；没定过是默认档）", () => {
+  it("一键安排：复习回自动档，新学 = 平时额度（表单定的算，拖圆环不算；没定过是默认档）", () => {
     store.delete("mn-daily-plan-baseline");
     expect(PLAN_KINDS.map((kind) => arrangedPlan(dailyPlanView())[kind].fresh)).toEqual([15, 5, 5, 5]);
     saveDailyPlan({ words: { fresh: 30, review: 1 }, grammar: { fresh: 5, review: 1 }, kanji: { fresh: 5, review: 1 }, confusion: { fresh: 5, review: 1 } }, true);
     saveDailyPlan({ words: { fresh: 0, review: 1 }, grammar: { fresh: 0, review: 1 }, kanji: { fresh: 0, review: 1 }, confusion: { fresh: 0, review: 1 } });
     const arranged = arrangedPlan(dailyPlanView());
     expect(PLAN_KINDS.map((kind) => arranged[kind].fresh)).toEqual([30, 5, 5, 5]);
-    expect(PLAN_KINDS.map((kind) => arranged[kind].review)).toEqual(dailyPlanView().segments.map((segment) => segment.pool.due));
+    expect(PLAN_KINDS.map((kind) => arranged[kind].review)).toEqual(dailyPlanView().segments.map(({ kind, pool }) => Math.min(pool.due, kind === "words" ? dailyReviewCap(0) : autoPlanReviewCap(kind))));
+  });
+
+  it("四段安排都回自动档，显示值恰好没变也要重置；先验和减负压轴另算，手动数仍优先", () => {
+    const before = getStudyPreferences();
+    try {
+      store.set("mn-study-preferences", JSON.stringify({ ...before, reviewCap: 621, grammarReviewCap: 20, kanjiReviewCap: 15, confusionReviewCap: 8 }));
+      const shown = dailyPlanView();
+      shown.wordExtras = 4;
+      shown.priorExtras = { words: 8, grammar: 5, kanji: 5, confusion: 5 };
+      shown.segments.forEach(segment => { segment.pool.due = 600; });
+      const arranged = arrangedPlan(shown);
+      expect(PLAN_KINDS.map(kind => arranged[kind].review)).toEqual([dailyReviewCap(0) + 12, 25, 20, 13]);
+      shown.segments.forEach(segment => { segment.review = arranged[segment.kind].review; });
+      saveDailyPlan(arranged, false, shown);
+      const caps = () => {
+        const p = getStudyPreferences();
+        return [p.reviewCap, p.grammarReviewCap, p.kanjiReviewCap, p.confusionReviewCap];
+      };
+      expect(caps()).toEqual([0, 0, 0, 0]);
+      saveDailyPlan(Object.fromEntries(PLAN_KINDS.map((kind, i) => [kind, { ...arranged[kind], review: [412, 75, 55, 35][i] }])) as typeof arranged, false, shown);
+      expect(caps()).toEqual([400, 70, 50, 30]);
+    } finally {
+      store.set("mn-study-preferences", JSON.stringify(before));
+    }
   });
 
   it.each([0, -1, 600])("只把新学降为 0，保留原复习 cap=%s，不把先验或压轴重复计入", reviewCap => {
@@ -174,16 +201,78 @@ describe("每日学习量：视图 / 写回 / 备考一键", () => {
     }
   });
 
-  it("一键安排之后不会被自己标成「低于建议」：到期超过 500 也照数存（旧上限 500 会截）", () => {
-    // 作者 09-26：到期五百多，一键安排完显示「复 511 · 低于建议」—— 存的时候被截成了 500。
+  it("一键安排不把 600 个到期词写成长期上限：自动档最多 150，手动 400 仍优先", () => {
+    const before = getStudyPreferences();
+    dailyPlanView(); // 先完成首次回填，避免它改写受控到期集。
+    testDb.run("SAVEPOINT arrange_cap");
+    try {
+      testDb.run("UPDATE progress SET known_forever=1");
+      testDb.run("UPDATE progress SET known_forever=0, seen_count=3, fsrs_lapses=0, fsrs_due='2026-01-01T00:00:00.000Z' WHERE word_id IN (SELECT id FROM words ORDER BY id LIMIT 600)");
+      testDb.run("DELETE FROM reviews");
+      testDb.run("INSERT INTO reviews (word_id, answer, score_after, reviewed_on, created_at) SELECT id, 'know', 0, date(?, '-1 day'), datetime(?, '-1 day') FROM words ORDER BY id LIMIT 400", [today(), today()]);
+      expect(dailyReviewCap(0)).toBe(150);
+      for (const reviewCap of [0, 621]) {
+        store.set("mn-study-preferences", JSON.stringify({ ...before, reviewCap }));
+        const shown = dailyPlanView();
+        expect(shown.segments[0].pool.due).toBe(600);
+        const arranged = arrangedPlan(shown);
+        saveDailyPlan(arranged, false, shown);
+        expect(getStudyPreferences().reviewCap).toBe(0);
+        expect(arranged.words.review).toBe(150);
+        expect(dailyPlanView().segments[0].review).toBe(150);
+        expect(fsrsDueWordIds(dailyReviewCap(getStudyPreferences().reviewCap), studyDayEnd())).toHaveLength(150);
+        // 保留一键安排返回值上的字段再拖动，也必须识别为手动 400。
+        saveDailyPlan({ ...arranged, words: { ...arranged.words, review: 400 } }, false, dailyPlanView());
+        expect(getStudyPreferences().reviewCap).toBe(400);
+      }
+    } finally {
+      testDb.run("ROLLBACK TO arrange_cap");
+      testDb.run("RELEASE arrange_cap");
+      store.set("mn-study-preferences", JSON.stringify(before));
+    }
+  });
+
+  it("到期超过 500，一键安排也只显示自动档名额，不再把全到期数存成固定上限", () => {
+    // 09-26 曾要求五百多照存；11-12 改成自动档，仍允许用户另行手动保存 400 等固定值。
     // ⚠️ 放最后：这里把 600 个词改成已学、到期，后面的用例会被它影响。
     testDb.run(
       "UPDATE progress SET seen_count=3, fsrs_lapses=0, fsrs_due='2026-01-01T00:00:00.000Z' WHERE word_id IN (SELECT id FROM words ORDER BY id LIMIT 600)"
     );
     const view = dailyPlanView();
     const words = () => dailyPlanView().segments.find((segment) => segment.kind === "words")!;
-    expect(words().suggest.review).toBeGreaterThan(500);
+    expect(words().pool.due).toBeGreaterThan(500);
+    // 建议复习数也是自动档的数，不是全部到期：否则面板标「偏少」、「补到建议值」又把全到期数写成固定上限。
+    expect(words().suggest.review).toBe(Math.min(words().pool.due, dailyReviewCap(0)));
     saveDailyPlan(arrangedPlan(view), false, view);
+    expect(getStudyPreferences().reviewCap).toBe(0);
+    expect(words().review).toBe(Math.min(words().pool.due, dailyReviewCap(0)));
     expect(words().review).toBe(words().suggest.review);
+  });
+
+  it("撤回一键安排：快照带着当时的 cap，撤回后四类上限原样回来（接上一个用例的 600 个到期词）", () => {
+    const before = getStudyPreferences();
+    const caps = () => {
+      const p = getStudyPreferences();
+      return [p.reviewCap, p.grammarReviewCap, p.kanjiReviewCap, p.confusionReviewCap];
+    };
+    try {
+      store.set("mn-study-preferences", JSON.stringify({ ...before, reviewCap: 400, grammarReviewCap: 20, kanjiReviewCap: 15, confusionReviewCap: 8 }));
+      const shown = dailyPlanView();
+      const plan = Object.fromEntries(shown.segments.map((segment) => [segment.kind, { fresh: segment.fresh, review: segment.review }])) as ReturnType<typeof arrangedPlan>;
+      const snapshot = stampPlanCaps(plan); // 面板在落盘之前压栈
+      saveDailyPlan(arrangedPlan(shown), false, shown);
+      expect(caps()).toEqual([0, 0, 0, 0]);
+      saveDailyPlan(snapshot, false, shown); // 撤回
+      expect(caps()).toEqual([400, 20, 15, 8]);
+      // 撤回之后在这份快照上手动改单词复习：数字对不上 keep[0]，按手动值存，不会被旧 cap 盖回去
+      saveDailyPlan({ ...snapshot, words: { ...snapshot.words, review: 300 } }, false, dailyPlanView());
+      expect(getStudyPreferences().reviewCap).toBe(300);
+      // 没带 keep 的旧式撤回（只有数字）还原不了 cap —— 这就是要 stampPlanCaps 的原因
+      saveDailyPlan(arrangedPlan(shown), false, shown);
+      saveDailyPlan(plan, false, shown);
+      expect(getStudyPreferences().reviewCap).toBe(0);
+    } finally {
+      store.set("mn-study-preferences", JSON.stringify(before));
+    }
   });
 });

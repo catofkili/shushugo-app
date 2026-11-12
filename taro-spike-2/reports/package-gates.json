@@ -2,55 +2,55 @@
   "maxBytes": 1900000,
   "packages": {
     "main": {
-      "bytes": 1899722,
+      "bytes": 1899008,
       "passes": true
     },
     "study": {
-      "bytes": 1393690,
+      "bytes": 1394533,
       "passes": true
     },
     "account": {
-      "bytes": 329471,
+      "bytes": 330268,
       "passes": true
     },
     "content-pages": {
-      "bytes": 1178066,
+      "bytes": 1178122,
       "passes": true
     },
     "features": {
-      "bytes": 591063,
+      "bytes": 591062,
       "passes": true
     },
     "content": {
-      "bytes": 1640667,
+      "bytes": 1640666,
       "passes": true
     },
     "grammar-foundation": {
-      "bytes": 663544,
+      "bytes": 663543,
       "passes": true
     },
     "grammar-advanced": {
-      "bytes": 531416,
+      "bytes": 531415,
       "passes": true
     },
     "grammar-pages": {
-      "bytes": 312419,
+      "bytes": 312460,
       "passes": true
     },
     "core": {
-      "bytes": 279122,
+      "bytes": 279123,
       "passes": true
     },
     "lazy": {
-      "bytes": 1139435,
+      "bytes": 1140287,
       "passes": true
     },
     "jlpt-bank": {
-      "bytes": 764685,
+      "bytes": 764680,
       "passes": true
     },
     "jlpt-bank-2": {
-      "bytes": 585414,
+      "bytes": 585413,
       "passes": true
     }
   },
@@ -138,20 +138,20 @@
       ]
     },
     {
+      "source": "frontend/src/lib/daily-plan.ts",
+      "bytes": 26469,
+      "packages": [
+        "account",
+        "lazy",
+        "study"
+      ]
+    },
+    {
       "source": "frontend/src/components/AuthDialog.weapp.tsx",
       "bytes": 24038,
       "packages": [
         "account",
         "lazy"
-      ]
-    },
-    {
-      "source": "frontend/src/lib/daily-plan.ts",
-      "bytes": 23460,
-      "packages": [
-        "account",
-        "lazy",
-        "study"
       ]
     },
     {
@@ -181,6 +181,14 @@
       ]
     },
     {
+      "source": "frontend/src/components/DailyPlanPanel.tsx",
+      "bytes": 18270,
+      "packages": [
+        "account",
+        "study"
+      ]
+    },
+    {
       "source": "frontend/src/lib/audio-pack-platform.weapp.ts",
       "bytes": 18216,
       "packages": [
@@ -188,14 +196,6 @@
         "content-pages",
         "grammar-pages",
         "lazy",
-        "study"
-      ]
-    },
-    {
-      "source": "frontend/src/components/DailyPlanPanel.tsx",
-      "bytes": 18076,
-      "packages": [
-        "account",
         "study"
       ]
     },
@@ -975,7 +975,7 @@
     },
     {
       "source": "frontend/src/lib/daily-plan.ts",
-      "bytes": 23460,
+      "bytes": 26469,
       "packages": [
         "account",
         "lazy",
@@ -1428,7 +1428,7 @@
     },
     {
       "source": "frontend/src/components/DailyPlanPanel.tsx",
-      "bytes": 18076,
+      "bytes": 18270,
       "packages": [
         "account",
         "study"
@@ -1825,7 +1825,7 @@
     "frontend/src/components/DailyPlanSlider.weapp.tsx": "The lazy setup panel and account/study plan pages render native Sliders; values and commit callbacks are owned by each mounted parent, not this stateless adapter.",
     "frontend/src/components/JapaneseRubyText.weapp.tsx": "Ruby text is used by lazy tabs and independently loaded content/grammar routes."
   },
-  "duplicatedPageComponentBytes": 365487,
+  "duplicatedPageComponentBytes": 365681,
   "unapprovedPageComponents": [],
   "stalePageComponentAllowlist": [],
   "unapprovedPageComponentBytes": 0,
@@ -1836,7 +1836,7 @@
   "mainTopModules": [
     {
       "source": "frontend/src/lib/word-api.ts",
-      "bytes": 144579
+      "bytes": 144682
     },
     {
       "source": "frontend/src/app.css",

@@ -179,7 +179,7 @@ export const createStage1Tasks = (day: string, options: { topUp?: boolean } = {}
   const reviewLimit = Math.max(dailyLimit - existingReviewTasks, 0);
 
   let orderIndex = firstValue<number>("SELECT COALESCE(MAX(order_index), 0) + 1 FROM stage1_tasks WHERE reviewed_on = ?", [day], 1);
-  // 选词只有一条路:FSRS 到期集(刚栽过跟头的优先,其余 due 升序)。
+  // 选词只有一条路：普通到期词先占名额（不足时顽固词补余位），装不下时纯随机。
   const reviewRows = fsrsDueWordIds(reviewLimit, studyDayEnd()).map((word_id) => ({ word_id }));
 
   reviewRows.forEach((row) => {

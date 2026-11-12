@@ -139,7 +139,7 @@ const levelSql = (level: string, column = "g.level") => {
  * 把 FSRS 的到期集限定到一个等级。
  *
  * 直接拼字符串是因为 `fsrsDueWordIds` 的绑定参数是固定的，而「谁最该复习」的
- * 排序规则（刚栽过跟头的优先、其余 due 升序、顽固卡限流）只该有一份 ——
+ * 选词规则（普通卡先占名额、顽固卡随机补余位；装不下时纯随机）只该有一份 ——
  * 为了传一个等级另写一遍 ORDER BY，就是在制造第二份口径。等级先过白名单。
  */
 export const grammarReviewEntity = (level: string): FsrsEntity => {

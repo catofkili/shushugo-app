@@ -13,7 +13,7 @@ import { levelsInScope, JLPT_TARGETS, type JlptTarget } from "./jlpt/plan";
 import { firstValue, rowsFor, studyDayEnd } from "./study-core";
 import { kanjiCharPool, kanjiCharPriorCount } from "./kanji-char-cards";
 import { confusionCardPool, confusionPriorCount } from "./confusion-cards";
-import { dailyReviewCap, planReviewLimit, type PlanReviewKind } from "./review-budget";
+import { autoPlanReviewCap, dailyReviewCap, planReviewLimit, type PlanReviewKind } from "./review-budget";
 import { plannedDueCount, WORD_FSRS } from "./fsrs-store";
 import { forecastPriorReleases, priorIdsForEntity, pendingPriorSql, PRIOR_ENTITIES } from "./prior-pacing";
 import { grammarReviewPool, PLAN_GRAMMAR_LEVEL } from "./grammar-quiz";
@@ -27,6 +27,10 @@ import { kanaComplete } from "./kana-progress";
 import { ensureProgressInitialized } from "./word-api/bootstrap";
 
 export type PlanKind = "words" | "grammar" | "kanji" | "confusion";
+// keep = [那一刻的复习显示值, 那一刻该存的 cap]：保存时 review 仍等于 keep[0]，就原样存回 keep[1]。
+// 一键安排用它表达「回自动档」（cap=0），撤回栈用它带回当时的 cap（stampPlanCaps）。
+// 带着这个字段再手动改 review，数字对不上就按手动值存，不会误存成旧 cap。它不落进偏好或云数据。
+type DailyPlan = Record<PlanKind, { fresh: number; review: number; keep?: [number, number] }>;
 export const PLAN_KINDS: PlanKind[] = ["words", "grammar", "kanji", "confusion"];
 export const hasPendingPlanTotal = (draft: string | null, total: number): boolean => (
   draft !== null && Number(draft) !== total
@@ -63,7 +67,7 @@ const LEVEL_RANK: Record<string, number> = { N5: 0, N4: 1, N3: 2, N2: 3, N1: 4 }
 
 const amortize = (remaining: number, days: number) => (remaining <= 0 ? 0 : Math.ceil(remaining / Math.max(1, days)));
 
-/** 单词「今天该复习的」= 到期非顽固全部 + 顽固最多 10 个（fsrs-store.plannedDueCount），不是裸到期数。 */
+/** 可参与今日计划的全部到期词（先验仍限速）；显示复习数时再套普通复习上限。 */
 const wordDueCount = () => plannedDueCount(studyDayEnd());
 
 const grammarPools = (target: JlptTarget) => {
@@ -119,6 +123,10 @@ export const previewCurrentLevelPlan = (input: Parameters<typeof previewLevelPla
     remainingWords: remainingPlanWords(input.startingLevel, input.target, input.familiarity, input.includeOptionalExpressions)
   });
 
+/** 自动档会给的复习数：普通到期套各自的自动上限，先验 / 减负 / 压轴另算。 */
+const autoReview = (kind: PlanKind, due: number, extra: number) =>
+  Math.min(due - extra, kind === "words" ? dailyReviewCap(0) : autoPlanReviewCap(kind)) + extra;
+
 export const dailyPlanView = (prefs: StudyPreferences = getEffectiveStudyPreferences()): DailyPlanView => {
   const status = getJlptPlanStatus();
   const target = prefs.jlptTarget;
@@ -136,25 +144,28 @@ export const dailyPlanView = (prefs: StudyPreferences = getEffectiveStudyPrefere
       kind: "words", label: PLAN_LABELS.words,
       fresh: kanaGatePending() ? 0 : prefs.dailyGoal, review: wordReviewCount(prefs.reviewCap, wordDue - extras - priorExtras.words) + extras + priorExtras.words,
       pool: { due: wordDue, unseen: remainingPlanWords("kana", target, undefined, prefs.includeOptionalExpressions) },
-      suggest: { fresh: status.plan.newWords, review: wordDue }
+      // 建议复习数 = 自动档会给的数，不是今天到期的全部（2026-11-13）。原来写的是全部到期：
+      // 作者库到期 1,981 时面板显示「复习 150（建议 ≥ 1981）」并标「偏少」，点「补到建议值」
+      // 就把 1981 写成长期固定上限 —— 和一键安排把 621 写死是同一个坑的另一个入口。四段同理。
+      suggest: { fresh: status.plan.newWords, review: autoReview("words", wordDue, extras + priorExtras.words) }
     },
     {
       kind: "grammar", label: PLAN_LABELS.grammar,
       fresh: prefs.grammarDailyGoal, review: grammarReviewPool(PLAN_GRAMMAR_LEVEL, prefs.grammarReviewCap).review,
       pool: grammar,
-      suggest: { fresh: status.plan.newGrammar, review: grammar.due }
+      suggest: { fresh: status.plan.newGrammar, review: autoReview("grammar", grammar.due, priorExtras.grammar) }
     },
     {
       kind: "kanji", label: PLAN_LABELS.kanji,
       fresh: prefs.kanjiDailyGoal, review: pick(prefs.kanjiReviewCap, kanji.due - priorExtras.kanji, "kanji") + priorExtras.kanji,
       pool: kanji,
-      suggest: { fresh: intakeDays > 0 ? amortize(kanji.unseen, intakeDays) : 0, review: kanji.due }
+      suggest: { fresh: intakeDays > 0 ? amortize(kanji.unseen, intakeDays) : 0, review: autoReview("kanji", kanji.due, priorExtras.kanji) }
     },
     {
       kind: "confusion", label: PLAN_LABELS.confusion,
       fresh: prefs.confusionDailyGoal, review: pick(prefs.confusionReviewCap, confusion.due - priorExtras.confusion, "confusion") + priorExtras.confusion,
       pool: confusion,
-      suggest: { fresh: intakeDays > 0 ? amortize(confusion.unseen, intakeDays) : 0, review: confusion.due }
+      suggest: { fresh: intakeDays > 0 ? amortize(confusion.unseen, intakeDays) : 0, review: autoReview("confusion", confusion.due, priorExtras.confusion) }
     }
   ];
   const total = segments.reduce((sum, segment) => sum + segment.fresh + segment.review, 0);
@@ -179,14 +190,30 @@ const baselineFresh = (): Fresh => {
   return freshOf(defaultStudyPreferences);
 };
 
-/** 一键安排：复习 = 今天到期的全部，新学 = 平时的额度。 */
-export const arrangedPlan = (view: DailyPlanView): Record<PlanKind, { fresh: number; review: number }> => {
+/** 一键安排：复习回到各自自动档，新学 = 平时的额度。先验 / 减负 / 压轴仍另算。 */
+export const arrangedPlan = (view: DailyPlanView): DailyPlan => {
   const fresh = baselineFresh();
-  return Object.fromEntries(view.segments.map((segment) => [segment.kind, { fresh: fresh[segment.kind], review: segment.pool.due }])) as Record<PlanKind, { fresh: number; review: number }>;
+  return Object.fromEntries(view.segments.map(({ kind, pool }) => {
+    const review = autoReview(kind, pool.due, (view.priorExtras?.[kind] ?? 0) + (kind === "words" ? view.wordExtras : 0));
+    return [kind, { fresh: fresh[kind], review, keep: [review, 0] }];
+  })) as DailyPlan;
 };
 
 /**
- * 圆环 / 表单改完写回。数字直接落进偏好，不做二次解释；单词复习那段先减掉减负 + 压轴再存。
+ * 压进撤回栈之前给快照带上**此刻**四类的 cap，撤回时 saveDailyPlan 原样写回。
+ * 没有这一步的话撤回只还原了圆环上的数字：cap=400 时点一键安排（存成 0）再撤回，圆环回到 400，
+ * 存着的 cap 仍是 0，明天实际只给自动档的 150（2026-11-13 审查复现；改一键安排之前撤回同样不还原 cap，
+ * 只是那时没人注意）。⚠️ 必须在落盘**之前**调用，落盘之后读到的已经是新 cap。
+ */
+export const stampPlanCaps = <T extends DailyPlan>(plan: T): T => {
+  const prefs = getStudyPreferences();
+  const caps = [prefs.reviewCap, prefs.grammarReviewCap, prefs.kanjiReviewCap, prefs.confusionReviewCap];
+  return Object.fromEntries(PLAN_KINDS.map((kind, index) => [kind, { ...plan[kind], keep: [plan[kind].review, caps[index]] }])) as T;
+};
+
+/**
+ * 圆环 / 表单改完写回。手动数字直接落进偏好；单词复习那段先减掉减负 + 压轴再存。
+ * 一键安排 / 撤回快照显式携带 keep，review 与 keep[0] 匹配时才把 cap 存成 keep[1]（见 DailyPlan 类型上的说明）。
  * ⚠️ **复习数没动的段，cap 原样留着**：显示的是 min(到期, cap)，不比对就写回等于把「上限 400」
  * 悄悄改成「今天到期的 354」，明天到期多了也只给 354；三种 0（默认上限 / 自动）同理会被写死成一个数。
  * ⚠️ **「没动」比的是用户看到的那份 `shown`，不能在这里重算**（2026-09-22 修）：面板的数是挂载时算的，
@@ -195,7 +222,7 @@ export const arrangedPlan = (view: DailyPlanView): Record<PlanKind, { fresh: num
  * 拖单词段则多减一份圆环上根本没加过的 extras。
  * `standing` = 这是明确定的平时额度（表单 / 备考一键），顺手记成一键安排的基线。
  */
-export const saveDailyPlan = (next: Record<PlanKind, { fresh: number; review: number }>, standing = false, shown: DailyPlanView = dailyPlanView()) => {
+export const saveDailyPlan = (next: DailyPlan, standing = false, shown: DailyPlanView = dailyPlanView()) => {
   const prefs = getStudyPreferences();
   if (standing) {
     try { localStorage.setItem(BASELINE_KEY, JSON.stringify(Object.fromEntries(PLAN_KINDS.map((kind) => [kind, next[kind].fresh])))); } catch { /* 存不下就用默认档 */ }
@@ -203,6 +230,7 @@ export const saveDailyPlan = (next: Record<PlanKind, { fresh: number; review: nu
   const shownOf = (kind: PlanKind) => shown.segments.find((segment) => segment.kind === kind)?.review ?? 0;
   const keepOr = (kind: PlanKind, current: number) => {
     const item = next[kind];
+    if (item.review === item.keep?.[0]) return item.keep[1];
     if (item.fresh + item.review === 0) return PLAN_REVIEW_DISABLED;
     if (item.review === shownOf(kind)) return current;
     const ordinary = item.review - (shown.priorExtras?.[kind] ?? 0);
@@ -211,7 +239,7 @@ export const saveDailyPlan = (next: Record<PlanKind, { fresh: number; review: nu
   saveStudyPreferences({
     ...prefs,
     dailyGoal: next.words.fresh,
-    reviewCap: next.words.review === shownOf("words") ? prefs.reviewCap : Math.max(1, next.words.review - shown.wordExtras - (shown.priorExtras?.words ?? 0)),
+    reviewCap: next.words.review === next.words.keep?.[0] ? next.words.keep[1] : next.words.review === shownOf("words") ? prefs.reviewCap : Math.max(1, next.words.review - shown.wordExtras - (shown.priorExtras?.words ?? 0)),
     grammarDailyGoal: next.grammar.fresh,
     grammarReviewCap: keepOr("grammar", prefs.grammarReviewCap),
     kanjiDailyGoal: next.kanji.fresh,

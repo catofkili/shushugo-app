@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { DailyPlanRing, type RingValue } from "./DailyPlanRing";
 import { RING_COLORS } from "./daily-plan-ring-geometry";
 import {
-  arrangedPlan, dailyPlanView, hasPendingPlanTotal, saveDailyPlan, PLAN_KINDS, PLAN_LABELS, SECONDS_PER_CARD,
+  arrangedPlan, dailyPlanView, hasPendingPlanTotal, saveDailyPlan, stampPlanCaps, PLAN_KINDS, PLAN_LABELS, SECONDS_PER_CARD,
   type DailyPlanView, type PlanKind
 } from "../lib/daily-plan";
 import { GRAMMAR_INTENSITY_MAX, INTENSITY_MAX, MAX_DAILY_REVIEW, PREFERENCES_EVENT } from "../lib/studyPreferences";
@@ -91,12 +91,15 @@ export const DailyPlanPanel = ({ compact = false }: Props) => {
     const start = dragStartRef.current;
     dragStartRef.current = null;
     if (!start || !planRef.current) return;
-    setHistory((stack) => [...stack, start].slice(-30));
+    // 快照要在落盘之前带上当时的 cap，撤回才还原得了上限（stampPlanCaps）
+    const snapshot = stampPlanCaps(start);
+    setHistory((stack) => [...stack, snapshot].slice(-30));
     persist(planRef.current);
   };
   /** 一次性改动（表单、总量、补建议、一键安排）：立刻落盘。表单填的数字是「平时额度」（standing）。 */
   const commit = (next: Plan, standing = false) => {
-    setHistory((stack) => [...stack, plan].slice(-30));
+    const snapshot = stampPlanCaps(plan);
+    setHistory((stack) => [...stack, snapshot].slice(-30));
     setPlan(next);
     persist(next, standing);
   };
@@ -112,7 +115,7 @@ export const DailyPlanPanel = ({ compact = false }: Props) => {
     persist(previous);
   };
 
-  /** 一键安排：复习 = 今天到期的全部，新学 = 平时的额度（daily-plan.arrangedPlan）。 */
+  /** 一键安排：复习回到自动档，新学 = 平时的额度（daily-plan.arrangedPlan）。 */
   const arrange = () => commit(arrangedPlan(view));
 
   /** 改总量：四段等比缩放，四舍五入后的差额记到单词上。 */

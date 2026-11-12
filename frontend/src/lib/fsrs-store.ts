@@ -474,46 +474,27 @@ export function fsrsDueCount(now = new Date(), entity: FsrsEntity = WORD_FSRS): 
 /** 「最近栽过跟头」的时间窗:这么多小时内答错过的词,排在陈年积压前面 */
 export const RECENT_LAPSE_HOURS = 36;
 
-/**
- * 每天最多放这么多顽固词进当日计划,其余顺延。
- *
- * 用绝对数量而不是占比:顽固词的成本是**绝对消耗**,一个当天要刷三到五次才毕业,
- * 十个就是四十次作答、小半场。按占比算的话,复习量越大的日子放进来的顽固词越多,
- * 恰恰是最不该的时候。
- *
- * 被挡在外面的不会消失 —— 它们仍然是到期状态,后面几天照常轮到,
- * 想集中攻坚就进错题本模式(那里本来就是按 lapses 权重挑词的)。
- */
-export const LEECH_DAILY_INTAKE = 10;
-
-/**
- * 「今天该复习的」到底有几个：到期的非顽固词全部 + 顽固词最多 LEECH_DAILY_INTAKE 个。
- * 圆环的复习建议 / 一键安排用的就是这个数，不是裸的到期数（裸到期数把 243 个顽固词全算进去，
- * 而计划每天只放 10 个 —— 用户原话「顽固词有 10 的上限，慢慢来」）。
- */
-export function plannedDueCount(now = new Date(), entity: FsrsEntity = WORD_FSRS, leechIntake = LEECH_DAILY_INTAKE): number {
+/** 今日普通复习 = min(全部到期, limit)，先验仍按独立名额放行；未给上限时数全部到期。 */
+export function plannedDueCount(now = new Date(), entity: FsrsEntity = WORD_FSRS, limit = Infinity): number {
   ensureFsrsColumns(entity);
   const kind = priorKindForTable(entity.table);
-  const row = rowsFor(
-    `SELECT SUM(COALESCE(fsrs_lapses, 0) < ?) AS normal, SUM(COALESCE(fsrs_lapses, 0) >= ?) AS leech
-     FROM ${entity.table} WHERE ${entity.eligible} AND (fsrs_due IS NULL OR fsrs_due <= ?)
+  const ordinary = firstValue<number>(
+    `SELECT COUNT(*) FROM ${entity.table} WHERE ${entity.eligible} AND (fsrs_due IS NULL OR fsrs_due <= ?)
        AND NOT ${kind ? pendingPriorSql(kind, `${entity.table}.${entity.idColumn}`) : "0"}`,
-    [LEECH_LAPSE_THRESHOLD, LEECH_LAPSE_THRESHOLD, now.toISOString()]
-  )[0];
-  return Number(row?.normal ?? 0) + Math.min(Number(row?.leech ?? 0), leechIntake) + priorIdsForEntity(entity, now).length;
+    [now.toISOString()], 0
+  );
+  return Math.min(ordinary, Math.max(0, limit)) + priorIdsForEntity(entity, now).length;
 }
 
 /** 先验验证另算，不能被普通复习上限吞掉，也不能反过来挤掉普通复习。 */
 export function cappedDueCount(limit: number, now = new Date(), entity: FsrsEntity = WORD_FSRS): number {
-  const prior = priorIdsForEntity(entity, now).length;
-  return Math.min(Math.max(0, limit), plannedDueCount(now, entity) - prior) + prior;
+  return plannedDueCount(now, entity, limit);
 }
 
 export function fsrsDueWordIds(
   limit: number,
   now = new Date(),
-  entity: FsrsEntity = WORD_FSRS,
-  leechIntake = LEECH_DAILY_INTAKE
+  entity: FsrsEntity = WORD_FSRS
 ): number[] {
   ensureFsrsColumns(entity);
   const prior = priorIdsForEntity(entity, now).map(Number);
@@ -521,68 +502,49 @@ export function fsrsDueWordIds(
   entity = { ...entity, eligible: `(${entity.eligible}) AND NOT ${kind ? pendingPriorSql(kind, `${entity.table}.${entity.idColumn}`) : "0"}` };
   // 即使普通复习额度为 0，也要保留独立的先验验证名额。
   if (limit <= 0) return prior;
-  // 顽固词闸先于一切:今天的池子 = 到期的非顽固词全部 + 随机 leechIntake 个顽固词。
-  // ⚠️ 2026-09-18 那版「上限装不下就纯随机、闸不生效」被用户当场否了(2026-09-20,
-  // 「顽固词有 10 的上限,慢慢来」):作者库到期 587 个里 243 个是顽固词,不先挡的话
-  // 随机抽 400 个里有 160 个顽固词,一天的复习四成是它们。闸永远生效,随机只在闸之后。
-  const leechIds = rowsFor(
-    `SELECT ${entity.idColumn} AS id FROM ${entity.table}
-     WHERE ${entity.eligible} AND (fsrs_due IS NULL OR fsrs_due <= ?) AND COALESCE(fsrs_lapses, 0) >= ?
-     ORDER BY RANDOM() LIMIT ?`,
-    [now.toISOString(), LEECH_LAPSE_THRESHOLD, leechIntake]
-  ).map((row) => Number(row.id));
   const normalCount = firstValue<number>(
     `SELECT COUNT(*) FROM ${entity.table}
      WHERE ${entity.eligible} AND (fsrs_due IS NULL OR fsrs_due <= ?) AND COALESCE(fsrs_lapses, 0) < ?`,
     [now.toISOString(), LEECH_LAPSE_THRESHOLD],
     0
   );
-  // 闸过之后上限还装不下:**纯随机抽**,不按任何推词逻辑(2026-09-18,用户定的)。
+  // 2026-11-12：普通词先占名额，剩余名额随机补顽固词，取代 09-20 的每天 10 个硬闸。
   //
-  // 有偏好就有系统性饿死:按 due 选,昨天新学的(due 是今天)永远排最后、上限一卡整批掉出计划;
-  // 按 stability 选,老朋友永远轮不到(模拟 180 天:539 个词 90 天没见)。随机没有偏好,
-  // 每个到期词每天被抽中的概率 = 上限 ÷ 池子,尾巴是随机的,不是同一批词永远垫底。
-  // 用用户真实库模拟(上限 150 + 新词 30、0.85·R):随机的积压最小(3,860 vs due 4,333 /
-  // stability 5,973),中位过期天数和 due 顺序一样(17 天)。
-  // 「谁先出」由 pickStage1Next 那一层的优先级 + 抖动决定,选进来之后照旧。
-  if (normalCount + leechIds.length > limit) {
-    return [...rowsFor(
-      `SELECT ${entity.idColumn} AS id FROM ${entity.table}
-       WHERE ${entity.eligible} AND (fsrs_due IS NULL OR fsrs_due <= ?)
-         AND (COALESCE(fsrs_lapses, 0) < ? OR ${entity.idColumn} IN (${leechIds.map(() => "?").join(",") || "NULL"}))
-       ORDER BY RANDOM() LIMIT ?`,
-      [now.toISOString(), LEECH_LAPSE_THRESHOLD, ...leechIds, limit]
-    ).map((row) => Number(row.id)), ...prior];
-  }
-  // 装得下的话全进,下面的排序只影响 order_index。
-  // 排序的第一优先级不是「谁最过期」,而是「谁刚栽过跟头」。
+  // 这条规则的来历（别再绕一圈）：
+  // - 09-18：「上限装不下就纯随机、不挡顽固词」。作者库到期 587 个里 243 个是顽固词，
+  //   随机抽 400 个里有 160 个顽固词，一天的复习四成是它们。
+  // - 09-20：作者当场否了（「顽固词有 10 的上限，慢慢来」），改成池子 = 非顽固全部 + 随机 10 个顽固词。
+  //   用绝对数量而不是占比，是因为顽固词的成本是绝对消耗：一个当天要刷三到五次才毕业。
+  // - 11-12：fsrs_lapses 只增不减，按作者真实库前推 180 天，约 2,000 个词（已学的一半多）被挡在闸外，
+  //   第 180 天预计能想起 1,761 词；现在这条规则同样每天约 60–65 分钟，是 2,358 词
+  //   （docs/audits/2026-11-12-load-policy-sim-r2.md 的 R05 对 R17）。作者 11-12 授权后改的。
+  //   09-20 那条顾虑仍然被照顾到：顽固词不挤普通词的名额，只补空位；总量由复习上限管。
   //
-  // 只按 due 升序的话:积压老词 due 是好几天前、昨天刚答错的词 due 是今天晚些,
-  // 于是昨天错的全排在队尾,被当日限额整批挤掉 —— 实测昨天答错的 223 个词,
-  // 今天的计划里一个都没有。刚忘掉的词隔天不复习,等于白错一场。
+  // 普通词装不下时仍纯随机，不按 due / stability：有偏好就有系统性饿死。
+  // 按 due 选，昨天新学的（due 是今天）永远排最后、上限一卡整批掉出计划；按 stability 选，老朋友永远轮不到
+  // （原模拟 180 天：539 个词 90 天没见）。随机的尾巴不会总是同一批词：每个到期词每天被抽中的概率 = 上限 ÷ 池子。
+  // 用作者真实库模拟（上限 150 + 新词 30、0.85·R）：随机的积压最小（3,860 vs due 4,333 / stability 5,973），
+  // 中位过期天数和 due 顺序一样（17 天）。
+  //
+  // 装得下时全进，下面的排序只影响 order_index；「谁先出」仍由 pickStage1Next 的优先级 + 抖动决定。
+  // 排序的第一优先级不是「谁最过期」，而是「谁刚栽过跟头」：只按 due 升序的话，积压老词 due 是好几天前、
+  // 昨天刚答错的词 due 是今天晚些，于是昨天错的全排在队尾 —— 实测昨天答错的 223 个词，今天的计划里一个都没有。
+  // 刚忘掉的词隔天不复习，等于白错一场。
   const lapseSince = new Date(now.getTime() - RECENT_LAPSE_HOURS * 3600_000).toISOString();
-  // 多取一些:顽固词被挡下来之后,要有非顽固词补上,才不会把当日计划做少了。
-  const rows = rowsFor(
-    `SELECT ${entity.idColumn} AS id, COALESCE(fsrs_lapses, 0) AS lapses FROM ${entity.table}
-     WHERE ${entity.eligible}
-       AND (fsrs_due IS NULL OR fsrs_due <= ?)
-     ORDER BY (fsrs_due IS NULL) DESC,
-              (fsrs_lapses > 0 AND fsrs_last_review >= ?) DESC,
-              fsrs_due ASC,
-              ${entity.idColumn} ASC
+  const normalIds = rowsFor(
+    `SELECT ${entity.idColumn} AS id FROM ${entity.table}
+     WHERE ${entity.eligible} AND (fsrs_due IS NULL OR fsrs_due <= ?) AND COALESCE(fsrs_lapses, 0) < ?
+     ORDER BY ${normalCount > limit ? "RANDOM()" : `(fsrs_due IS NULL) DESC,
+              (fsrs_lapses > 0 AND fsrs_last_review >= '${lapseSince}') DESC,
+              fsrs_due ASC, ${entity.idColumn} ASC`}
      LIMIT ?`,
-    [now.toISOString(), lapseSince, limit * 3]
-  );
-
-  const picked: number[] = [];
-  let leeches = 0;
-  for (const row of rows) {
-    if (picked.length >= limit) break;
-    if (Number(row.lapses ?? 0) >= LEECH_LAPSE_THRESHOLD) {
-      if (leeches >= leechIntake) continue;
-      leeches += 1;
-    }
-    picked.push(Number(row.id));
-  }
-  return [...picked, ...prior];
+    [now.toISOString(), LEECH_LAPSE_THRESHOLD, limit]
+  ).map((row) => Number(row.id));
+  const leechIds = normalIds.length < limit ? rowsFor(
+    `SELECT ${entity.idColumn} AS id FROM ${entity.table}
+     WHERE ${entity.eligible} AND (fsrs_due IS NULL OR fsrs_due <= ?) AND COALESCE(fsrs_lapses, 0) >= ?
+     ORDER BY RANDOM() LIMIT ?`,
+    [now.toISOString(), LEECH_LAPSE_THRESHOLD, limit - normalIds.length]
+  ).map((row) => Number(row.id)) : [];
+  return [...normalIds, ...leechIds, ...prior];
 }

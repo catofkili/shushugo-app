@@ -118,7 +118,7 @@ export function priorityComponents(
   // 攻不下来的词统治整场。而且方向本身就错了:一个失败了八次的词是「卡片坏了」,
   // 不是「复习不够」,继续加密只会把整场变成受刑。Anki 的处理是直接挂起它。
   //
-  // 现在:顽固词按正常的过期程度排队,当天引入多少由 stage1 的配额闸门控制,
+  // 现在：顽固词不置顶，当天引入多少由普通词占满名额后的余位决定，
   // 集中攻坚交给错题本模式。这里只留一点点加成,保证它不会沉底到永远轮不到。
   if (lapses >= LEECH_LAPSE_THRESHOLD) {
     components.critical = LEECH_PRIORITY;

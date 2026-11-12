@@ -32,7 +32,6 @@ vi.mock("./progress-events", () => ({ PROGRESS_UPDATED_EVENT: "test", notifyProg
 
 import { ensureProgressInitialized, getWordSession, submitWordAnswer } from "./word-api";
 import { buildInterferenceIndex, resetInterferenceCache, INTERFERENCE_WINDOW } from "./scheduler/interference";
-import { LEECH_DAILY_INTAKE } from "./fsrs-store";
 import { LEECH_LAPSE_THRESHOLD } from "./fsrs-scheduler";
 import { OPENING_CARDS } from "./scheduler/sequencer";
 import { saveStudyPreferences, defaultStudyPreferences } from "./studyPreferences";
@@ -101,8 +100,8 @@ describe("真实词库上的整场序列", () => {
     expect(order.filter((id) => leeches.has(id))).toEqual([]);
   });
 
-  it("上限装不下时纯随机抽:顽固词按比例进,不再受每日配额闸", () => {
-    // 1200 到期 / 上限 120:顽固词占 1/15,期望 8 个,不再被 LEECH_DAILY_INTAKE 截断
+  it("普通词已占满上限时纯随机抽普通词，顽固词不进当天名单", () => {
+    // 1200 到期（1120 普通 + 80 顽固）/ 上限 120：普通词足够，不留顽固词名额。
     getWordSession(); // 触发当日计划生成
     const planned = rowsOf(`
       SELECT COUNT(*) AS n, SUM(COALESCE(p.fsrs_lapses, 0) >= ?) AS leeches
@@ -110,9 +109,7 @@ describe("真实词库上的整场序列", () => {
       WHERE t.task_type = 'review'
     `, [LEECH_LAPSE_THRESHOLD]);
     expect(Number(planned[0]?.n ?? 0)).toBe(120);
-    // 二项分布 (120, 1/15):均值 8、σ≈2.7;25 是 6σ 以外,40 才是「闸没了就全是顽固词」
-    expect(Number(planned[0]?.leeches ?? 0)).toBeLessThanOrEqual(25);
-    expect(LEECH_DAILY_INTAKE).toBe(10); // 常量还在,只对「装得下」那条路生效
+    expect(Number(planned[0]?.leeches ?? 0)).toBe(0);
   });
 
   // 跑 80 张真卡本来就要四秒多,贴着 5 秒的默认上限;并行跑整套时抢 CPU 会挂。
