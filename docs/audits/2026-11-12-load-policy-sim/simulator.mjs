@@ -1,8 +1,18 @@
 import { DAY,START,EXAM,DEFAULT_W,FIT_W,T,scheduler,dayNum,dateStr,mulberry32,mean,spread,initial } from './common.mjs';
 import assert from 'node:assert/strict';
-export const scheduleOptions = { P0:{w:DEFAULT_W,r:.9,rebuild:false},P1a:{w:FIT_W,r:.8,rebuild:true},P1b:{w:FIT_W,r:.8,rebuild:false},P2a:{w:FIT_W,r:.85,rebuild:true},P2b:{w:FIT_W,r:.85,rebuild:false} };
+import { observeFirst,inPool } from './gates.mjs';
+export const scheduleOptions = { P0:{w:DEFAULT_W,r:.9,rebuild:false},P1a:{w:FIT_W,r:.8,rebuild:true},P1b:{w:FIT_W,r:.8,rebuild:false},P2a:{w:FIT_W,r:.85,rebuild:true},P2b:{w:FIT_W,r:.85,rebuild:false},P3a:{w:FIT_W,r:.7,rebuild:true} };
 export const config = (o={}) => ({schedule:'P0',newKind:'fixed',newValue:25,low:0,threshold:null,leech:null,intake:0,cap:1000000,selection:'random',supply:'N3',plateau:false,...o});
-export const label = c => [c.schedule,c.newKind==='fixed'?`F${c.newValue}`:`${c.newKind}${c.threshold}-${c.low}`,c.leech?`L${c.leech}K${c.intake}`:'L0',c.cap<1000000?`C${c.cap}-${c.selection}`:'all',c.supply,c.plateau?'cap79':'main'].join('_');
+export const label = c => [c.schedule,c.newKind==='fixed'?`F${c.newValue}`:`${c.newKind}${c.threshold}-${c.low}`,c.gate??(c.leech?`L${c.leech}K${c.intake}`:'L0'),c.cap<1000000?`C${c.cap}-${c.selection}`:'all',c.supply,c.plateau?'cap79':'main'].join('_');
+export function selectDue(due,c,slots,sample) {
+  if(c.gate==='F3') {
+    const ordinary=sample(due.filter(x=>x.card.lapses<8),slots);
+    return [...ordinary,...sample(due.filter(x=>x.card.lapses>=8),Math.max(0,slots-ordinary.length))];
+  }
+  if(c.gate)due=[...due.filter(x=>!inPool(x,c.gate)),...sample(due.filter(x=>inPool(x,c.gate)),c.intake)];
+  else if(c.leech)due=[...due.filter(x=>x.card.lapses<c.leech),...sample(due.filter(x=>x.card.lapses>=c.leech),c.intake)];
+  return due.length<=slots?due:c.selection==='lowest'?due.sort((a,b)=>T.R(a.mt,c.today-a.last)-T.R(b.mt,c.today-b.last)).slice(0,slots):sample(due,slots);
+}
 export function prepare(data) {
   const starts={};for(const [k,p] of Object.entries(scheduleOptions)) starts[k]=initial(data,p.w,p.r,START-1,!p.rebuild);
   const ordinary=data.words.filter(w=>!w.known_forever&&!(w.seen_count>0)&&!w.fsrs_stability&&!data.histories.has(w.id));
@@ -29,6 +39,8 @@ export function run(data,prepared,c,seed,calibration=null) {
   const learning=calibration?new Set(data.learningDays):null;
   const history=calibration?[]:structuredClone(prepared.history);
   const daily=[];let newTotal=0,braking=false,goodRun=0,switches=0,brakeDays=0,extended=0;
+  const pooled=x=>!x.retired&&(c.gate?inPool(x,c.gate):x.card.lapses>=(c.leech??8));
+  const pool0=live.filter(pooled).length;
   for(let d=0;d<days;d++) {
     const today=start+d;
     if(learning&&!learning.has(today)) continue;
@@ -43,16 +55,16 @@ export function run(data,prepared,c,seed,calibration=null) {
     let newQuota=c.newKind==='fixed'?c.newValue:braking?c.low:25;
     if(braking)brakeDays++;
     let due=live.filter(x=>!x.retired&&x.due<=today);
-    if(c.leech) due=[...due.filter(x=>x.card.lapses<c.leech),...sample(due.filter(x=>x.card.lapses>=c.leech),c.intake)];
     let cap=c.cap;
     if(calibration?.round>=2)cap=515;
+    if(calibration?.round>=4)cap=Math.min(cap,data.historicalBudget[today].reviews);
     if(calibration?.round>=3) {
       const fraction=data.historicalBudget[today].fraction;
       cap=Math.round(cap*fraction);
     }
     // User's cap counts all first-seen words; application cap counts reviews only. Calibration follows the latter.
     const reviewSlots=calibration?cap:Math.max(0,cap-Math.min(newQuota,supply.length-newTotal));
-    if(due.length>reviewSlots) due=c.selection==='lowest'?due.sort((a,b)=>T.R(a.mt,today-a.last)-T.R(b.mt,today-b.last)).slice(0,reviewSlots):sample(due,reviewSlots);
+    due=selectDue(due,{...c,today},reviewSlots,sample);
     let answers=0,first=0,cross=0,ok=0,forgot=0,newToday=0;
     const apply=(x,rawSeq,isNew)=>{
       let wrong=0,n=0,dt=isNew?0:Math.max(0,today-x.last),chosen=rawSeq;
@@ -64,6 +76,7 @@ export function run(data,prepared,c,seed,calibration=null) {
         const mode=i===0&&g===4?'known':wrong>=3?'stubborn':'normal';
         const now=new Date(today*DAY+10*3600000+i*60000);
         x.card=S.one(x.card,now,g,mode);x.mt=T.step(x.mt,i===0?dt:0,g);n++;
+        observeFirst(x,x.card.lapses,i===0&&!isNew&&today>x.last?g:null);
         if(S.graduated(x.card,today))break;
         if(calibration?.round===1&&i===chosen.length-1)break;
         if(i>=chosen.length-1)extended++;
@@ -82,7 +95,7 @@ export function run(data,prepared,c,seed,calibration=null) {
       apply(x,pick(data.pools.fresh),true);live.push(x);newTotal++;newToday++;
     }
     history.push({cross,ok});
-    const pool=live.filter(x=>!x.retired&&x.card.lapses>=(c.leech??8)).length;
+    const pool=live.filter(pooled).length;
     const pool8=live.filter(x=>!x.retired&&x.card.lapses>=8).length;
     let knowledge=null;
     if(today===EXAM||d===59||d===179) {
@@ -101,6 +114,7 @@ export function run(data,prepared,c,seed,calibration=null) {
   const metrics={};
   for(const [k,a,b] of [['early',0,14],['middle',14,60],['late',150,180]]) {
     const ds=daily.slice(a,b);metrics[`${k}Answers`]=mean(ds.map(x=>x.answers));metrics[`${k}First`]=mean(ds.map(x=>x.first));
+    metrics[`${k}Peak`]=Math.max(...ds.map(x=>x.answers));metrics[`${k}PeakDay`]=ds.find(x=>x.answers===metrics[`${k}Peak`])?.day;
     metrics[`${k}Accuracy`]=ds.reduce((s,x)=>s+x.ok,0)/Math.max(1,ds.reduce((s,x)=>s+x.cross,0));
   }
   metrics.first=mean(daily.map(x=>x.first));metrics.answers=mean(daily.map(x=>x.answers));
@@ -108,7 +122,8 @@ export function run(data,prepared,c,seed,calibration=null) {
   metrics.forgot=daily.reduce((s,x)=>s+x.forgot,0)/Math.max(1,daily.reduce((s,x)=>s+x.cross,0));
   metrics.peak=Math.max(...daily.map(x=>x.answers));metrics.peakDay=daily.find(x=>x.answers===metrics.peak)?.day;
   metrics.totalAnswers=daily.reduce((s,x)=>s+x.answers,0);metrics.newTotal=newTotal;metrics.newExam=daily.find(x=>x.day===EXAM)?.newTotal??null;
-  metrics.pool0=live.length? (calibration?0:prepared.starts[c.schedule].filter(x=>!x.retired&&x.card.lapses>=(c.leech??8)).length):0;
+  metrics.steadyAnswers=mean(daily.slice(14).map(x=>x.answers));
+  metrics.pool0=calibration?0:pool0;
   for(const [k,index] of [['pool14',13],['pool60',59],['pool180',179]])metrics[k]=daily[index]?.pool??null;
   metrics.brakeDays=brakeDays;metrics.switches=switches;metrics.backlog180=daily.at(-1).backlog;metrics.extended=extended;
   for(const [key,d] of [['exam',EXAM],['d60',start+59],['d180',start+179]]) {

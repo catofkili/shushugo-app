@@ -4,6 +4,7 @@ import { resolve, dirname } from 'node:path';
 import { createRequire } from 'node:module';
 import { DatabaseSync } from 'node:sqlite';
 import assert from 'node:assert/strict';
+import { observeFirst } from './gates.mjs';
 export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
 export const INPUT = resolve(ROOT, 'frontend/.local/load-sim');
 export const OUT = resolve(INPUT, 'policy-results');
@@ -86,9 +87,10 @@ export function loadData() {
   }
   const learningDays=[...new Set(rows("SELECT DISTINCT reviewed_on FROM reviews WHERE direction='forward' AND reviewed_on BETWEEN '2026-10-01' AND '2026-11-02'").map(x=>dayNum(x.reviewed_on)))].sort((a,b)=>a-b);
   const historicalBudget=Object.fromEntries(learningDays.map(d=>{
-    const tasks=rows('SELECT COUNT(*) n FROM stage1_tasks WHERE reviewed_on=?',dateStr(d))[0].n;
+    const planned=rows("SELECT COUNT(*) n,SUM(task_type='review') reviews FROM stage1_tasks WHERE reviewed_on=?",dateStr(d))[0];
+    const tasks=planned.n;
     const n=rows("SELECT COUNT(DISTINCT word_id) n FROM reviews WHERE direction='forward' AND reviewed_on=?",dateStr(d))[0].n;
-    return [d,{tasks,first:n,fraction:Math.min(1,n/Math.max(1,tasks))}];
+    return [d,{tasks,reviews:planned.reviews??0,first:n,fraction:Math.min(1,n/Math.max(1,tasks))}];
   }));
   const matchedTime=rows(`SELECT SUM(t.seconds) seconds,SUM(r.n) answers FROM word_study_time t JOIN
     (SELECT reviewed_on,COUNT(*) n FROM reviews WHERE direction='forward' AND reviewed_on BETWEEN '2026-10-01' AND '2026-11-02' GROUP BY 1) r ON r.reviewed_on=t.studied_on`)[0];
@@ -112,17 +114,20 @@ export function initial(data, schedW=DEFAULT_W, retention=.9, cutoff=START-1, us
     const validPrior=prior&&Date.parse(prior.updated_at)<=(cutoff*DAY+20*3600000);
     if(!rs.length&&!validPrior) continue;
     let card=null,mt=null,last=0,priorInserted=false;
+    const gate={recentFirst:[],f1Released:false,f1Failures:0};
     const insertPrior=()=>{card=priorCard(prior);mt={stability:prior.stability,difficulty:prior.difficulty};last=Math.floor((Date.parse(prior.last_review)+4*3600000)/DAY);priorInserted=true;};
-    for(const r of rs) {
+    for(const [index,r] of rs.entries()) {
       if(validPrior&&!priorInserted&&Date.parse(prior.updated_at)<=r.at)insertPrior();
       card=S.one(card,new Date(r.at),r.g,r.mode);
+      observeFirst(gate,card.lapses,index>0&&r.day>rs[index-1].day?r.g:null);
       mt=T.step(mt,mt?Math.max(0,r.day-last):0,r.g);last=r.day;
     }
     if(validPrior&&!priorInserted)insertPrior();
     if(useStored) card=storedCard(w)??card;
+    if(card)observeFirst(gate,card.lapses);
     const retired=cutoff===START-1?!!w.known_forever:rs.some(r=>r.answer==='known_forever');
     if(!mt||!card) continue;
-    live.push({card,mt,last,due:Math.floor((+card.due+4*3600000)/DAY),retired,level:w.level,firstDay:rs[0]?.day??last,prior:!!validPrior});
+    live.push({card,mt,last,due:Math.floor((+card.due+4*3600000)/DAY),retired,level:w.level,firstDay:rs[0]?.day??last,prior:!!validPrior,...gate});
   }
   return live;
 }

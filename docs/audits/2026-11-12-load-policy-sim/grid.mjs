@@ -9,7 +9,7 @@ const out=existsSync(path)?read('grid.json'):{seeds:[1000,1001,1002,1003,1004],r
 const bases=[];
 const add=(c,dimension)=>bases.push({c:config(c),dimension});
 if(stage==='scan') {
- for(const schedule of Object.keys(scheduleOptions))add({schedule},'schedule');
+ for(const schedule of Object.keys(scheduleOptions).filter(k=>k!=='P3a'))add({schedule},'schedule');
  for(const newValue of [15,10,0])add({newValue},'new');
  for(const threshold of [.65,.7,.75])for(const low of [0,5])add({newKind:'accuracy',threshold,low},'new');
  for(const fraction of [.5,.75,1])for(const low of [0,5])add({newKind:'weak',threshold:Math.floor(prepared.weak*fraction),low},'new');
